@@ -1,0 +1,740 @@
+# ============================================================
+# NEW FEATURE SET TEST:
+# Regional QCT Summary Features
+#
+# Why this feature set?
+# The previous single HOMO-LUMO asymmetry feature was too coarse.
+# This script creates a richer QCT-derived feature set by summarizing
+# quantum chemical properties across biologically meaningful sgRNA regions:
+#
+#   distal region:       positions 1-5
+#   middle region:       positions 6-15
+#   PAM-proximal region: positions 16-20
+#   full guide:          positions 1-20
+#
+# For each region, molecular unit, and QCT property, it computes:
+#   mean, standard deviation, min, max, range, and positional slope
+#
+# Then it compares:
+#   Baseline original features
+#   vs
+#   Original features + Regional QCT summary features
+#
+# Uses leakage-safe 5-fold CV:
+#   - feature selector is trained only inside each training fold
+#   - top 300 features are selected inside each fold
+# ============================================================
+
+import os
+import sys
+import re
+import json
+import hashlib
+import subprocess
+import warnings
+from collections import Counter
+
+warnings.filterwarnings("ignore")
+
+
+# ============================================================
+# 0. Install missing packages if needed
+# ============================================================
+
+def install_if_missing(import_name, pip_name=None):
+    if pip_name is None:
+        pip_name = import_name
+    try:
+        __import__(import_name)
+    except ImportError:
+        print(f"Installing {pip_name}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name])
+
+
+install_if_missing("numpy")
+install_if_missing("pandas")
+install_if_missing("sklearn", "scikit-learn")
+install_if_missing("scipy")
+install_if_missing("xgboost")
+
+
+# ============================================================
+# 1. Imports
+# ============================================================
+
+import numpy as np
+import pandas as pd
+import xgboost as xgb
+
+from sklearn.model_selection import KFold
+from sklearn.metrics import r2_score, mean_squared_error
+from scipy.stats import spearmanr, pearsonr
+
+
+# ============================================================
+# 2. Configuration
+# ============================================================
+
+CSV_FILENAME = "ecoli_feature_matrix.csv"
+TARGET_COLUMN = "cut.score"
+
+RANDOM_STATE = 42
+N_SPLITS = 5
+
+FINAL_N_FEATURES = 300
+N_ESTIMATORS = 400
+
+OUTPUT_DIR = "new_feature_regional_qct_summary_test"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+NON_FEATURE_COLUMNS = [
+    "sgRNAID",
+    "sequence",
+    "Sequence",
+    "sgRNA",
+    "sgrna",
+    "guide",
+    "Guide",
+    "guide_sequence",
+    "GuideSequence",
+    "target_sequence",
+    "TargetSequence",
+]
+
+REGIONS = {
+    "distal_p1_5": list(range(1, 6)),
+    "middle_p6_15": list(range(6, 16)),
+    "pamprox_p16_20": list(range(16, 21)),
+    "full_p1_20": list(range(1, 21)),
+}
+
+MOLECULAR_UNITS = [
+    "monomer",
+    "basepair",
+    "dimer",
+    "trimer",
+    "tetramer",
+]
+
+
+# ============================================================
+# 3. Helper functions
+# ============================================================
+
+def stable_spearman(y_true, y_pred):
+    rho = spearmanr(y_true, y_pred)[0]
+    if np.isnan(rho):
+        return 0.0
+    return rho
+
+
+def stable_pearson(y_true, y_pred):
+    r = pearsonr(y_true, y_pred)[0]
+    if np.isnan(r):
+        return 0.0
+    return r
+
+
+def feature_name_hash(feature_names):
+    payload = json.dumps(list(feature_names), separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def classify_qct_property(col):
+    lower = col.lower()
+
+    if "hlgap" in lower:
+        return "hlgap"
+
+    if "hbond.energy" in lower:
+        return "hbond_energy"
+
+    if "hbond.stacking" in lower:
+        return "hbond_stacking"
+
+    if "no.electrons" in lower:
+        return "electrons"
+
+    return None
+
+
+def parse_qct_column(col):
+    """
+    Parses columns like:
+        p10monomer.HLgap.eVraw
+        p16dimer.Hbond.energyraw
+        p7tetramer.Hbond.stackingraw
+
+    Returns:
+        position, molecular_unit, property_class
+    """
+    match = re.match(r"p(\d+)([A-Za-z]+)\.", col)
+
+    if match is None:
+        return None
+
+    position = int(match.group(1))
+    molecular_unit = match.group(2).lower()
+    property_class = classify_qct_property(col)
+
+    if property_class is None:
+        return None
+
+    return position, molecular_unit, property_class
+
+
+def rowwise_slope(values, positions):
+    """
+    Computes a simple row-wise slope of QCT value against position.
+    Missing values are filled using the row mean before slope calculation.
+    """
+    values = np.asarray(values, dtype=np.float32)
+    positions = np.asarray(positions, dtype=np.float32)
+
+    if values.shape[1] < 2:
+        return np.zeros(values.shape[0], dtype=np.float32)
+
+    row_means = np.nanmean(values, axis=1)
+    row_means = np.where(np.isnan(row_means), 0.0, row_means)
+
+    filled = np.where(np.isnan(values), row_means[:, None], values)
+
+    x_centered = positions - positions.mean()
+    denominator = float(np.sum(x_centered ** 2))
+
+    if denominator == 0:
+        return np.zeros(values.shape[0], dtype=np.float32)
+
+    y_centered = filled - filled.mean(axis=1, keepdims=True)
+    slopes = y_centered @ x_centered / denominator
+
+    return slopes.astype(np.float32)
+
+
+def median_impute_train_val(X_train, X_val):
+    """
+    Median imputation fitted on training fold only.
+    This avoids validation leakage from imputation.
+    """
+    X_train = X_train.astype(np.float32, copy=True)
+    X_val = X_val.astype(np.float32, copy=True)
+
+    medians = np.nanmedian(X_train, axis=0)
+    medians = np.where(np.isnan(medians), 0.0, medians)
+
+    train_nan_rows, train_nan_cols = np.where(np.isnan(X_train))
+    val_nan_rows, val_nan_cols = np.where(np.isnan(X_val))
+
+    X_train[train_nan_rows, train_nan_cols] = medians[train_nan_cols]
+    X_val[val_nan_rows, val_nan_cols] = medians[val_nan_cols]
+
+    return X_train, X_val
+
+
+def make_regional_qct_summary_features(X_df_numeric):
+    """
+    Creates regional QCT summary features.
+
+    For each:
+        molecular unit: monomer/basepair/dimer/trimer/tetramer
+        property: HLgap/Hbond energy/Hbond stacking/electron count
+        region: distal/middle/PAM-prox/full guide
+
+    Computes:
+        mean, std, min, max, range, slope
+    """
+
+    qct_column_info = []
+
+    for col in X_df_numeric.columns:
+        parsed = parse_qct_column(col)
+        if parsed is None:
+            continue
+
+        position, molecular_unit, property_class = parsed
+
+        if molecular_unit not in MOLECULAR_UNITS:
+            continue
+
+        qct_column_info.append({
+            "column": col,
+            "position": position,
+            "molecular_unit": molecular_unit,
+            "property_class": property_class,
+        })
+
+    qct_info_df = pd.DataFrame(qct_column_info)
+
+    if qct_info_df.empty:
+        raise ValueError("No QCT columns could be identified.")
+
+    engineered_features = {}
+    feature_definitions = []
+    region_mean_cache = {}
+
+    print("\n" + "=" * 90)
+    print("CREATING REGIONAL QCT SUMMARY FEATURES")
+    print("=" * 90)
+    print(f"Identified QCT columns: {len(qct_info_df)}")
+
+    for molecular_unit in MOLECULAR_UNITS:
+        for property_class in sorted(qct_info_df["property_class"].unique()):
+            for region_name, region_positions in REGIONS.items():
+
+                subset = qct_info_df[
+                    (qct_info_df["molecular_unit"] == molecular_unit)
+                    & (qct_info_df["property_class"] == property_class)
+                    & (qct_info_df["position"].isin(region_positions))
+                ].copy()
+
+                if subset.shape[0] < 2:
+                    continue
+
+                subset = subset.sort_values(["position", "column"])
+                cols = list(subset["column"])
+                positions = list(subset["position"])
+
+                data = X_df_numeric[cols]
+
+                prefix = f"regional_qct_{molecular_unit}_{property_class}_{region_name}"
+
+                mean_feature = data.mean(axis=1, skipna=True).astype(np.float32)
+                std_feature = data.std(axis=1, skipna=True).fillna(0.0).astype(np.float32)
+                min_feature = data.min(axis=1, skipna=True).astype(np.float32)
+                max_feature = data.max(axis=1, skipna=True).astype(np.float32)
+                range_feature = (max_feature - min_feature).astype(np.float32)
+                slope_feature = rowwise_slope(data.to_numpy(dtype=np.float32), positions)
+
+                engineered_features[f"{prefix}_mean"] = mean_feature
+                engineered_features[f"{prefix}_std"] = std_feature
+                engineered_features[f"{prefix}_min"] = min_feature
+                engineered_features[f"{prefix}_max"] = max_feature
+                engineered_features[f"{prefix}_range"] = range_feature
+                engineered_features[f"{prefix}_slope"] = slope_feature
+
+                region_mean_cache[(molecular_unit, property_class, region_name)] = mean_feature
+
+                feature_definitions.append({
+                    "feature_prefix": prefix,
+                    "molecular_unit": molecular_unit,
+                    "property_class": property_class,
+                    "region": region_name,
+                    "source_column_count": len(cols),
+                    "source_columns": cols,
+                })
+
+    # Add region contrast features.
+    # These test whether PAM-proximal QCT behavior differs from distal/middle behavior.
+    for molecular_unit in MOLECULAR_UNITS:
+        for property_class in sorted(qct_info_df["property_class"].unique()):
+
+            pam_key = (molecular_unit, property_class, "pamprox_p16_20")
+            distal_key = (molecular_unit, property_class, "distal_p1_5")
+            middle_key = (molecular_unit, property_class, "middle_p6_15")
+
+            if pam_key in region_mean_cache and distal_key in region_mean_cache:
+                name = f"regional_qct_contrast_{molecular_unit}_{property_class}_pamprox_minus_distal_mean"
+                engineered_features[name] = (
+                    region_mean_cache[pam_key] - region_mean_cache[distal_key]
+                ).astype(np.float32)
+
+            if pam_key in region_mean_cache and middle_key in region_mean_cache:
+                name = f"regional_qct_contrast_{molecular_unit}_{property_class}_pamprox_minus_middle_mean"
+                engineered_features[name] = (
+                    region_mean_cache[pam_key] - region_mean_cache[middle_key]
+                ).astype(np.float32)
+
+            if distal_key in region_mean_cache and middle_key in region_mean_cache:
+                name = f"regional_qct_contrast_{molecular_unit}_{property_class}_distal_minus_middle_mean"
+                engineered_features[name] = (
+                    region_mean_cache[distal_key] - region_mean_cache[middle_key]
+                ).astype(np.float32)
+
+    engineered_df = pd.DataFrame(engineered_features)
+
+    # Replace inf and NaN in engineered features.
+    engineered_df = engineered_df.replace([np.inf, -np.inf], np.nan)
+    engineered_df = engineered_df.fillna(engineered_df.median(numeric_only=True))
+    engineered_df = engineered_df.fillna(0.0)
+
+    print(f"Created engineered regional QCT features: {engineered_df.shape[1]}")
+    print("\nFirst 20 engineered features:")
+    for name in list(engineered_df.columns[:20]):
+        print(" -", name)
+
+    print("=" * 90)
+
+    return engineered_df, feature_definitions
+
+
+def leakage_safe_cv(X_array, y_array, feature_names, label, engineered_start_index=None):
+    """
+    Leakage-safe CV:
+    1. Split train/validation.
+    2. Fit imputer on training fold only.
+    3. Fit feature selector on training fold only.
+    4. Select top 300 features.
+    5. Train XGBoost.
+    6. Evaluate on validation fold.
+    """
+
+    selector_params = dict(
+        n_estimators=300,
+        learning_rate=0.05,
+        max_depth=4,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        reg_alpha=0.0,
+        reg_lambda=1.0,
+        min_child_weight=1,
+        random_state=RANDOM_STATE,
+        n_jobs=-1,
+        tree_method="hist",
+        importance_type="gain",
+    )
+
+    model_params = dict(
+        n_estimators=N_ESTIMATORS,
+        learning_rate=0.05,
+        max_depth=4,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        reg_alpha=0.0,
+        reg_lambda=1.0,
+        min_child_weight=1,
+        random_state=RANDOM_STATE,
+        n_jobs=-1,
+        tree_method="hist",
+    )
+
+    kf = KFold(
+        n_splits=N_SPLITS,
+        shuffle=True,
+        random_state=RANDOM_STATE,
+    )
+
+    fold_records = []
+    engineered_feature_counter = Counter()
+
+    print("\n" + "=" * 90)
+    print(f"STARTING LEAKAGE-SAFE CV: {label}")
+    print("=" * 90)
+    print(f"X shape: {X_array.shape}")
+    print(f"Feature count: {len(feature_names)}")
+    print(f"Feature hash: {feature_name_hash(feature_names)}")
+
+    for fold_id, (train_idx, val_idx) in enumerate(kf.split(X_array), start=1):
+
+        X_train_raw = X_array[train_idx]
+        X_val_raw = X_array[val_idx]
+        y_train = y_array[train_idx]
+        y_val = y_array[val_idx]
+
+        X_train, X_val = median_impute_train_val(X_train_raw, X_val_raw)
+
+        selector = xgb.XGBRegressor(**selector_params)
+        selector.fit(X_train, y_train)
+
+        importances = selector.feature_importances_
+        ranked_indices = np.argsort(importances)[::-1]
+        selected_indices = ranked_indices[:FINAL_N_FEATURES]
+
+        selected_engineered_names = []
+
+        if engineered_start_index is not None:
+            selected_engineered_indices = [
+                idx for idx in selected_indices if idx >= engineered_start_index
+            ]
+            selected_engineered_names = [
+                feature_names[idx] for idx in selected_engineered_indices
+            ]
+
+            for name in selected_engineered_names:
+                engineered_feature_counter[name] += 1
+
+        X_train_selected = X_train[:, selected_indices]
+        X_val_selected = X_val[:, selected_indices]
+
+        model = xgb.XGBRegressor(**model_params)
+        model.fit(X_train_selected, y_train)
+
+        preds = model.predict(X_val_selected)
+
+        fold_r2 = r2_score(y_val, preds)
+        fold_spearman = stable_spearman(y_val, preds)
+        fold_pearson = stable_pearson(y_val, preds)
+        fold_mse = mean_squared_error(y_val, preds)
+
+        fold_records.append({
+            "model_label": label,
+            "fold": fold_id,
+            "r2": fold_r2,
+            "spearman": fold_spearman,
+            "pearson": fold_pearson,
+            "mse": fold_mse,
+            "n_engineered_features_selected": len(selected_engineered_names),
+            "selected_engineered_features": " | ".join(selected_engineered_names),
+        })
+
+        print(
+            f"Fold {fold_id}: "
+            f"R2={fold_r2:.4f}, "
+            f"Spearman={fold_spearman:.4f}, "
+            f"Pearson={fold_pearson:.4f}, "
+            f"MSE={fold_mse:.4f}, "
+            f"engineered selected={len(selected_engineered_names)}"
+        )
+
+    fold_df = pd.DataFrame(fold_records)
+
+    summary = {
+        "model_label": label,
+        "n_samples": int(X_array.shape[0]),
+        "n_features_total": int(X_array.shape[1]),
+        "n_features_selected": FINAL_N_FEATURES,
+        "n_estimators": N_ESTIMATORS,
+        "mean_r2": float(fold_df["r2"].mean()),
+        "std_r2": float(fold_df["r2"].std(ddof=0)),
+        "mean_spearman": float(fold_df["spearman"].mean()),
+        "std_spearman": float(fold_df["spearman"].std(ddof=0)),
+        "mean_pearson": float(fold_df["pearson"].mean()),
+        "std_pearson": float(fold_df["pearson"].std(ddof=0)),
+        "mean_mse": float(fold_df["mse"].mean()),
+        "std_mse": float(fold_df["mse"].std(ddof=0)),
+        "mean_engineered_features_selected": float(fold_df["n_engineered_features_selected"].mean()),
+    }
+
+    print("\nSummary:")
+    print(f"Mean R2:       {summary['mean_r2']:.4f} ± {summary['std_r2']:.4f}")
+    print(f"Mean Spearman: {summary['mean_spearman']:.4f} ± {summary['std_spearman']:.4f}")
+    print(f"Mean Pearson:  {summary['mean_pearson']:.4f} ± {summary['std_pearson']:.4f}")
+    print(f"Mean MSE:      {summary['mean_mse']:.4f} ± {summary['std_mse']:.4f}")
+    print(f"Mean engineered features selected: {summary['mean_engineered_features_selected']:.2f}")
+
+    return summary, fold_df, engineered_feature_counter
+
+
+# ============================================================
+# 4. Load data
+# ============================================================
+
+if not os.path.exists(CSV_FILENAME):
+    raise FileNotFoundError(
+        f"Could not find {CSV_FILENAME} in current folder: {os.getcwd()}"
+    )
+
+print("=" * 90)
+print("LOADING E. COLI FEATURE MATRIX")
+print("=" * 90)
+print(f"Current folder: {os.getcwd()}")
+print(f"Using file: {CSV_FILENAME}")
+print("Reading with header=1 because row 1 is a title and row 2 has real column names.")
+print("=" * 90)
+
+df = pd.read_csv(CSV_FILENAME, header=1, low_memory=False)
+
+print("\nLoaded DataFrame shape:", df.shape)
+print("First 10 columns:")
+print(list(df.columns[:10]))
+
+if TARGET_COLUMN not in df.columns:
+    raise ValueError(f"Target column {TARGET_COLUMN} not found.")
+
+
+# ============================================================
+# 5. Build baseline X and y
+# ============================================================
+
+y_array = pd.to_numeric(df[TARGET_COLUMN], errors="coerce").to_numpy().reshape(-1)
+
+drop_cols = [TARGET_COLUMN]
+
+for col in NON_FEATURE_COLUMNS:
+    if col in df.columns and col not in drop_cols:
+        drop_cols.append(col)
+
+X_df_raw = df.drop(columns=drop_cols)
+
+print("\nConverting feature columns to numeric values...")
+X_df_numeric = X_df_raw.apply(pd.to_numeric, errors="coerce")
+
+all_nan_cols = X_df_numeric.columns[X_df_numeric.isna().all()].tolist()
+
+if len(all_nan_cols) > 0:
+    print(f"Dropping {len(all_nan_cols)} entirely non-numeric/NaN columns.")
+    X_df_numeric = X_df_numeric.drop(columns=all_nan_cols)
+
+baseline_feature_names = list(X_df_numeric.columns)
+
+valid_y_mask = ~np.isnan(y_array)
+
+if valid_y_mask.sum() < len(y_array):
+    print(f"Removing {len(y_array) - valid_y_mask.sum()} rows with missing target.")
+    X_df_numeric = X_df_numeric.loc[valid_y_mask].reset_index(drop=True)
+    y_array = y_array[valid_y_mask]
+
+X_baseline = X_df_numeric.to_numpy(dtype=np.float32)
+
+print("\n" + "=" * 90)
+print("BASELINE DATA CHECK")
+print("=" * 90)
+print(f"X baseline shape: {X_baseline.shape}")
+print(f"y shape:          {y_array.shape}")
+print(f"Baseline features: {len(baseline_feature_names)}")
+print(f"Dropped columns: {drop_cols}")
+print("=" * 90)
+
+
+# ============================================================
+# 6. Create new regional QCT feature set
+# ============================================================
+
+engineered_df, feature_definitions = make_regional_qct_summary_features(X_df_numeric)
+
+engineered_feature_names = list(engineered_df.columns)
+X_engineered = engineered_df.to_numpy(dtype=np.float32)
+
+X_augmented = np.column_stack([X_baseline, X_engineered])
+augmented_feature_names = baseline_feature_names + engineered_feature_names
+
+engineered_start_index = len(baseline_feature_names)
+
+print("\n" + "=" * 90)
+print("AUGMENTED DATA CHECK")
+print("=" * 90)
+print(f"Baseline X shape:       {X_baseline.shape}")
+print(f"Engineered X shape:     {X_engineered.shape}")
+print(f"Augmented X shape:      {X_augmented.shape}")
+print(f"Engineered start index: {engineered_start_index}")
+print("=" * 90)
+
+
+# ============================================================
+# 7. Run leakage-safe CV comparison
+# ============================================================
+
+baseline_summary, baseline_folds, baseline_counter = leakage_safe_cv(
+    X_array=X_baseline,
+    y_array=y_array,
+    feature_names=baseline_feature_names,
+    label="baseline_original_features",
+    engineered_start_index=None,
+)
+
+augmented_summary, augmented_folds, engineered_counter = leakage_safe_cv(
+    X_array=X_augmented,
+    y_array=y_array,
+    feature_names=augmented_feature_names,
+    label="augmented_plus_regional_qct_summary_features",
+    engineered_start_index=engineered_start_index,
+)
+
+
+# ============================================================
+# 8. Save and compare results
+# ============================================================
+
+summary_df = pd.DataFrame([baseline_summary, augmented_summary])
+fold_df = pd.concat([baseline_folds, augmented_folds], ignore_index=True)
+
+summary_path = os.path.join(OUTPUT_DIR, "regional_qct_summary_comparison.csv")
+fold_path = os.path.join(OUTPUT_DIR, "regional_qct_summary_fold_results.csv")
+engineered_feature_path = os.path.join(OUTPUT_DIR, "engineered_regional_qct_feature_names.json")
+metadata_path = os.path.join(OUTPUT_DIR, "regional_qct_summary_metadata.json")
+selected_counter_path = os.path.join(OUTPUT_DIR, "selected_engineered_feature_counts.csv")
+
+summary_df.to_csv(summary_path, index=False)
+fold_df.to_csv(fold_path, index=False)
+
+with open(engineered_feature_path, "w") as f:
+    json.dump(engineered_feature_names, f, indent=2)
+
+metadata = {
+    "new_feature_set": "regional_qct_summary_features",
+    "feature_set_description": (
+        "Regional summaries of QCT properties across distal, middle, PAM-proximal, "
+        "and full-guide regions. Stats include mean, std, min, max, range, slope, "
+        "and region contrasts."
+    ),
+    "target_column": TARGET_COLUMN,
+    "dropped_columns": drop_cols,
+    "all_nan_columns_dropped": all_nan_cols,
+    "n_baseline_features": len(baseline_feature_names),
+    "n_engineered_features": len(engineered_feature_names),
+    "n_augmented_features": len(augmented_feature_names),
+    "random_state": RANDOM_STATE,
+    "n_splits": N_SPLITS,
+    "final_n_features": FINAL_N_FEATURES,
+    "n_estimators": N_ESTIMATORS,
+    "baseline_feature_hash": feature_name_hash(baseline_feature_names),
+    "augmented_feature_hash": feature_name_hash(augmented_feature_names),
+    "feature_definitions": feature_definitions,
+}
+
+with open(metadata_path, "w") as f:
+    json.dump(metadata, f, indent=2)
+
+engineered_counter_df = pd.DataFrame(
+    [
+        {"engineered_feature": name, "selected_in_n_folds": count}
+        for name, count in engineered_counter.most_common()
+    ]
+)
+
+engineered_counter_df.to_csv(selected_counter_path, index=False)
+
+
+# ============================================================
+# 9. Final report
+# ============================================================
+
+print("\n" + "=" * 90)
+print("FINAL COMPARISON")
+print("=" * 90)
+print(summary_df.to_string(index=False))
+
+base = baseline_summary
+aug = augmented_summary
+
+delta_r2 = aug["mean_r2"] - base["mean_r2"]
+delta_spearman = aug["mean_spearman"] - base["mean_spearman"]
+delta_pearson = aug["mean_pearson"] - base["mean_pearson"]
+delta_mse = aug["mean_mse"] - base["mean_mse"]
+
+print("\nImprovement from regional QCT summary features:")
+print(f"Delta R2:        {delta_r2:+.4f}")
+print(f"Delta Spearman:  {delta_spearman:+.4f}")
+print(f"Delta Pearson:   {delta_pearson:+.4f}")
+print(f"Delta MSE:       {delta_mse:+.4f}")
+
+print("\nEngineered feature selection:")
+print(f"Number of engineered features created: {len(engineered_feature_names)}")
+print(f"Mean engineered features selected per fold: {aug['mean_engineered_features_selected']:.2f}")
+
+if len(engineered_counter_df) > 0:
+    print("\nTop engineered features selected across folds:")
+    print(engineered_counter_df.head(20).to_string(index=False))
+else:
+    print("\nNo engineered regional QCT features were selected into the top 300.")
+
+print("\nInterpretation:")
+if delta_r2 > 0 and delta_spearman > 0:
+    print("The regional QCT summary feature set improves both R2 and Spearman.")
+    print("This is a promising feature-engineering direction.")
+elif delta_r2 > 0 and delta_spearman <= 0:
+    print("The feature set improves R2 but not Spearman.")
+    print("It may help numerical prediction but not guide ranking.")
+elif delta_r2 <= 0 and delta_spearman > 0:
+    print("The feature set improves Spearman but not R2.")
+    print("It may help guide ranking even if exact score prediction does not improve.")
+else:
+    print("The feature set does not improve performance in this test.")
+    print("That means these regional summaries may be redundant with the existing QCT features.")
+
+print("\nSaved files:")
+print("Summary:", summary_path)
+print("Fold results:", fold_path)
+print("Engineered feature names:", engineered_feature_path)
+print("Selected engineered feature counts:", selected_counter_path)
+print("Metadata:", metadata_path)
+print("=" * 90)
