@@ -1,0 +1,571 @@
+# ============================================================
+# NEW FEATURE TEST:
+# Terminal HOMO-LUMO Gap Asymmetry Feature
+#
+# Adds one new QCT-derived feature:
+#   qct_hlgap_terminal_asymmetry =
+#       mean(HL-gap features at positions 16-20)
+#       -
+#       mean(HL-gap features at positions 1-5)
+#
+# Then compares:
+#   Baseline original features
+#   vs
+#   Original features + new asymmetry feature
+#
+# Uses leakage-safe 5-fold CV:
+#   In each fold, feature selection is fitted only on training data.
+# ============================================================
+
+import os
+import sys
+import re
+import json
+import hashlib
+import subprocess
+import warnings
+
+warnings.filterwarnings("ignore")
+
+
+# ============================================================
+# 0. Install missing packages if needed
+# ============================================================
+
+def install_if_missing(import_name, pip_name=None):
+    if pip_name is None:
+        pip_name = import_name
+    try:
+        __import__(import_name)
+    except ImportError:
+        print(f"Installing {pip_name}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name])
+
+
+install_if_missing("numpy")
+install_if_missing("pandas")
+install_if_missing("sklearn", "scikit-learn")
+install_if_missing("scipy")
+install_if_missing("xgboost")
+
+
+# ============================================================
+# 1. Imports
+# ============================================================
+
+import numpy as np
+import pandas as pd
+import xgboost as xgb
+
+from sklearn.model_selection import KFold
+from sklearn.metrics import r2_score, mean_squared_error
+from scipy.stats import spearmanr, pearsonr
+
+
+# ============================================================
+# 2. Configuration
+# ============================================================
+
+CSV_FILENAME = "ecoli_feature_matrix.csv"
+TARGET_COLUMN = "cut.score"
+
+RANDOM_STATE = 42
+N_SPLITS = 5
+
+FINAL_N_FEATURES = 300
+N_ESTIMATORS = 400
+
+OUTPUT_DIR = "new_feature_terminal_hlgap_test"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+NON_FEATURE_COLUMNS = [
+    "sgRNAID",
+    "sequence",
+    "Sequence",
+    "sgRNA",
+    "sgrna",
+    "guide",
+    "Guide",
+    "guide_sequence",
+    "GuideSequence",
+    "target_sequence",
+    "TargetSequence",
+]
+
+NEW_FEATURE_NAME = "qct_hlgap_terminal_asymmetry_p16_20_minus_p1_5"
+
+
+# ============================================================
+# 3. Helper functions
+# ============================================================
+
+def stable_spearman(y_true, y_pred):
+    rho = spearmanr(y_true, y_pred)[0]
+    if np.isnan(rho):
+        return 0.0
+    return rho
+
+
+def stable_pearson(y_true, y_pred):
+    r = pearsonr(y_true, y_pred)[0]
+    if np.isnan(r):
+        return 0.0
+    return r
+
+
+def feature_name_hash(feature_names):
+    payload = json.dumps(list(feature_names), separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def extract_position_from_column(col):
+    """
+    Extracts position number from columns like:
+        p1monomer.HLgap.eVraw
+        p16basepair.Hlgap.eVEraw
+    """
+    match = re.match(r"p(\d+)", col)
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def is_hlgap_column(col):
+    """
+    Detects HOMO-LUMO gap / HLgap columns.
+    Handles both HLgap and Hlgap capitalization.
+    """
+    return "hlgap" in col.lower()
+
+
+def make_terminal_hlgap_asymmetry_feature(X_df_numeric):
+    """
+    Creates one new feature:
+        mean HLgap at positions 16-20 minus mean HLgap at positions 1-5.
+
+    This feature asks whether the terminal quantum electronic profile
+    differs between the two ends of the sgRNA.
+    """
+
+    early_cols = []
+    late_cols = []
+
+    for col in X_df_numeric.columns:
+        pos = extract_position_from_column(col)
+
+        if pos is None:
+            continue
+
+        if not is_hlgap_column(col):
+            continue
+
+        if 1 <= pos <= 5:
+            early_cols.append(col)
+
+        if 16 <= pos <= 20:
+            late_cols.append(col)
+
+    print("\n" + "=" * 90)
+    print("NEW FEATURE CONSTRUCTION")
+    print("=" * 90)
+    print(f"Early HLgap columns used, positions 1-5:    {len(early_cols)}")
+    print(f"Late HLgap columns used, positions 16-20:   {len(late_cols)}")
+
+    if len(early_cols) == 0:
+        raise ValueError("No early-position HLgap columns found for positions 1-5.")
+
+    if len(late_cols) == 0:
+        raise ValueError("No late-position HLgap columns found for positions 16-20.")
+
+    print("\nExample early columns:")
+    for col in early_cols[:10]:
+        print("  ", col)
+
+    print("\nExample late columns:")
+    for col in late_cols[:10]:
+        print("  ", col)
+
+    early_mean = X_df_numeric[early_cols].mean(axis=1, skipna=True)
+    late_mean = X_df_numeric[late_cols].mean(axis=1, skipna=True)
+
+    new_feature = late_mean - early_mean
+
+    print("\nNew feature summary before imputation:")
+    print(new_feature.describe())
+
+    return new_feature.to_numpy(dtype=np.float32), early_cols, late_cols
+
+
+def median_impute_X(X):
+    """
+    Median-impute missing values in X.
+    """
+    X = X.astype(np.float32)
+
+    if np.isnan(X).any():
+        col_medians = np.nanmedian(X, axis=0)
+        col_medians = np.where(np.isnan(col_medians), 0.0, col_medians)
+        nan_rows, nan_cols = np.where(np.isnan(X))
+        X[nan_rows, nan_cols] = col_medians[nan_cols]
+
+    return X
+
+
+def leakage_safe_cv(X_array, y_array, feature_names, label):
+    """
+    Performs leakage-safe CV:
+    - feature selector trained only inside training fold
+    - top 300 features selected inside each fold
+    - predictive XGBoost trained on selected features
+    """
+
+    selector_params = dict(
+        n_estimators=300,
+        learning_rate=0.05,
+        max_depth=4,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        reg_alpha=0.0,
+        reg_lambda=1.0,
+        min_child_weight=1,
+        random_state=RANDOM_STATE,
+        n_jobs=-1,
+        tree_method="hist",
+        importance_type="gain",
+    )
+
+    model_params = dict(
+        n_estimators=N_ESTIMATORS,
+        learning_rate=0.05,
+        max_depth=4,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        reg_alpha=0.0,
+        reg_lambda=1.0,
+        min_child_weight=1,
+        random_state=RANDOM_STATE,
+        n_jobs=-1,
+        tree_method="hist",
+    )
+
+    kf = KFold(
+        n_splits=N_SPLITS,
+        shuffle=True,
+        random_state=RANDOM_STATE,
+    )
+
+    fold_records = []
+
+    new_feature_index = None
+    if NEW_FEATURE_NAME in feature_names:
+        new_feature_index = feature_names.index(NEW_FEATURE_NAME)
+
+    print("\n" + "=" * 90)
+    print(f"STARTING LEAKAGE-SAFE CV: {label}")
+    print("=" * 90)
+    print(f"X shape: {X_array.shape}")
+    print(f"Feature hash: {feature_name_hash(feature_names)}")
+
+    for fold_id, (train_idx, val_idx) in enumerate(kf.split(X_array), start=1):
+
+        X_train = X_array[train_idx]
+        X_val = X_array[val_idx]
+        y_train = y_array[train_idx]
+        y_val = y_array[val_idx]
+
+        # 1. Feature selector trained only on training fold
+        selector = xgb.XGBRegressor(**selector_params)
+        selector.fit(X_train, y_train)
+
+        importances = selector.feature_importances_
+        ranked_indices = np.argsort(importances)[::-1]
+        selected_indices = ranked_indices[:FINAL_N_FEATURES]
+
+        # Track whether the new feature was selected
+        new_feature_selected = False
+        new_feature_rank = None
+        new_feature_gain = None
+
+        if new_feature_index is not None:
+            ranks = np.empty_like(ranked_indices)
+            ranks[ranked_indices] = np.arange(1, len(ranked_indices) + 1)
+            new_feature_rank = int(ranks[new_feature_index])
+            new_feature_gain = float(importances[new_feature_index])
+            new_feature_selected = bool(new_feature_index in selected_indices)
+
+        # 2. Select fold-specific top features
+        X_train_selected = X_train[:, selected_indices]
+        X_val_selected = X_val[:, selected_indices]
+
+        # 3. Train model
+        model = xgb.XGBRegressor(**model_params)
+        model.fit(X_train_selected, y_train)
+
+        # 4. Evaluate
+        preds = model.predict(X_val_selected)
+
+        fold_r2 = r2_score(y_val, preds)
+        fold_spearman = stable_spearman(y_val, preds)
+        fold_pearson = stable_pearson(y_val, preds)
+        fold_mse = mean_squared_error(y_val, preds)
+
+        record = {
+            "model_label": label,
+            "fold": fold_id,
+            "r2": fold_r2,
+            "spearman": fold_spearman,
+            "pearson": fold_pearson,
+            "mse": fold_mse,
+            "new_feature_selected": new_feature_selected,
+            "new_feature_rank": new_feature_rank,
+            "new_feature_gain": new_feature_gain,
+        }
+
+        fold_records.append(record)
+
+        if new_feature_index is None:
+            print(
+                f"Fold {fold_id}: "
+                f"R2={fold_r2:.4f}, "
+                f"Spearman={fold_spearman:.4f}, "
+                f"Pearson={fold_pearson:.4f}, "
+                f"MSE={fold_mse:.4f}"
+            )
+        else:
+            print(
+                f"Fold {fold_id}: "
+                f"R2={fold_r2:.4f}, "
+                f"Spearman={fold_spearman:.4f}, "
+                f"Pearson={fold_pearson:.4f}, "
+                f"MSE={fold_mse:.4f}, "
+                f"New feature selected={new_feature_selected}, "
+                f"rank={new_feature_rank}, "
+                f"gain={new_feature_gain:.6f}"
+            )
+
+    fold_df = pd.DataFrame(fold_records)
+
+    summary = {
+        "model_label": label,
+        "n_samples": int(X_array.shape[0]),
+        "n_features_total": int(X_array.shape[1]),
+        "n_features_selected": FINAL_N_FEATURES,
+        "n_estimators": N_ESTIMATORS,
+        "mean_r2": float(fold_df["r2"].mean()),
+        "std_r2": float(fold_df["r2"].std(ddof=0)),
+        "mean_spearman": float(fold_df["spearman"].mean()),
+        "std_spearman": float(fold_df["spearman"].std(ddof=0)),
+        "mean_pearson": float(fold_df["pearson"].mean()),
+        "std_pearson": float(fold_df["pearson"].std(ddof=0)),
+        "mean_mse": float(fold_df["mse"].mean()),
+        "std_mse": float(fold_df["mse"].std(ddof=0)),
+    }
+
+    if new_feature_index is not None:
+        summary["new_feature_selected_in_n_folds"] = int(fold_df["new_feature_selected"].sum())
+        summary["new_feature_mean_rank"] = float(fold_df["new_feature_rank"].mean())
+        summary["new_feature_mean_gain"] = float(fold_df["new_feature_gain"].mean())
+
+    print("\nSummary:")
+    print(f"Mean R2:       {summary['mean_r2']:.4f} ± {summary['std_r2']:.4f}")
+    print(f"Mean Spearman: {summary['mean_spearman']:.4f} ± {summary['std_spearman']:.4f}")
+    print(f"Mean Pearson:  {summary['mean_pearson']:.4f} ± {summary['std_pearson']:.4f}")
+    print(f"Mean MSE:      {summary['mean_mse']:.4f} ± {summary['std_mse']:.4f}")
+
+    if new_feature_index is not None:
+        print(f"New feature selected in {summary['new_feature_selected_in_n_folds']} / {N_SPLITS} folds")
+        print(f"New feature mean rank: {summary['new_feature_mean_rank']:.1f}")
+        print(f"New feature mean gain: {summary['new_feature_mean_gain']:.6f}")
+
+    return summary, fold_df
+
+
+# ============================================================
+# 4. Load data
+# ============================================================
+
+if not os.path.exists(CSV_FILENAME):
+    raise FileNotFoundError(
+        f"Could not find {CSV_FILENAME} in current folder: {os.getcwd()}"
+    )
+
+print("=" * 90)
+print("LOADING E. COLI FEATURE MATRIX")
+print("=" * 90)
+print(f"Using file: {CSV_FILENAME}")
+print("Reading with header=1 because row 1 is a title and row 2 has real column names.")
+print("=" * 90)
+
+df = pd.read_csv(CSV_FILENAME, header=1, low_memory=False)
+
+print("\nLoaded DataFrame shape:", df.shape)
+print("First 10 columns:")
+print(list(df.columns[:10]))
+
+if TARGET_COLUMN not in df.columns:
+    raise ValueError(f"Target column {TARGET_COLUMN} not found.")
+
+
+# ============================================================
+# 5. Build baseline X and y
+# ============================================================
+
+y_array = pd.to_numeric(df[TARGET_COLUMN], errors="coerce").to_numpy().reshape(-1)
+
+drop_cols = [TARGET_COLUMN]
+for col in NON_FEATURE_COLUMNS:
+    if col in df.columns and col not in drop_cols:
+        drop_cols.append(col)
+
+X_df_raw = df.drop(columns=drop_cols)
+
+print("\nConverting feature columns to numeric values...")
+X_df_numeric = X_df_raw.apply(pd.to_numeric, errors="coerce")
+
+all_nan_cols = X_df_numeric.columns[X_df_numeric.isna().all()].tolist()
+if len(all_nan_cols) > 0:
+    print(f"Dropping {len(all_nan_cols)} entirely non-numeric/NaN columns.")
+    X_df_numeric = X_df_numeric.drop(columns=all_nan_cols)
+
+baseline_feature_names = list(X_df_numeric.columns)
+
+valid_y_mask = ~np.isnan(y_array)
+
+if valid_y_mask.sum() < len(y_array):
+    print(f"Removing {len(y_array) - valid_y_mask.sum()} rows with missing target.")
+    X_df_numeric = X_df_numeric.loc[valid_y_mask].reset_index(drop=True)
+    y_array = y_array[valid_y_mask]
+
+# Baseline X
+X_baseline = X_df_numeric.to_numpy(dtype=np.float32)
+X_baseline = median_impute_X(X_baseline)
+
+print("\n" + "=" * 90)
+print("BASELINE DATA CHECK")
+print("=" * 90)
+print(f"X baseline shape: {X_baseline.shape}")
+print(f"y shape:          {y_array.shape}")
+print(f"Baseline features: {len(baseline_feature_names)}")
+print("=" * 90)
+
+
+# ============================================================
+# 6. Create new feature and augmented X
+# ============================================================
+
+new_feature_values, early_hlgap_cols, late_hlgap_cols = make_terminal_hlgap_asymmetry_feature(
+    X_df_numeric
+)
+
+# Impute new feature if needed
+if np.isnan(new_feature_values).any():
+    median_value = np.nanmedian(new_feature_values)
+    if np.isnan(median_value):
+        median_value = 0.0
+    new_feature_values = np.where(np.isnan(new_feature_values), median_value, new_feature_values)
+
+# Add as one extra column
+X_augmented = np.column_stack([X_baseline, new_feature_values.astype(np.float32)])
+augmented_feature_names = baseline_feature_names + [NEW_FEATURE_NAME]
+
+print("\n" + "=" * 90)
+print("AUGMENTED DATA CHECK")
+print("=" * 90)
+print(f"X augmented shape: {X_augmented.shape}")
+print(f"New feature name: {NEW_FEATURE_NAME}")
+print(f"New feature index: {len(augmented_feature_names) - 1}")
+print("=" * 90)
+
+
+# ============================================================
+# 7. Run leakage-safe CV comparison
+# ============================================================
+
+baseline_summary, baseline_folds = leakage_safe_cv(
+    X_array=X_baseline,
+    y_array=y_array,
+    feature_names=baseline_feature_names,
+    label="baseline_original_features",
+)
+
+augmented_summary, augmented_folds = leakage_safe_cv(
+    X_array=X_augmented,
+    y_array=y_array,
+    feature_names=augmented_feature_names,
+    label="augmented_plus_terminal_hlgap_asymmetry",
+)
+
+
+# ============================================================
+# 8. Compare results
+# ============================================================
+
+summary_df = pd.DataFrame([baseline_summary, augmented_summary])
+fold_df = pd.concat([baseline_folds, augmented_folds], ignore_index=True)
+
+summary_path = os.path.join(OUTPUT_DIR, "terminal_hlgap_asymmetry_summary.csv")
+fold_path = os.path.join(OUTPUT_DIR, "terminal_hlgap_asymmetry_fold_results.csv")
+metadata_path = os.path.join(OUTPUT_DIR, "terminal_hlgap_asymmetry_metadata.json")
+
+summary_df.to_csv(summary_path, index=False)
+fold_df.to_csv(fold_path, index=False)
+
+metadata = {
+    "new_feature_name": NEW_FEATURE_NAME,
+    "new_feature_definition": "mean(HLgap columns at p16-p20) - mean(HLgap columns at p1-p5)",
+    "early_positions": "p1-p5",
+    "late_positions": "p16-p20",
+    "early_hlgap_columns_used": early_hlgap_cols,
+    "late_hlgap_columns_used": late_hlgap_cols,
+    "target_column": TARGET_COLUMN,
+    "dropped_columns": drop_cols,
+    "all_nan_columns_dropped": all_nan_cols,
+    "random_state": RANDOM_STATE,
+    "n_splits": N_SPLITS,
+    "final_n_features": FINAL_N_FEATURES,
+    "n_estimators": N_ESTIMATORS,
+    "baseline_feature_hash": feature_name_hash(baseline_feature_names),
+    "augmented_feature_hash": feature_name_hash(augmented_feature_names),
+}
+
+with open(metadata_path, "w") as f:
+    json.dump(metadata, f, indent=2)
+
+print("\n" + "=" * 90)
+print("FINAL COMPARISON")
+print("=" * 90)
+print(summary_df.to_string(index=False))
+
+base = baseline_summary
+aug = augmented_summary
+
+delta_r2 = aug["mean_r2"] - base["mean_r2"]
+delta_spearman = aug["mean_spearman"] - base["mean_spearman"]
+delta_pearson = aug["mean_pearson"] - base["mean_pearson"]
+delta_mse = aug["mean_mse"] - base["mean_mse"]
+
+print("\nImprovement from new feature:")
+print(f"Delta R2:        {delta_r2:+.4f}")
+print(f"Delta Spearman:  {delta_spearman:+.4f}")
+print(f"Delta Pearson:   {delta_pearson:+.4f}")
+print(f"Delta MSE:       {delta_mse:+.4f}")
+
+print("\nInterpretation:")
+if delta_r2 > 0 and delta_spearman > 0:
+    print("The new terminal HL-gap asymmetry feature improves both R2 and Spearman.")
+    print("This is a promising feature-engineering direction.")
+elif delta_r2 > 0 and delta_spearman <= 0:
+    print("The feature improves R2 but not Spearman.")
+    print("It may help numerical prediction but not guide ranking.")
+elif delta_r2 <= 0 and delta_spearman > 0:
+    print("The feature improves Spearman but not R2.")
+    print("It may help guide ranking even if it does not improve exact score prediction.")
+else:
+    print("The feature does not improve performance in this first test.")
+    print("That is still useful: it tells us this specific engineered feature is not enough by itself.")
+
+print("\nSaved files:")
+print("Summary:", summary_path)
+print("Fold results:", fold_path)
+print("Metadata:", metadata_path)
+print("=" * 90)
