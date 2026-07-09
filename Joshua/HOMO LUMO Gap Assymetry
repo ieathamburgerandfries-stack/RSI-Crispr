@@ -1,20 +1,23 @@
 # ============================================================
-# NEW FEATURE TEST:
-# Terminal HOMO-LUMO Gap Asymmetry Feature
+# STANDARDISED FEATURE TEST:
+# HOMO-LUMO Terminal Asymmetry Feature
 #
-# Adds one new QCT-derived feature:
-#   qct_hlgap_terminal_asymmetry =
-#       mean(HL-gap features at positions 16-20)
-#       -
-#       mean(HL-gap features at positions 1-5)
+# This version uses the same canonical baseline pipeline as the
+# regional QCT summary experiment:
 #
-# Then compares:
-#   Baseline original features
+# For each CV fold:
+#   1. Split train/validation
+#   2. Fit median imputer on training fold only
+#   3. Apply imputer to train and validation
+#   4. Fit feature selector on training fold only
+#   5. Select top 300 features
+#   6. Train XGBoost
+#   7. Evaluate validation fold
+#
+# Compares:
+#   baseline_original_features
 #   vs
-#   Original features + new asymmetry feature
-#
-# Uses leakage-safe 5-fold CV:
-#   In each fold, feature selection is fitted only on training data.
+#   augmented_plus_hlgap_terminal_asymmetry
 # ============================================================
 
 import os
@@ -75,8 +78,10 @@ N_SPLITS = 5
 FINAL_N_FEATURES = 300
 N_ESTIMATORS = 400
 
-OUTPUT_DIR = "new_feature_terminal_hlgap_test"
+OUTPUT_DIR = "standardised_hlgap_asymmetry_test"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+NEW_FEATURE_NAME = "qct_hlgap_terminal_asymmetry_p16_20_minus_p1_5"
 
 NON_FEATURE_COLUMNS = [
     "sgRNAID",
@@ -91,8 +96,6 @@ NON_FEATURE_COLUMNS = [
     "target_sequence",
     "TargetSequence",
 ]
-
-NEW_FEATURE_NAME = "qct_hlgap_terminal_asymmetry_p16_20_minus_p1_5"
 
 
 # ============================================================
@@ -119,11 +122,6 @@ def feature_name_hash(feature_names):
 
 
 def extract_position_from_column(col):
-    """
-    Extracts position number from columns like:
-        p1monomer.HLgap.eVraw
-        p16basepair.Hlgap.eVEraw
-    """
     match = re.match(r"p(\d+)", col)
     if match:
         return int(match.group(1))
@@ -131,20 +129,39 @@ def extract_position_from_column(col):
 
 
 def is_hlgap_column(col):
-    """
-    Detects HOMO-LUMO gap / HLgap columns.
-    Handles both HLgap and Hlgap capitalization.
-    """
     return "hlgap" in col.lower()
 
 
-def make_terminal_hlgap_asymmetry_feature(X_df_numeric):
+def median_impute_train_val(X_train, X_val):
     """
-    Creates one new feature:
-        mean HLgap at positions 16-20 minus mean HLgap at positions 1-5.
+    Median imputation fitted on the training fold only.
+    This is the standardized, leakage-safe preprocessing.
+    """
+    X_train = X_train.astype(np.float32, copy=True)
+    X_val = X_val.astype(np.float32, copy=True)
 
-    This feature asks whether the terminal quantum electronic profile
-    differs between the two ends of the sgRNA.
+    medians = np.nanmedian(X_train, axis=0)
+    medians = np.where(np.isnan(medians), 0.0, medians)
+
+    train_nan_rows, train_nan_cols = np.where(np.isnan(X_train))
+    val_nan_rows, val_nan_cols = np.where(np.isnan(X_val))
+
+    X_train[train_nan_rows, train_nan_cols] = medians[train_nan_cols]
+    X_val[val_nan_rows, val_nan_cols] = medians[val_nan_cols]
+
+    return X_train, X_val
+
+
+def make_hlgap_terminal_asymmetry_feature(X_df_numeric):
+    """
+    Creates one engineered feature:
+
+        mean(HOMO-LUMO gap features at positions 16-20)
+        -
+        mean(HOMO-LUMO gap features at positions 1-5)
+
+    This tests whether the electronic profile of the PAM-proximal region
+    differs from the distal region.
     """
 
     early_cols = []
@@ -166,57 +183,43 @@ def make_terminal_hlgap_asymmetry_feature(X_df_numeric):
             late_cols.append(col)
 
     print("\n" + "=" * 90)
-    print("NEW FEATURE CONSTRUCTION")
+    print("HOMO-LUMO ASYMMETRY FEATURE CONSTRUCTION")
     print("=" * 90)
-    print(f"Early HLgap columns used, positions 1-5:    {len(early_cols)}")
-    print(f"Late HLgap columns used, positions 16-20:   {len(late_cols)}")
+    print(f"Early HLgap columns, positions 1-5:      {len(early_cols)}")
+    print(f"Late HLgap columns, positions 16-20:     {len(late_cols)}")
 
     if len(early_cols) == 0:
-        raise ValueError("No early-position HLgap columns found for positions 1-5.")
+        raise ValueError("No HOMO-LUMO gap columns found for positions 1-5.")
 
     if len(late_cols) == 0:
-        raise ValueError("No late-position HLgap columns found for positions 16-20.")
+        raise ValueError("No HOMO-LUMO gap columns found for positions 16-20.")
 
     print("\nExample early columns:")
     for col in early_cols[:10]:
-        print("  ", col)
+        print(" -", col)
 
     print("\nExample late columns:")
     for col in late_cols[:10]:
-        print("  ", col)
+        print(" -", col)
 
     early_mean = X_df_numeric[early_cols].mean(axis=1, skipna=True)
     late_mean = X_df_numeric[late_cols].mean(axis=1, skipna=True)
 
     new_feature = late_mean - early_mean
 
-    print("\nNew feature summary before imputation:")
+    print("\nNew feature summary:")
     print(new_feature.describe())
+    print("=" * 90)
 
     return new_feature.to_numpy(dtype=np.float32), early_cols, late_cols
 
 
-def median_impute_X(X):
+def leakage_safe_cv(X_array, y_array, feature_names, label, engineered_feature_index=None):
     """
-    Median-impute missing values in X.
-    """
-    X = X.astype(np.float32)
-
-    if np.isnan(X).any():
-        col_medians = np.nanmedian(X, axis=0)
-        col_medians = np.where(np.isnan(col_medians), 0.0, col_medians)
-        nan_rows, nan_cols = np.where(np.isnan(X))
-        X[nan_rows, nan_cols] = col_medians[nan_cols]
-
-    return X
-
-
-def leakage_safe_cv(X_array, y_array, feature_names, label):
-    """
-    Performs leakage-safe CV:
-    - feature selector trained only inside training fold
-    - top 300 features selected inside each fold
-    - predictive XGBoost trained on selected features
+    Standardized leakage-safe CV pipeline:
+    - imputer fitted inside fold only
+    - selector fitted inside fold only
+    - top 300 features selected inside fold only
     """
 
     selector_params = dict(
@@ -256,24 +259,24 @@ def leakage_safe_cv(X_array, y_array, feature_names, label):
 
     fold_records = []
 
-    new_feature_index = None
-    if NEW_FEATURE_NAME in feature_names:
-        new_feature_index = feature_names.index(NEW_FEATURE_NAME)
-
     print("\n" + "=" * 90)
-    print(f"STARTING LEAKAGE-SAFE CV: {label}")
+    print(f"STARTING STANDARDISED LEAKAGE-SAFE CV: {label}")
     print("=" * 90)
     print(f"X shape: {X_array.shape}")
+    print(f"Feature count: {len(feature_names)}")
     print(f"Feature hash: {feature_name_hash(feature_names)}")
 
     for fold_id, (train_idx, val_idx) in enumerate(kf.split(X_array), start=1):
 
-        X_train = X_array[train_idx]
-        X_val = X_array[val_idx]
+        X_train_raw = X_array[train_idx]
+        X_val_raw = X_array[val_idx]
         y_train = y_array[train_idx]
         y_val = y_array[val_idx]
 
-        # 1. Feature selector trained only on training fold
+        # 1. Fit imputer only on training fold
+        X_train, X_val = median_impute_train_val(X_train_raw, X_val_raw)
+
+        # 2. Fit feature selector only on training fold
         selector = xgb.XGBRegressor(**selector_params)
         selector.fit(X_train, y_train)
 
@@ -281,27 +284,27 @@ def leakage_safe_cv(X_array, y_array, feature_names, label):
         ranked_indices = np.argsort(importances)[::-1]
         selected_indices = ranked_indices[:FINAL_N_FEATURES]
 
-        # Track whether the new feature was selected
-        new_feature_selected = False
-        new_feature_rank = None
-        new_feature_gain = None
+        engineered_selected = False
+        engineered_rank = None
+        engineered_gain = None
 
-        if new_feature_index is not None:
+        if engineered_feature_index is not None:
             ranks = np.empty_like(ranked_indices)
             ranks[ranked_indices] = np.arange(1, len(ranked_indices) + 1)
-            new_feature_rank = int(ranks[new_feature_index])
-            new_feature_gain = float(importances[new_feature_index])
-            new_feature_selected = bool(new_feature_index in selected_indices)
 
-        # 2. Select fold-specific top features
+            engineered_rank = int(ranks[engineered_feature_index])
+            engineered_gain = float(importances[engineered_feature_index])
+            engineered_selected = bool(engineered_feature_index in selected_indices)
+
+        # 3. Select top 300 features
         X_train_selected = X_train[:, selected_indices]
         X_val_selected = X_val[:, selected_indices]
 
-        # 3. Train model
+        # 4. Train final model
         model = xgb.XGBRegressor(**model_params)
         model.fit(X_train_selected, y_train)
 
-        # 4. Evaluate
+        # 5. Evaluate
         preds = model.predict(X_val_selected)
 
         fold_r2 = r2_score(y_val, preds)
@@ -309,21 +312,19 @@ def leakage_safe_cv(X_array, y_array, feature_names, label):
         fold_pearson = stable_pearson(y_val, preds)
         fold_mse = mean_squared_error(y_val, preds)
 
-        record = {
+        fold_records.append({
             "model_label": label,
             "fold": fold_id,
             "r2": fold_r2,
             "spearman": fold_spearman,
             "pearson": fold_pearson,
             "mse": fold_mse,
-            "new_feature_selected": new_feature_selected,
-            "new_feature_rank": new_feature_rank,
-            "new_feature_gain": new_feature_gain,
-        }
+            "engineered_feature_selected": engineered_selected,
+            "engineered_feature_rank": engineered_rank,
+            "engineered_feature_gain": engineered_gain,
+        })
 
-        fold_records.append(record)
-
-        if new_feature_index is None:
+        if engineered_feature_index is None:
             print(
                 f"Fold {fold_id}: "
                 f"R2={fold_r2:.4f}, "
@@ -338,9 +339,9 @@ def leakage_safe_cv(X_array, y_array, feature_names, label):
                 f"Spearman={fold_spearman:.4f}, "
                 f"Pearson={fold_pearson:.4f}, "
                 f"MSE={fold_mse:.4f}, "
-                f"New feature selected={new_feature_selected}, "
-                f"rank={new_feature_rank}, "
-                f"gain={new_feature_gain:.6f}"
+                f"new feature selected={engineered_selected}, "
+                f"rank={engineered_rank}, "
+                f"gain={engineered_gain:.6f}"
             )
 
     fold_df = pd.DataFrame(fold_records)
@@ -361,10 +362,16 @@ def leakage_safe_cv(X_array, y_array, feature_names, label):
         "std_mse": float(fold_df["mse"].std(ddof=0)),
     }
 
-    if new_feature_index is not None:
-        summary["new_feature_selected_in_n_folds"] = int(fold_df["new_feature_selected"].sum())
-        summary["new_feature_mean_rank"] = float(fold_df["new_feature_rank"].mean())
-        summary["new_feature_mean_gain"] = float(fold_df["new_feature_gain"].mean())
+    if engineered_feature_index is not None:
+        summary["engineered_feature_selected_in_n_folds"] = int(
+            fold_df["engineered_feature_selected"].sum()
+        )
+        summary["engineered_feature_mean_rank"] = float(
+            fold_df["engineered_feature_rank"].mean()
+        )
+        summary["engineered_feature_mean_gain"] = float(
+            fold_df["engineered_feature_gain"].mean()
+        )
 
     print("\nSummary:")
     print(f"Mean R2:       {summary['mean_r2']:.4f} ± {summary['std_r2']:.4f}")
@@ -372,10 +379,13 @@ def leakage_safe_cv(X_array, y_array, feature_names, label):
     print(f"Mean Pearson:  {summary['mean_pearson']:.4f} ± {summary['std_pearson']:.4f}")
     print(f"Mean MSE:      {summary['mean_mse']:.4f} ± {summary['std_mse']:.4f}")
 
-    if new_feature_index is not None:
-        print(f"New feature selected in {summary['new_feature_selected_in_n_folds']} / {N_SPLITS} folds")
-        print(f"New feature mean rank: {summary['new_feature_mean_rank']:.1f}")
-        print(f"New feature mean gain: {summary['new_feature_mean_gain']:.6f}")
+    if engineered_feature_index is not None:
+        print(
+            f"Engineered feature selected in "
+            f"{summary['engineered_feature_selected_in_n_folds']} / {N_SPLITS} folds"
+        )
+        print(f"Engineered feature mean rank: {summary['engineered_feature_mean_rank']:.1f}")
+        print(f"Engineered feature mean gain: {summary['engineered_feature_mean_gain']:.6f}")
 
     return summary, fold_df
 
@@ -392,6 +402,7 @@ if not os.path.exists(CSV_FILENAME):
 print("=" * 90)
 print("LOADING E. COLI FEATURE MATRIX")
 print("=" * 90)
+print(f"Current folder: {os.getcwd()}")
 print(f"Using file: {CSV_FILENAME}")
 print("Reading with header=1 because row 1 is a title and row 2 has real column names.")
 print("=" * 90)
@@ -413,6 +424,7 @@ if TARGET_COLUMN not in df.columns:
 y_array = pd.to_numeric(df[TARGET_COLUMN], errors="coerce").to_numpy().reshape(-1)
 
 drop_cols = [TARGET_COLUMN]
+
 for col in NON_FEATURE_COLUMNS:
     if col in df.columns and col not in drop_cols:
         drop_cols.append(col)
@@ -423,6 +435,7 @@ print("\nConverting feature columns to numeric values...")
 X_df_numeric = X_df_raw.apply(pd.to_numeric, errors="coerce")
 
 all_nan_cols = X_df_numeric.columns[X_df_numeric.isna().all()].tolist()
+
 if len(all_nan_cols) > 0:
     print(f"Dropping {len(all_nan_cols)} entirely non-numeric/NaN columns.")
     X_df_numeric = X_df_numeric.drop(columns=all_nan_cols)
@@ -436,9 +449,7 @@ if valid_y_mask.sum() < len(y_array):
     X_df_numeric = X_df_numeric.loc[valid_y_mask].reset_index(drop=True)
     y_array = y_array[valid_y_mask]
 
-# Baseline X
 X_baseline = X_df_numeric.to_numpy(dtype=np.float32)
-X_baseline = median_impute_X(X_baseline)
 
 print("\n" + "=" * 90)
 print("BASELINE DATA CHECK")
@@ -446,39 +457,40 @@ print("=" * 90)
 print(f"X baseline shape: {X_baseline.shape}")
 print(f"y shape:          {y_array.shape}")
 print(f"Baseline features: {len(baseline_feature_names)}")
+print(f"Dropped columns: {drop_cols}")
 print("=" * 90)
 
 
 # ============================================================
-# 6. Create new feature and augmented X
+# 6. Create HOMO-LUMO asymmetry feature
 # ============================================================
 
-new_feature_values, early_hlgap_cols, late_hlgap_cols = make_terminal_hlgap_asymmetry_feature(
+new_feature_values, early_hlgap_cols, late_hlgap_cols = make_hlgap_terminal_asymmetry_feature(
     X_df_numeric
 )
 
-# Impute new feature if needed
-if np.isnan(new_feature_values).any():
-    median_value = np.nanmedian(new_feature_values)
-    if np.isnan(median_value):
-        median_value = 0.0
-    new_feature_values = np.where(np.isnan(new_feature_values), median_value, new_feature_values)
+new_feature_values = new_feature_values.reshape(-1, 1)
 
-# Add as one extra column
-X_augmented = np.column_stack([X_baseline, new_feature_values.astype(np.float32)])
+X_augmented = np.column_stack([
+    X_baseline,
+    new_feature_values.astype(np.float32),
+])
+
 augmented_feature_names = baseline_feature_names + [NEW_FEATURE_NAME]
+engineered_feature_index = len(augmented_feature_names) - 1
 
 print("\n" + "=" * 90)
 print("AUGMENTED DATA CHECK")
 print("=" * 90)
-print(f"X augmented shape: {X_augmented.shape}")
-print(f"New feature name: {NEW_FEATURE_NAME}")
-print(f"New feature index: {len(augmented_feature_names) - 1}")
+print(f"Baseline X shape:       {X_baseline.shape}")
+print(f"Augmented X shape:      {X_augmented.shape}")
+print(f"New feature name:       {NEW_FEATURE_NAME}")
+print(f"New feature index:      {engineered_feature_index}")
 print("=" * 90)
 
 
 # ============================================================
-# 7. Run leakage-safe CV comparison
+# 7. Run standardised leakage-safe CV comparison
 # ============================================================
 
 baseline_summary, baseline_folds = leakage_safe_cv(
@@ -486,53 +498,70 @@ baseline_summary, baseline_folds = leakage_safe_cv(
     y_array=y_array,
     feature_names=baseline_feature_names,
     label="baseline_original_features",
+    engineered_feature_index=None,
 )
 
 augmented_summary, augmented_folds = leakage_safe_cv(
     X_array=X_augmented,
     y_array=y_array,
     feature_names=augmented_feature_names,
-    label="augmented_plus_terminal_hlgap_asymmetry",
+    label="augmented_plus_hlgap_terminal_asymmetry",
+    engineered_feature_index=engineered_feature_index,
 )
 
 
 # ============================================================
-# 8. Compare results
+# 8. Save results
 # ============================================================
 
 summary_df = pd.DataFrame([baseline_summary, augmented_summary])
 fold_df = pd.concat([baseline_folds, augmented_folds], ignore_index=True)
 
-summary_path = os.path.join(OUTPUT_DIR, "terminal_hlgap_asymmetry_summary.csv")
-fold_path = os.path.join(OUTPUT_DIR, "terminal_hlgap_asymmetry_fold_results.csv")
-metadata_path = os.path.join(OUTPUT_DIR, "terminal_hlgap_asymmetry_metadata.json")
+summary_path = os.path.join(OUTPUT_DIR, "standardised_hlgap_asymmetry_summary.csv")
+fold_path = os.path.join(OUTPUT_DIR, "standardised_hlgap_asymmetry_fold_results.csv")
+metadata_path = os.path.join(OUTPUT_DIR, "standardised_hlgap_asymmetry_metadata.json")
 
 summary_df.to_csv(summary_path, index=False)
 fold_df.to_csv(fold_path, index=False)
 
 metadata = {
+    "experiment": "standardised_hlgap_terminal_asymmetry",
     "new_feature_name": NEW_FEATURE_NAME,
-    "new_feature_definition": "mean(HLgap columns at p16-p20) - mean(HLgap columns at p1-p5)",
-    "early_positions": "p1-p5",
-    "late_positions": "p16-p20",
-    "early_hlgap_columns_used": early_hlgap_cols,
-    "late_hlgap_columns_used": late_hlgap_cols,
+    "new_feature_definition": "mean(HLgap columns at positions 16-20) - mean(HLgap columns at positions 1-5)",
     "target_column": TARGET_COLUMN,
     "dropped_columns": drop_cols,
     "all_nan_columns_dropped": all_nan_cols,
+    "early_hlgap_columns_used": early_hlgap_cols,
+    "late_hlgap_columns_used": late_hlgap_cols,
+    "n_baseline_features": len(baseline_feature_names),
+    "n_augmented_features": len(augmented_feature_names),
     "random_state": RANDOM_STATE,
     "n_splits": N_SPLITS,
     "final_n_features": FINAL_N_FEATURES,
     "n_estimators": N_ESTIMATORS,
     "baseline_feature_hash": feature_name_hash(baseline_feature_names),
     "augmented_feature_hash": feature_name_hash(augmented_feature_names),
+    "canonical_pipeline": [
+        "split train and validation fold",
+        "fit median imputer only on training fold",
+        "apply imputer to train and validation",
+        "fit XGBoost feature selector only on training fold",
+        "select top 300 features",
+        "train XGBoost model",
+        "evaluate validation fold",
+    ],
 }
 
 with open(metadata_path, "w") as f:
     json.dump(metadata, f, indent=2)
 
+
+# ============================================================
+# 9. Final comparison
+# ============================================================
+
 print("\n" + "=" * 90)
-print("FINAL COMPARISON")
+print("FINAL STANDARDISED COMPARISON")
 print("=" * 90)
 print(summary_df.to_string(index=False))
 
@@ -544,25 +573,38 @@ delta_spearman = aug["mean_spearman"] - base["mean_spearman"]
 delta_pearson = aug["mean_pearson"] - base["mean_pearson"]
 delta_mse = aug["mean_mse"] - base["mean_mse"]
 
-print("\nImprovement from new feature:")
+print("\nChange from adding HOMO-LUMO terminal asymmetry:")
 print(f"Delta R2:        {delta_r2:+.4f}")
 print(f"Delta Spearman:  {delta_spearman:+.4f}")
 print(f"Delta Pearson:   {delta_pearson:+.4f}")
 print(f"Delta MSE:       {delta_mse:+.4f}")
 
+print("\nEngineered feature selection:")
+print(
+    f"Selected in {augmented_summary['engineered_feature_selected_in_n_folds']} "
+    f"/ {N_SPLITS} folds"
+)
+print(f"Mean feature rank: {augmented_summary['engineered_feature_mean_rank']:.1f}")
+print(f"Mean feature gain: {augmented_summary['engineered_feature_mean_gain']:.6f}")
+
 print("\nInterpretation:")
-if delta_r2 > 0 and delta_spearman > 0:
-    print("The new terminal HL-gap asymmetry feature improves both R2 and Spearman.")
-    print("This is a promising feature-engineering direction.")
+if (
+    augmented_summary["engineered_feature_selected_in_n_folds"] == 0
+    and abs(delta_r2) < 0.005
+    and abs(delta_spearman) < 0.005
+):
+    print("The HOMO-LUMO asymmetry feature is not meaningfully useful in this test.")
+    print("It was not selected into the top 300 features, and performance changed only negligibly.")
+elif delta_r2 > 0 and delta_spearman > 0:
+    print("The feature improves both R2 and Spearman, suggesting it may add useful information.")
 elif delta_r2 > 0 and delta_spearman <= 0:
     print("The feature improves R2 but not Spearman.")
     print("It may help numerical prediction but not guide ranking.")
 elif delta_r2 <= 0 and delta_spearman > 0:
     print("The feature improves Spearman but not R2.")
-    print("It may help guide ranking even if it does not improve exact score prediction.")
+    print("It may help ranking rather than exact score prediction.")
 else:
-    print("The feature does not improve performance in this first test.")
-    print("That is still useful: it tells us this specific engineered feature is not enough by itself.")
+    print("The feature does not improve performance under the standardised pipeline.")
 
 print("\nSaved files:")
 print("Summary:", summary_path)
