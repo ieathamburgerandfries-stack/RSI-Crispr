@@ -1,0 +1,446 @@
+"""
+Standardised feature test: QCT profile-shape features for E. coli sgRNA activity.
+
+Run this file from the folder containing ``ecoli_feature_matrix.csv``.
+The CSV has a title row, so it is deliberately read with ``header=1``.
+"""
+
+import hashlib
+import json
+import os
+import re
+import subprocess
+import sys
+import warnings
+from collections import Counter
+
+warnings.filterwarnings("ignore")
+
+
+def install_if_missing(import_name, pip_name=None):
+    """Install a required package only when it is not already importable."""
+    try:
+        __import__(import_name)
+    except ImportError:
+        pip_name = pip_name or import_name
+        print(f"Installing {pip_name}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name])
+
+
+install_if_missing("numpy")
+install_if_missing("pandas")
+install_if_missing("sklearn", "scikit-learn")
+install_if_missing("scipy")
+install_if_missing("xgboost")
+
+import numpy as np
+import pandas as pd
+import xgboost as xgb
+from scipy.stats import pearsonr, spearmanr
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import KFold
+
+
+CSV_FILENAME = "ecoli_feature_matrix.csv"
+TARGET_COLUMN = "cut.score"
+OUTPUT_DIR = "new_feature_qct_profile_shape_test"
+
+RANDOM_STATE = 42
+N_SPLITS = 5
+FINAL_N_FEATURES = 300
+N_ESTIMATORS = 400
+EPS = 1e-6
+
+NON_FEATURE_COLUMNS = [
+    "sgRNAID", "sequence", "Sequence", "sgRNA", "sgrna", "guide", "Guide",
+    "guide_sequence", "GuideSequence", "target_sequence", "TargetSequence",
+]
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+def stable_spearman(y_true, y_pred):
+    value = spearmanr(y_true, y_pred)[0]
+    return 0.0 if np.isnan(value) else value
+
+
+def stable_pearson(y_true, y_pred):
+    value = pearsonr(y_true, y_pred)[0]
+    return 0.0 if np.isnan(value) else value
+
+
+def feature_name_hash(feature_names):
+    payload = json.dumps(list(feature_names), separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def median_impute_train_val(X_train, X_val):
+    """Impute from training-fold medians only."""
+    X_train = X_train.astype(np.float32, copy=True)
+    X_val = X_val.astype(np.float32, copy=True)
+    medians = np.nanmedian(X_train, axis=0)
+    medians = np.where(np.isnan(medians), 0.0, medians)
+
+    train_rows, train_cols = np.where(np.isnan(X_train))
+    val_rows, val_cols = np.where(np.isnan(X_val))
+    X_train[train_rows, train_cols] = medians[train_cols]
+    X_val[val_rows, val_cols] = medians[val_cols]
+    return X_train, X_val
+
+
+def safe_ratio(numerator, denominator):
+    """Return a finite-safe ratio, retaining NaN where inputs are unavailable."""
+    return numerator / (np.abs(denominator) + EPS)
+
+
+def parse_qct_columns(X_df_numeric):
+    """Return {(unit, property): [(position, column), ...]} for QCT columns."""
+    groups = {}
+    pattern = re.compile(
+        r"^p(\d+)(basepair|monomer|dimer|trimer|tetramer)\.(.+?)raw$",
+        re.IGNORECASE,
+    )
+
+    for column in X_df_numeric.columns:
+        match = pattern.match(column)
+        if match is None:
+            continue
+
+        position = int(match.group(1))
+        unit = match.group(2).lower()
+        raw_property = match.group(3).lower()
+        if "hlgap" in raw_property:
+            property_name = "hlgap"
+        elif "hbond.energy" in raw_property:
+            property_name = "hbond_energy"
+        elif "hbond.stacking" in raw_property:
+            property_name = "hbond_stacking"
+        elif "no.electrons" in raw_property:
+            property_name = "electrons"
+        else:
+            continue
+        groups.setdefault((unit, property_name), []).append((position, column))
+
+    for key in groups:
+        groups[key].sort(key=lambda item: item[0])
+    return groups
+
+
+def _nan_summary(values):
+    """Summary of a row-wise profile, returning NaN when it has no valid values."""
+    valid = ~np.isnan(values)
+    has_value = valid.any(axis=1)
+    with np.errstate(all="ignore"):
+        mean = np.nanmean(values, axis=1)
+        minimum = np.nanmin(values, axis=1)
+        maximum = np.nanmax(values, axis=1)
+    mean[~has_value] = np.nan
+    minimum[~has_value] = np.nan
+    maximum[~has_value] = np.nan
+    return mean, minimum, maximum
+
+
+def _adjacent_metrics(values):
+    """Return mean/max/std absolute jump, total variation, and mean signed jump."""
+    n_rows = values.shape[0]
+    result = [np.full(n_rows, np.nan, dtype=np.float64) for _ in range(5)]
+    if values.shape[1] < 2:
+        return result
+
+    jumps = np.diff(values, axis=1)
+    valid = ~np.isnan(values[:, 1:]) & ~np.isnan(values[:, :-1])
+    jumps = np.where(valid, jumps, np.nan)
+    has_jump = valid.any(axis=1)
+    with np.errstate(all="ignore"):
+        result[0][:] = np.nanmean(np.abs(jumps), axis=1)
+        result[1][:] = np.nanmax(np.abs(jumps), axis=1)
+        result[2][:] = np.nanstd(jumps, axis=1)
+        result[3][:] = np.nansum(np.abs(jumps), axis=1)
+        result[4][:] = np.nanmean(jumps, axis=1)
+    for item in result:
+        item[~has_jump] = np.nan
+    return result
+
+
+def _second_difference_metrics(values):
+    """Return mean/max/std absolute second differences for each profile."""
+    n_rows = values.shape[0]
+    result = [np.full(n_rows, np.nan, dtype=np.float64) for _ in range(3)]
+    if values.shape[1] < 3:
+        return result
+
+    curvature = values[:, 2:] - 2 * values[:, 1:-1] + values[:, :-2]
+    valid = (~np.isnan(values[:, 2:]) & ~np.isnan(values[:, 1:-1]) &
+             ~np.isnan(values[:, :-2]))
+    curvature = np.where(valid, curvature, np.nan)
+    has_curvature = valid.any(axis=1)
+    with np.errstate(all="ignore"):
+        result[0][:] = np.nanmean(np.abs(curvature), axis=1)
+        result[1][:] = np.nanmax(np.abs(curvature), axis=1)
+        result[2][:] = np.nanstd(curvature, axis=1)
+    for item in result:
+        item[~has_curvature] = np.nan
+    return result
+
+
+def _local_extrema_counts(values):
+    """Count strict local peaks and troughs using only finite neighbour triplets."""
+    n_rows = values.shape[0]
+    peaks = np.full(n_rows, np.nan, dtype=np.float64)
+    troughs = np.full(n_rows, np.nan, dtype=np.float64)
+    if values.shape[1] < 3:
+        return peaks, troughs
+
+    left, center, right = values[:, :-2], values[:, 1:-1], values[:, 2:]
+    valid = ~np.isnan(left) & ~np.isnan(center) & ~np.isnan(right)
+    has_triplet = valid.any(axis=1)
+    peaks[has_triplet] = ((center > left) & (center > right) & valid).sum(axis=1)[has_triplet]
+    troughs[has_triplet] = ((center < left) & (center < right) & valid).sum(axis=1)[has_triplet]
+    return peaks, troughs
+
+
+def _position_of_extreme(values, positions, find_maximum):
+    """Return the original sgRNA position of each row's maximum or minimum."""
+    valid = ~np.isnan(values).all(axis=1)
+    output = np.full(values.shape[0], np.nan, dtype=np.float64)
+    if not valid.any():
+        return output
+    filled = np.where(np.isnan(values), -np.inf if find_maximum else np.inf, values)
+    indices = np.argmax(filled, axis=1) if find_maximum else np.argmin(filled, axis=1)
+    positions = np.asarray(positions, dtype=np.float64)
+    output[valid] = positions[indices[valid]]
+    return output
+
+
+def add_feature(engineered, name, values, index):
+    series = pd.Series(values, index=index).replace([np.inf, -np.inf], np.nan)
+    engineered[name] = series
+
+
+def make_qct_profile_shape_features(X_df_numeric, qct_groups):
+    """Create all requested full-profile, boundary, and PAM-proximal shape features."""
+    engineered = {}
+    index = X_df_numeric.index
+
+    for (unit, property_name), pos_cols in qct_groups.items():
+        positions = [position for position, _ in pos_cols]
+        columns = [column for _, column in pos_cols]
+        values = X_df_numeric[columns].to_numpy(dtype=np.float64)
+        prefix = f"qct_profile_shape_{unit}_{property_name}"
+
+        mean, minimum, maximum = _nan_summary(values)
+        profile_range = maximum - minimum
+        (mean_abs_jump, max_abs_jump, std_jump, total_variation,
+         mean_signed_jump) = _adjacent_metrics(values)
+        mean_abs_second, max_abs_second, std_second = _second_difference_metrics(values)
+        peaks, troughs = _local_extrema_counts(values)
+
+        add_feature(engineered, f"{prefix}_full_mean_abs_adjacent_jump", mean_abs_jump, index)
+        add_feature(engineered, f"{prefix}_full_max_abs_adjacent_jump", max_abs_jump, index)
+        add_feature(engineered, f"{prefix}_full_std_adjacent_jump", std_jump, index)
+        add_feature(engineered, f"{prefix}_full_total_variation", total_variation, index)
+        add_feature(engineered, f"{prefix}_full_mean_signed_jump", mean_signed_jump, index)
+        add_feature(engineered, f"{prefix}_full_mean_abs_second_difference", mean_abs_second, index)
+        add_feature(engineered, f"{prefix}_full_max_abs_second_difference", max_abs_second, index)
+        add_feature(engineered, f"{prefix}_full_std_second_difference", std_second, index)
+        add_feature(engineered, f"{prefix}_full_number_local_peaks", peaks, index)
+        add_feature(engineered, f"{prefix}_full_number_local_troughs", troughs, index)
+        add_feature(engineered, f"{prefix}_full_position_of_max", _position_of_extreme(values, positions, True), index)
+        add_feature(engineered, f"{prefix}_full_position_of_min", _position_of_extreme(values, positions, False), index)
+        add_feature(engineered, f"{prefix}_full_max_minus_mean", maximum - mean, index)
+        add_feature(engineered, f"{prefix}_full_mean_minus_min", mean - minimum, index)
+        add_feature(engineered, f"{prefix}_full_peak_to_trough_range", profile_range, index)
+        add_feature(engineered, f"{prefix}_full_roughness_over_range", safe_ratio(mean_abs_jump, profile_range), index)
+        add_feature(engineered, f"{prefix}_full_total_variation_over_range", safe_ratio(total_variation, profile_range), index)
+        add_feature(engineered, f"{prefix}_full_curvature_over_range", safe_ratio(mean_abs_second, profile_range), index)
+
+        position_to_column = dict(pos_cols)
+        if 5 in position_to_column and 6 in position_to_column:
+            p5 = X_df_numeric[position_to_column[5]]
+            p6 = X_df_numeric[position_to_column[6]]
+            add_feature(engineered, f"{prefix}_p5_to_p6_jump", p6 - p5, index)
+            add_feature(engineered, f"{prefix}_abs_p5_to_p6_jump", np.abs(p6 - p5), index)
+        if 15 in position_to_column and 16 in position_to_column:
+            p15 = X_df_numeric[position_to_column[15]]
+            p16 = X_df_numeric[position_to_column[16]]
+            add_feature(engineered, f"{prefix}_p15_to_p16_jump", p16 - p15, index)
+            add_feature(engineered, f"{prefix}_abs_p15_to_p16_jump", np.abs(p16 - p15), index)
+
+        middle_columns = [position_to_column[p] for p in range(6, 16) if p in position_to_column]
+        pamprox_columns = [position_to_column[p] for p in range(16, 21) if p in position_to_column]
+        if 16 in position_to_column and middle_columns:
+            middle_mean = X_df_numeric[middle_columns].mean(axis=1)
+            add_feature(engineered, f"{prefix}_p16_minus_middle_mean", X_df_numeric[position_to_column[16]] - middle_mean, index)
+        if 15 in position_to_column and pamprox_columns:
+            pamprox_mean = X_df_numeric[pamprox_columns].mean(axis=1)
+            add_feature(engineered, f"{prefix}_p15_minus_pamprox_mean", X_df_numeric[position_to_column[15]] - pamprox_mean, index)
+
+        if pamprox_columns:
+            pamprox_positions = [p for p in range(16, 21) if p in position_to_column]
+            pamprox_values = X_df_numeric[pamprox_columns].to_numpy(dtype=np.float64)
+            pamprox_mean, pamprox_minimum, pamprox_maximum = _nan_summary(pamprox_values)
+            pamprox_range = pamprox_maximum - pamprox_minimum
+            pamprox_metrics = _adjacent_metrics(pamprox_values)
+            add_feature(engineered, f"{prefix}_pamprox_mean_abs_adjacent_jump", pamprox_metrics[0], index)
+            add_feature(engineered, f"{prefix}_pamprox_max_abs_adjacent_jump", pamprox_metrics[1], index)
+            add_feature(engineered, f"{prefix}_pamprox_std_adjacent_jump", pamprox_metrics[2], index)
+            add_feature(engineered, f"{prefix}_pamprox_total_variation", pamprox_metrics[3], index)
+            add_feature(engineered, f"{prefix}_pamprox_roughness_over_range", safe_ratio(pamprox_metrics[0], pamprox_range), index)
+            add_feature(engineered, f"{prefix}_pamprox_max_minus_full_mean", pamprox_maximum - mean, index)
+            add_feature(engineered, f"{prefix}_pamprox_min_minus_full_mean", pamprox_minimum - mean, index)
+
+    engineered_df = pd.DataFrame(engineered).replace([np.inf, -np.inf], np.nan)
+    all_nan = engineered_df.columns[engineered_df.isna().all()].tolist()
+    if all_nan:
+        print(f"Dropping {len(all_nan)} all-NaN profile-shape features.")
+        engineered_df = engineered_df.drop(columns=all_nan)
+    return engineered_df
+
+
+def leakage_safe_cv(X_array, y_array, feature_names, label, engineered_start_index=None):
+    selector_params = dict(
+        n_estimators=300, learning_rate=0.05, max_depth=4, subsample=0.8,
+        colsample_bytree=0.8, reg_alpha=0.0, reg_lambda=1.0, min_child_weight=1,
+        random_state=RANDOM_STATE, n_jobs=-1, tree_method="hist", importance_type="gain",
+    )
+    model_params = dict(
+        n_estimators=N_ESTIMATORS, learning_rate=0.05, max_depth=4, subsample=0.8,
+        colsample_bytree=0.8, reg_alpha=0.0, reg_lambda=1.0, min_child_weight=1,
+        random_state=RANDOM_STATE, n_jobs=-1, tree_method="hist",
+    )
+    folds = []
+    selection_counts = Counter()
+    splitter = KFold(n_splits=N_SPLITS, shuffle=True, random_state=RANDOM_STATE)
+
+    for fold, (train_index, validation_index) in enumerate(splitter.split(X_array), start=1):
+        X_train, X_validation = median_impute_train_val(X_array[train_index], X_array[validation_index])
+        y_train, y_validation = y_array[train_index], y_array[validation_index]
+
+        selector = xgb.XGBRegressor(**selector_params)
+        selector.fit(X_train, y_train)
+        selected = np.argsort(selector.feature_importances_)[::-1][:FINAL_N_FEATURES]
+
+        selected_engineered = []
+        if engineered_start_index is not None:
+            selected_engineered = [feature_names[i] for i in selected if i >= engineered_start_index]
+            selection_counts.update(selected_engineered)
+
+        model = xgb.XGBRegressor(**model_params)
+        model.fit(X_train[:, selected], y_train)
+        prediction = model.predict(X_validation[:, selected])
+        record = {
+            "model_label": label, "fold": fold,
+            "r2": r2_score(y_validation, prediction),
+            "spearman": stable_spearman(y_validation, prediction),
+            "pearson": stable_pearson(y_validation, prediction),
+            "mse": mean_squared_error(y_validation, prediction),
+            "n_engineered_features_selected": len(selected_engineered),
+            "selected_engineered_features": " | ".join(selected_engineered),
+        }
+        folds.append(record)
+        print(f"{label} fold {fold}: R2={record['r2']:.4f}, Spearman={record['spearman']:.4f}, "
+              f"Pearson={record['pearson']:.4f}, MSE={record['mse']:.4f}, "
+              f"engineered selected={len(selected_engineered)}")
+
+    fold_df = pd.DataFrame(folds)
+    summary = {
+        "model_label": label, "n_samples": int(X_array.shape[0]),
+        "n_features_total": int(X_array.shape[1]), "n_features_selected": FINAL_N_FEATURES,
+        "n_estimators": N_ESTIMATORS,
+        "mean_r2": float(fold_df.r2.mean()), "std_r2": float(fold_df.r2.std(ddof=0)),
+        "mean_spearman": float(fold_df.spearman.mean()), "std_spearman": float(fold_df.spearman.std(ddof=0)),
+        "mean_pearson": float(fold_df.pearson.mean()), "std_pearson": float(fold_df.pearson.std(ddof=0)),
+        "mean_mse": float(fold_df.mse.mean()), "std_mse": float(fold_df.mse.std(ddof=0)),
+        "mean_engineered_features_selected": float(fold_df.n_engineered_features_selected.mean()),
+    }
+    return summary, fold_df, selection_counts
+
+
+def main():
+    if not os.path.exists(CSV_FILENAME):
+        raise FileNotFoundError(f"Could not find {CSV_FILENAME} in {os.getcwd()}")
+    df = pd.read_csv(CSV_FILENAME, header=1, low_memory=False)
+    if TARGET_COLUMN not in df.columns:
+        raise ValueError(f"Target column {TARGET_COLUMN!r} was not found.")
+
+    y_array = pd.to_numeric(df[TARGET_COLUMN], errors="coerce").to_numpy()
+    drop_columns = [TARGET_COLUMN] + [c for c in NON_FEATURE_COLUMNS if c in df.columns]
+    X_df_numeric = df.drop(columns=drop_columns).apply(pd.to_numeric, errors="coerce")
+    all_nan_original = X_df_numeric.columns[X_df_numeric.isna().all()].tolist()
+    X_df_numeric = X_df_numeric.drop(columns=all_nan_original)
+    valid_target = ~np.isnan(y_array)
+    X_df_numeric = X_df_numeric.loc[valid_target].reset_index(drop=True)
+    y_array = y_array[valid_target]
+
+    baseline_names = list(X_df_numeric.columns)
+    X_baseline = X_df_numeric.to_numpy(dtype=np.float32)
+    qct_groups = parse_qct_columns(X_df_numeric)
+    print(f"Loaded {X_baseline.shape[0]} samples and {X_baseline.shape[1]} baseline features.")
+    print(f"Identified {sum(len(v) for v in qct_groups.values())} QCT columns in {len(qct_groups)} groups.")
+
+    profile_df = make_qct_profile_shape_features(X_df_numeric, qct_groups)
+    profile_names = list(profile_df.columns)
+    X_profile = profile_df.to_numpy(dtype=np.float32)
+    X_augmented = np.column_stack([X_baseline, X_profile])
+    augmented_names = baseline_names + profile_names
+    print(f"Created {len(profile_names)} QCT profile-shape features.")
+
+    baseline_summary, baseline_folds, _ = leakage_safe_cv(
+        X_baseline, y_array, baseline_names, "baseline_original_features"
+    )
+    augmented_summary, augmented_folds, selection_counts = leakage_safe_cv(
+        X_augmented, y_array, augmented_names,
+        "augmented_plus_qct_profile_shape_features", len(baseline_names)
+    )
+
+    summary_df = pd.DataFrame([baseline_summary, augmented_summary])
+    fold_df = pd.concat([baseline_folds, augmented_folds], ignore_index=True)
+    selected_df = pd.DataFrame(
+        [{"engineered_feature": name, "selected_in_n_folds": count}
+         for name, count in selection_counts.most_common()]
+    )
+
+    summary_df.to_csv(os.path.join(OUTPUT_DIR, "qct_profile_shape_comparison.csv"), index=False)
+    fold_df.to_csv(os.path.join(OUTPUT_DIR, "qct_profile_shape_fold_results.csv"), index=False)
+    with open(os.path.join(OUTPUT_DIR, "qct_profile_shape_feature_names.json"), "w", encoding="utf-8") as handle:
+        json.dump(profile_names, handle, indent=2)
+    selected_df.to_csv(os.path.join(OUTPUT_DIR, "selected_qct_profile_shape_feature_counts.csv"), index=False)
+    metadata = {
+        "new_feature_set": "qct_profile_shape_features", "target_column": TARGET_COLUMN,
+        "dropped_columns": drop_columns, "all_nan_original_columns_dropped": all_nan_original,
+        "n_baseline_features": len(baseline_names), "n_engineered_features": len(profile_names),
+        "n_augmented_features": len(augmented_names), "random_state": RANDOM_STATE,
+        "n_splits": N_SPLITS, "final_n_features": FINAL_N_FEATURES,
+        "n_estimators": N_ESTIMATORS, "baseline_feature_hash": feature_name_hash(baseline_names),
+        "augmented_feature_hash": feature_name_hash(augmented_names),
+        "qct_groups": {str(k): {"n_columns": len(v), "positions": [p for p, _ in v]} for k, v in qct_groups.items()},
+        "canonical_pipeline": ["split train/validation", "training-fold median imputation", "training-fold XGBoost selection", "top 300 model fit", "validation evaluation"],
+    }
+    with open(os.path.join(OUTPUT_DIR, "qct_profile_shape_metadata.json"), "w", encoding="utf-8") as handle:
+        json.dump(metadata, handle, indent=2)
+
+    delta_r2 = augmented_summary["mean_r2"] - baseline_summary["mean_r2"]
+    delta_spearman = augmented_summary["mean_spearman"] - baseline_summary["mean_spearman"]
+    delta_pearson = augmented_summary["mean_pearson"] - baseline_summary["mean_pearson"]
+    delta_mse = augmented_summary["mean_mse"] - baseline_summary["mean_mse"]
+    print("\nFINAL COMPARISON")
+    print(summary_df.to_string(index=False))
+    print("\nImprovement from QCT profile-shape features:")
+    print(f"Delta R2:        {delta_r2:+.4f}")
+    print(f"Delta Spearman:  {delta_spearman:+.4f}")
+    print(f"Delta Pearson:   {delta_pearson:+.4f}")
+    print(f"Delta MSE:       {delta_mse:+.4f}")
+    print("\nEngineered feature selection:")
+    print(f"Number of engineered features created: {len(profile_names)}")
+    print(f"Mean engineered features selected per fold: {augmented_summary['mean_engineered_features_selected']:.2f}")
+    print("\nTop engineered QCT profile-shape features selected across folds:")
+    print(selected_df.head(30).to_string(index=False) if not selected_df.empty else "None selected.")
+    print("\nInterpretation:")
+    if delta_r2 > 0 and delta_spearman > 0:
+        print("QCT profile-shape features may capture useful spatial quantum-chemical structure.")
+    else:
+        print("QCT profile-shape features may be redundant with raw QCT and regional summaries.")
+
+
+if __name__ == "__main__":
+    main()
