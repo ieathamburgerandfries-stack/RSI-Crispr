@@ -1,0 +1,238 @@
+"""Leakage-safe test of PAM-/seed-weighted QCT descriptors for sgRNA activity."""
+import hashlib
+import json
+import os
+import re
+import subprocess
+import sys
+import warnings
+from collections import Counter
+
+warnings.filterwarnings("ignore")
+
+
+def install_if_missing(import_name, pip_name=None):
+    try:
+        __import__(import_name)
+    except ImportError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name or import_name])
+
+
+for _name, _pip in [("numpy", None), ("pandas", None), ("sklearn", "scikit-learn"),
+                    ("scipy", None), ("xgboost", None)]:
+    install_if_missing(_name, _pip)
+
+import numpy as np
+import pandas as pd
+import xgboost as xgb
+from scipy.stats import pearsonr, spearmanr
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import KFold
+
+CSV_FILENAME = "ecoli_feature_matrix.csv"
+TARGET_COLUMN = "cut.score"
+OUTPUT_DIR = "new_feature_pam_weighted_qct_test"
+RANDOM_STATE, N_SPLITS, FINAL_N_FEATURES, N_ESTIMATORS, EPS = 42, 5, 300, 400, 1e-6
+NON_FEATURE_COLUMNS = ["sgRNAID", "sequence", "Sequence", "sgRNA", "sgrna", "guide", "Guide",
+                       "guide_sequence", "GuideSequence", "target_sequence", "TargetSequence"]
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+def stable_metric(function, y_true, y_pred):
+    value = function(y_true, y_pred)[0]
+    return 0.0 if np.isnan(value) else value
+
+
+def names_hash(names):
+    return hashlib.sha256(json.dumps(list(names), separators=(",", ":")).encode()).hexdigest()
+
+
+def safe_ratio(numerator, denominator):
+    return numerator / (np.abs(denominator) + EPS)
+
+
+def parse_qct_columns(frame):
+    """Map (unit, property) to sorted (position, column) QCT profiles."""
+    groups = {}
+    pattern = re.compile(r"^p(\d+)(basepair|monomer|dimer|trimer|tetramer)\.(.+?)raw$", re.I)
+    for column in frame.columns:
+        match = pattern.match(column)
+        if not match:
+            continue
+        position, unit, raw = int(match.group(1)), match.group(2).lower(), match.group(3).lower()
+        if "hlgap" in raw:
+            prop = "hlgap"
+        elif "hbond.energy" in raw:
+            prop = "hbond_energy"
+        elif "hbond.stacking" in raw:
+            prop = "hbond_stacking"
+        elif "no.electrons" in raw:
+            prop = "electrons"
+        else:
+            continue
+        groups.setdefault((unit, prop), []).append((position, column))
+    for group in groups.values():
+        group.sort(key=lambda item: item[0])
+    return groups
+
+
+def normalised_weights(positions, scheme):
+    """Construct weights on available positions only; NaN observations are handled per row later."""
+    p = np.asarray(positions, dtype=float)
+    scaled = np.zeros_like(p) if p.max() == p.min() else (p - p.min()) / (p.max() - p.min())
+    if scheme == "linear":
+        weights = 1.0 + scaled
+    elif scheme == "quadratic":
+        weights = 1.0 + scaled ** 2
+    elif scheme == "exponential":
+        weights = np.exp(2.0 * scaled)
+    elif scheme == "seed":
+        weights = (p >= 16).astype(float)
+    elif scheme == "middle_plus_pam":
+        weights = np.where(p >= 16, 2.0, np.where(p >= 6, 1.0, 0.0))
+    else:
+        raise ValueError(f"Unknown weighting scheme: {scheme}")
+    return weights
+
+
+def weighted_row_statistics(values, weights):
+    """NaN-aware weighted mean/std plus values at the min/max positive-weight positions."""
+    valid = ~np.isnan(values)
+    row_weights = valid * weights.reshape(1, -1)
+    totals = row_weights.sum(axis=1)
+    weighted_mean = np.full(values.shape[0], np.nan)
+    usable = totals > 0
+    weighted_mean[usable] = (np.where(valid, values, 0.0) * weights).sum(axis=1)[usable] / totals[usable]
+    weighted_std = np.full(values.shape[0], np.nan)
+    centered = np.where(valid, values - weighted_mean.reshape(-1, 1), 0.0)
+    weighted_std[usable] = np.sqrt((weights * centered ** 2).sum(axis=1)[usable] / totals[usable])
+
+    positive = weights > 0
+    min_value = np.full(values.shape[0], np.nan)
+    max_value = np.full(values.shape[0], np.nan)
+    valid_positive = valid & positive.reshape(1, -1)
+    has_positive = valid_positive.any(axis=1)
+    if has_positive.any():
+        masked_min = np.where(valid_positive, values, np.inf)
+        masked_max = np.where(valid_positive, values, -np.inf)
+        min_value[has_positive] = np.min(masked_min, axis=1)[has_positive]
+        max_value[has_positive] = np.max(masked_max, axis=1)[has_positive]
+    return weighted_mean, weighted_std, min_value, max_value
+
+
+def make_pam_weighted_features(frame, groups):
+    engineered, index = {}, frame.index
+    schemes = ("linear", "quadratic", "exponential", "seed", "middle_plus_pam")
+    for (unit, prop), position_columns in groups.items():
+        positions = [p for p, _ in position_columns]
+        columns = [c for _, c in position_columns]
+        values = frame[columns].to_numpy(dtype=float)
+        with np.errstate(all="ignore"):
+            unweighted_mean = np.nanmean(values, axis=1)
+        unweighted_mean[np.isnan(values).all(axis=1)] = np.nan
+        by_position = dict(position_columns)
+        distal = [by_position[p] for p in range(1, 6) if p in by_position]
+        middle = [by_position[p] for p in range(6, 16) if p in by_position]
+        distal_mean = frame[distal].mean(axis=1) if distal else None
+        middle_mean = frame[middle].mean(axis=1) if middle else None
+        prefix = f"pam_weighted_qct_{unit}_{prop}"
+
+        for scheme in schemes:
+            mean, std, minimum, maximum = weighted_row_statistics(values, normalised_weights(positions, scheme))
+            name = f"{prefix}_{scheme}"
+            for suffix, feature in [
+                ("weighted_mean", mean), ("weighted_std", std),
+                ("weighted_min_position_value", minimum), ("weighted_max_position_value", maximum),
+                ("weighted_minus_unweighted_mean", mean - unweighted_mean),
+                ("weighted_mean_over_unweighted_mean", safe_ratio(mean, unweighted_mean)),
+            ]:
+                engineered[f"{name}_{suffix}"] = pd.Series(feature, index=index)
+            if distal_mean is not None:
+                engineered[f"{name}_weighted_minus_distal_mean"] = pd.Series(mean - distal_mean, index=index)
+            if middle_mean is not None:
+                engineered[f"{name}_weighted_minus_middle_mean"] = pd.Series(mean - middle_mean, index=index)
+    result = pd.DataFrame(engineered).replace([np.inf, -np.inf], np.nan)
+    return result.drop(columns=result.columns[result.isna().all()].tolist())
+
+
+def impute_train_validation(train, validation):
+    train, validation = train.astype(np.float32, copy=True), validation.astype(np.float32, copy=True)
+    medians = np.nanmedian(train, axis=0)
+    medians = np.where(np.isnan(medians), 0.0, medians)
+    rows, columns = np.where(np.isnan(train)); train[rows, columns] = medians[columns]
+    rows, columns = np.where(np.isnan(validation)); validation[rows, columns] = medians[columns]
+    return train, validation
+
+
+def evaluate_cv(X, y, names, label, engineered_start=None):
+    selector_parameters = dict(n_estimators=300, learning_rate=0.05, max_depth=4, subsample=0.8,
+        colsample_bytree=0.8, reg_alpha=0.0, reg_lambda=1.0, min_child_weight=1,
+        random_state=RANDOM_STATE, n_jobs=-1, tree_method="hist", importance_type="gain")
+    model_parameters = dict(n_estimators=N_ESTIMATORS, learning_rate=0.05, max_depth=4, subsample=0.8,
+        colsample_bytree=0.8, reg_alpha=0.0, reg_lambda=1.0, min_child_weight=1,
+        random_state=RANDOM_STATE, n_jobs=-1, tree_method="hist")
+    records, counts = [], Counter()
+    for fold, (train_i, test_i) in enumerate(KFold(N_SPLITS, shuffle=True, random_state=RANDOM_STATE).split(X), 1):
+        train, test = impute_train_validation(X[train_i], X[test_i])
+        selector = xgb.XGBRegressor(**selector_parameters).fit(train, y[train_i])
+        selected = np.argsort(selector.feature_importances_)[::-1][:FINAL_N_FEATURES]
+        selected_engineered = [] if engineered_start is None else [names[i] for i in selected if i >= engineered_start]
+        counts.update(selected_engineered)
+        prediction = xgb.XGBRegressor(**model_parameters).fit(train[:, selected], y[train_i]).predict(test[:, selected])
+        record = {"model_label": label, "fold": fold, "r2": r2_score(y[test_i], prediction),
+            "spearman": stable_metric(spearmanr, y[test_i], prediction),
+            "pearson": stable_metric(pearsonr, y[test_i], prediction), "mse": mean_squared_error(y[test_i], prediction),
+            "n_engineered_features_selected": len(selected_engineered),
+            "selected_engineered_features": " | ".join(selected_engineered)}
+        records.append(record)
+        print(f"{label} fold {fold}: R2={record['r2']:.4f}, Spearman={record['spearman']:.4f}, engineered={len(selected_engineered)}")
+    folds = pd.DataFrame(records)
+    summary = {"model_label": label, "n_samples": int(X.shape[0]), "n_features_total": int(X.shape[1]),
+        "n_features_selected": FINAL_N_FEATURES, "n_estimators": N_ESTIMATORS,
+        **{f"mean_{m}": float(folds[m].mean()) for m in ("r2", "spearman", "pearson", "mse")},
+        **{f"std_{m}": float(folds[m].std(ddof=0)) for m in ("r2", "spearman", "pearson", "mse")},
+        "mean_engineered_features_selected": float(folds.n_engineered_features_selected.mean())}
+    return summary, folds, counts
+
+
+def main():
+    if not os.path.exists(CSV_FILENAME):
+        raise FileNotFoundError(f"Could not find {CSV_FILENAME} in {os.getcwd()}")
+    df = pd.read_csv(CSV_FILENAME, header=1, low_memory=False)
+    y = pd.to_numeric(df[TARGET_COLUMN], errors="coerce").to_numpy()
+    dropped = [TARGET_COLUMN] + [c for c in NON_FEATURE_COLUMNS if c in df.columns]
+    features = df.drop(columns=dropped).apply(pd.to_numeric, errors="coerce")
+    all_nan = features.columns[features.isna().all()].tolist(); features = features.drop(columns=all_nan)
+    valid = ~np.isnan(y); features = features.loc[valid].reset_index(drop=True); y = y[valid]
+    baseline_names, X_baseline = list(features.columns), features.to_numpy(np.float32)
+    groups = parse_qct_columns(features)
+    engineered = make_pam_weighted_features(features, groups)
+    engineered_names = list(engineered.columns)
+    X_augmented = np.column_stack([X_baseline, engineered.to_numpy(np.float32)])
+    augmented_names = baseline_names + engineered_names
+    print(f"QCT groups: {len(groups)}; PAM-weighted features: {len(engineered_names)}")
+    base, base_folds, _ = evaluate_cv(X_baseline, y, baseline_names, "baseline_original_features")
+    augmented, augmented_folds, counts = evaluate_cv(X_augmented, y, augmented_names,
+        "augmented_plus_pam_weighted_qct_features", len(baseline_names))
+    comparison, folds = pd.DataFrame([base, augmented]), pd.concat([base_folds, augmented_folds], ignore_index=True)
+    selected = pd.DataFrame([{"engineered_feature": n, "selected_in_n_folds": c} for n, c in counts.most_common()])
+    comparison.to_csv(os.path.join(OUTPUT_DIR, "pam_weighted_qct_comparison.csv"), index=False)
+    folds.to_csv(os.path.join(OUTPUT_DIR, "pam_weighted_qct_fold_results.csv"), index=False)
+    selected.to_csv(os.path.join(OUTPUT_DIR, "selected_pam_weighted_qct_feature_counts.csv"), index=False)
+    with open(os.path.join(OUTPUT_DIR, "pam_weighted_qct_feature_names.json"), "w") as f: json.dump(engineered_names, f, indent=2)
+    metadata = {"new_feature_set": "pam_weighted_qct_features", "scientific_hypothesis": "PAM-weighted QCT features test whether quantum chemical properties become more predictive when positions closer to the PAM-proximal/seed region are given greater biological importance.",
+        "target_column": TARGET_COLUMN, "dropped_columns": dropped, "all_nan_columns_dropped": all_nan,
+        "n_baseline_features": len(baseline_names), "n_engineered_features": len(engineered_names), "n_augmented_features": len(augmented_names),
+        "random_state": RANDOM_STATE, "n_splits": N_SPLITS, "final_n_features": FINAL_N_FEATURES, "n_estimators": N_ESTIMATORS,
+        "baseline_feature_hash": names_hash(baseline_names), "augmented_feature_hash": names_hash(augmented_names),
+        "qct_groups": {str(k): {"n_columns": len(v), "positions": [p for p, _ in v]} for k, v in groups.items()}}
+    with open(os.path.join(OUTPUT_DIR, "pam_weighted_qct_metadata.json"), "w") as f: json.dump(metadata, f, indent=2)
+    print("\nFINAL COMPARISON\n", comparison.to_string(index=False))
+    for metric in ("r2", "spearman", "pearson", "mse"):
+        print(f"Delta {metric.upper()}: {augmented[f'mean_{metric}'] - base[f'mean_{metric}']:+.4f}")
+    print(f"Mean engineered features selected per fold: {augmented['mean_engineered_features_selected']:.2f}")
+    print("\nTop selected engineered features:\n", selected.head(30).to_string(index=False) if not selected.empty else "None")
+
+
+if __name__ == "__main__":
+    main()
