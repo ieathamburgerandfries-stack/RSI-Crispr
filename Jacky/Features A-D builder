@@ -1,0 +1,438 @@
+# ============================================================
+# QCT experimental feature families (separate from teammate's set)
+#
+# All families below are DERIVED FROM existing matrix QCT columns
+# like: p16dimer.Hbond.stackingraw, p8monomer.HLgap.eVraw, ...
+#
+# Families (enable one at a time for clean ablations):
+#   A) Oligomer non-additivity   eng.qct_nonadd.*
+#   B) Cas9-seed regional QCT    eng.qct_seed.*
+#   C) Pruned regional QCT       eng.qct_pruned.*
+#   D) Hotspot / peak location   eng.qct_hotspot.*
+#
+# NOT derived here (different kind of work — see):
+#   E) SHAP analysis cells  ->  crispr_clean_shap_cells.py
+#   F) Human transfer       ->  run this same script on human CSV
+#
+# Usage:
+#   1. Set INPUT_CSV / OUTPUT_CSV / ACTIVE_FAMILIES below
+#   2. python qct_experimental_features.py
+#   3. In crispr_clean.py CELL 3, point DATA_PATH at OUTPUT_CSV
+#   4. Re-run cells 4-7
+#
+# Tip: set ACTIVE_FAMILIES to exactly ONE family per experiment.
+# ============================================================
+
+import json
+import os
+import re
+from typing import Dict, List, Optional, Sequence, Tuple
+
+import numpy as np
+import pandas as pd
+
+# --- CONFIG ---
+#INPUT_CSV = r"C:---\ecoli_feature_matrix.csv"
+#OUTPUT_CSV = (
+    r"C:---\ecoli_feature_matrix_qct_experimental.csv"
+)
+# Colab:
+INPUT_CSV = "/content/drive/MyDrive/CRISPR_Project/ecoli_feature_matrix.csv"
+OUTPUT_CSV = "/content/drive/MyDrive/CRISPR_Project/ecoli_feature_matrix_qct_experimental.csv"
+
+ID_COL = "sgRNAID"
+TARGET_COL = "cut.score"
+
+# Choose which families to build (recommended: one at a time)
+ACTIVE_FAMILIES = [
+    "A_nonadditivity",
+    # "B_cas9_seed",
+    # "C_pruned_regional",
+    # "D_hotspot",
+]
+
+MOLECULAR_UNITS = ["monomer", "basepair", "dimer", "trimer", "tetramer"]
+
+
+# ============================================================
+# Shared helpers (same QCT parsing style as teammate / add_engineered_features)
+# ============================================================
+
+def classify_qct_property(col: str) -> Optional[str]:
+    lower = col.lower()
+    if "hlgap" in lower:
+        return "hlgap"
+    if "hbond.energy" in lower:
+        return "hbond_energy"
+    if "hbond.stacking" in lower:
+        return "hbond_stacking"
+    if "no.electrons" in lower:
+        return "electrons"
+    return None
+
+
+def parse_qct_column(col: str):
+    match = re.match(r"p(\d+)([A-Za-z]+)\.", col)
+    if match is None:
+        return None
+    position = int(match.group(1))
+    molecular_unit = match.group(2).lower()
+    property_class = classify_qct_property(col)
+    if property_class is None:
+        return None
+    return position, molecular_unit, property_class
+
+
+def build_qct_info(X_df: pd.DataFrame) -> pd.DataFrame:
+    rows = []
+    for col in X_df.columns:
+        parsed = parse_qct_column(col)
+        if parsed is None:
+            continue
+        position, unit, prop = parsed
+        if unit not in MOLECULAR_UNITS:
+            continue
+        rows.append(
+            {
+                "column": col,
+                "position": position,
+                "molecular_unit": unit,
+                "property_class": prop,
+            }
+        )
+    info = pd.DataFrame(rows)
+    if info.empty:
+        raise ValueError("No QCT columns found in matrix.")
+    return info
+
+
+def region_matrix(
+    X_df: pd.DataFrame,
+    info: pd.DataFrame,
+    unit: str,
+    prop: str,
+    positions: Sequence[int],
+) -> Optional[pd.DataFrame]:
+    subset = info[
+        (info["molecular_unit"] == unit)
+        & (info["property_class"] == prop)
+        & (info["position"].isin(list(positions)))
+    ].sort_values(["position", "column"])
+    if subset.shape[0] < 2:
+        return None
+    return X_df[list(subset["column"])]
+
+
+def clean_engineered(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.replace([np.inf, -np.inf], np.nan)
+    # pandas<1.3 has no numeric_only= for median on DataFrame in some versions
+    try:
+        med = out.median(numeric_only=True)
+    except TypeError:
+        med = out.median()
+    out = out.fillna(med)
+    return out.fillna(0.0)
+
+
+def read_matrix_with_title(path: str) -> Tuple[Optional[str], pd.DataFrame]:
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        first = handle.readline()
+    if first.lower().startswith("suppe") or "sgRNAID" not in first:
+        title = first.rstrip("\n")
+        df = pd.read_csv(path, header=1, low_memory=False)
+    else:
+        title = None
+        df = pd.read_csv(path, header=0, low_memory=False)
+    return title, df
+
+
+def write_matrix_with_title(path: str, title: Optional[str], df: pd.DataFrame) -> None:
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="") as handle:
+        if title:
+            handle.write(title + "\n")
+    df.to_csv(path, mode="a", index=False)
+
+
+# ============================================================
+# FAMILY A — Oligomer non-additivity
+# ============================================================
+# Idea: higher-order QCT vs simpler scale at the SAME positions.
+# Example: mean(tetramer HLgap in PAM-prox) - mean(monomer HLgap in PAM-prox)
+#
+# Paste / call: make_family_a_nonadditivity(X_df_numeric)
+
+FAMILY_A_REGIONS = {
+    "distal_p1_5": list(range(1, 6)),
+    "pamprox_p16_20": list(range(16, 21)),
+    "seed_p13_20": list(range(13, 21)),
+}
+
+# (complex_unit, simple_unit, property)
+FAMILY_A_PAIRS = [
+    ("tetramer", "monomer", "hlgap"),
+    ("tetramer", "monomer", "electrons"),
+    ("trimer", "monomer", "hlgap"),
+    ("trimer", "monomer", "electrons"),
+    ("dimer", "monomer", "hlgap"),
+    ("dimer", "monomer", "electrons"),
+    ("dimer", "basepair", "hbond_energy"),
+    ("trimer", "basepair", "hbond_energy"),
+    ("tetramer", "basepair", "hbond_energy"),
+    ("dimer", "basepair", "hlgap"),
+]
+
+
+def make_family_a_nonadditivity(X_df: pd.DataFrame) -> pd.DataFrame:
+    info = build_qct_info(X_df)
+    feats: Dict[str, np.ndarray] = {}
+
+    for complex_u, simple_u, prop in FAMILY_A_PAIRS:
+        for region_name, positions in FAMILY_A_REGIONS.items():
+            complex_data = region_matrix(X_df, info, complex_u, prop, positions)
+            simple_data = region_matrix(X_df, info, simple_u, prop, positions)
+            if complex_data is None or simple_data is None:
+                continue
+
+            complex_mean = complex_data.mean(axis=1, skipna=True).astype(np.float32)
+            simple_mean = simple_data.mean(axis=1, skipna=True).astype(np.float32)
+            residual = (complex_mean - simple_mean).astype(np.float32)
+
+            prefix = f"eng.qct_nonadd.{complex_u}_minus_{simple_u}_{prop}_{region_name}"
+            feats[f"{prefix}_diff"] = residual.to_numpy()
+            feats[f"{prefix}_absdiff"] = np.abs(residual.to_numpy())
+
+    return clean_engineered(pd.DataFrame(feats, index=X_df.index))
+
+
+# ============================================================
+# FAMILY B — Canonical Cas9 seed regional QCT
+# ============================================================
+# Cas9 seed is PAM-proximal (~positions 13-20), not the 5' distal end.
+# This is deliberately DIFFERENT from teammate distal/middle/pamprox split.
+#
+# Paste / call: make_family_b_cas9_seed(X_df_numeric)
+
+FAMILY_B_REGIONS = {
+    "seed_p13_20": list(range(13, 21)),
+    "nonseed_p1_12": list(range(1, 13)),
+    "core_seed_p16_20": list(range(16, 21)),
+}
+
+FAMILY_B_UNITS = ["dimer", "trimer", "tetramer"]
+FAMILY_B_PROPS = ["hlgap", "hbond_energy", "hbond_stacking", "electrons"]
+FAMILY_B_STATS = ("mean", "std")
+
+
+def make_family_b_cas9_seed(X_df: pd.DataFrame) -> pd.DataFrame:
+    info = build_qct_info(X_df)
+    feats: Dict[str, np.ndarray] = {}
+    mean_cache: Dict[Tuple[str, str, str], np.ndarray] = {}
+
+    for unit in FAMILY_B_UNITS:
+        for prop in FAMILY_B_PROPS:
+            for region_name, positions in FAMILY_B_REGIONS.items():
+                data = region_matrix(X_df, info, unit, prop, positions)
+                if data is None:
+                    continue
+                prefix = f"eng.qct_seed.{unit}_{prop}_{region_name}"
+                mean_v = data.mean(axis=1, skipna=True).astype(np.float32)
+                std_v = data.std(axis=1, skipna=True).fillna(0.0).astype(np.float32)
+                feats[f"{prefix}_mean"] = mean_v.to_numpy()
+                feats[f"{prefix}_std"] = std_v.to_numpy()
+                mean_cache[(unit, prop, region_name)] = mean_v.to_numpy()
+
+            # Seed vs non-seed contrast
+            seed_key = (unit, prop, "seed_p13_20")
+            nonseed_key = (unit, prop, "nonseed_p1_12")
+            if seed_key in mean_cache and nonseed_key in mean_cache:
+                name = f"eng.qct_seed.contrast_{unit}_{prop}_seed_minus_nonseed"
+                feats[name] = (mean_cache[seed_key] - mean_cache[nonseed_key]).astype(
+                    np.float32
+                )
+
+    return clean_engineered(pd.DataFrame(feats, index=X_df.index))
+
+
+# ============================================================
+# FAMILY C — Pruned regional QCT (compact teammate-style)
+# ============================================================
+# Same biological idea as teammate regional QCT, but MUCH smaller:
+#   units: dimer, tetramer only
+#   props: hlgap, hbond_energy, hbond_stacking
+#   regions: distal + pamprox only
+#   stats: mean, std only
+#   + pamprox - distal contrast
+#
+# Paste / call: make_family_c_pruned_regional(X_df_numeric)
+
+FAMILY_C_REGIONS = {
+    "distal_p1_5": list(range(1, 6)),
+    "pamprox_p16_20": list(range(16, 21)),
+}
+FAMILY_C_UNITS = ["dimer", "tetramer"]
+FAMILY_C_PROPS = ["hlgap", "hbond_energy", "hbond_stacking"]
+
+
+def make_family_c_pruned_regional(X_df: pd.DataFrame) -> pd.DataFrame:
+    info = build_qct_info(X_df)
+    feats: Dict[str, np.ndarray] = {}
+    mean_cache: Dict[Tuple[str, str, str], np.ndarray] = {}
+
+    for unit in FAMILY_C_UNITS:
+        for prop in FAMILY_C_PROPS:
+            for region_name, positions in FAMILY_C_REGIONS.items():
+                data = region_matrix(X_df, info, unit, prop, positions)
+                if data is None:
+                    continue
+                prefix = f"eng.qct_pruned.{unit}_{prop}_{region_name}"
+                mean_v = data.mean(axis=1, skipna=True).astype(np.float32)
+                std_v = data.std(axis=1, skipna=True).fillna(0.0).astype(np.float32)
+                feats[f"{prefix}_mean"] = mean_v.to_numpy()
+                feats[f"{prefix}_std"] = std_v.to_numpy()
+                mean_cache[(unit, prop, region_name)] = mean_v.to_numpy()
+
+            pam = (unit, prop, "pamprox_p16_20")
+            distal = (unit, prop, "distal_p1_5")
+            if pam in mean_cache and distal in mean_cache:
+                name = f"eng.qct_pruned.contrast_{unit}_{prop}_pamprox_minus_distal"
+                feats[name] = (mean_cache[pam] - mean_cache[distal]).astype(np.float32)
+
+    return clean_engineered(pd.DataFrame(feats, index=X_df.index))
+
+
+# ============================================================
+# FAMILY D — Hotspot / peak location (compact; not full profile-shape)
+# ============================================================
+# For each unit x property across p1..p20:
+#   - position of max value (1-20)
+#   - distance of that peak from PAM end (20 - pos)
+#   - peak value itself
+#
+# Paste / call: make_family_d_hotspot(X_df_numeric)
+
+FAMILY_D_UNITS = ["monomer", "dimer", "tetramer"]
+FAMILY_D_PROPS = ["hlgap", "hbond_energy", "hbond_stacking", "electrons"]
+
+
+def make_family_d_hotspot(X_df: pd.DataFrame) -> pd.DataFrame:
+    info = build_qct_info(X_df)
+    feats: Dict[str, np.ndarray] = {}
+    positions_all = list(range(1, 21))
+
+    for unit in FAMILY_D_UNITS:
+        for prop in FAMILY_D_PROPS:
+            subset = info[
+                (info["molecular_unit"] == unit)
+                & (info["property_class"] == prop)
+                & (info["position"].isin(positions_all))
+            ].sort_values(["position", "column"])
+            if subset.shape[0] < 3:
+                continue
+
+            # One column per position when possible (first if duplicates)
+            pos_to_col = {}
+            for _, row in subset.iterrows():
+                pos = int(row["position"])
+                if pos not in pos_to_col:
+                    pos_to_col[pos] = row["column"]
+
+            ordered_pos = sorted(pos_to_col)
+            cols = [pos_to_col[p] for p in ordered_pos]
+            data = X_df[cols].to_numpy(dtype=np.float32)
+            pos_arr = np.asarray(ordered_pos, dtype=np.float32)
+
+            # Fill NaNs with row mean for argmax stability
+            row_means = np.nanmean(data, axis=1)
+            row_means = np.where(np.isnan(row_means), 0.0, row_means)
+            filled = np.where(np.isnan(data), row_means[:, None], data)
+
+            argmax_idx = np.argmax(filled, axis=1)
+            peak_pos = pos_arr[argmax_idx]
+            peak_val = filled[np.arange(filled.shape[0]), argmax_idx]
+            dist_to_pam = 20.0 - peak_pos
+
+            prefix = f"eng.qct_hotspot.{unit}_{prop}"
+            feats[f"{prefix}_peak_pos"] = peak_pos.astype(np.float32)
+            feats[f"{prefix}_dist_to_pam"] = dist_to_pam.astype(np.float32)
+            feats[f"{prefix}_peak_value"] = peak_val.astype(np.float32)
+
+    return clean_engineered(pd.DataFrame(feats, index=X_df.index))
+
+
+FAMILY_BUILDERS = {
+    "A_nonadditivity": make_family_a_nonadditivity,
+    "B_cas9_seed": make_family_b_cas9_seed,
+    "C_pruned_regional": make_family_c_pruned_regional,
+    "D_hotspot": make_family_d_hotspot,
+}
+
+
+# ============================================================
+# Main: build selected families and write augmented CSV
+# ============================================================
+
+def main() -> None:
+    print("=" * 70)
+    print("QCT EXPERIMENTAL FEATURE FAMILIES")
+    print("=" * 70)
+    print(f"Input:  {INPUT_CSV}")
+    print(f"Output: {OUTPUT_CSV}")
+    print(f"Active: {ACTIVE_FAMILIES}")
+
+    if not os.path.exists(INPUT_CSV):
+        raise FileNotFoundError(INPUT_CSV)
+
+    title, df = read_matrix_with_title(INPUT_CSV)
+    if ID_COL not in df.columns or TARGET_COL not in df.columns:
+        raise ValueError(f"Need {ID_COL} and {TARGET_COL}")
+
+    X_df = (
+        df.drop(columns=[c for c in [TARGET_COL, ID_COL] if c in df.columns], errors="ignore")
+        .apply(pd.to_numeric, errors="coerce")
+    )
+    all_nan = X_df.columns[X_df.isna().all()].tolist()
+    if all_nan:
+        X_df = X_df.drop(columns=all_nan)
+
+    engineered_parts = []
+    counts = {}
+    for family_name in ACTIVE_FAMILIES:
+        if family_name not in FAMILY_BUILDERS:
+            raise ValueError(f"Unknown family: {family_name}")
+        print(f"\nBuilding {family_name} ...")
+        part = FAMILY_BUILDERS[family_name](X_df)
+        print(f"  -> {part.shape[1]} columns")
+        engineered_parts.append(part)
+        counts[family_name] = int(part.shape[1])
+
+    engineered = pd.concat(engineered_parts, axis=1)
+    # Drop duplicate names if any
+    engineered = engineered.loc[:, ~engineered.columns.duplicated()]
+    out = pd.concat([df, engineered], axis=1)
+    write_matrix_with_title(OUTPUT_CSV, title, out)
+
+    meta = {
+        "active_families": ACTIVE_FAMILIES,
+        "family_column_counts": counts,
+        "n_engineered_total": int(engineered.shape[1]),
+        "n_output_columns": int(out.shape[1]),
+        "engineered_columns": list(engineered.columns),
+        "note": (
+            "Families A-D are derived from existing QCT columns only. "
+            "SHAP / human transfer: see crispr_clean_shap_cells.py"
+        ),
+    }
+    meta_path = os.path.splitext(OUTPUT_CSV)[0] + "_qct_experimental_meta.json"
+    with open(meta_path, "w", encoding="utf-8") as handle:
+        json.dump(meta, handle, indent=2)
+
+    print(f"\nSaved: {OUTPUT_CSV}")
+    print(f"Meta:  {meta_path}")
+    print(f"Total engineered columns: {engineered.shape[1]}")
+    print("\nNext: set crispr_clean.py DATA_PATH to OUTPUT_CSV, run cells 4-7")
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    main()
