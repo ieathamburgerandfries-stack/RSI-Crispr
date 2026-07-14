@@ -1,0 +1,483 @@
+# ============================================================
+# CRISPR sgRNA efficiency — clean Colab notebook
+# Copy each "CELL" block into its own Colab cell, in order.
+#
+# Protocol (aligned with teammate champion script):
+#   - XGBoost selector: rank features inside each CV fold (no leakage)
+#   - XGBoost champion: predict cut.score on selected features
+#   - Median imputation for missing numeric values
+# ============================================================
+
+
+# %% CELL 1 — Installs (run once per Colab session if needed)
+# !pip install -q xgboost
+
+
+# %% CELL 2 — Imports and Drive mount
+import os
+import time
+
+import numpy as np
+import pandas as pd
+import xgboost as xgb
+from google.colab import drive
+from scipy.stats import spearmanr
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import KFold, train_test_split
+
+drive.mount("/content/drive")
+
+
+# %% CELL 3 — Config (edit only this cell for most experiments)
+# CURRENT EXPERIMENT: baseline paper features + Keio gene essentiality ONLY
+#   (NO regional_qct / PAM-interaction engineered QCT features)
+#
+# How this file was made:
+#   python add_gene_essentiality.py
+#   -> ecoli_feature_matrix_gene_essential.csv
+#      = original ecoli_feature_matrix.csv + eng.gene_essential (0/1)
+#
+# Run cells 4–7 on this path for the champion CV ablation.
+# Compare to baseline (~R2 0.2923) using the plain matrix path below.
+#
+# The CSV must have columns: sgRNAID, cut.score, then numeric features.
+# First row may be a title row (we skip it with header=1).
+
+# --- active: original + eng.gene_essential only ---
+DATA_PATH = "/content/drive/MyDrive/CRISPR_Project/ecoli_feature_matrix_gene_essential.csv"
+# Local Windows:
+# DATA_PATH = r"C:\Users\maqih\Documents\RSI cursor\ecoli_feature_matrix_gene_essential.csv"
+
+# --- baselines / other experiments (keep commented unless needed) ---
+# Plain paper matrix (no engineered features):
+# DATA_PATH = "/content/drive/MyDrive/CRISPR_Project/ecoli_feature_matrix.csv"
+# Regional QCT + optional eng.interact (add_engineered_features.py) — NOT used for this test:
+# DATA_PATH = "/content/drive/MyDrive/CRISPR_Project/ecoli_feature_matrix_augmented.csv"
+# DATA_PATH = "/content/drive/MyDrive/CRISPR_Project/human_feature_matrix.csv"
+# DATA_PATH = "/content/drive/MyDrive/CRISPR_Project/human_feature_matrix_augmented.csv"
+
+TARGET_COLUMN = "cut.score"
+
+# Frozen champion settings (tune via grid search in CELL 9, then set here)
+# E. coli leakage-safe optimum from teammate: nf=300, ne=400
+# Human starting point: nf=400, ne=400
+N_FEATURES = 300
+N_ESTIMATORS = 400
+
+# Cross-validation
+N_SPLITS = 5
+RANDOM_STATE = 42
+SHUFFLE = True
+
+# Prefixes for columns added by add_engineered_features.py
+ENGINEERED_PREFIXES = ("regional_qct_", "eng.")
+
+
+def _normalize_feature_name(name) -> str:
+    return str(name).strip()
+
+
+def is_engineered_feature(name) -> bool:
+    """True for columns added by add_engineered_features.py."""
+    s = _normalize_feature_name(name)
+    return s.startswith("regional_qct") or s.startswith("eng.")
+
+
+def engineered_family(name) -> str:
+    s = _normalize_feature_name(name)
+    if s.startswith("regional_qct"):
+        return "regional_qct"
+    if s.startswith("eng."):
+        return "eng_extra"
+    return "original"
+
+
+# Columns to drop if present (not model features)
+NON_FEATURE_COLUMNS = [
+    "sgRNAID",
+    "sequence",
+    "Sequence",
+    "sgRNA",
+    "sgrna",
+    "guide",
+    "Guide",
+    "guide_sequence",
+    "GuideSequence",
+    "target_sequence",
+    "TargetSequence",
+]
+
+# XGBoost feature selector (per-fold ranking; matches teammate script)
+SELECTOR_PARAMS = dict(
+    n_estimators=300,
+    learning_rate=0.05,
+    max_depth=4,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    reg_alpha=0.0,
+    reg_lambda=1.0,
+    min_child_weight=1,
+    random_state=RANDOM_STATE,
+    n_jobs=-1,
+    tree_method="hist",
+    importance_type="gain",
+)
+
+# XGBoost champion (prediction model)
+CHAMPION_PARAMS = dict(
+    learning_rate=0.05,
+    max_depth=4,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    reg_alpha=0.0,
+    reg_lambda=1.0,
+    min_child_weight=1,
+    random_state=RANDOM_STATE,
+    n_jobs=-1,
+    tree_method="hist",
+)
+
+
+# %% CELL 4 — Load data
+def stable_spearman(y_true, y_pred) -> float:
+    rho, _ = spearmanr(y_true, y_pred)
+    if np.isnan(rho):
+        return 0.0
+    return float(rho)
+
+
+def impute_median(X_array):
+    """Median-impute NaNs column-wise; return (X_filled, medians)."""
+    medians = np.nanmedian(X_array, axis=0)
+    medians = np.where(np.isnan(medians), 0.0, medians)
+    if np.isnan(X_array).any():
+        nan_rows, nan_cols = np.where(np.isnan(X_array))
+        X_filled = X_array.copy()
+        X_filled[nan_rows, nan_cols] = medians[nan_cols]
+        return X_filled, medians
+    return X_array, medians
+
+
+def median_impute_train_val(X_train, X_val):
+    """Median imputation fit on training fold only (matches teammate script)."""
+    X_train = X_train.astype(np.float32, copy=True)
+    X_val = X_val.astype(np.float32, copy=True)
+
+    medians = np.nanmedian(X_train, axis=0)
+    medians = np.where(np.isnan(medians), 0.0, medians)
+
+    train_nan_rows, train_nan_cols = np.where(np.isnan(X_train))
+    val_nan_rows, val_nan_cols = np.where(np.isnan(X_val))
+
+    X_train[train_nan_rows, train_nan_cols] = medians[train_nan_cols]
+    X_val[val_nan_rows, val_nan_cols] = medians[val_nan_cols]
+
+    return X_train, X_val
+
+
+print(f"Loading: {DATA_PATH}")
+df = pd.read_csv(DATA_PATH, header=1, low_memory=False)
+
+required = {"sgRNAID", TARGET_COLUMN}
+missing = required - set(df.columns)
+if missing:
+    raise ValueError(
+        f"CSV is missing columns {missing}. "
+        "Matrices must include sgRNAID and cut.score."
+    )
+
+df = df.dropna(subset=["sgRNAID", TARGET_COLUMN])
+
+y = pd.to_numeric(df[TARGET_COLUMN], errors="coerce").to_numpy(dtype=np.float64)
+
+drop_cols = [TARGET_COLUMN]
+for col in NON_FEATURE_COLUMNS:
+    if col in df.columns and col not in drop_cols:
+        drop_cols.append(col)
+
+X_df = df.drop(columns=drop_cols).apply(pd.to_numeric, errors="coerce")
+
+all_nan_cols = X_df.columns[X_df.isna().all()].tolist()
+if all_nan_cols:
+    print(f"Dropping {len(all_nan_cols)} all-NaN columns.")
+    X_df = X_df.drop(columns=all_nan_cols)
+
+feature_names = list(X_df.columns)
+engineered_mask = np.array(
+    [is_engineered_feature(name) for name in feature_names], dtype=bool
+)
+feature_family = np.array(
+    [engineered_family(name) for name in feature_names], dtype=object
+)
+X_raw = X_df.to_numpy(dtype=np.float32)
+
+valid_y_mask = ~np.isnan(y)
+if valid_y_mask.sum() < len(y):
+    print(f"Dropping {len(y) - valid_y_mask.sum()} rows with missing {TARGET_COLUMN}.")
+    X_raw = X_raw[valid_y_mask]
+    y = y[valid_y_mask]
+
+# Imputed matrix for inspection-only ranking (Cell 6). CV uses X_raw + per-fold impute.
+X, imputer_medians = impute_median(X_raw)
+
+print(f"Rows (sgRNAs):  {X.shape[0]}")
+print(f"Raw features:   {X.shape[1]}")
+print(f"Target column:  {TARGET_COLUMN}")
+print(f"Dropped cols:   {drop_cols}")
+print(f"First features: {feature_names[:5]}")
+
+n_regional_qct = int((feature_family == "regional_qct").sum())
+n_eng_extra = int((feature_family == "eng_extra").sum())
+print(
+    f"Engineered in matrix: regional_qct* = {n_regional_qct}, eng.* = {n_eng_extra} "
+    f"(0 regional_qct means you forgot augmented CSV or add_engineered_features.py)"
+)
+
+
+# %% CELL 5 — Helper: leakage-safe 5-fold CV
+def run_cv(
+    n_features: int,
+    n_estimators: int,
+    verbose: bool = True,
+    use_feature_selection: bool = True,
+    count_engineered: bool = False,
+) -> dict:
+    """
+    Leakage-safe CV: per-fold median impute, XGBoost selector on train fold only,
+    then champion XGBoost on selected features. Matches teammate script.
+    """
+    n_features = min(n_features, X_raw.shape[1])
+    select_features = use_feature_selection and n_features < X_raw.shape[1]
+
+    kf = KFold(
+        n_splits=N_SPLITS,
+        shuffle=SHUFFLE,
+        random_state=RANDOM_STATE,
+    )
+
+    r2_scores, spearman_scores, mse_scores = [], [], []
+    fold_engineered_total = []
+    fold_regional_qct = []
+    fold_eng_extra = []
+
+    for fold, (train_idx, val_idx) in enumerate(kf.split(X_raw), start=1):
+        X_tr_raw, X_val_raw = X_raw[train_idx], X_raw[val_idx]
+        y_tr, y_val = y[train_idx], y[val_idx]
+
+        X_tr, X_val = median_impute_train_val(X_tr_raw, X_val_raw)
+
+        if select_features:
+            selector = xgb.XGBRegressor(**SELECTOR_PARAMS)
+            selector.fit(X_tr, y_tr)
+            top_idx = np.argsort(selector.feature_importances_)[::-1][:n_features]
+            X_tr_use = X_tr[:, top_idx]
+            X_val_use = X_val[:, top_idx]
+
+            if count_engineered:
+                fold_engineered_total.append(int(engineered_mask[top_idx].sum()))
+                fold_regional_qct.append(
+                    int((feature_family[top_idx] == "regional_qct").sum())
+                )
+                fold_eng_extra.append(
+                    int((feature_family[top_idx] == "eng_extra").sum())
+                )
+        else:
+            top_idx = None
+            X_tr_use = X_tr
+            X_val_use = X_val
+
+        model = xgb.XGBRegressor(n_estimators=n_estimators, **CHAMPION_PARAMS)
+        model.fit(X_tr_use, y_tr)
+        preds = model.predict(X_val_use)
+
+        r2 = r2_score(y_val, preds)
+        rho = stable_spearman(y_val, preds)
+        mse = mean_squared_error(y_val, preds)
+
+        r2_scores.append(r2)
+        spearman_scores.append(rho)
+        mse_scores.append(mse)
+
+        if verbose:
+            if count_engineered and select_features:
+                print(
+                    f"  Fold {fold}: R^2={r2:.4f} | Spearman={rho:.4f} | "
+                    f"eng={fold_engineered_total[-1]} "
+                    f"(regional_qct={fold_regional_qct[-1]}, eng.*={fold_eng_extra[-1]})"
+                )
+            else:
+                print(f"  Fold {fold}: R^2={r2:.4f} | Spearman={rho:.4f}")
+
+    result = {
+        "n_features": n_features if select_features else X_raw.shape[1],
+        "n_estimators": n_estimators,
+        "feature_selection": select_features,
+        "mean_r2": float(np.mean(r2_scores)),
+        "std_r2": float(np.std(r2_scores, ddof=0)),
+        "max_r2": float(np.max(r2_scores)),
+        "mean_spearman": float(np.mean(spearman_scores)),
+        "mean_mse": float(np.mean(mse_scores)),
+        "fold_r2": r2_scores,
+    }
+
+    if count_engineered and fold_engineered_total:
+        result["mean_engineered_selected"] = float(np.mean(fold_engineered_total))
+        result["mean_regional_qct_selected"] = float(np.mean(fold_regional_qct))
+        result["mean_eng_extra_selected"] = float(np.mean(fold_eng_extra))
+        result["fold_engineered_selected"] = fold_engineered_total
+        result["fold_regional_qct_selected"] = fold_regional_qct
+        result["fold_eng_extra_selected"] = fold_eng_extra
+
+    return result
+
+
+# %% CELL 6 — Final feature ranking on all data (for inspection only; not used in CV)
+# CV in CELL 7 ranks inside each fold. This block shows which features the
+# production selector would pick when trained on all rows.
+print("Training final feature selector on all data (inspection only)...")
+t0 = time.time()
+final_selector = xgb.XGBRegressor(**SELECTOR_PARAMS)
+final_selector.fit(X, y)
+
+importance_df = pd.DataFrame(
+    {
+        "feature_idx": np.arange(X.shape[1]),
+        "feature": feature_names,
+        "importance_gain": final_selector.feature_importances_,
+    }
+).sort_values("importance_gain", ascending=False)
+
+ranked_indices = importance_df["feature_idx"].to_numpy()
+
+top_k = min(N_FEATURES, len(importance_df))
+top_df = importance_df.head(top_k).copy()
+
+# Label engineered features by column index (same mask as load step — avoids
+# Colab string/map issues on numpy feature names).
+top_idx = top_df["feature_idx"].to_numpy(dtype=int)
+top_df["is_engineered"] = engineered_mask[top_idx]
+top_df["family"] = feature_family[top_idx]
+
+eng_count = int(top_df["is_engineered"].sum())
+regional_qct_count = int((top_df["family"] == "regional_qct").sum())
+eng_extra_count = int((top_df["family"] == "eng_extra").sum())
+
+# Sanity check: warn if any regional_qct name slipped through unlabeled.
+feat_str = top_df["feature"].astype(str).str.strip()
+looks_engineered = feat_str.str.startswith("regional_qct") | feat_str.str.startswith("eng.")
+mislabeled = top_df[looks_engineered & ~top_df["is_engineered"]]
+if len(mislabeled) > 0:
+    print("WARNING: engineered feature names with is_engineered=False:")
+    print(mislabeled[["feature", "is_engineered"]].head(10).to_string(index=False))
+
+top_df["feature_display"] = top_df.apply(
+    lambda row: f"*[ENG]* {row['feature']}" if row["is_engineered"] else row["feature"],
+    axis=1,
+)
+
+print(f"Ranked {len(ranked_indices)} features in {time.time() - t0:.1f}s")
+print(
+    f"Top {top_k} features (FULL-DATA selector — inspection only, not teammate's 83):\n"
+    f"  Engineered total:     {eng_count} / {top_k}\n"
+    f"    regional_qct_*:     {regional_qct_count}\n"
+    f"    eng.* (extras):     {eng_extra_count}\n"
+    f"  Teammate's ~83 is per-fold CV average — see CELL 7."
+)
+print(
+    top_df[["feature_display", "importance_gain", "is_engineered"]]
+    .rename(columns={"feature_display": "feature"})
+    .to_string(index=False)
+)
+
+
+# %% CELL 7 — Champion run (leakage-safe CV — official baseline)
+print("=" * 50)
+print("CHAMPION CV (leakage-safe: per-fold XGB feature selection)")
+print(f"Data:         {os.path.basename(DATA_PATH)}")
+print(f"n_features:   {N_FEATURES}")
+print(f"n_estimators: {N_ESTIMATORS}")
+print(f"shuffle:      {SHUFFLE}")
+print("=" * 50)
+
+champion = run_cv(
+    N_FEATURES, N_ESTIMATORS, verbose=True, count_engineered=True
+)
+
+print("\n" + "=" * 50)
+print("CHAMPION RESULTS")
+print("=" * 50)
+print(f" Mean CV R^2:       {champion['mean_r2']:.4f} ± {champion['std_r2']:.4f}")
+print(f" Max fold R^2:      {champion['max_r2']:.4f}")
+print(f" Mean CV Spearman:  {champion['mean_spearman']:.4f}")
+print(f" Mean CV MSE:       {champion['mean_mse']:.4f}")
+if "mean_engineered_selected" in champion:
+    print(f" Mean eng. selected per fold (all):        {champion['mean_engineered_selected']:.1f}")
+    print(f"   regional_qct per fold:                  {champion['mean_regional_qct_selected']:.1f}")
+    print(f"   eng.* per fold:                         {champion['mean_eng_extra_selected']:.1f}")
+    print(f" Per-fold regional_qct: {champion['fold_regional_qct_selected']}")
+print("=" * 50)
+
+
+# %% CELL 8 — Optional: Random Forest baseline (all features, single 80/20 split)
+# Paper-style RF comparison only — not the main pipeline.
+RUN_RF_BASELINE = False  # set True to run
+
+if RUN_RF_BASELINE:
+    X_tr, X_te, y_tr, y_te = train_test_split(
+        X, y, test_size=0.2, random_state=RANDOM_STATE
+    )
+    rf = RandomForestRegressor(
+        n_estimators=1000, random_state=RANDOM_STATE, n_jobs=-1
+    )
+    print("Training RF baseline (1000 trees, all features)...")
+    rf.fit(X_tr, y_tr)
+    pred = rf.predict(X_te)
+    print(f"RF R^2:       {r2_score(y_te, pred):.4f}")
+    print(f"RF Spearman:  {spearmanr(y_te, pred)[0]:.4f}")
+
+
+# %% CELL 9 — Optional: leakage-safe grid search over n_features x n_estimators
+# Expensive. Run once, record best pair, then set N_FEATURES / N_ESTIMATORS
+# in CELL 3 and freeze them.
+RUN_GRID_SEARCH = False  # set True to run
+
+N_FEATURES_GRID = [200, 300, 400, 500, 600, 800, 1000]
+N_ESTIMATORS_GRID = [200, 300, 400, 600, 800, 1000]
+
+if RUN_GRID_SEARCH:
+    print("Grid search (leakage-safe per-fold XGB selection)")
+    rows = []
+    for nf in N_FEATURES_GRID:
+        for ne in N_ESTIMATORS_GRID:
+            if nf > X_raw.shape[1]:
+                continue
+            res = run_cv(nf, ne, verbose=False)
+            rows.append(res)
+            print(
+                f"  nf={nf:4d} | ne={ne:4d} | "
+                f"R^2={res['mean_r2']:.4f} | Spearman={res['mean_spearman']:.4f}"
+            )
+
+    results_df = pd.DataFrame(rows)
+    best = results_df.loc[results_df["mean_r2"].idxmax()]
+
+    print("\n" + "=" * 50)
+    print("GRID SEARCH BEST (leakage-safe)")
+    print("=" * 50)
+    print(f" Best n_features:   {int(best['n_features'])}")
+    print(f" Best n_estimators: {int(best['n_estimators'])}")
+    print(f" Mean CV R^2:       {best['mean_r2']:.4f}")
+    print(f" Mean CV Spearman:  {best['mean_spearman']:.4f}")
+    print("=" * 50)
+
+    print("\nR^2 pivot (rows=n_features, cols=n_estimators):")
+    print(
+        results_df.pivot(
+            index="n_features", columns="n_estimators", values="mean_r2"
+        ).round(4)
+    )
+
+    out_path = "/content/drive/MyDrive/CRISPR_Project/grid_search_results.csv"
+    results_df.to_csv(out_path, index=False)
+    print(f"\nSaved: {out_path}")
