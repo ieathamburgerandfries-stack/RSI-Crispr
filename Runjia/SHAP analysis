@@ -1,0 +1,23 @@
+# to be run after training the model
+
+import sys
+!{sys.executable} -m pip install matplotlib
+import matplotlib
+!{sys.executable} -m pip install shap
+import shap
+
+# Map the selected column indices back to real feature names for readable plots
+feature_names = X_master_df.columns[final_feature_idx]
+
+# Use the same feature subset the final model was trained on
+X_selected = X_pool[:, final_feature_idx]
+
+# TreeExplainer is exact and efficient for XGBoost/RF/LightGBM
+explainer = shap.TreeExplainer(final_model)
+shap_values = explainer.shap_values(X_selected)
+
+# Global feature importance — beeswarm plot showing magnitude AND direction of effect per feature
+shap.summary_plot(shap_values, X_selected, feature_names=feature_names)
+
+# Cleaner ranked bar chart of mean |SHAP value| per feature, if you just want a ranking
+shap.summary_plot(shap_values, X_selected, feature_names=feature_names, plot_type='bar')
