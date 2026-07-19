@@ -1,0 +1,130 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split, KFold
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import r2_score, mean_squared_error
+from scipy.stats import spearmanr
+import xgboost as xgb
+
+# ==========================================
+# 1. load training data
+# ==========================================
+import os
+print("Loading ecoli_feature_matrix.csv...")
+file_path_train = os.path.expanduser('~/Downtloads/ecoli_feature_matrix.csv') # must have training data locally
+df_train = pd.read_csv(file_path_train, header=1) # use second row as headers
+y_master = df_train['cut.score'].values
+X_master_df = df_train.drop(columns=['sgRNAID', 'cut.score']).apply(pd.to_numeric, errors='coerce').fillna(0.0)
+X_master = X_master_df.values
+print(f"Full dataset: {X_master.shape[0]} rows, {X_master.shape[1]} raw features.")
+
+# ==========================================
+# 2. hold out test set
+# ==========================================
+X_pool, X_test_final, y_pool, y_test_final = train_test_split(
+    X_master, y_master, test_size=0.15, random_state=42
+)
+print(f"Tuning pool: {X_pool.shape[0]} rows | Held-out test: {X_test_final.shape[0]} rows")
+print("-" * 50)
+
+# ==========================================
+# 3. grid search (5-fold CV on the pool)
+# ==========================================
+n_features_grid = [200, 300, 400, 500, 600, 800]
+n_estimators_grid = [200, 300, 400, 500, 600, 800]
+
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+# key: (n_features, n_estimators) -> lists of per-fold metrics
+combo_scores = {(nf, ne): {'r2': [], 'spearman': [], 'mse': []}
+                 for nf in n_features_grid for ne in n_estimators_grid}
+
+print("[Grid Search] Sweeping n_features x n_estimators...")
+fold_num = 1
+for train_idx, val_idx in kf.split(X_pool):
+    X_tr_full, X_val_full = X_pool[train_idx], X_pool[val_idx]
+    y_tr, y_val = y_pool[train_idx], y_pool[val_idx]
+
+    # Ranks features
+    fold_selector = RandomForestRegressor(n_estimators=50, max_depth=10, random_state=42, n_jobs=-1)
+    fold_selector.fit(X_tr_full, y_tr)
+    fold_ranking = np.argsort(fold_selector.feature_importances_)[::-1]
+
+    for n_features in n_features_grid:
+        top_idx = fold_ranking[:n_features]
+        X_tr, X_val = X_tr_full[:, top_idx], X_val_full[:, top_idx]
+
+        for n_estimators in n_estimators_grid:
+            model = xgb.XGBRegressor(
+                n_estimators=n_estimators, learning_rate=0.05, max_depth=4,
+                subsample=0.8, colsample_bytree=0.8, random_state=42, n_jobs=-1,
+            )
+            model.fit(X_tr, y_tr)
+            preds = model.predict(X_val)
+
+            key = (n_features, n_estimators)
+            combo_scores[key]['r2'].append(r2_score(y_val, preds))
+            combo_scores[key]['spearman'].append(spearmanr(y_val, preds)[0])
+            combo_scores[key]['mse'].append(mean_squared_error(y_val, preds))
+
+    print(f" -> Fold {fold_num} complete.")
+    fold_num += 1
+
+    # Checkpoint after every fold in case of a crash mid-sweep
+    pd.DataFrame([
+        {'n_features': nf, 'n_estimators': ne,
+         'mean_r2': np.mean(s['r2']), 'mean_spearman': np.mean(s['spearman']), 'mean_mse': np.mean(s['mse'])}
+        for (nf, ne), s in combo_scores.items() if s['r2']
+    ]).to_csv('grid_search_results_partial.csv', index=False)
+
+results_df = pd.DataFrame([
+    {'n_features': nf, 'n_estimators': ne,
+     'mean_r2': np.mean(s['r2']), 'mean_spearman': np.mean(s['spearman']), 'mean_mse': np.mean(s['mse'])}
+    for (nf, ne), s in combo_scores.items()
+])
+
+best_row = results_df.loc[results_df['mean_r2'].idxmax()]
+
+print("\n" + "=" * 50)
+print("        GRID SEARCH RESULTS (tuning pool only)     ")
+print("=" * 50)
+print("n_features\tn_estimators\tmean_r2\tmean_spearman\tmean_mse")
+print(f"{int(best_row['n_features'])}\t{int(best_row['n_estimators'])}\t"
+      f"{best_row['mean_r2']:.4f}\t{best_row['mean_spearman']:.4f}\t{best_row['mean_mse']:.4f}")
+print("\nR^2 by (n_features rows x n_estimators cols):")
+print(results_df.pivot(index='n_features', columns='n_estimators', values='mean_r2').round(4))
+
+# ==========================================
+# 4. re-fit the final model
+# ==========================================
+best_n_features = int(best_row['n_features'])
+best_n_estimators = int(best_row['n_estimators'])
+
+final_selector = RandomForestRegressor(n_estimators=50, max_depth=10, random_state=42, n_jobs=-1)
+final_selector.fit(X_pool, y_pool)
+final_ranking = np.argsort(final_selector.feature_importances_)[::-1]
+final_feature_idx = final_ranking[:best_n_features]
+
+final_model = xgb.XGBRegressor(
+    n_estimators=best_n_estimators, learning_rate=0.05, max_depth=4,
+    subsample=0.8, colsample_bytree=0.8, random_state=42, n_jobs=-1,
+)
+final_model.fit(X_pool[:, final_feature_idx], y_pool)
+
+# ==========================================
+# 5. evluation using the held-out set
+# ==========================================
+final_preds = final_model.predict(X_test_final[:, final_feature_idx])
+final_r2 = r2_score(y_test_final, final_preds)
+final_spearman, _ = spearmanr(y_test_final, final_preds)
+final_mse = mean_squared_error(y_test_final, final_preds)
+
+print("\n" + "=" * 50)
+print("      FINAL MODEL — HELD-OUT TEST SET PERFORMANCE  ")
+print("=" * 50)
+print(f" n_features:   {best_n_features}")
+print(f" n_estimators: {best_n_estimators}")
+print(f" Test R^2:     {final_r2:.4f}")
+print(f" Test Spearman: {final_spearman:.4f}")
+print(f" Test MSE:     {final_mse:.4f}")
+print("=" * 50)
