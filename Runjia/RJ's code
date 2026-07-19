@@ -11,7 +11,7 @@ import xgboost as xgb
 # ==========================================
 import os
 print("Loading ecoli_feature_matrix.csv...")
-file_path_train = os.path.expanduser('~/Downtloads/ecoli_feature_matrix.csv') # must have training data locally
+file_path_train = os.path.expanduser('~/Downloads/ecoli_feature_matrix.csv') # must have training data locally
 df_train = pd.read_csv(file_path_train, header=1) # use second row as headers
 y_master = df_train['cut.score'].values
 X_master_df = df_train.drop(columns=['sgRNAID', 'cut.score']).apply(pd.to_numeric, errors='coerce').fillna(0.0)
