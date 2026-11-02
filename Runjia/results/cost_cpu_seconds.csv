@@ -1,0 +1,6 @@
+config,columns,rho,cpu_s,wall_s,peak_gb,reps,cpu_per_wall
+imports only (floor),,,1.61,1.62,0.17,3,0.99
+"as published: all columns, XGBoost select, XGBoost fit",6517.0,0.6939,65.78,13.77,3.76,3,4.78
+"all columns, LightGBM select, LightGBM fit",6517.0,0.6949,19.36,6.98,3.05,3,2.77
+"reduced columns, no selection, LightGBM fit",712.0,0.6814,7.54,3.62,2.83,3,2.08
+"reduced columns, no selection, ridge",712.0,0.6272,3.37,2.89,3.09,3,1.17

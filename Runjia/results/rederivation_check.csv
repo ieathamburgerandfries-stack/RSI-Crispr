@@ -1,0 +1,12 @@
+file,status,worst_column,max_rel_diff
+grouped_retention,agrees,,0.0
+matched_search_folds,agrees,hal_default,0.0001
+d_mechanics_reconstructibility,DIFFERS,oof_r2_from_mono_di,0.0502
+abund_local_vs_mappability,DIFFERS,uniq.w500,1.0385
+final_eval_metric_bootstrap,agrees,,0.0
+selector_control,agrees,,0.0
+kmer_order_noselect,agrees,spearman,0.0024
+portability_364,agrees,spearman,0.0021
+additivity_reduced,DIFFERS,boosting_minus_ridge,0.6262
+dissection_supercoiling,agrees,spearman,0.0121
+their_split_slicer,DIFFERS,pick_percentile,0.0245

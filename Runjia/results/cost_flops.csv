@@ -1,0 +1,5 @@
+model,forward_flops_per_guide,train_flops,note,vs_crisprHAL
+crisprHAL 2,108771456.0,420600946747392.0,"4 conv blocks + BiGRU(128), 48 epochs, 26,853 guides, train = 3x forward",1.0
+"crisprHAL 2, tuned",242578560.0,1250680717762560.0,"4 conv blocks + BiGRU(192), 64 epochs, 26,853 guides, train = 3x forward",0.3
+"SLICER, as published",,178487513961.0,"300 selector trees over 6,517 cols + 400 champion trees over 300 cols, depth 4, ~1 add per (row, col, level)",2356.5
+"SLICER, reduced, no selection",,24491869416.0,"0 selector trees over 0 cols + 400 champion trees over 712 cols, depth 4, ~1 add per (row, col, level)",17173.1

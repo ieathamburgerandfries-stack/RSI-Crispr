@@ -1,0 +1,6 @@
+model,train_flops,bytes_moved,flops_per_byte,cpu_seconds,wall_seconds,peak_gb,cpu_per_wall,gbp_per_fold_cpu,ratio_train_flops,ratio_bytes_moved,ratio_cpu_seconds,ratio_wall_seconds
+"crisprHAL 2, published",420600946747392.0,8546503021056.0,49.213221561047646,10000.0,1266.0,4.55,7.9,0.1111,1.0,1.0,1.0,1.0
+"crisprHAL 2, tuned",1250680717762560.0,22399165716480.0,55.83604021655066,32000.0,4148.0,4.6,7.71,0.3556,0.3,0.4,0.3,0.3
+"SLICER, as published",178487513961.0,713950055844.0,0.25,65.8,13.8,3.76,4.77,0.0007,2356.5,12.0,152.0,91.7
+"SLICER, minimum cost",24491869416.0,97967477664.0,0.25,7.5,3.6,2.83,2.08,0.0001,17173.1,87.2,1333.3,351.7
+"SLICER, ridge on reduced columns",,,,3.4,2.9,3.09,1.17,0.0,,,2941.2,436.6

@@ -1,0 +1,6 @@
+arm,n_features,changed,spearman,spearman_sd,n_fits
+plus_trees,400,n_estimators,0.4435355336435474,0.0153402025895086,15
+plus_shape,400,max_depth;learning_rate,0.4835327758213222,0.0154980993812534,15
+plus_nosubsample,400,subsample;colsample_bytree,0.3998976431714379,0.0148343762246959,15
+plus_depth,400,max_depth,0.4658786722058965,0.0149860516118448,15
+plus_lr,400,learning_rate,0.44895975258601045,0.0164155667044758,15

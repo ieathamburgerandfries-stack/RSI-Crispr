@@ -1,0 +1,8 @@
+arm,training_data,n_train,n_cols,label,spearman,vs_crisprhal
+noshay_rows,"the 1,222-gene panel Noshay published",6860,6517,curated,0.660049342813492,-0.035
+noshay_rows_label,"same rows, Noshay's own cut_score",6860,6517,noshay,0.6536659083684324,-0.0413
+curated_matched_n_0,"random curated rows, n matched",6860,6517,curated,0.6659582284675103,-0.029
+curated_matched_n_1,"random curated rows, n matched",6860,6517,curated,0.6693952460074545,-0.0256
+curated_matched_n_2,"random curated rows, n matched",6860,6517,curated,0.6694730144917315,-0.0255
+curated_full,every curated training row,26830,6517,curated,0.6984744398229762,0.0035
+curated_full_base,"every curated training row, base only",26830,6169,curated,0.54309934900625,-0.1519

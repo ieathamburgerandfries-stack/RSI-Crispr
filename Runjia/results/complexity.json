@@ -1,0 +1,82 @@
+{
+  "n_trees": 400,
+  "max_depth": 4,
+  "n_leaves": 6348,
+  "n_internal_nodes": 5948,
+  "parameters_leaf_values_only": 6348,
+  "parameters_incl_structure": 18244,
+  "columns_available": 6517,
+  "columns_offered_to_the_fit": 300,
+  "columns_ever_split_on": 280,
+  "columns_carrying_half_the_gain": 45,
+  "top10_gain_share": 0.1951,
+  "mean_nodes_per_tree": 30.7,
+  "crisprhal2": {
+    "WT-SpCas9": 790533,
+    "eSpCas9": 823301,
+    "layers": 37
+  },
+  "ridge_share_of_boosting_rho": 0.956,
+  "top_columns": [
+    [
+      "p20basepair.Hlgap.eVEraw",
+      0.03840000182390213
+    ],
+    [
+      "eng.flank.comp.up250.gc",
+      0.020899999886751175
+    ],
+    [
+      "p19dimer.Hbond.stackingraw",
+      0.020400000736117363
+    ],
+    [
+      "eng.flank.win.up250.trimer.Hbondenergy.mean",
+      0.01850000023841858
+    ],
+    [
+      "V73.xsgRNA.raw",
+      0.017799999564886093
+    ],
+    [
+      "p18dimer.Hbond.energyraw",
+      0.017000000923871994
+    ],
+    [
+      "p19dimer.Hbond.energyraw",
+      0.01679999940097332
+    ],
+    [
+      "V1119.xsgRNA.raw",
+      0.016200000420212746
+    ],
+    [
+      "V279.xsgRNA.raw",
+      0.015699999406933784
+    ],
+    [
+      "eng.flank.comp.dn500.gc",
+      0.01360000018030405
+    ],
+    [
+      "p20basepair.Hbond.energyraw",
+      0.013500000350177288
+    ],
+    [
+      "V231.xsgRNA.raw",
+      0.013299999758601189
+    ],
+    [
+      "V286.xsgRNA.raw",
+      0.012799999676644802
+    ],
+    [
+      "p18basepair.Hbond.energyraw",
+      0.01269999984651804
+    ],
+    [
+      "eng.flank.win.dn250.trimer.Hbondenergy.mean",
+      0.012199999764561653
+    ]
+  ]
+}

@@ -88,7 +88,8 @@ from sklearn.model_selection import KFold
 
 DATA = "/content/crisprhal_widewindow_input.csv.gz"
 HAL = "/content/crisprHAL"
-OUT = "/content/crisprhal_tune_matched.csv"      # resume file; download this
+OUT = "/content/crisprhal_matched_folds.csv"     # resume file; download this
+                                                 # into results/ under this name
 SEED = 41
 HALF, CORE = 1000, 23
 UP, DOWN = 189, 166                              # their WT-SpCas9 window
@@ -178,7 +179,8 @@ for fold, (tr, va) in enumerate(outer, start=1):
         rho, secs = fit_score(cfg, seqs[tr][itr], y[tr][itr],
                               seqs[tr][iva], y[tr][iva])
         record(dict(stage="search", fold=fold, draw=i, spearman=rho,
-                    seconds=secs, config=json.dumps(cfg)))
+                    is_published_config=(i == 0), seconds=secs,
+                    config=json.dumps(cfg)))
         print(f"  fold {fold} draw {i:2d}: inner rho {rho:.4f}  ({secs/60:.1f} min)",
               flush=True)
         if rho > best:
@@ -191,6 +193,7 @@ for fold, (tr, va) in enumerate(outer, start=1):
     if ("final", fold, -1) not in seen:
         rho, secs = fit_score(best_cfg, seqs[tr], y[tr], seqs[va], y[va])
         record(dict(stage="final", fold=fold, draw=-1, spearman=rho,
+                    is_published_config=(best_cfg == draws(TRIALS, fold)[0]),
                     seconds=secs, config=json.dumps(best_cfg)))
         print(f"fold {fold} FINAL: outer rho {rho:.4f}  ({secs/60:.1f} min)",
               flush=True)

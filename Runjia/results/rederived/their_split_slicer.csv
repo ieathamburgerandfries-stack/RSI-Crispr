@@ -1,0 +1,2 @@
+model,split,n_train,n,spearman,kendall_tau,pearson,r2,calibration_slope,top_decile_prec,pick_percentile,fit_seconds
+"SLICER, default settings",crisprHAL 2's shipped split,26830,6737,0.6984744398229762,0.5101078808593095,0.7191465199611106,0.5144390908601304,1.0741404691469598,0.2704309063893016,77.40982633219534,12.1

@@ -40,6 +40,7 @@ import pandas as pd
 from . import config
 
 CORR_OUT = config.RESULTS / "gc_strata_corr.csv"
+CORR_CURATED_OUT = config.RESULTS / "gc_strata_corr_curated.csv"
 RUN_OUT = config.RESULTS / "gc_strata_ablation.csv"
 
 N_STRATA = 5
@@ -67,16 +68,44 @@ def _frame() -> pd.DataFrame:
     return df.dropna()
 
 
+def _frame_curated() -> pd.DataFrame:
+    """The same three columns on the curated 33,567-guide cohort.
+
+    `_frame()` above reads `load_guide_index()`, which is the 13,880-row
+    published cohort. Everything it produced was quoted in Finding 3 without a
+    cohort label and went stale at the pivot: flank GC's marginal association is
+    **3.6x larger** here, because the relationship itself is steeper in the rows
+    crisprHAL added (Appendix B2a). The conditioning result is the part that has
+    to be re-measured, not just re-labelled -- a suppressor's effect depends on
+    the correlations among all three variables, and two of the three moved.
+    """
+    from .curated_ablation import _base, _block
+
+    X, y, names, protos = _base()
+    proto = pd.Series([str(q).upper() for q in protos])
+    tgc = proto.map(lambda q: (q.count("G") + q.count("C")) / max(len(q), 1))
+
+    v, fn = _block("a_flank", protos)
+    cols = [list(fn).index(c) for c in FLANK_GC if c in list(fn)]
+    if not cols:
+        raise KeyError(f"none of {FLANK_GC} on the curated cohort")
+    fgc = np.nanmean(v[:, cols], axis=1)
+
+    df = pd.DataFrame({"target_gc": tgc.to_numpy(), "y": y, "flank_gc": fgc},
+                      index=pd.Index(protos, name=config.ID_COL))
+    return df.dropna()
+
+
 def _strata(df: pd.DataFrame) -> pd.Series:
     """Equal-count bins of target GC. Ties are common at 20 nt, so rank first."""
     r = df["target_gc"].rank(method="first")
     return pd.qcut(r, N_STRATA, labels=False)
 
 
-def corr(verbose: bool = True) -> pd.DataFrame:
+def corr(cohort: str = "curated", verbose: bool = True) -> pd.DataFrame:
     from scipy.stats import spearmanr
 
-    df = _frame()
+    df = _frame_curated() if cohort == "curated" else _frame()
     df["stratum"] = _strata(df)
 
     rows = [dict(stratum="all", n=len(df),
@@ -100,12 +129,15 @@ def corr(verbose: bool = True) -> pd.DataFrame:
     out.attrs["partial"] = float(partial)
     out["rho_flank_partial_overall"] = round(float(partial), 4)
     out["rho_flank_vs_target_gc"] = round(float(r_ft), 4)
-    out.to_csv(CORR_OUT, index=False)
+    out["cohort"] = cohort
+    out.to_csv(CORR_OUT if cohort == "published" else CORR_CURATED_OUT,
+               index=False)
     if verbose:
         print(out.round(4).to_string(index=False))
         print(f"\npartial rho(flank GC, label | target GC) = {partial:+.4f}"
               f"   [rho(flank GC, target GC) = {r_ft:+.4f}]")
-        print(f"written -> {CORR_OUT}")
+        print(f"  cohort: {cohort}, n = {len(df):,}")
+        print(f"written -> {CORR_OUT if cohort == 'published' else CORR_CURATED_OUT}")
     return out
 
 
@@ -161,11 +193,13 @@ def run(seeds=(41, 42, 43), n_splits: int = 5, n_features: int = 300,
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--corr", action="store_true")
+    ap.add_argument("--cohort", choices=["curated", "published"],
+                    default="curated")
     ap.add_argument("--run", action="store_true")
     ap.add_argument("--seeds", type=int, nargs="+", default=[41, 42, 43])
     a = ap.parse_args(argv)
     if a.corr or not a.run:
-        corr()
+        corr(cohort=a.cohort)
     if a.run:
         run(seeds=tuple(a.seeds))
     return 0

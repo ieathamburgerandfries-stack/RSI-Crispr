@@ -1,0 +1,64 @@
+column,kind,r2_from_20mer,portable
+gene.distance0,positional (needs annotation),,True
+AAsgRNA.raw,guide k-mer count,,True
+ACsgRNA.raw,guide k-mer count,,True
+AGsgRNA.raw,guide k-mer count,,True
+AsgRNA.raw,guide k-mer count,,True
+ATsgRNA.raw,guide k-mer count,,True
+CAsgRNA.raw,guide k-mer count,,True
+CCsgRNA.raw,guide k-mer count,,True
+CGsgRNA.raw,guide k-mer count,,True
+CsgRNA.raw,guide k-mer count,,True
+CTsgRNA.raw,guide k-mer count,,True
+GAsgRNA.raw,guide k-mer count,,True
+GCsgRNA.raw,guide k-mer count,,True
+GGsgRNA.raw,guide k-mer count,,True
+GsgRNA.raw,guide k-mer count,,True
+GTsgRNA.raw,guide k-mer count,,True
+sgRNA.gcsgRNA.raw,guide GC,,True
+sgRNA.structuresgRNA.raw,guide RNA structure,,True
+sgRNA.tempsgRNA.raw,guide Tm,,True
+TAsgRNA.raw,guide k-mer count,,True
+TCsgRNA.raw,guide k-mer count,,True
+TGsgRNA.raw,guide k-mer count,,True
+TsgRNA.raw,guide k-mer count,,True
+TTsgRNA.raw,guide k-mer count,,True
+V10.xsgRNA.raw,undecoded V column,1.0,True
+V10.ysgRNA.raw,undecoded V column,1.0,True
+V1020.xsgRNA.raw,undecoded V column,0.515692866607016,False
+V1068.xsgRNA.raw,undecoded V column,0.5181888864205846,False
+V1085.ysgRNA.raw,undecoded V column,0.1633569755680805,False
+V109.xsgRNA.raw,undecoded V column,1.0,True
+V1132.xsgRNA.raw,undecoded V column,0.47476297713042015,False
+V129.xsgRNA.raw,undecoded V column,1.0,True
+V131sgRNA.raw,undecoded V column,0.17793601294156303,False
+V134.ysgRNA.raw,undecoded V column,0.3614353049111858,False
+V145.xsgRNA.raw,undecoded V column,1.0,True
+V15.xsgRNA.raw,undecoded V column,1.0,True
+V1521sgRNA.raw,undecoded V column,0.13461308662050175,False
+V161.xsgRNA.raw,undecoded V column,1.0,True
+V1729sgRNA.raw,undecoded V column,0.11619727300805194,False
+V176.xsgRNA.raw,undecoded V column,1.0,True
+V18.xsgRNA.raw,undecoded V column,1.0,True
+V18.ysgRNA.raw,undecoded V column,1.0,True
+V188.xsgRNA.raw,undecoded V column,1.0,True
+V204.xsgRNA.raw,undecoded V column,1.0,True
+V2049sgRNA.raw,undecoded V column,0.05619311420437223,False
+V213.ysgRNA.raw,undecoded V column,0.6539525531633072,False
+V219.xsgRNA.raw,undecoded V column,1.0,True
+V2304sgRNA.raw,undecoded V column,0.15457338827911993,False
+V233.xsgRNA.raw,undecoded V column,1.0,True
+V25.xsgRNA.raw,undecoded V column,1.0,True
+V2556sgRNA.raw,undecoded V column,0.22923896082260953,False
+V256.xsgRNA.raw,undecoded V column,1.0,True
+V262sgRNA.raw,undecoded V column,0.1937108266886256,False
+V268.xsgRNA.raw,undecoded V column,1.0,True
+V272.ysgRNA.raw,undecoded V column,0.4031410870820058,False
+V2796sgRNA.raw,undecoded V column,0.2136711225349025,False
+V28.xsgRNA.raw,undecoded V column,1.0,True
+V284.xsgRNA.raw,undecoded V column,1.0,True
+PAM.A0,PAM base,,True
+PAM.C0,PAM base,,True
+pam.distance0,positional (needs annotation),,True
+PAM.G0,PAM base,,True
+PAM.T0,PAM base,,True

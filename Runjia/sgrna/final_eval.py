@@ -14,7 +14,7 @@ crisprHAL 2 on **crisprHAL's own shipped eSpCas9 train/test partition**, with
 their own published eSpCas9 weights. No split, model, feature set or
 hyperparameter here was chosen with reference to eSpCas9.
 
-Two arms, one test set (their 11,897-guide eSpCas9 test file):
+Two arms, one test set (their 11,898-guide eSpCas9 test file):
 
     slicer      champion XGBoost, 300 columns selected inside their training
                 split only, base (6,169 regenerated) + family A (348) = 6,517

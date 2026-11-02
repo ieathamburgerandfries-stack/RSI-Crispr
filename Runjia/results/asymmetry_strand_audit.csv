@@ -1,0 +1,5 @@
+source,orientation,guides
+guide index joined to gene table,template strand,13879
+g_transcription template_strand column,template strand,13825
+g_transcription template_strand column,nan,50
+g_transcription template_strand column,sense strand,4

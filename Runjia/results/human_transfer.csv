@@ -1,0 +1,13 @@
+arm,rho,sd,n_train,n_test,seed
+human within-screen CV,0.4042619266079985,0.0124886801182236,13936.0,3484.0,41
+ecoli within-screen CV,0.5304960000518927,0.0120884035167944,11104.0,2776.0,41
+ecoli model -> human,-0.0483133030457441,,13880.0,17421.0,41
+human model -> ecoli,-0.0166959969318921,,17421.0,13880.0,41
+human within-screen CV,0.3962912237411008,,,,42
+ecoli within-screen CV,0.5311624170120056,,,,42
+ecoli model -> human,-0.045845421019698816,,,,42
+human model -> ecoli,-0.02787697825879958,,,,42
+human within-screen CV,0.3932394093150333,,,,43
+ecoli within-screen CV,0.5266690161347102,,,,43
+ecoli model -> human,-0.04811543449085933,,,,43
+human model -> ecoli,-0.010771195214509482,,,,43

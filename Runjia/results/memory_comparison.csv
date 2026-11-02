@@ -1,0 +1,8 @@
+config,columns,peak_gb_median,peak_gb_min,peak_gb_max,select_s_median,rho,reps
+imports only (floor),,0.17,0.17,0.17,,,3
+all columns + XGBoost selector (current),6517.0,3.33,3.23,3.68,12.0,0.6939,3
+all columns + LightGBM selector,6517.0,3.05,3.05,3.05,2.4,0.6945,3
+reduced columns + XGBoost selector,712.0,2.83,2.83,2.83,1.4,0.6823,3
+reduced columns + LightGBM selector,712.0,2.83,2.83,2.83,1.2,0.6801,3
+"reduced columns, stored reduced + XGBoost",712.0,0.65,0.65,1.38,1.4,0.6823,3
+"reduced columns, stored reduced + LightGBM",712.0,0.64,0.63,0.64,1.2,0.6801,3
