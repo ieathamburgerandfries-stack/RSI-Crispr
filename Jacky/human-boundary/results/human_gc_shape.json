@@ -1,0 +1,10 @@
+{
+  "label": "human_spacer_gc",
+  "n": 17421,
+  "linear_rho": 0.016951055456602918,
+  "linear_r2": 0.0001859758148052837,
+  "quadratic_r2": 0.004231557941969388,
+  "turning_point": 0.5708343011734818,
+  "mean_gc": 0.5541300729005224,
+  "turning_point_data_percentile": 0.596234429711268
+}
