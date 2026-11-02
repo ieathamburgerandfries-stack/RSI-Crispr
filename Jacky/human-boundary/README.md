@@ -3,19 +3,22 @@
 Jacky’s entry point for the human chapter. E. coli science is largely frozen;
 this folder tracks what explains the kingdom boundary.
 
-**Lead findings (Tier 1, located n = 16,490):**
+**Lead findings (located n = 16,490):**
 
 | claim | number |
 |---|---|
 | Human regenerated base CV ρ | **0.382** |
 | Human base + Family A CV ρ | **0.434** (**+0.052**) |
 | Family A alone | **0.341** |
-| Shared-column *E. coli*→human transfer | **−0.047** |
-| Transfer after residualising GC / GC² | **−0.048** (null — GC rule alone does not fix it) |
-| Error ↔ spacer GC (Spearman) | **−0.399** |
+| Shared-column *E. coli*→human transfer | **−0.049** |
+| Transfer after residualising GC / GC² | **−0.049** (null — GC rule alone does not fix it) |
+| **Family A both sides — *E. coli*→human** | **+0.022** (flips sign vs shared-col) |
+| **Family A alone — human→*E. coli*** | **+0.108** |
+| K562 DNase/ATAC as features | **+0.001 to +0.005** vs base (null) |
 | GC+GC² as human features | **+0.00** vs base (ablation null) |
 
-Artefacts under `results/`. Runner: `scripts/run_human_boundary.py`.
+Artefacts under `results/`. Runners: `scripts/run_human_boundary.py` (Tier 1),
+`scripts/run_tier2_tier3.py` (D1 / E1 / E2).
 
 ---
 
@@ -83,16 +86,16 @@ Status key: **DONE** / **PARTIAL** / **BLOCKED** / **TODO**
 
 | # | item | status | notes |
 |---|---|---|---|
-| D1 | Chromatin / accessibility at guide loci | **TODO** | Public tracks (DNase/ATAC) for located hg38 coords — next after Tier 1 |
+| D1 | Chromatin / accessibility at guide loci | **DONE** | ENCODE K562 DNase (ENCFF655HFU) + ATAC (ENCFF674WKB), ±500 nt. ρ vs y **0.042 / 0.027**; base+track Δρ **+0.003 / +0.001 / +0.005** (both) — essentially null. Caveat: K562 may not match the screen’s cell type — `results/human_chromatin.csv` |
 | D2 | GC + GC² as model features on human (ablation) | **DONE** | base 0.382 → base+GC/GC² **0.381** (null); GC/GC² alone 0.058 — `results/human_gc_feature_ablation.csv` |
 | D3 | Label / assay sanity (score dist, uniqueness) | **DONE** | y∈[0,1], mean 0.248; 13,138 unique spacers; chrom spectrum looks sane — `results/human_label_sanity.json` |
 
-### E. Tier 3 — later
+### E. Tier 3 — Family-A-aware / GC-matched transfer
 
-| # | item | status |
-|---|---|---|
-| E1 | Cross-kingdom with Family A on both sides | after C4 — **unblocked**; not run yet |
-| E2 | Human→*E. coli* with GC² / matched GC | after D2 — **unblocked**; not run yet |
+| # | item | status | result |
+|---|---|---|---|
+| E1 | Cross-kingdom with Family A on both sides | **DONE** | base E→H **−0.049**; **a_flank alone E→H +0.042 / H→E +0.108**; base+A E→H **+0.022** / H→E **+0.017** — flanks flip the sign — `results/family_a_kingdom_transfer.csv` |
+| E2 | GC-matched / residualised transfer | **DONE** | Shared-col stays ≈−0.049 under residualise / GC-range / hist-match. With Family A, raw already +0.022; GC controls do not move it much — `results/gc_matched_transfer.csv` |
 
 ---
 
@@ -100,10 +103,10 @@ Status key: **DONE** / **PARTIAL** / **BLOCKED** / **TODO**
 
 ```bash
 # Needs: human + ecoli matrices, qct_lookup_tables.json, v_column_mapping.json, hg38.fa.gz
-cd /workspace
-python Jacky/human-boundary/scripts/run_human_boundary.py
-# decode + autopsy only (no hg38):
-python Jacky/human-boundary/scripts/run_human_boundary.py --skip-locate
+# Optional for D1: ENCODE bigWigs under data/reference/chromatin/
+export RSI09_ROOT=/workspace/Runjia
+python3 Jacky/human-boundary/scripts/run_human_boundary.py   # Tier 1
+python3 Jacky/human-boundary/scripts/run_tier2_tier3.py       # D1 / E1 / E2
 ```
 
 Caches land in `Runjia/data/interim/human_boundary/` (decoded, located, `X_*.npy`, `a_flank_human.csv`).
@@ -115,14 +118,17 @@ Small tables land in `Jacky/human-boundary/results/`.
 
 1. **Family A is real on human** (+0.052 ρ), smaller than the curated *E. coli* jump
    but not zero — flank context matters in both kingdoms.
-2. **Transfer still dies** at ≈−0.047 on shared columns. Residualising out GC/GC²
-   does **not** rescue it, so “bacteria learned the wrong GC rule” is a symptom,
-   not the whole failure mode. Predictions are still GC-tilted (error↔GC ≈ −0.40).
-3. **Putting GC/GC² in the human model** adds nothing — the quadratic shape is
-   weak on human (peak ≈0.57, tiny R²). The kingdom break is not “forgot to
-   include GC².”
-4. **Next** (Tier 2/3): alignment of chromatin/accessibility at the 16.5k loci,
-   then Family-A-aware cross-kingdom (E1) if we want a sharper autopsy.
+2. **Shared-column transfer still dies** at ≈−0.049. Residualising / matching GC
+   does **not** rescue it — “wrong GC rule” is a symptom, not the whole failure.
+3. **With Family A on both sides, transfer flips positive** (E→H +0.022; flank-only
+   H→E +0.108). The kingdom wall on the published shared columns was partly
+   “no flanks,” not purely “incompatible biology.” Magnitude is still tiny vs
+   within-kingdom anchors — not useful prediction, but the sign change matters.
+4. **K562 DNase/ATAC buy almost nothing** (+0.001–0.005 ρ). Either accessibility
+   is not the missing human factor at this resolution, or we need the screen’s
+   actual cell-type tracks.
+5. **Putting GC/GC² in the human model** adds nothing. The kingdom break is not
+   “forgot to include GC².”
 
 ---
 
