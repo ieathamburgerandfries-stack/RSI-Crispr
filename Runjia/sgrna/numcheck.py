@@ -165,6 +165,10 @@ def report_attribution(path=None, window: int = 10, verbose: bool = True):
     scope: list[str] = []
     seen_at: dict[str, int] = {}
     misses, unscoped, checked = [], 0, 0
+    # The report sets minus signs as U+2212, which `NUM` does not read as a
+    # sign -- so "-0.633" was being captured as "0.633" and then failing to
+    # match the stored -0.6333. Normalise before matching.
+    lines = [ln.replace("−", "-") for ln in lines]
     for i, line in enumerate(lines, start=1):
         if SCOPE_RESET.match(line):
             scope, seen_at = [], {}
@@ -189,8 +193,15 @@ def report_attribution(path=None, window: int = 10, verbose: bool = True):
                 v = float(raw)
             except ValueError:
                 continue
+            # Only measurements, not the prose around them. A measurement in
+            # this report carries a decimal point or an explicit sign; bare
+            # integers are column counts, window widths, "20-mer", "10 kb",
+            # percentages and years, and checking them produces noise rather
+            # than findings.
+            if "." not in raw and raw[0] not in "+-":
+                continue
             if abs(v) >= 1900 and float(v).is_integer():
-                continue                      # years, counts, column totals
+                continue
             checked += 1
             if not any(round(p, d) == round(v, d)
                        for d in range(0, 6) for p in pool):

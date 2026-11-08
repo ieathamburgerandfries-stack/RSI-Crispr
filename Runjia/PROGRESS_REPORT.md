@@ -107,7 +107,7 @@ A 20-mer carries at most **40 bits**. The matrix spends 6,232 columns on it.
 **Start with an inventory, because the matrix partitions exactly.** Every column
 is in one of three groups and the counts add up with nothing left over:
 
-| group | columns | what each column is |
+| group (`portability_audit.csv`) | columns | what each column is |
 |---|---:|---|
 | **(position, k-mer) indicators** | **5,853** | is the base at position *p* an A? is the pair at *p* a CG? — mono, di, tri and tetramer |
 | **quantum-chemical tables** | **316** | a looked-up physical property of the base, pair or triple at a position |
@@ -135,7 +135,7 @@ Climbing the ladder with **no selection in any arm**, so these are
 representations compared in full rather than candidate pools under a budget
 (`curated_ladder.py`, 3 seeds × 5 folds):
 
-| arm | columns | ρ | vs the full base |
+| arm (`curated_ladder.csv`) | columns | ρ | vs the full base |
 |---|---:|---:|---:|
 | mononucleotide only | 74 | 0.5198 ± 0.0021 | −0.0251 |
 | + dinucleotide | 364 | 0.5331 ± 0.0010 | −0.0118 |
@@ -173,7 +173,7 @@ They buy a hundredth of a correlation all the same.
 line, all of their value is in the re-description (`handnamed_split.py`,
 published matrix, no selection in any arm):
 
-| arm | columns | ρ | over the base |
+| arm (`handnamed_split.csv`) | columns | ρ | over the base |
 |---|---:|---:|---:|
 | 364 sequence indicators | 364 | 0.5189 ± 0.0010 | — |
 | **+ the 46 computable from the 20-mer** | 410 | **0.5254 ± 0.0013** | **+0.0065** |
@@ -240,7 +240,7 @@ out-of-fold R² ≈ 0 against the base's indicators, while nine of its ΔG/ΔH/�
 sums come back at **R² = 1.0000** (Appendix A). Split in two
 (`no_information.py`, same base, same 5 × 5 protocol):
 
-| arm | columns | ρ | Δρ |
+| arm (`no_information.csv`) | columns | ρ | Δρ |
 |---|---:|---:|---:|
 | base | 6,169 | 0.5445 | — |
 | + the 22 **protospacer** columns | 6,191 | 0.5555 | **+0.0110** |
@@ -342,7 +342,7 @@ texture.** Re-assigning each guide the flank track read from a position offset b
 a circular chromosome shift keeps every column's distribution, smoothness and
 long-range autocorrelation and breaks only the correspondence (Appendix A):
 
-| flanks read from | ρ | gain over no flanks |
+| flanks read from (`shift_null.csv`) | ρ | gain over no flanks |
 |---|---:|---:|
 | **the right place** | **0.6060** | **+0.0769** |
 | 1 kb away | 0.5353 | +0.0062 (8% of the effect) |
@@ -388,7 +388,7 @@ the difference.
 The full ablation inside each stratum, where target composition is near-constant
 by construction:
 
-| target GC | n | baseline ρ | + family A | Δ |
+| target GC (`gc_strata_ablation.csv`) | n | baseline ρ | + family A | Δ |
 |---|---:|---:|---:|---:|
 | 0.20–0.40 | 2,776 | 0.3353 | 0.4630 | **+0.128** |
 | 0.40–0.50 | 2,776 | 0.4045 | 0.4797 | +0.075 |
@@ -409,7 +409,7 @@ not be read as quantitative support for the duplex-opening account.
 A convolutional network of the same architecture family as the best published
 competitor, given raw DNA on the same rows and folds:
 
-| sequence given | ρ |
+| sequence given (`seqnet_matched.csv`) | ρ |
 |---|---:|
 | protospacer + PAM | 0.4980 |
 | ±100 nt | 0.5203 |
@@ -462,7 +462,7 @@ workspace at 2,023 nt and their published batch of 1,024, so every width was
 re-run at batch 256; the 378 nt arm at both batches brackets that cost at
 **−0.011**, a fifth of the effect below.
 
-| crisprHAL 2 input | ρ (batch 256, fold 1) | vs their 378 nt design point |
+| crisprHAL 2 input (`crisprhal_wide_window.csv`) | ρ (batch 256, fold 1) | vs their 378 nt design point |
 |---:|---:|---:|
 | 23 nt (guide + PAM) | 0.5494 | −0.131 |
 | **378 nt (as published)** | **0.6799** | — |
@@ -608,7 +608,7 @@ mandatory here, because 30% of this label's variance is between genes (within-ge
 share 0.704) and essential genes sit 2.05 fitness units below non-essential ones,
 so a model that recognised the locus would be richly rewarded:
 
-| arm | CRISPRi (dCas9) | cutting (curated Cas9) |
+| arm (`cui_screen.csv`; the cutting column is `ablation_curated.csv`) | CRISPRi (dCas9) | cutting (curated Cas9) |
 |---|---:|---:|
 | 20-mer base, 6,169 columns | 0.4577 ± 0.0013 | 0.5584 ± 0.0011 |
 | base + family A | 0.4484 ± 0.0006 | 0.7151 ± 0.0005 |
@@ -876,7 +876,7 @@ survives that change of assay is guide-sequence effects and not flanking DNA.
 Measured through the top-300 selector, adding trimers *hurt*. Without selection it
 helps, paired over 3 seeds × 5 folds:
 
-| contrast | mean Δρ | folds | paired *t* |
+| contrast (`kmer_order_paired.csv`) | mean Δρ | folds | paired *t* |
 |---|---:|---:|---:|
 | **+ trimers** | **+0.0035** | 12/15 | **p = 0.025** |
 | **+ tetramers on top** | **−0.0028** | 4/15 | **p = 0.013** |
@@ -893,7 +893,7 @@ wrong answers before that was understood.
 
 Correlating every column against the champion's out-of-fold residuals:
 
-| model | strongest \|ρ\| among columns it has | among columns held back |
+| model (`headroom.csv`) | strongest \|ρ\| among columns it has | among columns held back |
 |---|---:|---:|
 | all 6,232 | 0.028 | **0.147** — family A |
 | the 427 | 0.022 | **0.146** — family A |
@@ -1077,7 +1077,7 @@ to be chosen to say so: no margin here was pre-declared, so the interval is
 reported in place of a verdict (Appendix B audits the dates).
 And on both of their splits the margin is small and ours:
 
-| their split | their published ρ | SLICER | margin |
+| their split (`final_eval.csv`, `their_split_slicer.csv`) | their published ρ | SLICER | margin |
 |---|---:|---:|---:|
 | *E. coli* SpCas9, 26,830 train | 0.695 | **0.6997** | +0.005 |
 | *E. coli* eSpCas9, 47,591 train | 0.782 | **0.7842** | +0.002 |
@@ -1135,7 +1135,7 @@ time on crisprHAL 2's **own held-out WT-SpCas9 test partition** (6,737 of their
 and their shipped weights re-run here give 0.6940). `data_ablation.py`,
 `results/data_ablation.csv`:
 
-| training data | n | ρ | against crisprHAL 2 |
+| training data (`data_ablation.csv`) | n | ρ | against crisprHAL 2 |
 |---|---:|---:|---:|
 | all curated rows, **base only** (no family A) | 26,830 | 0.5431 | −0.152 |
 | Noshay's 1,222-gene panel, **Noshay's own `cut_score`** | 6,860 | 0.6537 | −0.041 |
@@ -1482,18 +1482,25 @@ top of a model that already holds the guide. Set the increments beside the
 strongest single-column association within each family and they do not agree at
 all:
 
-| family | strongest single column, \|ρ\| | family increment Δρ |
+| family (`recoverability_trend_columns.csv`) | strongest single column, \|ρ\| | family increment Δρ |
 |---|---:|---:|
 | `b_energy` | **0.184** `eng.dg.hybridisation_weighted` | +0.018 |
+| `e_nucleoid` | 0.168 `eng.nuc.dep.hu` | +0.072 |
 | `i_shape` | 0.165 | +0.0007 |
 | `a_flank` | 0.161 `eng.flank.comp.up250.gc` | **+0.164** |
 | `d_mechanics` | 0.154 | +0.099 |
+| `d_supercoiling` | 0.146 | +0.139 |
 | `f_methylation` | 0.143 | +0.008 |
+| `g_transcription` | 0.129 | +0.058 |
 | `c_folding` | 0.119 | +0.015 |
+| `j_periodicity` | 0.041 | +0.011 |
 | `h_offtarget` | 0.024 | +0.001 |
 
-**Marginal association is nearly flat across six of the seven families — 0.12 to
-0.18 — while the increments span 0.001 to 0.164.** The strongest single column in
+**Marginal association is nearly flat across nine of the eleven families — 0.12
+to 0.18 — while the increments span 0.001 to 0.164.** All eleven are listed
+rather than a subset, because a shorter table invites the suspicion that the flat
+ones were chosen; the two that fall outside the band are `j_periodicity` and
+`h_offtarget`, and both are weak on the increment too. The strongest single column in
 the entire 6,232-column feature set is not a flank column at all: it is
 guide–DNA hybridisation energy, which is **R² 1.00 recoverable from the guide's
 own indicators and 0.90 correlated with plain guide GC**, and its family is worth
@@ -2515,7 +2522,7 @@ is *two* changes, a different grow policy **and** four times the capacity, so
 `results/xgb_knobs_verify.csv`). Three fold partitions, fifteen paired
 comparisons, bootstrapped:
 
-| arm | Δρ against the champion | 95% CI | folds improved |
+| arm (`xgb_knobs_verify.csv`) | Δρ against the champion | 95% CI | folds improved |
 |---|---:|---|---:|
 | `lossguide`, 63 leaves | +0.0067 | [+0.0054, +0.0080] | 15/15 |
 | **`depthwise`, `max_depth=6`** | **+0.0063** | [+0.0053, +0.0073] | 15/15 |
