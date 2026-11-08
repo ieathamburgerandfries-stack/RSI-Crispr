@@ -14,3 +14,6 @@ SLICER configuration (synthetic data),Colab T4 (host-resident input),10000,47.9,
 SLICER configuration (synthetic data),Colab T4 (device-resident input),1,2.22,450,,pasted from Colab run 2026-11-08 second session (colab/inference_bench_t4.py)
 SLICER configuration (synthetic data),Colab T4 (device-resident input),100,2.58,38760,,pasted from Colab run 2026-11-08 second session (colab/inference_bench_t4.py)
 SLICER configuration (synthetic data),Colab T4 (device-resident input),10000,6.68,1497006,,pasted from Colab run 2026-11-08 second session (colab/inference_bench_t4.py)
+SLICER configuration (synthetic data),Colab CPU (2 vCPU) in-process,1,0.43,2326,,mean of two passes of colab/slicer_cpu_check.py (trained in-process; all loading paths 0.36-0.51 / 1.05-1.20 / 56-65 ms)
+SLICER configuration (synthetic data),Colab CPU (2 vCPU) in-process,100,1.18,84746,,mean of two passes of colab/slicer_cpu_check.py (trained in-process; all loading paths 0.36-0.51 / 1.05-1.20 / 56-65 ms)
+SLICER configuration (synthetic data),Colab CPU (2 vCPU) in-process,10000,57.7,173310,,mean of two passes of colab/slicer_cpu_check.py (trained in-process; all loading paths 0.36-0.51 / 1.05-1.20 / 56-65 ms)

@@ -121,6 +121,17 @@ print("crisprHAL 2 on CPU ..."); res["hal_cpu"] = run(HAL_WORKER, "cpu")
 run(SLICER_TRAIN)
 print("SLICER on CPU ...");      res["slicer_cpu"] = run(SLICER_WORKER, "cpu")
 print("SLICER on GPU ...");      res["slicer_gpu"] = run(SLICER_WORKER, "cuda")
+# in-process cross-check of SLICER on the CPU (the fresh-subprocess figure above was
+# 16x slower at one guide than an in-process run in an earlier session; see
+# colab/slicer_cpu_check.py). Same session, same instance as everything above.
+import numpy as np, xgboost as xgb, time
+_X = np.load("slicer_X.npy"); _m = xgb.XGBRegressor(); _m.load_model("slicer_synth.json")
+_m.set_params(device="cpu"); res["slicer_cpu_inprocess"] = {}
+for _n in (1, 100, 10000):
+    _b = _X[:_n]; _m.predict(_b); _ts = []
+    for _ in range(9 if _n < 10000 else 5):
+        _t0 = time.perf_counter(); _m.predict(_b); _ts.append(time.perf_counter() - _t0)
+    res["slicer_cpu_inprocess"][f"host_{_n}"] = dict(latency_s=float(np.median(_ts)))
 res["cpu_count"] = os.cpu_count()
 json.dump(res, open("inference_colab.json", "w"), indent=2)
 
@@ -130,7 +141,8 @@ def g(k, key):
 def ms(x): return "      n/a" if x is None else f"{x*1e3:9.2f}"
 print(f"\nvCPUs: {res['cpu_count']}   (ms per call; median)")
 print(f"{'':34s}{'1 guide':>10s}{'100':>10s}{'10,000':>10s}   cold start (s)")
-rows = [("crisprHAL 2  CPU", "hal_cpu", ""), ("SLICER       CPU", "slicer_cpu", "host_"),
+rows = [("crisprHAL 2  CPU", "hal_cpu", ""), ("SLICER       CPU (subprocess)", "slicer_cpu", "host_"),
+        ("SLICER       CPU (in-process)", "slicer_cpu_inprocess", "host_"),
         ("crisprHAL 2  GPU", "hal_gpu", ""), ("SLICER       GPU, host input", "slicer_gpu", "host_"),
         ("SLICER       GPU, device input", "slicer_gpu", "device_")]
 for name, k, pre in rows:
@@ -138,7 +150,8 @@ for name, k, pre in rows:
     print(f"{name:34s}" + "".join(ms(g(k, pre + str(n))) for n in (1, 100, 10000))
           + ("" if cold is None or pre == "device_" else f"   {cold:8.2f}"))
 print("\nSame-hardware ratios (crisprHAL 2 / SLICER):")
-for lab, h, s, pre in (("CPU vs CPU", "hal_cpu", "slicer_cpu", "host_"),
+for lab, h, s, pre in (("CPU vs CPU (subprocess)", "hal_cpu", "slicer_cpu", "host_"),
+                       ("CPU vs CPU (in-process)", "hal_cpu", "slicer_cpu_inprocess", "host_"),
                        ("GPU vs GPU, host input", "hal_gpu", "slicer_gpu", "host_"),
                        ("GPU vs GPU, device input", "hal_gpu", "slicer_gpu", "device_")):
     print(f"  {lab:26s}" + "".join(
