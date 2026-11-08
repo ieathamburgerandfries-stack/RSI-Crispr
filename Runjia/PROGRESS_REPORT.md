@@ -1939,7 +1939,13 @@ candidate.**
    +0.0004 on top of the flank composition.
 6. **Not the physical shape of the flanks, but their letter composition.**
    Flank DNA-shape descriptors are worth +0.120 alone and **+0.0007** once
-   composition is present: a reparameterisation, not a second channel.
+   composition is present: a reparameterisation, not a second channel. The same
+   holds when shape is kept as vectors and a 3D reconstruction of the helical path
+   (three data sources, up to +0.141 alone, −0.0008 to +0.0006 on top of family A,
+   replicated on a second cohort and under shuffled-flank controls; Finding 8). The
+   flank effect itself has two parts: a **window-scale composition gradient worth
+   about +0.105, carried by 24 columns of GC and purine fraction**, and a **local
+   component within 10–15 nt of the cut worth +0.05 to +0.07**.
 7. **Not supercoiling**, despite the family built to test it paying +0.139: the
    untagged no-antibody GapR control predicts as well as the ChIP, so what that
    family measures is sequencing read density — and read density is in turn
