@@ -456,11 +456,12 @@ def main(argv=None) -> int:
     ap.add_argument("--essentiality", action="store_true")
     ap.add_argument("--strand", action="store_true")
     ap.add_argument("--position", action="store_true")
+    ap.add_argument("--marginals", action="store_true")
     ap.add_argument("--cas9-reference", action="store_true")
     ap.add_argument("--force", action="store_true")
     a = ap.parse_args(argv)
     if a.build or not (a.run or a.cas9_reference or a.essentiality
-                       or a.strand or a.position):
+                       or a.strand or a.position or a.marginals):
         build(force=a.force)
     if a.essentiality:
         essentiality_split()
@@ -468,6 +469,8 @@ def main(argv=None) -> int:
         strand_split()
     if a.position:
         position_split()
+    if a.marginals:
+        strand_marginals()
     if a.run:
         run()
     if a.cas9_reference:
@@ -475,6 +478,85 @@ def main(argv=None) -> int:
     return 0
 
 
+
+# The strand result above was first found with a marginal scan run ad hoc at a
+# shell prompt, and two of its numbers went into the report without a result file
+# behind them -- which `numcheck` caught. This records them properly: the
+# marginal association of every flank column with the label inside each subset,
+# and the strand summary that interprets it.
+MARGINALS_OUT = config.RESULTS / "cui_essential_marginals.csv"
+STRAND_SUMMARY_OUT = config.RESULTS / "cui_strand_summary.csv"
+
+
+def strand_marginals(verbose: bool = True):
+    """Which flank columns carry the CRISPRi label, and how strand explains it."""
+    from scipy.stats import spearmanr
+
+    X, meta = build(verbose=False)
+    X = np.asarray(X, dtype=np.float32)
+    names = list(meta["names"])
+    y = np.asarray(meta["y"], dtype=float)
+    n_base = int(meta["n_base"])
+    gene = np.asarray([g if isinstance(g, str) else "" for g in meta["gene"]],
+                      dtype=object)
+    ess = np.asarray([str(e) for e in meta["essential"]], dtype=object)
+    has_gene = (gene != "") & (gene != "nan") & (gene != "None")
+
+    raw = pd.read_csv(config.BADSEED / "screen_data.csv")
+    raw = raw[raw["ntargets"] == 1].groupby("guide", as_index=False).agg(
+        coding=("coding", "first"))
+    coding = raw.set_index("guide").reindex(meta["protospacers"])["coding"]
+
+    subsets = (("essential genes", has_gene & (ess == "True")),
+               ("non-essential genes", has_gene & (ess == "False")))
+    rows = []
+    for label, sel in subsets:
+        yy = y[sel]
+        for j in range(n_base, X.shape[1]):
+            v = X[sel, j].astype(float)
+            if np.nanstd(v) == 0:
+                continue
+            rows.append(dict(subset=label, column=names[j], n=int(sel.sum()),
+                             spearman=float(spearmanr(v, yy,
+                                                      nan_policy="omit").statistic)))
+    m = pd.DataFrame(rows)
+    m.to_csv(MARGINALS_OUT, index=False)
+
+    srows = []
+    for label, sel in subsets:
+        c = coding[sel].to_numpy()
+        pur = X[sel, names.index("eng.flank.comp.up1000.purine")].astype(float)
+        gc = X[sel, names.index("eng.flank.comp.up500.gc")].astype(float)
+        for val in (True, False):
+            k = pd.notna(c) & (c == val)
+            if not k.sum():
+                continue
+            srows.append(dict(subset=label, coding_strand=bool(val),
+                              n=int(k.sum()), mean_label=float(y[sel][k].mean()),
+                              mean_up1000_purine=float(pur[k].mean()),
+                              mean_up500_gc=float(gc[k].mean())))
+        srows.append(dict(subset=label, coding_strand=None, n=int(sel.sum()),
+                          mean_label=float(np.nanmean(y[sel])),
+                          mean_up1000_purine=float(np.nanmean(pur)),
+                          mean_up500_gc=float(np.nanmean(gc))))
+    sm = pd.DataFrame(srows)
+    sm.to_csv(STRAND_SUMMARY_OUT, index=False)
+
+    if verbose:
+        for label, g in m.groupby("subset"):
+            g = g.reindex(g.spearman.abs().sort_values(ascending=False).index)
+            print(f"  {label}: {len(g)} usable flank columns, "
+                  f"median |rho| {g.spearman.abs().median():.4f}")
+            for _, r in g.head(3).iterrows():
+                print(f"     {r.spearman:+.4f}  {r.column}")
+            gcrow = g[g.column == "eng.flank.comp.up500.gc"]
+            if len(gcrow):
+                print(f"     {gcrow.spearman.iloc[0]:+.4f}  "
+                      f"eng.flank.comp.up500.gc  (Finding 2's column)")
+        print(sm.to_string(index=False))
+        print(f"written -> {MARGINALS_OUT}")
+        print(f"written -> {STRAND_SUMMARY_OUT}")
+    return m, sm
+
 if __name__ == "__main__":
     raise SystemExit(main())
-

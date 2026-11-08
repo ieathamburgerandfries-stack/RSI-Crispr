@@ -157,3 +157,115 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+# --------------------------------------------------------------------------
+# The untested axis: the selection *rule*
+# --------------------------------------------------------------------------
+# The size of the budget is settled -- 300 was inherited, then checked at 600,
+# 1,200 and "every column", and it moves nothing (Part 4's register, Finding 1).
+# The metric is nearly settled too: gain against SHAP is +0.0007 above. But both
+# of those vary the *number* or the *ordering*, and every arm still takes the top
+# k of one ranking. On a matrix where 6,095 columns restate about twenty
+# variables, the top of any ranking is full of near-duplicates, so the budget can
+# be spent several times over on the same quantity.
+#
+# This is the rule that has never been tried: pick greedily by relevance, but
+# penalise each candidate by how correlated it already is with what has been
+# chosen -- the classic max-relevance / min-redundancy trade. It is run inside
+# each training fold, like the selection it replaces, so it is leakage-safe. The
+# correlation is computed incrementally against the selected set rather than as a
+# full 6,517-square matrix, which keeps it to a few seconds a fold.
+REDUNDANCY_OUT = config.RESULTS / "selector_redundancy.csv"
+
+
+def _mrmr(Xtr: np.ndarray, rel: np.ndarray, k: int, lam: float = 1.0):
+    """Greedy max-relevance / min-redundancy pick of k columns.
+
+    score_j = rel_j / (1 + lam * max_|corr| with the already-chosen set), so a
+    column that duplicates something already taken has to be far more relevant
+    to earn a place. Returns the chosen indices in pick order.
+    """
+    Z = Xtr - Xtr.mean(axis=0, keepdims=True)
+    sd = Z.std(axis=0, ddof=0)
+    live = sd > 0
+    Z = np.where(live, Z / np.where(sd > 0, sd, 1.0), 0.0).astype(np.float32)
+    n = Z.shape[0]
+
+    chosen = [int(np.argmax(np.where(live, rel, -np.inf)))]
+    maxabs = np.zeros(Xtr.shape[1], dtype=np.float32)
+    for _ in range(k - 1):
+        c = np.abs(Z.T @ Z[:, chosen[-1]]) / n          # corr with the last pick
+        np.maximum(maxabs, c, out=maxabs)
+        score = rel / (1.0 + lam * maxabs)
+        score[chosen] = -np.inf
+        score[~live] = -np.inf
+        nxt = int(np.argmax(score))
+        if not np.isfinite(score[nxt]):
+            break
+        chosen.append(nxt)
+    return np.array(chosen)
+
+
+def redundancy(seeds=(41, 42, 43), n_splits=None, k=None, lam: float = 1.0,
+               verbose: bool = True):
+    """Does a redundancy-penalised rule beat taking the top k of the ranking?"""
+    import xgboost as xgb
+    from scipy.stats import spearmanr
+    from sklearn.model_selection import KFold
+
+    from .run_ablation import _impute, champion_params, make_selector
+
+    k = k or config.N_FEATURES
+    n_splits = n_splits or config.N_SPLITS
+    X, y, names, n_base = _frame()
+    binary = _is_binary(X)
+    rows = []
+
+    for rule in ("gain_top_k", "mrmr"):
+        rhos, n_bin, n_flank, red = [], [], [], []
+        for seed in seeds:
+            for tr, va in KFold(n_splits, shuffle=True,
+                                random_state=seed).split(X):
+                A, B = _impute(X[tr], X[va])
+                sel = make_selector(seed)
+                sel.fit(A, y[tr])
+                rel = np.asarray(sel.feature_importances_, dtype=np.float64)
+                top = (np.argsort(rel)[::-1][:k] if rule == "gain_top_k"
+                       else _mrmr(A, rel, k, lam))
+                m = xgb.XGBRegressor(**champion_params(seed))
+                m.fit(A[:, top], y[tr])
+                rhos.append(float(spearmanr(y[va], m.predict(B[:, top])).statistic))
+                n_bin.append(int(binary[top].sum()))
+                n_flank.append(int((top >= n_base).sum()))
+                # How redundant is the chosen set? Mean of each column's largest
+                # absolute correlation with any other chosen column -- the number
+                # the rule is supposed to move.
+                Z = A[:, top] - A[:, top].mean(axis=0, keepdims=True)
+                sd = Z.std(axis=0, ddof=0)
+                Z = np.where(sd > 0, Z / np.where(sd > 0, sd, 1.0), 0.0)
+                C = np.abs(Z.T @ Z) / len(Z)
+                np.fill_diagonal(C, 0.0)
+                red.append(float(C.max(axis=1).mean()))
+        rows.append(dict(rule=rule, k=k, lam=lam if rule == "mrmr" else np.nan,
+                         spearman=float(np.mean(rhos)),
+                         spearman_sd=float(np.std(rhos, ddof=1)),
+                         binary_cols=float(np.mean(n_bin)),
+                         a_flank_cols=float(np.mean(n_flank)),
+                         mean_max_abs_corr=float(np.mean(red))))
+        if verbose:
+            r = rows[-1]
+            print(f"  {rule:12s}: rho {r['spearman']:+.4f}  "
+                  f"redundancy {r['mean_max_abs_corr']:.3f}  "
+                  f"{r['binary_cols']:.0f} binary  "
+                  f"{r['a_flank_cols']:.0f} flank", flush=True)
+        pd.DataFrame(rows).to_csv(REDUNDANCY_OUT, index=False)
+
+    out = pd.DataFrame(rows).set_index("rule")
+    if verbose:
+        d = out.loc["mrmr", "spearman"] - out.loc["gain_top_k", "spearman"]
+        print(f"\n  mrmr against the pipeline's rule: {d:+.4f}")
+        print(f"  redundancy {out.loc['gain_top_k', 'mean_max_abs_corr']:.3f} "
+              f"-> {out.loc['mrmr', 'mean_max_abs_corr']:.3f}")
+        print(f"written -> {REDUNDANCY_OUT}")
+    return out

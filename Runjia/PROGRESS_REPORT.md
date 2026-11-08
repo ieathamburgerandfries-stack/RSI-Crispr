@@ -342,10 +342,14 @@ the target itself is GC-poor. That is the signature of a suppressor, and the
 opposite of what a confound looks like.
 
 The same measurement on the 13,880-row published cohort gives +0.044 marginal
-and +0.082 partial. Both are right for their cohort, and the 4× gap is a third
-independent measurement of the curation mechanism in Appendix B2a: the flank-GC
-slope is **2.96×** steeper in the rows crisprHAL added, which is what produces a
-marginal correlation four times larger.
+and +0.082 partial, and both are right for their cohort. *The two should be
+compared as a difference and not as a ratio.* A correlation is not a quantity
+whose ratio means anything — the same Δρ is worth about twice as much higher up
+the scale — so the comparable statement is that the marginal association is
+**0.132 larger** on the curated rows and the partial **0.139 larger**. What has a
+legitimate ratio is the underlying regression slope, which is **2.96×** steeper
+in the rows crisprHAL added (Appendix B2a), and that is the mechanism producing
+the difference.
 
 The full ablation inside each stratum, where target composition is near-constant
 by construction:
@@ -750,7 +754,10 @@ The largest between-model gap on any kind of column goes from 31 points to 0.3.
 
 *Consequence:* report SHAP, at block level, and never gain — and note that the
 **pipeline's own column selector uses gain**, which costs no accuracy and does
-bias what the model is shown (Appendix B).
+bias what the model is shown. Block-level reporting is not a presentational
+preference but the only fix available: selecting for decorrelation instead
+*lowers* ρ and leaves a less readable column set, because on this matrix the
+redundant columns are the informative ones (Appendix B).
 
 
 **The standard faithfulness probe is uninterpretable on a redundant matrix**
@@ -1046,7 +1053,10 @@ use:
 #### How to read these numbers: cost, and what ρ buys
 
 **The nuance that "150× less compute" needs, stated here rather than buried.**
-There is **no architecture-independent measure of cost**, and FLOPs is not one:
+The figure is **CPU-seconds per fold** — 65.8 against 10,000 (`cost_panel.csv`) —
+and on wall-clock the same comparison is 45–113× depending on the configuration,
+because the two models multithread by different factors. More generally there is
+**no architecture-independent measure of cost**, and FLOPs is not one:
 it is hardware-independent but computed *from* the architecture, so it cannot
 adjudicate between architectures without already assuming what work costs. CPU
 time is the honest version of the claim and it is a statement about our hardware,
@@ -1143,14 +1153,19 @@ mechanism.
 **Positive.**
 
 1. **The DNA outside the protospacer — DNA Cas9 never contacts — predicts whether
-   a target is cut**, and it is the largest known effect for this phenotype:
-   +0.164 ρ, out to roughly 500 nt each side. Browne et al. had shown that a
-   network reading ±190 nt beats one reading the guide; the claim here is
-   stronger and different in kind — the information is **compositional and
-   smoothly distributed**, with a measured autocorrelation length (8% of the
-   effect survives a 1 kb shift, none survives 10 kb) and no dependence on where
-   the window edges are put (+0.1634 against +0.1638 at four different widths).
-   There is no motif to find.
+   a target is cut**: **+0.164 ρ**, with most of it inside 500 nt each side and
+   essentially none past a kilobase. It is the largest of the eleven families
+   tried here, ahead of the next at +0.139, and no superlative beyond that is
+   defensible — effects reported on other cohorts, bases and metrics are not
+   commensurable with an increment measured on this one.
+   Browne et al. had already shown that a network reading ±190 nt beats one
+   reading the guide, and reported +0.143 from widening the window on this same
+   screen, so the *existence* of the effect is theirs. What is added here is its
+   **shape**: the information is compositional and smoothly distributed, with a
+   measured autocorrelation length (8% of the effect survives a 1 kb shift, none
+   survives 10 kb) and no dependence on where the window edges are put (+0.1634
+   against +0.1638 at four widths sharing no value with the originals). There is
+   no motif to find.
 2. **The effect belongs to a step that requires a break, not to binding or
    accessibility.** In a dCas9 CRISPRi screen on the same genome the same
    features add **−0.009** across the screen and **+0.007** inside the essential
@@ -1385,10 +1400,13 @@ instead of a 2D graph is the change that moves the field. What is the equivalent
 here, and is there more than one?
 
 **There is one, and it is the flanking DNA.** It should not be filed as a small
-improvement: +0.164 ρ on a base of 0.545 is a **30% relative gain**, and on
-crisprHAL's held-out partition the same features are worth +0.155 against a
-base-only model at 0.543 — the difference between a model that is useless for
-ranking and one that matches the state of the art. The 3D-structure analogy is
+improvement, and the honest way to say why is not a percentage of a correlation:
+**+0.164 ρ** takes the curated base from 0.545 to 0.709, and on crisprHAL's
+held-out partition the same features are worth **+0.155**, taking a base-only
+model from 0.543 to 0.698 — which is the distance between a model that does not
+match the state of the art and one that does. On the decision scale that
+corresponds to moving the expected pick from roughly the 70th percentile of ten
+candidates to the 81st (Finding 7). The 3D-structure analogy is
 apt in size as well as in kind: in both cases the representation is given
 information the old one could not express, rather than a better way of fitting
 the same information.
@@ -1494,9 +1512,10 @@ biology paper.
   hyperparameter rather than an independent cleanliness rule; and it is applied
   **before** the train/test split, so it cleans the test set too and raises ρ
   partly by making the evaluation easier. **None of this is what inflated our
-  family table**: at fixed rows a label swap is worth +0.004. The 3.3× is that
-  the flank effect is genuinely ~3× steeper outside Guo's 1,222-gene panel than
-  inside it (Appendix B2a).
+  family table**: at fixed rows a label swap is worth +0.004. The table grew
+  because the flank-GC regression slope is about **3× steeper** outside Guo's
+  1,222-gene panel than inside it (Appendix B2a) — a ratio of slopes, which is a
+  legitimate one, unlike the ratio of the Δρ values it produces.
 - **The long-range mechanism is unidentified.** Orientation is a live candidate
   with one ruled-out alternative; the most mechanistically motivated feature built
   to explain it (GC skew and helical periodicity) is a null.
@@ -1521,7 +1540,7 @@ three kinds, and only one kind is worth more compute.
 
 | limit | why it binds | what would move it |
 |---|---|---|
-| Everything interpretive is conditioned on a redundancy-blind selector | the 300 columns are the top *k* of a gain ranking, and gain over-weights binary columns by 14 points of composition (Appendix B). "45 columns carry half the gain", the concentration figures and every family increment inherit that | greedy selection penalised by correlation with what is already chosen. The clusters are already built in `faithfulness.clusters_around`. It will not move ρ — nothing does — but it would make 300 columns readable for the first time |
+| Everything interpretive is conditioned on a redundancy-blind selector | the 300 columns are the top *k* of a gain ranking, and gain over-weights binary columns by 14 points of composition. "45 columns carry half the gain", the concentration figures and every family increment inherit that | **not at the selector — tested and it fails.** A redundancy-penalised rule costs −0.0023 and leaves a *more* binary, less readable set, because the redundant columns here are the informative ones (Appendix B). The limit stands; the fix is block-level attribution, which Finding 5 already prescribes |
 | The label is **P(cut) × P(the break kills)** and no arm separates the terms | survival is the only readout, so the model is fitted to the product (Part 2) | partial, and cheap: Cui's screen carries **two time points**, 18 and 75 generations, which the pipeline averages for reliability. Their *difference* is a depletion-rate signal, and rate separates "cuts fast" from "eventually dies" in a way an endpoint cannot. Applies to the dCas9 cohort only, which is the limit of it |
 | Faithfulness is only ever measured by refitting | every drop-and-refit measure is confounded by redundancy in the refit itself, including the cluster-removal version that was built to fix it | a perturbation measure needs no refit: sensitivity-*n* correlates summed attributions against the actual change in the **fixed** model's output. That removes the refit, which is where redundancy does its damage in both existing measures. It does not make the number redundancy-free — correlated columns still have their credit split arbitrarily between them — but the failure mode moves from the probe to the attribution, where it can be read at block level |
 | Per-guide label reliability is heterogeneous and ignored | the 0.946 ceiling is an average over guides whose replicate disagreement spans 0.06 to 2.39 log2 units | **measured, and the answer is no** (Appendix B). Inverse-variance weighting costs −0.0050, of which −0.0041 is reproduced by permuting the weights, and dropping the noisiest decile is indistinguishable from dropping a random one. ALDEx2's posterior has already spent the information. The limit is real; the obvious lever is not the way to move it |
@@ -2434,13 +2453,13 @@ selector.
 
 **B.2 — What is the model class worth?**
 
-### What sixteen model classes and 220× of compute tell us about the task
+### What sixteen model classes and a 220× spread in wall-clock cost tell us about the task
 
 Accuracy against cost, all on the curated cohort with family A, one seed × five
 folds, against crisprHAL 2 on the same folds (`curated_models.csv`,
 `crisprhal_tuned_folds.csv`):
 
-| | ρ | CPU-minutes, 5 folds | relative cost |
+| | ρ | **wall-clock** minutes, 5 folds | relative wall cost |
 |---|---:|---:|---:|
 | **XGBoost** (champion) | **0.7084** | 1.9 | 1× |
 | LightGBM | 0.7082 | 1.4 | 0.7× |
@@ -2453,9 +2472,22 @@ folds, against crisprHAL 2 on the same folds (`curated_models.csv`,
 | crisprHAL 2, published configuration | 0.6971 | 85 | 45× |
 | crisprHAL 2, its best configuration | 0.7051 | 220 | **113×** |
 
-**Boosting beats a tuned CNN–BiGRU by +0.003 at 1/113th of the compute, and
-*ridge* is within 0.058 of it at 1/220th.** A linear model on 300 engineered
-columns, fitted in one CPU-minute, gets within six hundredths of a deep network
+*Which clock, because the report quotes two and they are not the same number.*
+The column above is **wall-clock**, taken from each run's own timer
+(crisprHAL's tuned configuration is 2,630 s per fold, so 219 minutes over five —
+the 220 in the table). Finding 7's headline **~150×** is a different measurement:
+**CPU-seconds per fold**, 65.8 against 10,000 (`cost_panel.csv`). Both are
+honest and they differ because the two models multithread by different factors —
+4.8 CPU-seconds per wall-second for SLICER against 7.9 for crisprHAL — so the
+wall ratio is smaller than the CPU ratio. The wall-clock range across
+configurations is 45–113× and the CPU-seconds figure is 152×. Neither is the
+"true" cost, which is the point Finding 7's nuance paragraph makes: there is no
+architecture-independent measure, and sample complexity is the one claim that
+does not depend on a clock at all.
+
+**Boosting beats a tuned CNN–BiGRU by +0.003 at 1/113th of its wall-clock cost,
+and *ridge* is within 0.058 of it at 1/220th.** A linear model on 300 engineered
+columns, fitted in about a minute, gets within six hundredths of a deep network
 that takes three and a half hours. That is the cost argument in its strongest
 form, and it does not depend on our model winning anything.
 
@@ -2468,9 +2500,11 @@ at is more informative than ranking them:
   problem is **bias-limited, not variance-limited**, at this sample size.
 * **boosting is worth +0.055 over ridge.** Sequential bias reduction is the one
   thing that helps, which is what a sum of many small, partly-interacting effects
-  calls for. On the published matrix *without* family A that margin was 0.03;
-  adding family A nearly doubles it, so **family A is also where the exploitable
-  interaction structure is**, not merely where the signal is.
+  calls for. On the published matrix *without* family A that margin was 0.03,
+  so adding family A widens boosting's advantage over a linear model by about
+  0.025 — quoted as a difference, because a ratio of two Δρ values is not a ratio
+  of anything. **Family A is therefore also where the exploitable interaction
+  structure is**, not merely where the signal is.
 * **k-NN is worst, at 0.601.** Nearest neighbours in 300 dimensions find almost
   nothing, so the signal is **smooth and global rather than clustered** — there
   is no neighbourhood of similar guides to borrow an answer from. That is
@@ -2630,16 +2664,42 @@ ordering* does not help. They say nothing about whether a different 300 would be
 better, and the gain-against-SHAP comparison above is the first evidence on that
 question: a 20% different set, +0.0007.
 
-**The untested rule is a redundancy-penalised one.** 300 columns on a matrix
-where 6,095 restate about twenty variables lets the selector spend its whole
-budget on one variable spelled three hundred ways, which is what both rankings
-above partly do. Greedy selection penalised by correlation with what is already
-chosen would spend it on distinct quantities instead, and the correlation
-structure needed is already computed in `faithfulness.clusters_around`. On this
-cohort it would most likely buy nothing in ρ — nothing does, and raising *k* to
-1,200 is the direct evidence that the ranking's tail is not where the signal is.
-Its value would be that the resulting 300 columns could be read directly, which
-is the one thing no arm in this project has ever been able to do.
+**So the rule was tested too, and it is the one axis with a real answer — it is
+worse.** 300 columns on a matrix where 6,095 restate about twenty variables lets
+the selector spend its whole budget on one variable spelled three hundred ways,
+and it does: the mean largest absolute correlation between a selected column and
+any other selected column is **0.647**. Greedy max-relevance / min-redundancy
+selection — score each candidate as relevance divided by 1 + its largest
+correlation with what is already chosen, run inside each training fold like the
+selection it replaces (`selector_audit.redundancy`,
+`results/selector_redundancy.csv`):
+
+| rule | ρ | redundancy of the chosen set | binary | from `a_flank` |
+|---|---:|---:|---:|---:|
+| top *k* of the gain ranking | **0.7084** | 0.647 | 145 | 80 |
+| redundancy-penalised | 0.7061 | **0.544** | 174 | 69 |
+
+**It does what it was designed to do and costs −0.0023 for it.** And the reason
+is the interesting part, because it is the opposite of what this section
+predicted: the penalised rule picks **more** binary indicators (174 against 145)
+and **fewer** flank columns (69 against 80). Position-specific k-mer indicators
+are close to mutually independent by construction — the indicator for A at
+position 7 says almost nothing about the one for G at position 12 — while the
+dense family columns are strongly correlated with each other, because flank GC at
+±250 and at ±500 nt are measuring nearly the same DNA. So on this matrix
+**decorrelation and relevance point in opposite directions**: the redundant
+columns are the informative dense ones and the decorrelated ones are the weak
+sparse ones, and penalising redundancy removes signal.
+
+*That retracts the proposal this section made before it was run.* The claim was
+that a redundancy-aware rule would cost nothing and would leave 300 columns that
+could be read directly. It costs 0.0023, and the set it leaves is **more**
+binary, so it is less readable rather than more. The honest conclusion is the
+narrower one: on a matrix whose redundancy is concentrated in exactly the columns
+that carry the effect, there is no selection rule that is both decorrelated and
+informative, and the interpretability problem cannot be fixed at the selector.
+It has to be handled where the report already handles it — by reporting
+attribution at **block** level rather than per column (Finding 5).
 
 ### Is re-description worth anything, or only the *right* re-description?
 
@@ -3545,6 +3605,15 @@ columns is **ρ = 0.97**, and every family gains, with a median inflation of
 cohort change does not reorder which families matter — it multiplies all of them
 by roughly the same factor.
 
+*The ratio column is a description of this table and not a measure of anything
+else.* Ratios of Δρ are not ratios of information: on the ρ² scale the same Δρ
+is worth about twice as much higher up, so "4.9×" for `d_mechanics` does not mean
+the family explains 4.9 times as much. The ratios are given because the *thing
+being explained here is the table changing scale*, and a ratio is the natural
+way to describe a multiplier — but no claim elsewhere in this report rests on
+one, and every family statement outside this appendix is quoted as a difference.
+The quantity with a legitimate ratio is the regression slope below.
+
 **Why a multiplier, and why upward**, is answered in Appendix B2a and is not
 about noise: the slope of the flank-composition effect is **2.96× steeper** in
 the guides crisprHAL adds, and the weak slope belongs to Guo's 1,222-gene panel
@@ -3811,8 +3880,9 @@ Eleven folders, but a folder is not a kind. Six of them bundle measurements of
 different things, and in four cases the bundling hides the result — so each is
 given here by **what information it carries**, with the internal split where one
 exists. Δρ is the curated-cohort increment over the 6,169-column base
-(Appendix B3); the published-matrix figures are about a third of these and rank
-almost identically (ρ = 0.97).
+(Appendix B3); the published-matrix figures are uniformly smaller and rank almost
+identically (ρ = 0.97), for the reason Appendix B2a gives — a steeper
+flank-composition slope in the rows crisprHAL added.
 
 **The one that carries the effect.**
 
