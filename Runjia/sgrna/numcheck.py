@@ -129,3 +129,78 @@ print(f"\nATTRIBUTION misses: {len(attr)}")
 for k, v in Counter(r[0] for r in attr).most_common():
     print(f"   {v:4d}  {k}")
 for r in attr: print(f"   {r[1]}:{r[2]}  {r[3]:>12}  not in {r[4]}")
+
+
+# --------------------------------------------------------------------------
+# Scoped attribution for the report
+# --------------------------------------------------------------------------
+# The coverage pass above asks "does this number appear in ANY result file".
+# Across 387 files that is 470,912 distinct values, so for anything with three
+# significant figures or fewer the answer is yes by chance, and the check gives
+# false assurance. It is how five hand-computed statistics reached the report
+# with nothing on disk behind them on 8 November.
+#
+# This pass is stricter. It tracks which result files the surrounding prose
+# actually cites, and checks each number only against those. A number that no
+# nearby file can account for is an attribution miss; a number in a passage that
+# names no file at all is *unscoped* -- not wrong, but not checkable either, and
+# the count is worth watching.
+SCOPE_RESET = re.compile(r"^#{2,4} ")
+
+
+def report_attribution(path=None, window: int = 10, verbose: bool = True):
+    path = path or (ROOT / "docs/PROGRESS_REPORT.md")
+    lines = path.read_text(errors="ignore").splitlines()
+
+    cache: dict[str, set] = {}
+    def values_of(name):
+        if name not in cache:
+            hits = list(RES.rglob(name))
+            vals = []
+            for h in hits:
+                vals += floats_in(h)
+            cache[name] = {round(v, 6) for v in vals}
+        return cache[name]
+
+    scope: list[str] = []
+    seen_at: dict[str, int] = {}
+    misses, unscoped, checked = [], 0, 0
+    for i, line in enumerate(lines, start=1):
+        if SCOPE_RESET.match(line):
+            scope, seen_at = [], {}
+        for f in FILE.findall(line):
+            if f not in seen_at:
+                scope.append(f)
+            seen_at[f] = i
+        scope = [f for f in scope if i - seen_at[f] <= window]
+        if SKIP_LINE.search(line) or line.lstrip().startswith(">"):
+            continue
+        nums = [n.replace(",", "") for n in NUM.findall(line)]
+        if not nums:
+            continue
+        if not scope:
+            unscoped += len(nums)
+            continue
+        pool = set()
+        for f in scope:
+            pool |= values_of(f)
+        for raw in nums:
+            try:
+                v = float(raw)
+            except ValueError:
+                continue
+            if abs(v) >= 1900 and float(v).is_integer():
+                continue                      # years, counts, column totals
+            checked += 1
+            if not any(round(p, d) == round(v, d)
+                       for d in range(0, 6) for p in pool):
+                misses.append((i, raw, ",".join(scope[:3]), line.strip()[:80]))
+
+    if verbose:
+        print(f"scoped attribution over {path.name}")
+        print(f"  numbers checked against a cited file : {checked:,}")
+        print(f"  numbers in passages citing no file   : {unscoped:,}")
+        print(f"  MISSES (no cited file accounts for it): {len(misses)}")
+        for ln, raw, sc, txt in misses[:40]:
+            print(f"   {ln:5d}  {raw:>10s}  [{sc[:46]}]  {txt}")
+    return misses, unscoped, checked

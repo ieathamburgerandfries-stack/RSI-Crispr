@@ -1,0 +1,4 @@
+arm,label,n_fits,spearman,spearman_sd
+unweighted,raw log-ratio,15,0.6863579582472938,0.008363065769300309
+inverse_variance,raw log-ratio,15,0.6824058098318045,0.008860559058514633
+inverse_variance_permuted,raw log-ratio,15,0.682048660990839,0.007876084228052811

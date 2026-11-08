@@ -539,6 +539,35 @@ def strand_marginals(verbose: bool = True):
                           mean_label=float(np.nanmean(y[sel])),
                           mean_up1000_purine=float(np.nanmean(pur)),
                           mean_up500_gc=float(np.nanmean(gc))))
+    # The derived statistics that the report quotes about the strand column.
+    # They were computed at a shell prompt the first time and went into the text
+    # with nothing on disk behind them; percentages and "sd" units fall outside
+    # `numcheck`'s number grammar, so nothing caught it.
+    from scipy.stats import mannwhitneyu
+    for label, sel in subsets:
+        yy = y[sel]
+        c = coding[sel].to_numpy()
+        on, off = pd.notna(c) & (c == True), pd.notna(c) & (c == False)
+        if not (on.sum() and off.sum()):
+            continue
+        n1 = int(on.sum())
+        # A binary column cannot reach rho 1: its ceiling at these group sizes
+        # is what a perfect split of the label would score.
+        ideal = np.zeros(len(yy))
+        ideal[np.argsort(yy)[:n1]] = 1
+        pooled = (np.var(yy[on]) * n1 + np.var(yy[off]) * int(off.sum())) / len(yy)
+        srows.append(dict(
+            subset=label, coding_strand="derived", n=int(sel.sum()),
+            mean_label=np.nan, mean_up1000_purine=np.nan, mean_up500_gc=np.nan,
+            gap_in_label_sd=float((yy[on].mean() - yy[off].mean()) / yy.std()),
+            variance_explained=float(1 - pooled / np.var(yy)),
+            auc=float(1 - mannwhitneyu(yy[on], yy[off]).statistic
+                      / (n1 * int(off.sum()))),
+            spearman=float(spearmanr(c[on | off].astype(float),
+                                     yy[on | off]).statistic),
+            spearman_ceiling_for_a_binary_column=float(
+                spearmanr(ideal, yy).statistic)))
+
     sm = pd.DataFrame(srows)
     sm.to_csv(STRAND_SUMMARY_OUT, index=False)
 

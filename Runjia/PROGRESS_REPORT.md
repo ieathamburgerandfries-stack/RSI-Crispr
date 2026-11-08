@@ -678,15 +678,22 @@ rule.** Block-grouping answers the locus objection and raises a sharper one —
 dCas9 silences by sitting on the DNA and physically blocking RNA polymerase, and
 how good a roadblock it is depends on which strand the guide matches — the
 standard CRISPRi design rule, and a property of the **assay** rather than of
-Cas9. Measured inside these essential genes: coding-strand guides average a
-fitness score of **−5.04** against **−1.51**, a gap of **1.23 standard
-deviations**; strand alone explains **38%** of the label's variance; and a
-randomly chosen coding-strand guide is more depleted than a randomly chosen
-off-strand one **85%** of the time. A binary column cannot reach ρ 1 — at these
-group sizes its ceiling is 0.861, achieved only by splitting the label perfectly
-— and strand reaches **0.599 of a possible 0.861, or 70% of that ceiling**. So
-the single column is not doing something strange; it is close to the best a
-yes/no variable could possibly do on this label.
+Cas9. Measured on this cohort's 5,514 essential-gene guides
+(`cui_screen.py --marginals`, `results/cui_strand_summary.csv`):
+coding-strand guides average a fitness score of **−5.07** against **−1.19**, a
+gap of **1.35 standard deviations**; strand alone explains **45%** of the label's
+variance; and a randomly chosen coding-strand guide is more depleted than a
+randomly chosen off-strand one **88%** of the time. A binary column cannot reach
+ρ 1 — at these group sizes its ceiling is **0.863**, achieved only by splitting
+the label perfectly — and strand reaches **0.662 of that 0.863, or 77%**. So the
+single column is not doing something strange; it is close to the best a yes/no
+variable could do on this label, and its raw marginal of 0.662 matches the 0.6621
+the one-column model scores, as it should.
+
+**The same statistic in the non-essential genes is the control on that**, and it
+is flat: a gap of 0.15 sd, **0.6%** of the variance, and an AUC of 0.54 against
+0.88. Strand matters only where knockdown has a phenotype, which is the
+essentiality argument arriving from a third direction.
 
 **And that is why family A inherited it.** Family A's strongest column in this
 screen is `eng.flank.comp.up1000.purine`, and purine content counted on the
@@ -730,9 +737,9 @@ project had never used. Their tables carry `coding_strand` and
 
 | screen | ρ(coding strand, label), essential genes | mean label on strand / off | ρ in non-essential genes |
 |---|---:|---|---:|
-| **Rousset** — never used here before | **−0.633** | −4.74 / −0.92 | −0.056 |
+| **Rousset** — never used here before (`crispri_screen_strand.csv`) | **−0.633** | −4.74 / −0.92 | −0.056 |
 | Cui, their processing | −0.599 | −5.04 / −1.51 | −0.048 |
-| Cui, ours (`screen_data.csv`) | — | −5.07 / −1.19 | — |
+| Cui, our own build (`cui_strand_summary.csv`) | — | −5.07 / −1.19 | — |
 | Wang | not testable — its library is coding-strand only | −5.25 / — | — |
 
 Their `log2FC` is negative for a depleted guide, so a negative ρ means
@@ -748,7 +755,7 @@ them placed uniquely in NC_000913.2, into the same 6,517 columns — so the guid
 differ and nothing else does (`crispri_screens.py --family-a`,
 `results/crispri_screen_family_a.csv`, gene-grouped):
 
-| arm, inside essential genes | Cui | **Rousset** |
+| arm, inside essential genes (`crispri_screen_family_a.csv`, `cui_essential_strand.csv`) | Cui | **Rousset** |
 |---|---:|---:|
 | 20-mer base | 0.2718 | 0.2141 |
 | base + family A | 0.5468 | 0.5043 |
@@ -764,12 +771,44 @@ worth about +0.29, a single strand indicator beats the whole 348-column family
 blocks Rousset gives +0.2916 apparently and **+0.0213** given strand, against
 +0.2679 and +0.0069 on Cui. And every subset agrees in sign:
 
-| family A's increment | Cui | Rousset |
-|---|---:|---:|
-| all genic | −0.0093 | **−0.0206** |
-| non-essential genes | −0.0101 | **−0.0250** |
-| essential genes, given strand | +0.0148 | **+0.0245** |
-| essential genes, 100 kb blocks, given strand | +0.0069 | **+0.0213** |
+| family A's increment (`crispri_screen_family_a.csv`, `cui_essentiality_split.csv`) | Cui | Rousset | **Wang** |
+|---|---:|---:|---:|
+| all genic | −0.0093 | −0.0206 | **+0.1019** |
+| non-essential genes | −0.0101 | −0.0250 | — |
+| essential genes, given strand | +0.0148 | +0.0245 | **+0.2669** |
+| essential genes, 100 kb blocks, given strand | +0.0069 | +0.0213 | **+0.2195** |
+
+**Wang does not replicate, and the controls do not explain it away.** Its column
+is the honest problem with this section. Family A is worth **+0.102** across
+Wang's genic cohort where it is negative on the other two, **+0.267** inside its
+essential genes, and **+0.2195** there under 100 kb blocking — so the locus
+control that rescued the reading on Cui and Rousset does **not** rescue it here.
+The strand control is vacuous on Wang because its library is coding-strand only,
+so there is no strand variation to remove.
+
+*What differs about Wang, stated because it is suggestive and not because it
+settles anything:*
+
+| | Rousset | Cui | **Wang** |
+|---|---:|---:|---:|
+| between-gene share of label variance | 0.476 | 0.327 | **0.766** |
+| coding-strand guides | 25,800/59,246 | 25,800/59,246 | **52,104/52,104** |
+| intergenic guides | 3,809 | 3,809 | **0** |
+| ρ of the 20-mer base alone, essential genes | 0.2141 | 0.2718 | **0.0829** |
+
+Three quarters of Wang's label variance is *between genes*, against a third for
+Cui, and its guide columns predict almost nothing (ρ 0.08). A feature set that
+indexes the locus therefore has an unusually large target, and 100 kb blocking
+stops a model memorising a *particular* region without stopping it learning "this
+compositional signature belongs to the kind of region where knockdown is lethal",
+which generalises to held-out blocks.
+
+*That is a hypothesis and the test for it has not been run.* The control that
+separates "predicts which gene" from "predicts which guide" is the **within-gene**
+comparison, which Finding 3 already uses on the cutting screen. Until it is run on
+Wang, the position is: **the cross-assay null reproduces on two of three screens,
+and the third is unexplained.** The localisation in Finding 3 should be read with
+that attached.
 
 *What the replication does and does not extend.* It makes the cross-assay
 control a three-screen result instead of a one-screen one, which is what Finding
@@ -1217,6 +1256,39 @@ ceiling. The whole range from useless to perfect spans the 50th to the 91st,
 because ten random candidates need not contain a good one — so the distance
 between this model and a perfect one is smaller, in decisions, than the distance
 between ρ 0.71 and ρ 0.946 looks.
+
+**Training cost is the wrong clock for a design tool, and the right one is far
+more lopsided.** Every cost figure above is about *fitting*. What a user does is
+fit once and then score every candidate guide for every target they care about,
+which is tens of thousands to millions of forward passes against a handful of
+fits. Measured on the same CPU, scoring in batches of 10,000
+(`inference_cost.py`, `results/inference_cost.csv`; crisprHAL's side by
+`colab/crisprhal_inference_bench.py` under its own TensorFlow interpreter):
+
+| | one guide | 100 guides | 10,000 guides | throughput | cold start |
+|---|---:|---:|---:|---:|---:|
+| **SLICER** | **0.35 ms** | **0.80 ms** | **6.7 ms** | **~2.1 M guides/s** | a fraction of a second |
+| crisprHAL 2, shipped | 44.3 ms | 101.7 ms | 8,162 ms | 1,225 guides/s | **13.4 s** |
+
+**A factor of about 1,700 on throughput**, against ~150 on training CPU-seconds
+— so the cheap-model argument is an order of magnitude stronger at inference
+than at training, which is the opposite of how it is usually presented. The cold
+start is the other half: importing TensorFlow and loading the network costs
+**13.4 s** before the first prediction, which for a researcher scoring a few
+guides is the entire interaction.
+
+*Three caveats, and the first is the one that matters.* **Both models are on
+CPU.** A GPU would narrow the throughput gap substantially — it would not touch
+the cold start — so this is a statement about CPU deployment and not an
+architectural limit. Second, these are rates and therefore legitimate ratios,
+unlike the Δρ quotients this report refuses elsewhere. Third, the absolute
+numbers move with machine load; the gap does not.
+
+*The forward-FLOPs column is also derivable rather than absent.* Scoring one
+guide costs one root-to-leaf walk per tree — 400 trees at depth 4 is **1,600
+comparisons** — against a dense forward pass through a 378 nt convolutional and
+recurrent stack. Those are different units of work and the comparison is
+reported as such rather than divided.
 
 *Why the advantage exists at all is Finding 2*, which is a statement about
 long-range context rather than about architecture. *The conditions that make
@@ -1668,10 +1740,15 @@ biology paper.
   so the noisiest guides were never hurting the fit. Weighting by inverse variance
   instead costs **−0.0050**, four fifths of which is reproduced by permuting the
   weights (Appendix B). The reason is that the label is already a posterior
-  **mean**, so ALDEx2 has spent the reliability information before we see it.
-  What curation legitimately buys is a cleaner label — ceiling 0.946 against
-  0.937 — and +0.004 of fit; what it cannot buy is a better model, and a filter
-  applied before the split buys only an easier test set.
+  **mean**. The tempting explanation — that ALDEx2 spent the reliability
+  information before we saw it — is **wrong**: refitting to the raw log-ratio of
+  the same counts, where nothing has been shrunk, weighting still costs −0.004
+  and the permuted control still reproduces all of it (Appendix B). The cost is
+  effective sample size, not double-counting. What curation legitimately buys is
+  a cleaner label — ceiling 0.946 against 0.937, and **+0.022** of fit against
+  the raw log-ratio of the same counts — but it buys it in the label's
+  construction, and a filter applied before the split buys only an easier test
+  set.
 - **The long-range mechanism is unidentified.** Orientation is a live candidate
   with one ruled-out alternative; the most mechanistically motivated feature built
   to explain it (GC skew and helical periodicity) is a null.
@@ -2631,20 +2708,38 @@ those particular guides is indistinguishable from removing any guides at all.
 is the predicted consequence of ρ(disagreement, depth) = −0.053: weighting by
 depth imposes a 157:1 ratio while tracking almost none of the actual noise.
 
-*Why the information is not there to be used.* Two reasons, and the first is
-already in this report. The released label is ALDEx2's posterior **mean**, which
-shrinks noisy guides toward the prior — the reason Finding 6 calls 0.946 a lower
-bound. The reliability has therefore been spent before we see it, and weighting
-on top double-counts a correction already applied. The second is the
-effective-sample-size cost the permutation isolates: on 33,567 rows against a
-feature set worth +0.164, trading rows for precision is a bad exchange at any
+*Why the information is not there to be used, and it is not the reason this
+report first gave.* The obvious explanation is that the released label is
+ALDEx2's posterior **mean**, which shrinks noisy guides toward the prior — the
+reason Finding 6 calls 0.946 a lower bound — so the reliability was spent before
+we saw it and weighting double-counts a correction already applied. **That
+explanation is wrong, and the test that settles it is the raw label.** Refitting
+everything to the plain CPM log-ratio of the same counts, where no shrinkage has
+been applied (`replicate_weight.py --raw-label`,
+`results/replicate_weight_raw.csv`):
+
+| arm, raw log-ratio label | ρ | vs unweighted |
+|---|---:|---:|
+| unweighted | 0.6864 | — |
+| inverse variance | 0.6824 | −0.0040 |
+| *the same weights, permuted* | *0.6820* | *−0.0043* |
+
+The permuted arm costs **more** than the real one, so on a label with no
+shrinkage the correspondence with measured noise is worth **+0.0003** — nothing,
+exactly as on the posterior label. So the shrinkage was never the reason. **The
+reason is the one the permutation isolates on both labels: non-uniform weighting
+costs about four thousandths of ρ in effective sample size, whatever the weights
+mean, and per-guide reliability is worth less than that.** On 33,567 rows against
+a feature set worth +0.164, trading rows for precision is a bad exchange at any
 weighting this noise distribution implies.
 
-*What it does not rule out.* A model fitted to the **raw log-ratio** rather than
-to the posterior mean, with weights, would be a genuine test of the idea — there
-the shrinkage would not be pre-applied. That is a different label and so a
-different experiment, and it would not be comparable with any number in this
-report.
+*One thing the raw label does establish.* It is **less predictable** than the
+released one — 0.6864 against 0.7083 on the same rows, folds and features — so
+ALDEx2's processing is worth about **+0.022** of fit on its own. That is five
+times what a label *swap* at fixed rows buys (+0.004, Part 3) and far more than
+any weighting scheme on either label. Whatever curation is doing for this model,
+it is doing it in the label's construction and not in anything a downstream
+reweighting can reach.
 
 ### The reduced-representation ladder, and the budget that was never tested
 
@@ -3103,7 +3198,31 @@ recoverability is a **one-sided** condition, which is what Finding 1 says in
 other words: being unrecoverable is permission to help, not a prediction that a
 column will.
 
-**And where it does act, it acts as a threshold rather than a gradient.** The
+**Does helping *require* low recoverability? No — and the per-column run says so
+directly.** The band table could be read as "only unrecoverable columns help",
+and that reading is wrong twice over. It is wrong analytically, because
+Finding 1 establishes that a deterministic function of the guide adds no
+*information* yet can still add *performance* to a depth-limited tree. And it is
+wrong empirically: running each of the 18 fully-recoverable columns on its own
+(`redescription.py --arm percolumn`, `results/recoverability_percolumn.csv`),
+`eng.dg.hybridisation_weighted` — R² **1.000** from the guide, and the strongest
+marginal association in the entire matrix at \|ρ\| 0.184 — is worth **+0.0063 by
+itself**, with `eng.dg.hybridisation` at +0.0059 and `eng.dg.dna_opening` at
++0.0058. Across all 18, the largest is **+0.0065** (`eng.mech.proto.dH`), the
+median is **+0.0038**, and **none reaches +0.01** — so the cap is tight as well as
+real, and no single guide-determined column is hiding a large effect inside the
+block's +0.0083.
+
+So the honest form is a **bound, not a prohibition**: a column the guide predicts
+exactly is capped at about a hundredth, while a column it cannot predict may be
+worth anything between zero and +0.18. Being unrecoverable is permission to
+matter, not a promise. The three figures above also explain why the whole
+18-column block is only +0.0083: they are CRISPRoff energy terms computed from
+the same 20-mer, so each is worth about +0.006 alone and they almost entirely
+overlap.
+
+**And where recoverability does act, it acts as a threshold rather than a
+gradient.** The
 three low bands give +0.180, +0.148 and +0.129 and the three high bands give
 +0.018, +0.021 and +0.008; the step sits at about **R² = 0.2**, and within each
 side there is no clear ordering. So once the guide explains more than about a fifth of a column,
