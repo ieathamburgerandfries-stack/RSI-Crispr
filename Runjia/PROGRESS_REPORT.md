@@ -1225,8 +1225,12 @@ candidate.**
    composition is present: a reparameterisation, not a second channel.
 7. **Not supercoiling**, despite the family built to test it paying +0.139: the
    untagged no-antibody GapR control predicts as well as the ChIP, so what that
-   family measures is sequencing read density. Guo et al.'s "unknown chromosomal
-   factors" are, in this family, coverage.
+   family measures is sequencing read density — and read density is in turn
+   mostly **gene dosage**. Four columns derived from distance to *oriC* alone,
+   with no experimental data, recover as much as the ChIP track does (+0.0112
+   against +0.0111 on the published cohort). Guo et al.'s "unknown chromosomal
+   factors" are, in this family, copy number during multifork replication, which
+   is a geometric property of the genome rather than a chromatin one (Appendix A).
 8. **Not gene essentiality — exactly as Guo et al. reported — but expression is
    not null either.** The transcription family's +0.058 is gene geometry
    (+0.0393) plus expression (+0.0213) plus essentiality (+0.00004). The
@@ -1441,22 +1445,31 @@ same matrix — but without it the project could not have been run on crisprHAL'
 33,567 guides, on eSpCas9, on *C. rodentium* or on Cui's screen, because those
 guides have no published feature row. It converts a dataset into a method.
 
-**Everything else that was tried is a null, and the list is the useful part**:
+**Almost everything else that was tried is a null, and the list is the useful
+part** — with two entries called out below that do not belong in it:
 
 | candidate change | measured |
 |---|---|
 | model class (16 classes, then 8 on the curated base) | spans 0.116 ρ, and 0.108 *with* family A — not where the gain is |
-| hyperparameters | a 627-draw nested search buys +0.013 |
-| feature budget (300 against every column) | ±0.0005 |
-| selector (XGBoost against LightGBM gain) | 0.0008, at 3× the speed |
+| feature budget (300 against every column) | ±0.0005; and 600, 1,200 and every column move family A by at most 0.003 |
+| the selector, on all three axes | library 0.0008 at 3× the speed; gain against SHAP +0.0007; a redundancy-penalised rule **−0.0023** (Appendix B) |
 | higher k-mer order in the flanks | tetramers −0.0019 against dimers |
 | DNA shape of the flanks | +0.0007 on top of composition |
 | helical periodicity and GC skew | +0.0004 on top of composition |
-| explicit interaction terms (family G's own rationale) | +0.0004 over their parents |
-| wider windows (75/300/600/1,200 against 50/250/500/1,000) | 0.0005 |
+| explicit interaction terms (family G's own rationale) | +0.0004 over their parents — Clarke et al.'s transcription×strand mechanism not reproducing |
+| per-guide label reliability as a training weight | −0.0050, four fifths of it reproduced by permuting the weights (Appendix B) |
 
-**So the answer is: one representational change, one piece of infrastructure, and
-nine nulls.** That is a less exciting inventory than a list of wins, but it is
+**Two things are filed here in other versions of this list and should not be.**
+*Hyperparameters are not a null:* a 627-draw nested search buys **+0.013**, of
+which **+0.0087** is the measured adaptive component, leaving a small real gain
+rather than nothing. And *the window sweep is not a candidate that failed:*
+rebuilding family A at 75/300/600/1,200 nt against 50/250/500/1,000 gives
++0.1634 against +0.1638, which is a **robustness control that passed**, run to
+show the window choice carries no weight. Calling either a null would imply
+somebody hoped for a gain that did not arrive.
+
+**So the answer is: one representational change, one piece of infrastructure,
+eight nulls, one small real gain and one control that passed.** That is a less exciting inventory than a list of wins, but it is
 the more useful one — it says that for this phenotype the lever is *what DNA the
 model is shown*, and that nothing about the estimator repays attention. The same
 finding is what licenses the cost claim in Finding 7: if the estimator does not
@@ -1563,6 +1576,7 @@ three kinds, and only one kind is worth more compute.
 |---|---|---|
 | Everything interpretive is conditioned on a redundancy-blind selector | the 300 columns are the top *k* of a gain ranking, and gain over-weights binary columns by 14 points of composition. "45 columns carry half the gain", the concentration figures and every family increment inherit that | **not at the selector — tested and it fails.** A redundancy-penalised rule costs −0.0023 and leaves a *more* binary, less readable set, because the redundant columns here are the informative ones (Appendix B). The limit stands; the fix is block-level attribution, which Finding 5 already prescribes |
 | The label is **P(cut) × P(the break kills)** and no arm separates the terms | survival is the only readout, so the model is fitted to the product (Part 2) | partial, and cheap: Cui's screen carries **two time points**, 18 and 75 generations, which the pipeline averages for reliability. Their *difference* is a depletion-rate signal, and rate separates "cuts fast" from "eventually dies" in a way an endpoint cannot. Applies to the dCas9 cohort only, which is the limit of it |
+| **Family A's composition columns are absolute, so they do not mean the same thing in two genomes** | its strongest column is `eng.flank.comp.up250.gc`, a raw GC *fraction*. *E. coli* K-12 is **50.79%** GC and *C. rodentium* is **54.72%**, so a flank at 52% GC is 1.2 points **above** background in one genome and 2.7 points **below** it in the other. The feature carries the opposite sign of local enrichment across the two, and the cross-organism transfer that retains 88–91% does so despite this | express each window's composition **relative to its own genome**: a z-score against the genome-wide distribution, or a percentile rank, instead of a raw fraction. Both genomes and the transfer harness are already on disk (`transfer.py`), so this is a rebuild of family A plus a re-run of the existing arms. It is the single cheapest thing that could make the representation species-portable, and the ~10% currently lost on the *C. rodentium* transfer is the budget it is competing for |
 | Faithfulness is only ever measured by refitting | every drop-and-refit measure is confounded by redundancy in the refit itself, including the cluster-removal version that was built to fix it | a perturbation measure needs no refit: sensitivity-*n* correlates summed attributions against the actual change in the **fixed** model's output. That removes the refit, which is where redundancy does its damage in both existing measures. It does not make the number redundancy-free — correlated columns still have their credit split arbitrarily between them — but the failure mode moves from the probe to the attribution, where it can be read at block level |
 | Per-guide label reliability is heterogeneous and ignored | the 0.946 ceiling is an average over guides whose replicate disagreement spans 0.06 to 2.39 log2 units | **measured, and the answer is no** (Appendix B). Inverse-variance weighting costs −0.0050, of which −0.0041 is reproduced by permuting the weights, and dropping the noisiest decile is indistinguishable from dropping a random one. ALDEx2's posterior has already spent the information. The limit is real; the obvious lever is not the way to move it |
 
@@ -1901,6 +1915,25 @@ phenomenon the track is named after.
 *Without it:* `d_supercoiling`'s +0.045 would still be reported as supercoiling.
 It is **DNA read density**, and the family was overturned by its own control
 rather than by an argument — which is the only reason it was overturned at all.
+*And read density is itself mostly gene dosage*, which the dissection measured
+and this report had not reported. Four columns computed from the genome
+coordinate alone — distance to *oriC*, that distance as a fraction of a
+replichore, a 2<sup>−2f</sup> copy-number proxy, and which replichore — are worth
+**+0.0112** on the published cohort under 100 kb blocking, against **+0.0111**
+for the GapR ChIP track alone and **+0.0053** for the supercoiling-specific
+log-ratio part (`dissection_supercoiling.csv`, rows `z_dosage`, `z_signal_only`,
+`z_sc_enrichment`). These are three small quantities and the comparison is
+between small quantities, but the ordering is the point: **an analytic function
+of position, using no sequencing data at all, recovers as much as the experiment
+does.** In exponentially growing *E. coli* the chromosome is multi-forked, so
+loci near the origin exist in more copies than loci near the terminus; that
+raises coverage of those loci in *any* DNA-derived track, which is exactly why
+the untagged control is interchangeable with the ChIP. It also means a guide
+near the origin has more target copies to cut — so dosage is a candidate
+mechanism for the phenotype and not only an artefact of the assay. What this
+does **not** say is that the Cas9 effect is dosage: +0.011 is a hundredth
+against family A's +0.164, and the claim is about where `d_supercoiling`'s own
+signal comes from.
 
 ### Splits — is the gain prediction, or address memorisation?
 
@@ -3916,6 +3949,51 @@ overlap only through the 20-mer and are the most additive at **70%**; the flank
 and positional families, which read overlapping DNA, land at 45–62%. Had the
 control also come in near 50%, the right conclusion would have been a pipeline
 artefact rather than an interpretation.
+
+#### Should every ordering of a ladder be searched? No, and the frame is wrong
+
+With 71% of the summed increments being overlap, **where a family sits in a
+ladder decides most of what it appears to be worth**. The table above already
+gives the range for two of them:
+
+| family | first in the ladder | after `a_flank` | after `a_flank` + `d_supercoiling` |
+|---|---:|---:|---:|
+| `i_shape` | +0.120 | +0.0009 | 0.0000 |
+| `d_supercoiling` | +0.139 | +0.024 | — |
+
+So one family's increment moves by about **0.12** depending on position, which is
+the entire effect size of the second-largest family in the project. Any single
+ordering is therefore a choice, and this report's choice is stated: every Δρ is
+an increment over a base that already holds the guide, with marginal association
+given beside it as the complementary measure (Part 2).
+
+*Three reasons not to enumerate.* **First, "every permutation" is the wrong
+object.** The order-independent summary of a block's contribution is its Shapley
+value, and that needs every **subset**, not every ordering: for eleven families
+that is 2<sup>11</sup> = 2,048 model fits rather than 11! ≈ 40 million orderings,
+and a Monte Carlo average over a few hundred random orderings converges on the
+same thing at ≈ 1/√m. The combinatorial objection to doing this is a mirage.
+
+**Second, it would answer a question this project is not asking.** A Shapley
+value apportions shared credit — with 71% overlap it would split one effect
+across many families and hand `i_shape` a sizeable share of what `a_flank`
+measures. That is the right tool for "who deserves credit" and the wrong one for
+"what should I add to this model", which is the question the increments are
+defined to answer and the one a reader building on this needs.
+
+**Third, the cheap sufficient statistic already exists**, and it is the table
+above: the joint arm bounds every ordering at once. No permutation can make the
+eleven families worth more than +0.203 together, and none can make any family
+worth more than its standalone figure. Those two numbers bracket the whole
+space, which is what a search would have cost 2,048 fits to establish.
+
+*What is worth doing instead, and is not done.* Exact Shapley on a **small**
+chosen set — four or five blocks, so 16 or 32 fits — would settle whether the
+single-ordering increments are roughly ordinal or actively misleading. The
+candidates pick themselves: `a_flank`, `d_mechanics`, `i_shape` and the locus
+trio are the blocks already known to overlap heavily. That is a bounded
+experiment with a clear answer, and it is the honest version of what "search the
+permutations" was reaching for.
 
 ## Appendix C0 — Reproducibility: versions, seeds and protocol
 
