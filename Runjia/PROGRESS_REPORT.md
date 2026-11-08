@@ -555,7 +555,7 @@ question:**
 |---|---|
 | read depth or mappability? | **evidence not traceable — see below.** The row claims the gain survives restricting to guides whose reads cannot be misassigned, +0.078 → +0.051 |
 | gene ranking in disguise? | no — within-gene ρ 0.571 against 0.606 global; flanks worth **+0.061 inside genes** |
-| **Cas9 binding rather than cutting?** | no — but only after a second control. Family A adds −0.009 across a dCas9 CRISPRi screen and reads **+0.268** inside its essential genes; that +0.268 is the screen's own strand rule, and given a strand indicator the family adds **+0.007** there |
+| **Cas9 binding rather than cutting?** | no — but only after a second control. Family A adds −0.009 across a dCas9 CRISPRi screen and reads **+0.268** inside its essential genes; that +0.268 is the screen's own strand rule, and given a strand indicator the family adds **+0.007** to the pooled ranking there. Among coding-strand guides alone it adds **+0.12**, about half of it between genes, so the answer is qualified (Finding 3, last subsection) |
 
 *Why these tests and not others.* Each removes one way the effect could be an
 artefact of this dataset rather than a property of the DNA. A new **nuclease**
@@ -834,6 +834,100 @@ predicts 0.458
 on the same rows, so the pipeline plainly works on this screen and the null
 belongs to family A rather than to the run.
 
+#### All eleven families, with strand supplied and with strand held constant
+
+`strand_families.py`, on Cui's 5,514 essential-gene guides: the pipeline's own
+CV, three seeds, gene and 100 kb-block grouping, all eleven families built for
+this screen. Seed-to-seed sd of a single arm is 0.002–0.01 pooled and 0.01–0.03
+within one strand, so differences below about 0.03 within a strand are noise.
+
+**1. Strand supplied to every arm (pooled ρ).** Increment over `base + strand`
+(ρ 0.6462 under gene grouping, 0.6506 under 100 kb blocks):
+
+| family | genes | blocks | | family | genes | blocks |
+|---|---:|---:|---|---|---:|---:|
+| **a_flank** | **+0.015** | **+0.007** | | f_methylation | +0.004 | −0.002 |
+| b_energy | +0.005 | −0.001 | | **g_transcription** | **+0.057** | **+0.028** |
+| c_folding | +0.002 | −0.002 | | h_offtarget | +0.001 | −0.002 |
+| d_mechanics | +0.010 | +0.005 | | i_shape | +0.005 | +0.003 |
+| d_supercoiling | +0.027 | −0.000 | | j_periodicity | +0.010 | +0.001 |
+| e_nucleoid | +0.030 | −0.013 | | | | |
+
+No family beats the strand call. Family A is not the largest, and not distinguishable
+from the others except by being consistently positive. The one family that is clearly
+positive in both groupings is `g_transcription` (+0.057 / +0.028), which is not
+a flank family: it carries expression, distance to the transcription start and
+replication context. `d_supercoiling` and `e_nucleoid` differ in sign between
+groupings and are not claimed.
+
+**2. Removing the proxy columns does not make an arm strand-free.** Dropping every
+column with |ρ| > 0.30 against the strand call (18 of A's 348, 6 of J's 24, 1 of
+`d_supercoiling`'s 26, 2 of `g_transcription`'s 19) still leaves columns that read
+the strand back: an out-of-fold classifier on the remaining columns reaches AUC
+**0.79** (A), **0.73** (J), **0.64** (`d_supercoiling`) and **0.9997**
+(`g_transcription`, where `leading_strand`, `codirectional` and the interaction
+terms determine the strand algebraically). The `-proxy` arms in
+`results/strand_families.csv` (A +0.115, `g_transcription` +0.37 over base) are
+therefore not strand-removed comparisons and are not quoted. The families with no
+proxy column read the strand at AUC 0.49–0.58, so their near-zero gains are clean.
+(`results/strand_families_recoverable.csv`, `strand_recoverable.py`.)
+
+**3. Strand held constant by construction.** Fit and score within one strand, so
+the strand cannot enter. 2,535 coding-strand and 2,979 template-strand guides.
+Increment over `base` inside the stratum (base ρ 0.133 / 0.128 coding, 0.304 /
+0.309 template):
+
+| family | coding: blocks | coding: genes | template: blocks | template: genes |
+|---|---:|---:|---:|---:|
+| **a_flank** | **+0.119** | **+0.124** | −0.040 | −0.026 |
+| b_energy | +0.006 | +0.010 | −0.000 | −0.001 |
+| c_folding | +0.001 | −0.000 | −0.004 | −0.001 |
+| d_mechanics | +0.050 | +0.056 | +0.002 | +0.001 |
+| d_supercoiling | +0.081 | +0.154 | −0.033 | +0.006 |
+| e_nucleoid | −0.008 | +0.127 | −0.031 | +0.043 |
+| f_methylation | +0.006 | +0.001 | −0.015 | +0.001 |
+| **g_transcription** | **+0.198** | **+0.267** | +0.000 | +0.037 |
+| h_offtarget | +0.002 | +0.004 | −0.014 | −0.000 |
+| i_shape | +0.049 | +0.051 | −0.025 | −0.029 |
+| j_periodicity | +0.029 | +0.053 | −0.003 | +0.009 |
+
+Every gain is on the coding strand, the strand that depletes (mean label −5.07
+against −1.19). Among sequence families, A is the largest in both groupings;
+`g_transcription` is larger and `d_supercoiling` is larger under gene grouping only.
+`e_nucleoid` changes from −0.008 to +0.127 between groupings and is not claimed.
+
+**4. Is the coding-strand gain between genes or within them?** One seed, the 206
+genes with at least five coding-strand guides (2,289 guides); out-of-fold
+predictions split into the ρ of gene means and the ρ of values with each gene's
+mean removed (`strand_within_gene.py`):
+
+| arm | overall | between genes | within genes |
+|---|---:|---:|---:|
+| base | 0.128 | 0.084 | 0.177 |
+| + a_flank | 0.255 | 0.253 | **0.272** |
+| + g_transcription | 0.365 | 0.450 | 0.240 |
+| + d_supercoiling | 0.281 | 0.341 | 0.205 |
+| + j_periodicity | 0.155 | 0.154 | 0.169 |
+| + i_shape | 0.145 | 0.124 | 0.168 |
+
+Transcription context and supercoiling gain mostly between genes (+0.37 and +0.26
+between, +0.06 and +0.03 within), as their contents suggest. Family A gains on both
+(+0.17 between, **+0.095 within**), and its within-gene gain is larger than
+`g_transcription`'s even though `g_transcription` carries the guide's relative
+position in its gene.
+
+**What this changes.** The strand-supplied increments of +0.007 to +0.025 are the
+gain to the *pooled* ranking, and the strand split (0.28 → 0.65 from one column)
+dominates that ranking. It says family A adds almost nothing once the strand is
+known to a model that ranks both strands together; it does not say A is inert among
+coding-strand guides, where it adds +0.12. Wang's +0.267 comes from a library that
+is entirely coding-strand, so the Wang column and this stratum agree rather than
+conflict. The statement that the dCas9 screen gives no flank effect is therefore
+established for the pooled ranking and not for the coding-strand stratum. What would
+settle it, not yet run: the same stratified increment on Rousset's coding-strand
+guides; the within-gene ρ over all three seeds with a paired interval; and the
+cutting-screen figure computed on the same within-gene definition.
+
 #### What the predictor is therefore for
 
 **Does cleavage-specificity make the predictor useless for real editing work?**
@@ -851,7 +945,7 @@ So the scope is narrower than "CRISPR" and wider than "killing bacteria":
 |---|---|
 | gene knockout, HDR knock-in, any edit that needs a double-strand break | **yes** — this is the quantity being predicted |
 | pooled knockout screens using Cas9 cutting as the perturbation | **yes**, and these are the screens it was fitted on |
-| CRISPRi / CRISPRa with dCas9 | **no** — measured on two screens, −0.009 to −0.021 across the screen and +0.007 to +0.025 where its phenotype is measurable, and a guide-sequence model is the right tool there |
+| CRISPRi / CRISPRa with dCas9 | **no** — measured on two screens, −0.009 to −0.021 across the screen and +0.007 to +0.025 to the pooled ranking where its phenotype is measurable (+0.12 among coding-strand guides alone on Cui, unresolved), and a guide-sequence model is the right tool there |
 | base and prime editing (nickase-based) | **untested**, and genuinely uncertain — these bind and nick rather than cut, which puts them between the two cases |
 
 In each of those the quantity wanted is cleavage efficiency — whether a knockout
@@ -1495,7 +1589,12 @@ mechanism.
    dCas9 screen and neither produces one. This is the one result here that
    localises a mechanism rather than bounding one, and it is the claim that came
    closest to being lost: taken on the screen-wide average alone it would have
-   been right for a reason the average cannot show (Finding 3).
+   been right for a reason the average cannot show (Finding 3). **It is weaker
+   than this paragraph reads.** The +0.007 to +0.025 is the gain to the pooled
+   ranking, which the strand split dominates. Among coding-strand guides alone
+   family A adds +0.12 on Cui, about half of it between genes and half within
+   them (Finding 3, last subsection); that is not yet comparable with the +0.157
+   on the cutting screen, and the comparison is the open test.
 3. **It is a local property of the target, not a property of its gene.** Asked
    entirely inside genes, where gene identity is constant, the flanks are still
    worth **+0.061**, and the whole effect survives holding out whole genes.
@@ -2188,7 +2287,7 @@ cost, because the cost was not small.
 | the GC account | conditioning *raises* flank GC's association — on the curated cohort, **+0.176 marginal → +0.221 partial** — and it is positive in all five target-GC strata (+0.425 down to +0.068), strongest where the target itself is GC-poor |
 | the reduced representation | **412 columns** computable from any 20-mer land 0.00003 ρ from all 6,232 — portability, not just sufficiency |
 | data efficiency | survives all five folds; the ρ ≥ 0.68 ratio goes **1.4× → 2.5×** |
-| the mechanism | the dCas9 null survived the one re-examination that looked fatal to it. Restricted to the essential genes where knockdown has a phenotype, family A reads **+0.268** — but that is the screen's own strand rule, and given a strand indicator the family is worth **+0.007 to +0.025** there, on two independent screens, against +0.157 on a cutting screen. The control the claim previously lacked, and the claim is stronger for it (Finding 3) |
+| the mechanism | the dCas9 null survived the one re-examination that looked fatal to it. Restricted to the essential genes where knockdown has a phenotype, family A reads **+0.268** — but that is the screen's own strand rule, and given a strand indicator the family is worth **+0.007 to +0.025** there, on two independent screens, against +0.157 on a cutting screen, in the pooled ranking. Held to the coding strand the family adds +0.12 on Cui, which this row does not account for (Finding 3, last subsection) |
 | the flanking-context thesis | on the curated cohort nothing confined to the guide clears **+0.019** and nothing above **+0.05** is confined to it. Arrived at by withdrawing a claim that pointed the other way, and since re-scoped: the ordering is by what the model cannot already compute, not by what the phenotype depends on (Part 2) |
 
 ### What that means
@@ -3425,48 +3524,28 @@ of its own; the RegulonDB items are the properly-annotated version of the
 nearest-gene proxy behind Jacky's orientation result, and so the highest-value
 thing left on this list.
 
-### Is the flank effect a *repair* effect? The Chi-site test, and it is a null
+### Is the flank effect a *repair* effect? The Chi-site test: a null
 
-**What motivates this section.** The dCas9 comparison in Finding 3 puts the
-effect at or after the cut, which is a hard constraint: almost nothing at a cut
-site has any reason to read five hundred nucleotides. The route below is the one
-mechanism in *E. coli* that does. It is excluded by measurement against a
-GC-matched null, so the constraint stands and this candidate does not.
+The dCas9 comparison (Finding 3) puts the effect at or after the cut, and the
+effect is large (+0.164), compositional with no motif out to ~500 nt (Finding 2)
+and orientation-dependent (Jacky's result). Almost nothing at a cut site reads
+five hundred nucleotides; one process in *E. coli* does. **RecBCD** enters a
+double-strand break and degrades processively over kilobases until it meets a Chi
+site (`GCTGGTGG`), where it hands off to RecA. In a pooled depletion screen the
+phenotype is dying, so better repair would lower measured efficiency. The
+hypothesis therefore predicts the length scale, the absence of a fixed-position
+motif, cut-specificity (dCas9 makes no break to process) and the orientation
+dependence (Chi works only when RecBCD approaches from one side).
 
-The flank effect is **large** (+0.164), **smooth and compositional with no
-motif** out to ~500 nt (Finding 2), and **orientation-dependent** — the last
-being Jacky's result, not this project's.
+**Direction was already against it.** Chi sites are GC-rich, so the mechanism
+predicts GC-rich flanks scoring *low*. They score high: flank GC correlates
+**+0.161** with the label (`eng.flank.comp.up250.gc`). The −0.201 quoted elsewhere
+is *target* GC, inside the protospacer, with the opposite sign (Finding 5,
+biology item 9).
 
-That is an awkward constraint, because almost nothing at a cut site has any
-reason to read five hundred nucleotides. The Cas9 HNH conformational change does
-not. One thing in *E. coli* does: **RecBCD** enters a double-strand break and
-degrades processively over kilobases until it meets a Chi site (`GCTGGTGG`),
-where it is attenuated and hands off to RecA for homologous repair. And in a
-pooled depletion screen the phenotype is not cutting but **dying** — a guide
-scores as efficient when its cells fail to survive the break — so anything that
-improves repair must lower measured efficiency.
-
-The prediction is specific. It would explain the length scale (processive
-degradation over kilobases), the absence of a motif at any fixed position (what
-matters is the density over a long tract), the cleavage-specificity (dCas9 makes
-no break to process), and the orientation dependence (Chi is functional only
-when RecBCD approaches it from one side).
-
-**The signs, however, go the wrong way, and that was worth noticing before
-running anything.** Better repair means less death means *lower* measured
-efficiency, and Chi sites are GC-rich — so the mechanism predicts GC-rich flanks
-scoring low. They score **high**: flank GC correlates **+0.161** with the label
-(`eng.flank.comp.up250.gc`). The −0.201 association this report quotes
-elsewhere is **target** GC, inside the protospacer, which carries the opposite
-sign to the flanks and is the reason conditioning on it *raises* the flank term
-(Finding 5, biology item 9). So the hypothesis was already in difficulty on
-direction, and the test below settles it for a different and more decisive
-reason.
-
-**It is a null.** `chi_sites.py` counts `GCTGGTGG` and its reverse complement on
-each side at ±250, ±500 and ±1,000 nt across all 33,567 curated guides
-(`results/chi_sites.csv`). Chi is common enough to test — 11,677 guides carry at
-least one within ±1 kb.
+**Measured.** `chi_sites.py` counts `GCTGGTGG` and its reverse complement on each
+side at ±250, ±500 and ±1,000 nt across all 33,567 curated guides
+(`results/chi_sites.csv`); 11,677 carry at least one within ±1 kb.
 
 | | ±250 nt | ±500 nt | ±1,000 nt |
 |---|---:|---:|---:|
@@ -3475,38 +3554,26 @@ least one within ±1 kb.
 | β, Chi count alone | +0.306 ± 0.055 | +0.287 ± 0.038 | +0.219 ± 0.026 |
 | **β, flank GC held fixed** | **−0.103 ± 0.053** | **−0.047 ± 0.037** | **−0.053 ± 0.026** |
 
-The marginal association is real and **it is entirely GC content**: holding
-flank GC fixed removes it and flips its sign to something indistinguishable from
-zero. And the control that decides the question is not the standard error but
-the comparison against **200 other octamers of the same GC content** (6 of 8),
-each entered the same way with flank GC held fixed:
+The marginal association is flank GC: holding it fixed removes the association
+and the sign flips to indistinguishable from zero. The deciding control is **200
+other octamers of the same GC content** (6 of 8), each entered the same way with
+flank GC held fixed: mean β −0.022, sd 0.201, range −1.25 to +1.20.
+**Chi's −0.053 sits at the 41st percentile of that null.** A specific
+recognition sequence behaves like any GC-matched eight-mer, which is what "the
+effect is composition, not sequence" means when tested against a matched null.
 
-> control octamers: mean β **−0.022**, sd **0.201**, range −1.25 to +1.20.
-> **Chi's −0.053 sits at the 41st percentile of that null** — the middle of it.
+**Excluded:** the Chi-attenuation route, the most parsimonious mechanism proposed
+here, which predicted all four observed properties. **Not excluded:** repair in
+general (RecBCD processivity, RecA loading, replication-fork proximity, sister-
+chromosome availability), none of which is testable from sequence alone. What
+survives is the dCas9 contrast's statement, that the effect is downstream of
+binding, with one candidate removed.
 
-**Chi sites behave exactly like any other GC-rich eight-mer.** A specific
-recognition sequence with a specific enzyme and a specific mechanism is
-indistinguishable from an arbitrary string of the same composition, which is
-what "the effect is composition, not sequence" means when it is tested properly.
-
-*What this does and does not exclude.* It excludes the Chi-attenuation route
-specifically, and it is worth having because that route predicted all four
-observed properties of the effect and is the most parsimonious mechanism anyone
-in this project has proposed. It does **not** exclude repair in general: RecBCD
-processivity itself, RecA loading, proximity to a replication fork and the
-availability of a sister chromosome are all untouched, and none of them is
-testable from sequence alone. The surviving statement is the one the dCas9
-contrast already licensed — the effect is downstream of binding — with one
-candidate mechanism now removed rather than merely unexamined.
-
-*An orientation hint, reported and not promoted.* With flank GC held fixed, the
-four orientation-resolved counts do not behave alike: at ±500 nt, `GCTGGTGG`
-downstream is +0.169 ± 0.094 while its reverse complement upstream is
-−0.110 ± 0.060, and the pattern repeats in sign at all three widths. That is the
-shape a directional mechanism would make. But the octamer null puts sd 0.201 on
-a coefficient of this kind, which is larger than the contrast, so it is a hint
-at the edge of the noise the control establishes — recorded here so it is not
-rediscovered as news, not claimed.
+*Orientation hint (reported, not promoted).* With flank GC fixed, at ±500 nt
+`GCTGGTGG` downstream is +0.169 ± 0.094 and its reverse complement upstream is
+−0.110 ± 0.060, with the same signs at all three widths: the shape a directional
+mechanism would make. The octamer null puts sd 0.201 on a coefficient of this
+kind, larger than the contrast, so it is at the edge of the noise and not claimed.
 
 ### Why ρ, and why R² beside it
 

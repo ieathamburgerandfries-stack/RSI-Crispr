@@ -174,15 +174,64 @@ def run(seeds=(41, 42, 43), n_splits=None, verbose: bool = True):
     return pd.DataFrame(rows)
 
 
+def run_within(seeds=(41, 42, 43), verbose: bool = True):
+    """Strand held constant by construction: fit and score inside one strand at a time.
+
+    Removing columns whose |rho| with the strand call exceeds PROXY does not make an
+    arm strand-free (the remaining columns still read the strand back, see
+    `results/strand_families_recoverable.csv`). Here the strand cannot enter at all:
+    the 2,5xx coding-strand and 2,9xx template-strand guides are modelled separately
+    and the family increment is the family arm minus `base` within the same stratum.
+    """
+    from .cui_screen import _essential_frame
+    from .run_ablation import cross_validate
+
+    f = _essential_frame()
+    meta = json.loads((config.INTERIM / "cui_crispri" / "meta.json").read_text())
+    ess = np.asarray([str(e) for e in meta["essential"]], dtype=object) == "True"
+    gene = np.asarray([g if isinstance(g, str) else "" for g in meta["gene"]],
+                      dtype=object)
+    has_gene = (gene != "") & (gene != "nan") & (gene != "None")
+    protos = np.asarray(meta["protospacers"])[ess & has_gene]
+    blocks = _blocks(protos)
+    cod = f["coding"].ravel()
+    rows = []
+    for sname, sval in (("coding", 1), ("template", 0)):
+        m = cod == sval
+        for gname, grouping in f["groupings"]:
+            gsub = np.asarray(grouping)[m]
+            arms = {"base": (f["Xb"][m], f["nb"])}
+            for fam, (v, fn) in blocks.items():
+                arms[fam] = (np.hstack([f["Xb"], v])[m], f["nb"] + fn)
+            for arm, (Xa, nm) in arms.items():
+                res = cross_validate(
+                    Xa, f["y"][m], nm, ["arm"] * len(nm), n_features=config.N_FEATURES,
+                    seeds=list(seeds), n_splits=config.N_SPLITS, verbose=False,
+                    groups=gsub, tag=f"cui_sfw_{sname}_{gname.replace(' ', '')}_{arm}",
+                    experiment=arm)
+                mu, sd = (res["summary"]["spearman"]["mean"],
+                          res["summary"]["spearman"]["sd"])
+                rows.append(dict(stratum=sname, grouping=gname, arm=arm, n=int(m.sum()),
+                                 spearman=mu, spearman_sd=sd))
+                if verbose:
+                    print(f"  {sname:8s} {gname:12s} {arm:16s}: rho {mu:+.4f}", flush=True)
+                pd.DataFrame(rows).to_csv(config.RESULTS / "strand_families_within.csv",
+                                          index=False)
+    return pd.DataFrame(rows)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--build", action="store_true")
     ap.add_argument("--run", action="store_true")
+    ap.add_argument("--within", action="store_true")
     a = ap.parse_args(argv)
     if a.build:
         build()
     if a.run:
         run()
+    if a.within:
+        run_within()
     return 0
 
 
