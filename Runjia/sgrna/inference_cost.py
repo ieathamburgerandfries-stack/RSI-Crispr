@@ -46,7 +46,7 @@ OUT = config.RESULTS / "inference_cost.csv"
 # other interpreter; re-run that script to refresh them.
 #
 # Both models are on this machine's CPU. The like-for-like GPU comparison was run
-# on a Colab T4 (`colab/inference_bench_t4.py`, `results/inference_colab.csv`, `results/inference_t4.csv`):
+# on a Colab T4 (`colab/inference_bench_t4.py`, `results/inference_colab.csv`, `results/inference_t4.csv`, superseded by `results/inference_onecore.csv`):
 # crisprHAL 2 takes 78.0 / 99.7 / 2,768 ms for 1 / 100 / 10,000 guides there and
 # 9.8 s to cold-start, and SLICER on the same instance's CPU is 38-160x faster.
 HAL_INFERENCE = {

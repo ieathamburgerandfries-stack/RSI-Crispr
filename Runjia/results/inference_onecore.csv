@@ -1,0 +1,21 @@
+model,device,n_guides,latency_ms,guides_per_s,source
+crisprHAL 2 WT-SpCas9 (shipped),Colab CPU one host thread,1,64.93,15,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+crisprHAL 2 WT-SpCas9 (shipped),Colab CPU one host thread,100,222.15,450,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+crisprHAL 2 WT-SpCas9 (shipped),Colab CPU one host thread,10000,20202.38,495,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+SLICER configuration (synthetic data),Colab CPU one host thread,1,0.37,2703,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+SLICER configuration (synthetic data),Colab CPU one host thread,100,1.07,93458,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+SLICER configuration (synthetic data),Colab CPU one host thread,10000,58.77,170155,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+crisprHAL 2 WT-SpCas9 (shipped),Colab T4, input on host, one host thread,1,73.42,14,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+crisprHAL 2 WT-SpCas9 (shipped),Colab T4, input on host, one host thread,100,72.0,1389,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+crisprHAL 2 WT-SpCas9 (shipped),Colab T4, input on host, one host thread,10000,1077.12,9284,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+SLICER configuration (synthetic data),Colab T4, input on host, one host thread,1,3.99,251,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+SLICER configuration (synthetic data),Colab T4, input on host, one host thread,100,4.76,21008,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+SLICER configuration (synthetic data),Colab T4, input on host, one host thread,10000,53.26,187758,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+crisprHAL 2 WT-SpCas9 (shipped),Colab T4, input on card, one host thread,1,37.48,27,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+crisprHAL 2 WT-SpCas9 (shipped),Colab T4, input on card, one host thread,100,40.84,2449,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+crisprHAL 2 WT-SpCas9 (shipped),Colab T4, input on card, one host thread,10000,762.33,13118,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+SLICER configuration (synthetic data),Colab T4, input on card, one host thread,1,3.01,332,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+SLICER configuration (synthetic data),Colab T4, input on card, one host thread,100,3.47,28818,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+SLICER configuration (synthetic data),Colab T4, input on card, one host thread,10000,6.94,1440922,pasted from Colab run 2026-11-08 (colab/inference_bench_onecore.py)
+crisprHAL 2 best batch size (CPU / T4 host / T4 card) for 1/100/10000 guides,,,,,1/100/256; 1/100/1024; 1/100/2048
+crisprHAL 2 at Keras default batch 32 (ms) for 1/100/10000 guides,,,,,CPU 70/278/22538; T4 74/102/2509

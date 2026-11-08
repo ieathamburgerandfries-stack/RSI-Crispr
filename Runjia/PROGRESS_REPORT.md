@@ -1480,80 +1480,49 @@ between ρ 0.71 and ρ 0.946 looks.
 more lopsided.** Every cost figure above is about *fitting*. What a user does is
 fit once and then score every candidate guide for every target they care about,
 which is tens of thousands to millions of forward passes against a handful of
-fits. A forward-pass ratio is only like-for-like when both models run on the same
-type of hardware, so each pairing below is labelled. **On one Colab instance** (2
-vCPUs and a T4; `colab/inference_bench_t4.py`, `results/inference_colab.csv`) both
-models were timed on the CPU and on the GPU, each cold start in a fresh process.
-SLICER's configuration is timed on synthetic data of the champion's shape, since
-scoring cost depends on tree count and depth and not on the values:
+fits. A forward-pass ratio is only like-for-like when both models run under the
+same controls, so these were measured with **one host thread** (CPU-seconds over
+wall-seconds reported), in-process, with crisprHAL 2's batch size swept and its best
+kept (32, 256, 1024 or 2048; Keras' default of 32 costs it 2.3× on the T4 at
+10,000 guides), and on the GPU with the input both on the host (what a request
+looks like) and already on the card (a pipeline that keeps batches there). One Colab
+instance, 2 vCPUs and a T4; SLICER is the champion's configuration on synthetic data
+of its shape, since scoring cost depends on tree count and depth and not on the
+values (`colab/inference_bench_onecore.py`, `results/inference_onecore.csv`):
 
-| median ms per call | 1 guide | 100 guides | 10,000 guides | cold start |
-|---|---:|---:|---:|---:|
-| crisprHAL 2, CPU | 103.4 | 286.2 | 24,886 | 6.0 s |
-| SLICER, CPU, fresh subprocess | 8.00 | 8.01 | 97.9 | 1.9 s |
-| **SLICER, CPU, in-process** (diagnostic cell, next paragraph) | **0.43** | **1.18** | **57.7** | — |
-| crisprHAL 2, T4 | 75.4 | 92.3 | 4,026 | 9.9 s |
-| **SLICER, T4, input on the host** | **2.78** | **3.51** | **47.9** | **1.4 s** |
-| SLICER, T4, input already on the card | 2.22 | 2.58 | 6.68 | — |
+| median ms per call, one host thread | 1 guide | 100 guides | 10,000 guides |
+|---|---:|---:|---:|
+| crisprHAL 2, CPU | 64.9 | 222.2 | 20,202 |
+| **SLICER, CPU** | **0.37** | **1.07** | **58.8** |
+| crisprHAL 2, T4, input on host | 73.4 | 72.0 | 1,077 |
+| **SLICER, T4, input on host** | **3.99** | **4.76** | **53.3** |
+| crisprHAL 2, T4, input on the card | 37.5 | 40.8 | 762 |
+| **SLICER, T4, input on the card** | **3.01** | **3.47** | **6.94** |
 
-**Same hardware type, crisprHAL 2 over SLICER:** GPU against GPU **27× / 26× /
-84×** for 1 / 100 / 10,000 guides with SLICER's input starting on the host (so its
-transfer is included), and 34× / 36× / 603× with the input already on the card.
-CPU against CPU is **240× / 240× / 430×** using SLICER's in-process time, and 13× /
-36× / 254× using the fresh-subprocess time; which applies is the open point below.
-These are rates, so ratios are legitimate here, unlike the Δρ quotients this report
-refuses. SLICER's cold start is almost entirely importing xgboost (1.4 to 1.9 s);
-crisprHAL 2's is 6.0 s on the CPU and 9.9 s with the GPU initialised.
+**Same hardware, crisprHAL 2 over SLICER:** CPU against CPU **177× / 208× / 344×**
+for 1 / 100 / 10,000 guides; GPU against GPU **18× / 15× / 20×** with input on the
+host and **12× / 12× / 110×** with it on the card. These are rates, so ratios are
+legitimate here, unlike the Δρ quotients this report refuses. The ratio is smallest
+on the GPU, and the reason is that the GPU speeds up the deep model (20.2 s → 1.08 s
+for 10,000 guides) and does nothing for SLICER at that size (58.8 → 53.3 ms with
+host input) and slows it for small batches (0.37 ms on the CPU, 3.99 ms on the T4
+for one guide): a 400-tree ensemble of depth 4 has no use for the card unless a
+pipeline keeps the batch there (6.94 ms). For a user scoring a few guides the GPU
+is no help to either model's latency; crisprHAL 2 takes 65 ms on the CPU and 73 ms
+on the T4 for one guide. The CPU-seconds-over-wall-seconds check was 1.0 on the CPU;
+on the GPU crisprHAL 2 read 0.8 and 0.4 because the host waits on the card.
 
-*What is not settled.* SLICER's CPU time has been measured three times on 2-vCPU
-Colab instances. Two in-process measurements agree: **0.48 / 1.36 / 72.0 ms**
-(first session, `results/inference_t4.csv`) and **0.43 / 1.18 / 57.7 ms** (the
-diagnostic `colab/slicer_cpu_check.py`, mean of two passes). The benchmark's own
-fresh-subprocess measurement gave 8.00 / 8.01 / 97.9 ms. The diagnostic rules out
-the obvious cause: the same model timed trained in-process, loaded with default
-settings, loaded with `set_params(device="cpu")` (the benchmark's path), loaded with
-`n_jobs=-1`, through the bare booster, and with one or two threads, gives 0.36 to
-0.51 ms at one guide and 56 to 65 ms at ten thousand in every variant. So the 8 ms
-floor is not the model, the loading path or the thread count; it is something in
-the fresh-subprocess measurement (or that session's instance) that is not
-identified. The CPU-against-CPU ratio is quoted from the in-process time, which is
-how SLICER would be called, and is provisional because crisprHAL 2's CPU row comes
-from a different session than SLICER's in-process rows; the benchmark now repeats
-the in-process measurement in the same session so the next run settles it. The
-GPU-against-GPU figures use fresh-subprocess SLICER timings and may carry the same
-inflation, which would make them conservative.
+*Cold start* (fresh process, default threading, an earlier run;
+`results/inference_colab.csv`): crisprHAL 2 takes 6.0 s on the CPU and 9.9 s with
+the GPU initialised, SLICER 1.4 to 1.9 s, nearly all of it the xgboost import.
+Runs under default threading were not used for the ratios: in one of them SLICER's
+CPU time at one guide was 8.00 ms in a fresh subprocess against 0.4 ms in-process
+and 0.37 ms in this pinned run, and the cause was not identified; pinning one
+thread removes the dependence.
 
-**The GPU rows above are not at crisprHAL 2's best.** They call Keras' `predict` at
-its default batch size of 32, which sends a 10,000-guide request to the T4 as 313
-small batches (4,026 ms is about 13 ms per batch); at one guide the batch size does
-not matter, but at 10,000 the GPU-against-GPU ratios (84×, 603×) are probably
-inflated, and `colab/inference_bench_onecore.py` sweeps the batch size and keeps
-crisprHAL's best. The GPU does not help the deep model where it matters to a user
-scoring a few guides: one guide takes 75 ms on the T4 against 103 ms on Colab's CPU, and 44 ms
-on the laptop, because a 37-layer network pays a fixed dispatch cost per call; it
-wins only at bulk (4,026 ms against 24,886 ms for ten thousand). An earlier session
-gave crisprHAL 2 on the T4 as 78.0 / 99.7 / 2,768 ms, agreeing at one and a hundred
-guides and 45% apart at ten thousand, which is instance-to-instance spread. Putting
-SLICER on the GPU roughly halves its time at ten thousand with host input (47.9
-against 97.9 ms, or about the in-process CPU time) and does not help at one guide;
-the device-resident figure (6.68 ms) is a bound for a pipeline that keeps batches
-on the card, not what one request sees.
-
-**CPU against CPU on the local machine** (a 10-core laptop, scoring in batches
-of 10,000; `inference_cost.py`, `results/inference_cost.csv`; crisprHAL's side by
-`colab/crisprhal_inference_bench.py` under its own TensorFlow interpreter):
-
-| | one guide | 100 guides | 10,000 guides | throughput | cold start |
-|---|---:|---:|---:|---:|---:|
-| **SLICER** | **0.35 ms** | **0.80 ms** | **6.7 ms** | **~2.1 M guides/s** | a fraction of a second |
-| crisprHAL 2, shipped | 44.3 ms | 101.7 ms | 8,162 ms | 1,225 guides/s | **13.4 s** |
-
-That is 127× for one guide and for a hundred, 1,200× at ten thousand by latency,
-and a factor of about 1,700 on throughput. The ten-core runs are not a clean
-per-model comparison, because the two models use ten cores very differently:
-pinned to **one host thread** (CPU-seconds equal to wall-seconds, checked), on the
-same laptop, with crisprHAL 2's batch size swept and its best kept
-(`colab/inference_bench_onecore.py`, `results/inference_onecore_local.csv`):
+**The same comparison on the local laptop**, one host thread, CPU-seconds equal to
+wall-seconds, crisprHAL 2's best batch size
+(`results/inference_onecore_local.csv`):
 
 | one host thread, laptop CPU | one guide | 100 guides | 10,000 guides |
 |---|---:|---:|---:|
@@ -1561,22 +1530,18 @@ same laptop, with crisprHAL 2's batch size swept and its best kept
 | **SLICER** | **0.047 ms** | **0.206 ms** | **14.2 ms** |
 | **crisprHAL 2 / SLICER** | **329×** | **632×** | **817×** |
 
-Pinning to one thread makes crisprHAL 2 faster for a single guide (15.6 ms, against
-44.3 ms on ten cores) because ten threads on a one-guide call are overhead, and
-makes SLICER faster there too (0.047 against 0.35 ms); at ten thousand guides
-SLICER's ten cores buy 2.1× (14.2 → 6.7 ms) and crisprHAL 2's buy 1.4× (11,579 →
-8,162 ms). Keras' default batch size of 32 costs crisprHAL 2 about 10% on the CPU
-(13,488 ms at ten thousand guides, 149 ms at a hundred). Per-core, the ratio is
-329× to 817×; the single-core Colab and GPU runs are pending. It is **a ten-core-laptop figure, not
-the headline**: the same SLICER model is 15 times faster on ten laptop cores than
-on Colab's two vCPUs, which is most of the difference between the two tables, and
-the same-hardware Colab comparison above is the more defensible one. Either way the cheap-model argument is stronger at inference
-than at training (~150× CPU-seconds), which is the opposite of how it is usually
-presented, and **cold start** is the other half: loading crisprHAL 2 costs 9.8 s
-on the T4 instance (6.0 s on its CPU) and 13.4 s on the laptop before the first
-prediction, which for a researcher scoring a few guides is the entire interaction;
-SLICER's is 1.4 to 1.9 s on Colab, nearly all of it the xgboost import. Absolute numbers move with machine load; the Colab and
-laptop SLICER figures differ by 15× for hardware alone.
+A Colab vCPU is about 4× slower than a laptop core on this workload (SLICER 58.8
+against 14.2 ms at 10,000 guides), and the CPU ratio is 177× to 344× on Colab and
+329× to 817× on the laptop. On all ten laptop cores (`inference_cost.py`,
+`results/inference_cost.csv`) SLICER takes 0.35 / 0.80 / 6.7 ms and crisprHAL 2
+44.3 / 101.7 / 8,162 ms, a factor of about 1,700 on throughput; that is a
+ten-core figure and not the headline, because the two models use ten cores very
+differently (ten threads help SLICER 2.1× and crisprHAL 2 1.4× at 10,000 guides,
+and make both slower than one thread for a single guide). The cheap-model argument
+is stronger at inference than at training (~150× CPU-seconds), which is the
+opposite of how it is usually presented. Keras' default batch size costs crisprHAL
+2 about 10% on the CPU, so it is not what separates the models there.
+
 
 *The forward-FLOPs column is also derivable rather than absent.* Scoring one
 guide costs one root-to-leaf walk per tree — 400 trees at depth 4 is **1,600
