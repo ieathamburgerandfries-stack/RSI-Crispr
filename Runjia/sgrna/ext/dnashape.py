@@ -1,0 +1,183 @@
+"""The DNAshapeR pentamer query table, separated into the kinds of column it lumps together.
+
+Source: Rohs lab, DNAshapeR (Chiu et al. 2016, Bioinformatics 32:1211), `src/TableCompiler.cpp`,
+a table of 512 pentamers x 90 numbers (the other 512 pentamers are their reverse complements).
+Zhou et al. 2013 (NAR 41:W56) built the original Monte Carlo (MC) values; Li et al. 2017
+(NAR 45:4) added more shape features, still MC. The 90 numbers are NOT one kind of quantity:
+
+  legacy  0..26   nine MC features as (mean, sd, n) triples: minor/major groove width,
+                  propeller twist, slide x2, roll x2, twist x2
+  ep      27..29  electrostatic potential as (mean, sd, n)
+  mc      30..51  22 MC means (the legacy values repeated, plus the new 13-feature set)
+  xrc     52..70  19 means from X-ray crystal structures
+  md      71..89  19 means from molecular dynamics
+
+and within each, intra-base-pair features (shear, stretch, stagger, buckle, propeller,
+opening, groove widths and depths) are mixed with inter-base-pair step features (shift,
+slide, rise, tilt, roll, twist) and with counts and standard deviations that are not
+features at all. `load()` splits them: every returned column is named
+`<source>.<feature>` and the kind of each column is recorded in `kind_of()`.
+
+Layout follows `properties::load_data_from_vector` in the same repository. That loader
+indexes the MD block with a typo (Rise_md2 = dv[82], which is HelT_md1's slot); the
+intended order, which the values bear out, is used here. Names inside the xrc block were
+checked against the values and are less certain than the mc and md blocks: see the
+verification in `scripts` of the report (`verify_table`).
+"""
+from __future__ import annotations
+
+import itertools
+import re
+from functools import lru_cache
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from .common import EXTERNAL
+
+TABLE_CPP = EXTERNAL / "dnashaper_tables" / "TableCompiler.cpp"
+
+# (source, feature order inside the source, how many numbers each takes)
+_LEGACY = ["minor_gw", "major_gw", "propt", "slide1", "slide2", "roll1", "roll2",
+           "twist1", "twist2"]
+_MC = ["MGD", "Stretch", "Tilt1", "Tilt2", "Buckle", "MGW", "Roll1", "Roll2", "Shear",
+       "Opening", "Rise1", "Rise2", "Shift1", "Shift2", "Stagger", "ProT", "mGD",
+       "Slide1", "Slide2", "HelT1", "HelT2", "mGW"]
+_XM = ["ProT", "Tilt1", "Tilt2", "Buckle", "Roll1", "Roll2", "Shear", "Opening", "Rise1",
+       "Rise2", "Stretch", "HelT1", "HelT2", "Shift1", "Shift2", "Slide1", "Slide2",
+       "Stagger", "MGW"]
+
+# which kind each feature is: intra-bp, step (inter-bp), groove geometry, EP
+INTRA = {"Shear", "Stretch", "Stagger", "Buckle", "ProT", "Opening", "propt"}
+STEP = {"Shift", "Slide", "Rise", "Tilt", "Roll", "HelT", "slide", "roll", "twist"}
+GROOVE = {"MGW", "MGD", "mGW", "mGD", "minor_gw", "major_gw"}
+# features whose sign flips when the duplex is read from the other strand
+FLIP = {"Shear", "Buckle", "Tilt", "Shift"}
+
+
+def _kind(feat: str) -> str:
+    base = re.sub(r"[12]$", "", feat)
+    if base in INTRA:
+        return "intra_bp"
+    if base in STEP:
+        return "step"
+    if base in GROOVE:
+        return "groove"
+    if base == "EP":
+        return "ep"
+    return "other"
+
+
+@lru_cache(maxsize=1)
+def raw_table() -> pd.DataFrame:
+    s = TABLE_CPP.read_text()
+    rows = re.findall(r'"([ACGT]{5}) ([^"]+)"', s)
+    data = {p: np.array(v.split(), dtype=float) for p, v in rows}
+    assert len(data) == 512 and all(len(v) == 90 for v in data.values())
+    return pd.DataFrame.from_dict(data, orient="index")
+
+
+def column_names() -> list[tuple[str, str]]:
+    """(source, feature) for each of the 90 numbers; sd and n are named, not dropped."""
+    out = []
+    for f in _LEGACY:
+        out += [("legacy", f), ("legacy", f + ".sd"), ("legacy", f + ".n")]
+    out += [("ep", "EP"), ("ep", "EP.sd"), ("ep", "EP.n")]
+    out += [("mc", f) for f in _MC]
+    out += [("xrc", f) for f in _XM]
+    out += [("md", f) for f in _XM]
+    assert len(out) == 90, len(out)
+    return out
+
+
+def _is_feature(name: str) -> bool:
+    return not (name.endswith(".sd") or name.endswith(".n"))
+
+
+def kind_of() -> pd.DataFrame:
+    """One row per table column: source, feature, kind, and whether it is a feature at all."""
+    rows = []
+    for j, (src, f) in enumerate(column_names()):
+        feat = f
+        rows.append(dict(col=j, source=src, feature=f, kind=_kind(f) if _is_feature(f) else "count_or_sd",
+                         is_feature=_is_feature(f)))
+    return pd.DataFrame(rows)
+
+
+_COMP = str.maketrans("ACGT", "TGCA")
+
+
+def rc(s: str) -> str:
+    return s.translate(_COMP)[::-1]
+
+
+def _swap_name(f: str) -> str:
+    if f.endswith("1"):
+        return f[:-1] + "2"
+    if f.endswith("2"):
+        return f[:-1] + "1"
+    return f
+
+
+@lru_cache(maxsize=1)
+def full_table() -> pd.DataFrame:
+    """All 1024 pentamers, the missing half generated by reverse-complementing.
+
+    Reading a duplex from the other strand: the centre bp is unchanged, the two steps
+    swap order, and the x-axis features (Shear, Buckle, Tilt, Shift) change sign.
+    """
+    raw = raw_table()
+    names = column_names()
+    idx = {n: j for j, n in enumerate(names)}
+    cols = [f"{s}.{f}" for s, f in names]
+    out = {}
+    for p, v in raw.iterrows():
+        out[p] = v.to_numpy()
+        # reverse complement
+        w = np.empty(90)
+        for j, (s, f) in enumerate(names):
+            tgt = idx[(s, _swap_name(f))] if (s, _swap_name(f)) in idx else j
+            val = v.to_numpy()[tgt]
+            base = re.sub(r"[12](\.sd|\.n)?$", "", f)
+            if base in FLIP and _is_feature(f):
+                val = -val
+            w[j] = val
+        out[rc(p)] = w
+    df = pd.DataFrame.from_dict(out, orient="index", columns=cols)
+    assert len(df) == 1024
+    return df
+
+
+def load() -> pd.DataFrame:
+    """Features only (sd and n dropped), 1024 pentamers x named columns."""
+    t = full_table()
+    keep = [c for c in t.columns if _is_feature(c.split(".", 1)[1])]
+    return t[keep]
+
+
+def verify_table() -> dict:
+    """Sanity checks that a mis-parsed layout would fail."""
+    t = load()
+    chk = {}
+    chk["A-tract narrow minor groove (MC MGW, AAAAA vs GCGCG)"] = (
+        t.loc["AAAAA", "mc.MGW"], t.loc["GCGCG", "mc.MGW"])
+    chk["legacy minor_gw equals mc.MGW"] = float(np.abs(t["legacy.minor_gw"] - t["mc.MGW"]).max())
+    chk["legacy roll1 equals mc.Roll1"] = float(np.abs(t["legacy.roll1"] - t["mc.Roll1"]).max())
+    chk["legacy twist1 equals mc.HelT1"] = float(np.abs(t["legacy.twist1"] - t["mc.HelT1"]).max())
+    for src in ("mc", "xrc", "md"):
+        chk[f"{src} mean Rise (Å)"] = float(t[[f"{src}.Rise1", f"{src}.Rise2"]].to_numpy().mean())
+        chk[f"{src} mean HelT (deg)"] = float(t[[f"{src}.HelT1", f"{src}.HelT2"]].to_numpy().mean())
+        chk[f"{src} mean Roll (deg)"] = float(t[[f"{src}.Roll1", f"{src}.Roll2"]].to_numpy().mean())
+        chk[f"{src} mean ProT (deg)"] = float(t[f"{src}.ProT"].mean())
+    # reverse-complement symmetry round trip
+    p = "ACGTA"
+    a, b = t.loc[p], t.loc[rc(p)]
+    chk["RC round trip, mc.Tilt1 vs -mc.Tilt2 of RC"] = (float(a["mc.Tilt1"]), float(-b["mc.Tilt2"]))
+    return chk
+
+
+if __name__ == "__main__":
+    for k, v in verify_table().items():
+        print(f"{k}: {v}")
+    print(kind_of().groupby(["source", "kind"]).size().unstack(fill_value=0))

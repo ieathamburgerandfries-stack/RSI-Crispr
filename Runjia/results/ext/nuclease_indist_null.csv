@@ -1,0 +1,145 @@
+arm,perm,nuclease,rho,rho_ngg
+pooled [all descriptors] permuted,0,SpCas9,0.9270289485656592,0.5949451443948426
+pooled [all descriptors] permuted,0,SpCas9-NG,0.8920933230474464,0.6947977715663003
+pooled [all descriptors] permuted,0,VRQR,0.9167782434102348,0.7777865898952571
+pooled [all descriptors] permuted,0,xCas9,0.909863442152934,0.8178829204343581
+pooled [all descriptors] permuted,0,Sniper-Cas9,0.9290005178116988,0.6739811919559543
+pooled [all descriptors] permuted,0,eSpCas9(1.1),0.884923628878575,0.7384205453819561
+pooled [all descriptors] permuted,0,SpCas9-HF1,0.8565440651828243,0.8139110363912835
+pooled [all descriptors] permuted,0,HypaCas9,0.8672851822197397,0.7861293973688431
+pooled [all descriptors] permuted,0,evoCas9,0.6679197994424209,0.8387218566442313
+pooled [all descriptors] permuted,1,SpCas9,0.9293090747194684,0.6218405646538278
+pooled [all descriptors] permuted,1,SpCas9-NG,0.8881770182622222,0.6871207834866347
+pooled [all descriptors] permuted,1,VRQR,0.9095498718098286,0.7548750673243952
+pooled [all descriptors] permuted,1,xCas9,0.9062063995531028,0.8182182434407531
+pooled [all descriptors] permuted,1,Sniper-Cas9,0.9304220701684364,0.6748250524935866
+pooled [all descriptors] permuted,1,eSpCas9(1.1),0.8866004966646697,0.7460681423200347
+pooled [all descriptors] permuted,1,SpCas9-HF1,0.8520766414301753,0.8161278938147483
+pooled [all descriptors] permuted,1,HypaCas9,0.8643441579035064,0.7918602097101393
+pooled [all descriptors] permuted,1,evoCas9,0.6626982457272399,0.8368448763869251
+pooled [all descriptors] permuted,2,SpCas9,0.9291474641122434,0.6254306476329367
+pooled [all descriptors] permuted,2,SpCas9-NG,0.8780535012934835,0.6275473488149947
+pooled [all descriptors] permuted,2,VRQR,0.8990513655557223,0.7215007348929757
+pooled [all descriptors] permuted,2,xCas9,0.9001041563517219,0.8154449719232539
+pooled [all descriptors] permuted,2,Sniper-Cas9,0.9302799347578858,0.6745924371260857
+pooled [all descriptors] permuted,2,eSpCas9(1.1),0.8877114919218229,0.7462685986449938
+pooled [all descriptors] permuted,2,SpCas9-HF1,0.8539966258429426,0.8215663086774483
+pooled [all descriptors] permuted,2,HypaCas9,0.8640425371865057,0.7896585221104827
+pooled [all descriptors] permuted,2,evoCas9,0.6656793080974487,0.8372386900835773
+pooled [all descriptors] permuted,3,SpCas9,0.929414663544467,0.6118779465658365
+pooled [all descriptors] permuted,3,SpCas9-NG,0.8868427637257933,0.6742057484411813
+pooled [all descriptors] permuted,3,VRQR,0.9087544749108116,0.7656448795235793
+pooled [all descriptors] permuted,3,xCas9,0.9091352805159504,0.8348289370128924
+pooled [all descriptors] permuted,3,Sniper-Cas9,0.929395360327989,0.6694718274875855
+pooled [all descriptors] permuted,3,eSpCas9(1.1),0.8836304907226921,0.7221247570196516
+pooled [all descriptors] permuted,3,SpCas9-HF1,0.850120665704456,0.8149381982152517
+pooled [all descriptors] permuted,3,HypaCas9,0.860679225261402,0.7782998832003284
+pooled [all descriptors] permuted,3,evoCas9,0.6627062263500745,0.8391245195548522
+pooled [all descriptors] permuted,4,SpCas9,0.9294882118344,0.6073264849301077
+pooled [all descriptors] permuted,4,SpCas9-NG,0.8835843183706676,0.6574662411802787
+pooled [all descriptors] permuted,4,VRQR,0.9069768466965792,0.7140556055266654
+pooled [all descriptors] permuted,4,xCas9,0.9029611732901336,0.8202019787839295
+pooled [all descriptors] permuted,4,Sniper-Cas9,0.9291820015332758,0.6683835053457683
+pooled [all descriptors] permuted,4,eSpCas9(1.1),0.8886524507374963,0.7521767536908472
+pooled [all descriptors] permuted,4,SpCas9-HF1,0.8540652892142484,0.8132354708548124
+pooled [all descriptors] permuted,4,HypaCas9,0.8650225608368154,0.7828693092280321
+pooled [all descriptors] permuted,4,evoCas9,0.6574125650076532,0.8385804972161178
+pooled [all descriptors] permuted,5,SpCas9,0.9273050442807522,0.6121850182490035
+pooled [all descriptors] permuted,5,SpCas9-NG,0.8882377679562891,0.6898321851247673
+pooled [all descriptors] permuted,5,VRQR,0.9142735182089352,0.767964999983573
+pooled [all descriptors] permuted,5,xCas9,0.9094336682436256,0.8306822313707736
+pooled [all descriptors] permuted,5,Sniper-Cas9,0.9278062132987016,0.6617692136383256
+pooled [all descriptors] permuted,5,eSpCas9(1.1),0.8885833663560421,0.7371462999132025
+pooled [all descriptors] permuted,5,SpCas9-HF1,0.8487989605866834,0.8185275599240464
+pooled [all descriptors] permuted,5,HypaCas9,0.8630341015531681,0.7917127180062297
+pooled [all descriptors] permuted,5,evoCas9,0.6625327429860344,0.836839573094131
+pooled [all descriptors] permuted,6,SpCas9,0.9276845783628336,0.6009152076820528
+pooled [all descriptors] permuted,6,SpCas9-NG,0.8853065613349496,0.6551002628705628
+pooled [all descriptors] permuted,6,VRQR,0.9076486845705308,0.7338451593013473
+pooled [all descriptors] permuted,6,xCas9,0.9064278043491546,0.8258427911623555
+pooled [all descriptors] permuted,6,Sniper-Cas9,0.9308142560921344,0.6776300114070671
+pooled [all descriptors] permuted,6,eSpCas9(1.1),0.8856340689316714,0.7474611496247232
+pooled [all descriptors] permuted,6,SpCas9-HF1,0.8474004636514926,0.8127880915754764
+pooled [all descriptors] permuted,6,HypaCas9,0.8618900133392285,0.7839364941009523
+pooled [all descriptors] permuted,6,evoCas9,0.6632076933766432,0.8320788340548543
+pooled [all descriptors] permuted,7,SpCas9,0.9302605291482104,0.6292960913611552
+pooled [all descriptors] permuted,7,SpCas9-NG,0.8812525088681693,0.6362685604263392
+pooled [all descriptors] permuted,7,VRQR,0.9064666174444926,0.770718352829952
+pooled [all descriptors] permuted,7,xCas9,0.908836872732648,0.8357559097156334
+pooled [all descriptors] permuted,7,Sniper-Cas9,0.9305015627681212,0.6877354437188264
+pooled [all descriptors] permuted,7,eSpCas9(1.1),0.8825466850843362,0.733361392346189
+pooled [all descriptors] permuted,7,SpCas9-HF1,0.852188384165891,0.8161633996648112
+pooled [all descriptors] permuted,7,HypaCas9,0.8616464110812024,0.7813378596595546
+pooled [all descriptors] permuted,7,evoCas9,0.6691258819025391,0.8486120571492844
+pooled [structure] permuted,0,SpCas9,0.9287138229841227,0.6154806479929095
+pooled [structure] permuted,0,SpCas9-NG,0.8814647595840526,0.6940282323238304
+pooled [structure] permuted,0,VRQR,0.9012205070726688,0.709917174370771
+pooled [structure] permuted,0,xCas9,0.913207068106898,0.8397572014843547
+pooled [structure] permuted,0,Sniper-Cas9,0.9271344017142096,0.6543020405993976
+pooled [structure] permuted,0,eSpCas9(1.1),0.8871626600211011,0.7303210891576972
+pooled [structure] permuted,0,SpCas9-HF1,0.8521948824588478,0.8160721969823409
+pooled [structure] permuted,0,HypaCas9,0.8632505475985716,0.7854369148234943
+pooled [structure] permuted,0,evoCas9,0.6589137969193809,0.8312363026944316
+pooled [structure] permuted,1,SpCas9,0.9229817765412656,0.5831992787619419
+pooled [structure] permuted,1,SpCas9-NG,0.8704839279589075,0.6285349111743129
+pooled [structure] permuted,1,VRQR,0.9009253796175531,0.7151662461276592
+pooled [structure] permuted,1,xCas9,0.9072419693388494,0.8363006942740184
+pooled [structure] permuted,1,Sniper-Cas9,0.9274441599561248,0.6626882530277916
+pooled [structure] permuted,1,eSpCas9(1.1),0.8855765791653059,0.7393362311195936
+pooled [structure] permuted,1,SpCas9-HF1,0.8511206898106531,0.8204496553258833
+pooled [structure] permuted,1,HypaCas9,0.8631752675621671,0.791926365099999
+pooled [structure] permuted,1,evoCas9,0.6660562953598439,0.8442027843729619
+pooled [structure] permuted,2,SpCas9,0.9297689046227532,0.6218758591059836
+pooled [structure] permuted,2,SpCas9-NG,0.8846953625709665,0.6737041101081308
+pooled [structure] permuted,2,VRQR,0.870359717094798,0.61236548606357
+pooled [structure] permuted,2,xCas9,0.8948511748620247,0.8100971133561647
+pooled [structure] permuted,2,Sniper-Cas9,0.9277196249845772,0.6680861959951652
+pooled [structure] permuted,2,eSpCas9(1.1),0.8851147612913807,0.7478025550327001
+pooled [structure] permuted,2,SpCas9-HF1,0.8511779697670253,0.8128181645947091
+pooled [structure] permuted,2,HypaCas9,0.8642053730270853,0.7932759486622809
+pooled [structure] permuted,2,evoCas9,0.6633247875385825,0.8392443700277351
+pooled [structure] permuted,3,SpCas9,0.9288081545633916,0.6120533581329443
+pooled [structure] permuted,3,SpCas9-NG,0.883417849473505,0.6992896467552254
+pooled [structure] permuted,3,VRQR,0.9153184906324876,0.7843019478698326
+pooled [structure] permuted,3,xCas9,0.9005434365966458,0.8105195382074296
+pooled [structure] permuted,3,Sniper-Cas9,0.9283503907933648,0.6670158044329132
+pooled [structure] permuted,3,eSpCas9(1.1),0.8861805052048535,0.7336896642289685
+pooled [structure] permuted,3,SpCas9-HF1,0.8534558888855042,0.8107437108839212
+pooled [structure] permuted,3,HypaCas9,0.8624039050133319,0.7834827950231606
+pooled [structure] permuted,3,evoCas9,0.6667615418884635,0.8491842017547615
+pooled [structure] permuted,4,SpCas9,0.92891289681856,0.6210916370565498
+pooled [structure] permuted,4,SpCas9-NG,0.8814996460334079,0.6563398638804134
+pooled [structure] permuted,4,VRQR,0.8848016156521809,0.7218182670152445
+pooled [structure] permuted,4,xCas9,0.8947143871986001,0.812052882953239
+pooled [structure] permuted,4,Sniper-Cas9,0.930314473761428,0.6768923933202865
+pooled [structure] permuted,4,eSpCas9(1.1),0.889938317233642,0.7402436213545934
+pooled [structure] permuted,4,SpCas9-HF1,0.8484237015663637,0.813824510500828
+pooled [structure] permuted,4,HypaCas9,0.8629630182396887,0.7924633153307689
+pooled [structure] permuted,4,evoCas9,0.6618236974461752,0.8470675407555196
+pooled [structure] permuted,5,SpCas9,0.928111525759054,0.6192281955329851
+pooled [structure] permuted,5,SpCas9-NG,0.88599353160475,0.6668066054456697
+pooled [structure] permuted,5,VRQR,0.8701664770599664,0.64382791411579
+pooled [structure] permuted,5,xCas9,0.903356042588078,0.8166615954549555
+pooled [structure] permuted,5,Sniper-Cas9,0.9293410600471408,0.6755762197232092
+pooled [structure] permuted,5,eSpCas9(1.1),0.8816010158007869,0.7370885922220197
+pooled [structure] permuted,5,SpCas9-HF1,0.8520496682702523,0.8184892910775105
+pooled [structure] permuted,5,HypaCas9,0.865859667123483,0.7830218138821814
+pooled [structure] permuted,5,evoCas9,0.6649565998681606,0.8333652203419251
+pooled [structure] permuted,6,SpCas9,0.9210560273150784,0.5579272060442517
+pooled [structure] permuted,6,SpCas9-NG,0.8880105720413255,0.6893079863375847
+pooled [structure] permuted,6,VRQR,0.9064597015257648,0.7635328973452311
+pooled [structure] permuted,6,xCas9,0.9061827065060056,0.8065139549409803
+pooled [structure] permuted,6,Sniper-Cas9,0.9249889896195634,0.6439144887120322
+pooled [structure] permuted,6,eSpCas9(1.1),0.8836209314766809,0.7371742834656331
+pooled [structure] permuted,6,SpCas9-HF1,0.849025654613861,0.8029339782011685
+pooled [structure] permuted,6,HypaCas9,0.8623857149964641,0.7864078045414415
+pooled [structure] permuted,6,evoCas9,0.660248454130507,0.8393005216061962
+pooled [structure] permuted,7,SpCas9,0.9235321024843438,0.6027450219285885
+pooled [structure] permuted,7,SpCas9-NG,0.8854864509780472,0.6847761461470436
+pooled [structure] permuted,7,VRQR,0.8945988502385882,0.7253550217854422
+pooled [structure] permuted,7,xCas9,0.8964121157245054,0.806035428743257
+pooled [structure] permuted,7,Sniper-Cas9,0.9299613091167159,0.6826267373152579
+pooled [structure] permuted,7,eSpCas9(1.1),0.8865012989587162,0.7457109670660838
+pooled [structure] permuted,7,SpCas9-HF1,0.8468131111589395,0.8038986786673248
+pooled [structure] permuted,7,HypaCas9,0.8617134943072534,0.7860822102827921
+pooled [structure] permuted,7,evoCas9,0.6649955465906073,0.850451828210641
