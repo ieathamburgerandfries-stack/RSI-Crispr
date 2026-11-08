@@ -1356,8 +1356,32 @@ between ρ 0.71 and ρ 0.946 looks.
 more lopsided.** Every cost figure above is about *fitting*. What a user does is
 fit once and then score every candidate guide for every target they care about,
 which is tens of thousands to millions of forward passes against a handful of
-fits. Measured on the same CPU, scoring in batches of 10,000
-(`inference_cost.py`, `results/inference_cost.csv`; crisprHAL's side by
+fits. Two measurements, because the fair comparison depends on the hardware each
+model would actually be given. **On one Colab instance** — crisprHAL 2's shipped
+model on its T4, SLICER's configuration on the same instance's CPU and on its T4
+(`colab/inference_bench_t4.py`, `results/inference_t4.csv`; SLICER timed on
+synthetic data of the champion's shape, since scoring cost depends on tree count
+and depth and not on the values):
+
+| | one guide | 100 guides | 10,000 guides | throughput at 10,000 | cold start |
+|---|---:|---:|---:|---:|---:|
+| crisprHAL 2, T4 | 78.0 ms | 99.7 ms | 2,768 ms | 3,613 guides/s | **9.8 s** |
+| **SLICER, same instance's CPU** | **0.48 ms** | **1.36 ms** | **72.0 ms** | **138,950 guides/s** | not measured here |
+| SLICER, same instance's T4 | 2.17 ms | 2.81 ms | 59.5 ms | 168,065 guides/s | not measured here |
+
+**Against a GPU-served crisprHAL 2, SLICER on CPU is about 160× faster for one
+guide, 73× for a hundred, and 38× for ten thousand** (rates, so ratios are
+legitimate here, unlike the Δρ quotients this report refuses). The GPU did not
+help the deep model where it matters to a user scoring a few guides: one guide
+takes 78 ms on the T4 against 44 ms on a CPU, because a 37-layer network pays a
+fixed dispatch cost per call. It only wins at bulk (3,613 guides/s against 1,225
+on CPU). Putting SLICER on the GPU buys almost nothing at bulk (168 k against
+139 k guides/s) and costs speed for small batches; the figure shown was timed
+with the input on the host, so it includes a transfer, and is not a tuned GPU
+number.
+
+**On the local machine's CPU, both models** (a 10-core laptop, scoring in batches
+of 10,000; `inference_cost.py`, `results/inference_cost.csv`; crisprHAL's side by
 `colab/crisprhal_inference_bench.py` under its own TensorFlow interpreter):
 
 | | one guide | 100 guides | 10,000 guides | throughput | cold start |
@@ -1365,26 +1389,17 @@ fits. Measured on the same CPU, scoring in batches of 10,000
 | **SLICER** | **0.35 ms** | **0.80 ms** | **6.7 ms** | **~2.1 M guides/s** | a fraction of a second |
 | crisprHAL 2, shipped | 44.3 ms | 101.7 ms | 8,162 ms | 1,225 guides/s | **13.4 s** |
 
-**A factor of about 1,700 on throughput, on CPU**, against ~150 on training
-CPU-seconds — so on CPU the cheap-model argument is an order of magnitude stronger
-at inference than at training, which is the opposite of how it is usually
-presented. The cold start is the other half: importing TensorFlow and loading the
-network costs **13.4 s** before the first prediction, which for a researcher
-scoring a few guides is the entire interaction.
-
-*Three caveats, and the first is the one that matters.* **Both models were timed
-on CPU, and a deep network is not normally deployed there.** A GPU should narrow
-the throughput gap substantially; it is not expected to remove the 13.4 s of
-import and model-loading, which is mostly CPU work either way, but that too is
-unmeasured. The 1,700× is a statement about
-CPU deployment and should not be quoted without that qualifier. The like-for-like
-measurement is crisprHAL 2 on a Colab **T4**, with SLICER timed on the same
-instance on both its CPU and the GPU (`colab/inference_bench_t4.py`, which writes
-`inference_t4.json`); it is written and has not been run, so what is
-established today is the CPU result and nothing about GPU deployment. Second,
-these are rates and therefore legitimate ratios, unlike the Δρ quotients this
-report refuses elsewhere. Third, the absolute numbers move with
-machine load, and how far the *ratio* moves has not been measured.
+That is a factor of about 1,700 on throughput, and it is **a CPU-deployment
+figure, not the headline**: the same SLICER model is 15 times faster on ten
+laptop cores than on Colab's two vCPUs, which is most of the difference between
+the two tables, and the like-for-like T4 comparison above is the smaller and
+more defensible one. Either way the cheap-model argument is stronger at inference
+than at training (~150× CPU-seconds), which is the opposite of how it is usually
+presented, and **cold start** is the other half: loading crisprHAL 2 costs 9.8 s
+on the T4 instance and 13.4 s on the laptop before the first prediction, which for
+a researcher scoring a few guides is the entire interaction. SLICER's cold start
+was timed only locally. Absolute numbers move with machine load; the Colab and
+laptop SLICER figures differ by 15× for hardware alone.
 
 *The forward-FLOPs column is also derivable rather than absent.* Scoring one
 guide costs one root-to-leaf walk per tree — 400 trees at depth 4 is **1,600
@@ -3330,55 +3345,24 @@ nulls.
 +0.0113 in `c_folding`, on one cohort, with the usual 300-column budget competing
 underneath. It is a mechanism with a measurement attached, not a law.
 
-### Does the human baseline reproduce ρ 0.472, and what produces it?
+### The human baseline: ρ 0.5076 once the champion is re-tuned, and why it needed re-tuning
 
-Part 3's cross-kingdom sentence had carried, for weeks, a figure with no
-provenance: a teammate's grid search reaching ρ 0.472 on the human iRF matrix
-against the 0.404 this harness measures. The settings arrived on 16 October
-(`Jacky/human-boundary/HUMAN_BASELINE_SETTINGS.md`): **400 selected columns,
-1,000 estimators, every other XGBoost knob at library defaults**, from a personal
-script predating the merged pipeline. Three arms on the same folds of
-`data/raw/human_feature_matrix.csv` (17,421 guides × 6,233 columns), 3 seeds × 5
-folds (`src/sgrna/human_baseline.py`, `results/human_baseline.csv`):
+A teammate's grid search reached ρ 0.472 on the human iRF matrix against the 0.404
+this harness measured. The settings (`Jacky/human-boundary/HUMAN_BASELINE_SETTINGS.md`)
+are **400 selected columns, 1,000 estimators, every other XGBoost knob at library
+defaults**. Three arms on the same folds of `data/raw/human_feature_matrix.csv`
+(17,421 guides × 6,233 columns), 3 seeds × 5 folds (`human_baseline.py`,
+`results/human_baseline.csv`):
 
 | arm | columns | XGBoost settings | ρ |
 |---|---:|---|---:|
-| `harness_default` | 300 | champion | 0.4036 ± 0.0128 |
-| `jacky_cols_only` | 400 | champion | 0.4074 ± 0.0148 |
-| **`jacky_400_1000`** | **400** | **library defaults, 1,000 trees** | **0.5076 ± 0.0149** |
+| harness default | 300 | champion | 0.4036 ± 0.0128 |
+| Jacky's columns only | 400 | champion | 0.4074 ± 0.0148 |
+| **Jacky's columns and settings** | **400** | **library defaults, 1,000 trees** | **0.5076 ± 0.0149** |
 
-**It reproduces, and overshoots: 0.5076 against the 0.472 quoted.** The third
-arm exists because the first two differ in one thing and the quoted
-configuration differs in two, and only one of them can be doing the work. The
-answer is unambiguous — **the column count contributes +0.0038, inside a single
-fold's spread; the hyperparameters contribute +0.1002.**
-
-*Why the design settles it.* Holding the folds, the selector and the seeds fixed
-and moving one factor at a time is the only way to attribute a difference
-between two historical runs, because the two differences are confounded in the
-original comparison. Without `jacky_cols_only` the natural reading would have
-been "human needs more features", which is the opposite of true.
-
-*Why the library defaults are not a detail.* XGBoost defaults to
-`max_depth=6, learning_rate=0.3`; the champion uses `4` and `0.05` with
-`subsample=0.8, colsample_bytree=0.8`. On a 17,421-row matrix that is a
-substantially higher-capacity, faster-learning model, not a tweak — and the
-teammate's note records that on human `n_estimators` kept improving with no
-plateau, unlike bacteria.
-
-**What this costs the report.** Not the cross-kingdom conclusion — nothing
-transfers either way, and that survives (below) — but one sentence supporting it
-does, and the assumption underneath both: **the champion is tuned on one
-*E. coli* screen and is mis-specified by 0.10 ρ on a matrix of different
-shape.** Every external arm here — TevSpCas9, *C. rodentium*, eSpCas9, Cui — is
-fitted with it, and each therefore reports a lower bound on what a locally-tuned
-model would reach. For the comparisons that are *differences between arms on one
-dataset* this mostly cancels; for absolute transfer figures it does not, which is
-exactly where it bit.
-
-**Which knob, and what it says.** The quoted configuration changes three things
-at once, so each was moved alone from the 400-column reference
-(`results/human_baseline_knobs.csv`):
+It reproduces and overshoots: **the column count contributes +0.0038, inside one
+fold's spread; the hyperparameters contribute +0.1002.** Moving each knob alone from
+the 400-column reference (`results/human_baseline_knobs.csv`):
 
 | change from the champion | ρ | Δ |
 |---|---:|---:|
@@ -3386,19 +3370,13 @@ at once, so each was moved alone from the 400-column reference
 | `learning_rate` 0.05 → 0.3 | 0.4490 | +0.0416 |
 | `n_estimators` 400 → 1,000 | 0.4435 | +0.0361 |
 | no row/column subsampling | 0.3999 | −0.0075 |
-| all three (= `jacky_400_1000`) | 0.5076 | +0.1002 |
+| all three | 0.5076 | +0.1002 |
 
-Sub-additive, as three capacity knobs should be. **The largest single term is
-tree depth** — not shrinkage, not tree count — and depth is the interaction-order
-knob, which makes this a candidate statement about the signal rather than about
-our settings. Depth also buys plain capacity, though, so the hyperparameter
-cannot establish it alone.
-
-**The direct test says the human signal really is less additive.** Appendix B's
-model-class comparison found *E. coli*'s signal overwhelmingly additive: ridge
-reaches **95.6%** of boosting's ρ. Repeating exactly that test on the human
-matrix, on the same 400 selected columns, standardised, with `RidgeCV`
-(`results/human_additivity.csv`):
+The effects are sub-additive, as three capacity knobs should be, and the largest is
+tree depth, the interaction-order knob. That is a candidate statement about the
+signal rather than about the settings, though depth also buys plain capacity. The
+direct test is the additivity comparison used for *E. coli* (a ridge on the same 400
+selected columns, standardised; `results/human_additivity.csv`):
 
 | | *E. coli* | human |
 |---|---:|---:|
@@ -3406,56 +3384,46 @@ matrix, on the same 400 selected columns, standardised, with `RidgeCV`
 | ridge | 0.577 | **0.3232** |
 | **ridge / boosting** | **95.6%** | **63.7%** |
 
-A straight line gets within 0.03 ρ of boosting in *E. coli* and falls 0.18 short
-in human. **Human guide efficiency carries interaction structure that *E. coli*'s
-does not**, and that is why a champion tuned on a nearly-linear signal — shallow
-trees, heavy shrinkage — is the wrong model there. Against our champion alone
-ridge still reaches 79.3%, which is the same fact from the other side: the
-champion's effective capacity is close to a linear model's.
+**Human guide efficiency carries interaction structure that *E. coli*'s does not.**
+The champion was tuned on one nearly additive *E. coli* screen and is mis-specified
+by 0.10 ρ on a matrix of different shape, so every external arm fitted with it
+reports a lower bound on what a locally tuned model would reach. This mostly cancels
+for differences between arms on one dataset and does not for absolute transfer
+figures. The two percentages are not measured on an identical basis (427
+decorrelated columns for *E. coli*, 400 selected for human), so the comparison is one
+of magnitude, not a precise ratio. For the human workflow the lesson is to tune depth
+and learning rate on the human matrix and not to inherit the champion.
 
-This also **bounds the caution above**. The champion fails to travel across
-kingdoms because the shape of the signal changes, not because hyperparameters are
-fragile in general — which is consistent with it transferring without incident
-across the bacterial sets, where the near-additivity measured above holds. The two
-percentages are not measured on an identical basis (*E. coli*'s on 427
-decorrelated columns, human's on 400 selected ones), so the comparison is a
-factor-of-magnitude one, not a precise ratio.
+**It changed one claim.** Refitting the human side at the appropriate settings and
+bootstrapping over test rows (`kingdom_transfer.py`, 6,216 shared columns, 2,000
+resamples) moves *human → E. coli* transfer from −0.0155 to −0.0060, 95% CI
+[−0.0227, +0.0111], i.e. to zero, while *E. coli → human* stays negative (−0.0393,
+[−0.0542, −0.0242]). So the earlier claim that both directions are negative with
+intervals excluding zero does not hold (Part 5), and "no transfer in either
+direction" is true only for the shared columns (Part 3).
 
-**And it did bite, once.** Part 3's boundary claim had both transfer directions
-negative with intervals excluding zero — measured with the human model fitted at
-champion settings. Refitted at the human-appropriate ones and bootstrapped over
-test rows (`src/sgrna/kingdom_transfer.py`, 6,216 columns shared by name, 2,000
-resamples):
-
-| direction | champion | human-fitted | human-fitted, seeds pooled | 95% CI |
-|---|---:|---:|---:|---|
-| *E. coli* → human | −0.0462 | −0.0367 | −0.0393 | [−0.0542, −0.0242] |
-| human → *E. coli* | −0.0155 | −0.0055 | **−0.0060** | **[−0.0227, +0.0111]** |
-
-The first two columns are means of three single-seed fits; the third averages the
-three seeds' predictions before scoring, which is what the interval is
-bootstrapped on. The two conventions agree to 0.003 and are kept separate rather
-than mixed.
-
-Reproduces the previously quoted −0.048 and −0.017 at champion settings, and
-then moves one direction to zero. **The claim that both intervals exclude zero
-was an artefact of the undertuned human model** and is withdrawn (Part 5); the
-boundary itself is not, since neither direction transfers. Note which direction
-moved: the one *trained* on human, which is the only one whose hyperparameters
-were wrong for its training data. The seed-to-seed spread of three fits is model
-noise and says nothing about this — at ρ this close to zero only resampling the
-test rows can, which is why the interval is bootstrapped rather than taken from
-the seeds.
-
-The one place it could bite is the Cui null in Finding 3, where family A adds
-−0.009 across that CRISPRi screen. An underfit model that could not use the
-flank columns at all would produce the same null. It did not happen here: given
-nothing else, those same 348 columns reach ρ **0.1333** on Cui under gene-grouped
-CV, so the model demonstrably reads them and still gains nothing from them
-alongside the base — which is a displacement result inside a 300-column budget,
-not an inability to fit.
+**It does not rescue the Cui null.** An underfit model that could not use the flank
+columns would also produce Finding 3's null on that screen. Those same 348 columns
+alone reach ρ 0.1333 on Cui under gene-grouped CV, so the model reads them and gains
+nothing alongside the base: a displacement result inside a 300-column budget, not an
+inability to fit.
 
 **B.4 — Mechanism: what the effect is, and what it is not**
+
+### What other long-range features could be built without new data?
+
+Two of the three most mechanistically motivated candidates have now been built
+and are nulls: **GC skew, A-tract phasing and bendability periodicity**, as
+family J (−0.001 alone, +0.0004 on top of family A, with its own permutation
+control scoring higher), and **Chi sites**, in the section below. That makes the
+long-range asymmetry harder to explain rather than easier — the candidates that
+came with a mechanism attached are now excluded rather than unexamined. What
+remains unbuilt is k-mer entropy, homopolymer run-length and REP density from the
+genome, and from RegulonDB the distance and orientation to the nearest annotated
+TSS, terminator and operon boundary. None of the first three carries a mechanism
+of its own; the RegulonDB items are the properly-annotated version of the
+nearest-gene proxy behind Jacky's orientation result, and so the highest-value
+thing left on this list.
 
 ### Is the flank effect a *repair* effect? The Chi-site test, and it is a null
 
@@ -3639,234 +3607,63 @@ overturned.
 worth saying because people keep importing such features. It is not a predictive
 screen, and this report no longer quotes it as one.
 
-## Appendix B2a — Curation and feature selection are not the same kind of dropping
+## Appendix B2a — Curation: what it is, and why family A doubled between cohorts
 
-Both discard data, and it is easy to treat them as interchangeable. They are not.
+**Curation drops rows; selection drops columns, and only curation can flatter a
+score.** crisprHAL's curation removes guides whose label is unreliable, reducing
+noise in the target. It is applied to the whole dataset **before splitting**, so it
+also cleans the test set and raises ρ partly by making the evaluation easier;
+feature selection is fitted inside each training fold and cannot. Our own figure
+for the value of curation, ρ 0.607 → 0.628 on restricting to the 8,617 retained
+rows, contains both effects and has not been separated.
 
-**Curation drops rows; selection drops columns.** crisprHAL's curation removes
-guides whose *label* is unreliable — it is a read-count filter — which reduces
-noise in the target. Feature selection removes *inputs* that do not predict,
-which changes what the model sees. Neither touches the other's object.
+**What the procedure is** (Browne et al., 2026). The score is the ALDEx2 `diff.btw`
+log2 fold-change between the Cas9 and dead-nuclease arms, the expected value of a
+Bayesian posterior over two control and two experimental replicates, so it is
+shrunk toward the prior and its reliability is a property of the prior as well as
+of the counts. The filter is an average control-condition read count across the
+two control replicates, with a threshold of **73** for the *E. coli* SpCas9 set we
+train on (31 for eSpCas9, 56 for *C. rodentium* TevSpCas9), **chosen by 5-fold
+cross-validation on the training set** — a hyperparameter optimised for model
+performance, not a fixed cleaning rule — and applied before the 80/20 split.
 
-**Only one of them can flatter a score without improving a prediction.**
-Selection is fitted **inside each training fold**, so it cannot see the test rows
-and cannot leak. Curation is applied to the whole dataset **before splitting**,
-so it also removes noisy rows from the *test* set — raising ρ partly by making
-the evaluation easier rather than the model better. Our own figure for the value
-of curation, ρ 0.607 → 0.628 on restricting to the 8,617 retained rows, contains
-both effects and **we have never separated them**.
+**The cohorts are not nested**: 8,617 guides are shared with Noshay's published
+13,880, 24,950 are only in crisprHAL's and 5,263 only in Noshay's. Curation is a
+different, larger draw from the same Guo screen with a quality threshold.
 
-**What curation is worth here, measured.** On the 8,617 guides both cohorts
-share, swapping Noshay's label for crisprHAL's changes almost nothing — baseline
-0.5387 → 0.5370, with family A 0.6279 → 0.6305, a difference of +0.003 inside the
-noise. The value is in *which rows survive*, not in how the survivors are scored.
-
-**The two cohorts are not nested**: 8,617 shared, 24,950 only in crisprHAL,
-**5,263 only in Noshay**. So curation is not a filter applied to Noshay's
-selection — it is a different, larger draw from the same Guo screen with a
-quality threshold. The guides crisprHAL drops look unremarkable on copy number
-and uniqueness; their only visible signature is a compressed label range.
-
-**What the procedure actually is** (Browne et al., 2026, read 15 October — worth
-setting out in full, because we train on their label):
-
-* **The score is not a read-count ratio.** It is the ALDEx2 `diff.btw` log2
-  fold-change between the experimental (Cas9) and control (dead-nuclease) arms —
-  *"the expected value of a Bayesian posterior derived from the data"*, over two
-  control and two experimental replicates. That matters for the ceiling argument
-  below: a posterior mean is shrunk toward the prior, so its reliability is a
-  property of the prior as well as of the read counts, and the Spearman–Brown
-  machinery we applied to Noshay's two-replicate geometric mean does not carry
-  over unchanged.
-* **The filter is an average control-condition read count across the two control
-  replicates**, and the threshold is **73** for the *E. coli* SpCas9 set we train
-  on (31 for eSpCas9, 56 for *C. rodentium* TevSpCas9). So "a read-count filter"
-  was the right inference.
-* **The threshold is itself a fitted quantity** — chosen by 5-fold
-  cross-validation on the training set. Curation is therefore not a fixed
-  data-cleaning rule but a hyperparameter optimised for model performance, which
-  is worth knowing before describing their cohort as independently cleaner.
-* **And it is applied before the split.** Their Table 2 reports the cutoffs
-  against the unfiltered pools, before the 80/20 partition — their own text flags
-  the tension with the hold-out being untouched. This confirms the concern above
-  from their methods rather than from our inference: curation cleans the test set
-  too, and our 0.607 → 0.628 figure still contains both effects.
-
-### Why the columns behave *qualitatively* differently after curation
-
-The objection is the right one: if curation only removed noise, every family's
-gain should have been scaled by a single attenuation factor and nothing should
-have changed in kind. `i_shape` should not have looked like a null and then like
-a third-largest effect; `d_mechanics` should not have gone from +0.020 to +0.099.
-Noise removal does not reorganise a table.
-
-**It did not only remove noise. Four things changed at once, and three of them
-are not about noise at all.**
-
-| what changed | is it noise removal? |
-|---|---|
-| the **label** — crisprHAL's read-count-filtered score replaces `cut_score` | yes |
-| **which rows** — not nested: 8,617 shared, 24,950 only crisprHAL, 5,263 only Noshay; genome-wide (4,013 genes at 7.5 guides) against a panel (1,222 at 11.3) | no — a different draw |
-| **how many rows** — 13,880 → 33,567, 2.4× | no |
-| the **base representation** — the curated base is the 6,169 regenerated columns and carries **none** of the published base's 63 hand-named summaries | no — a different comparison |
-
-**The part that is noise removal is nearly inert, and this is measured.** At
-fixed rows — the 8,617 both cohorts share, published base, same folds — swapping
-the label moves family A from **+0.0892** against `cut_score` to **+0.0936**
-against the curated score. A **0.004** move, against a cohort move of +0.080 →
-+0.164. Whatever tripled the table, it was not the label, and the attenuation
-argument is bounded at a few per cent of the effect rather than 230% of it.
-
-**Still, noise removal *can* change behaviour in kind, and it is worth being
-precise about why**, because the intuition that it cannot is the thing that makes
-this surprising. Two reasons:
-
-*Feature selection and tree splitting are not continuous in signal-to-noise.* A
-family is only worth anything if its columns are selected into the top 300 and
-then split on. Both are threshold operations. A weak-but-real column sitting just
-below the selector's cut contributes **exactly zero**, not a small amount; drop
-the label noise slightly and the same column crosses the threshold and
-contributes its full value. So a small change in reliability can produce a step
-change in measured Δρ. This is the mechanism by which "just less noise" shows up
-as a qualitative difference, and it is specific to a pipeline with a hard
-selection budget — which ours has, at 300.
-
-*Label noise is not uniform across rows, so removing noisy rows is not a
-null operation on the covariates.* A read-count filter removes
-low-abundance guides preferentially, and abundance is **not** spatially random —
-we measured that directly when `d_supercoiling`'s gain turned out to be DNA read
-density rather than supercoiling. A filter on read count is therefore a filter
-that touches the joint distribution of every positional feature and the label,
-not just the label's variance. That is a change of population, and it is the one
-the table is most likely responding to.
-
-### The objection answered with a mechanism, not an exclusion
-
-Everything above rules things out. It does not yet say *why* the increments rose
-while the baseline rose too, and that is the part of the objection that has
-force: attenuation predicts the two move in opposite directions.
-
-The answer is that **the added guides carry a genuinely stronger relationship
-between flanking composition and the label**, and it can be measured directly
-rather than inferred from model gains. For a relationship y = βx + noise, the
-correlation is β · sd(x) / sd(y), so exactly three things can raise it: a steeper
-β, a wider spread of the predictor, or a narrower spread of the label. All three
-are observable. Taking x = flank GC at ±500 nt and y = **the curated label on
-every row**, so the units are identical across groups
-(`curation_variance.py`, `results/curation_variance.csv`):
-
-| rows | n | sd(x) | sd(y) | **β** | Pearson r |
-|---|---:|---:|---:|---:|---:|
-| the 8,617 Noshay also published | 8,617 | 0.0431 | 2.58 | **+5.35** | +0.089 |
-| crisprHAL only, **inside Noshay's gene panel** | 2,045 | 0.0475 | 3.92 | **+8.63** | +0.105 |
-| crisprHAL only, **outside it** | 22,905 | 0.0524 | 3.38 | **+17.03** | +0.264 |
-| the whole curated cohort | 33,567 | 0.0503 | 3.29 | +14.76 | +0.225 |
-
-**It is not spread.** The predictor's spread rises only 1.21× between the first
-and fourth rows, and the *label's* spread rises 1.34× — which pushes the
-correlation **down**. Both together cannot produce a 2.7× rise in r. What does is
-β, which rises **2.96×**: a unit of flank GC is worth three times as much score
-in the guides crisprHAL added. The arithmetic closes: 2.96 × 1.21 / 1.34 = 2.67,
-against an observed r ratio of 2.67.
-
-**And it is the genes, not the guides — mostly.** Splitting the added rows by
-whether their host gene is one of the 1,222 in Noshay's panel separates two
-effects that were confounded. Inside the panel's genes the relationship stays
-weak (β 8.63, r 0.105) even for guides Noshay never published; outside it the
-relationship is twice as steep again (β 17.03, r 0.264). So the 2.96× factors
-into **×1.6 from which guides were published inside those genes** and **×2.0 from
-the choice of genes itself** (1.6 × 2.0 = 3.2, against 2.96 observed).
-
-**What that means for every number in the family table.** The published matrix
-did not measure a noisier version of the same effect — it measured a real effect
-in a **part of the genome where that effect is weak**, because Guo's screen was
-built around a 1,222-gene panel and Noshay published a subset of it. The +0.080
-is the correct figure for that panel and the +0.164 is the correct figure
-genome-wide; neither is an attenuated version of the other, and the right one to
-quote depends on where a user intends to design guides. Why panel genes behave
-differently is **open**: the obvious candidate is essentiality — if cutting kills
-the cell whatever the efficiency, variation in efficiency has less room to show
-in the score — but that is a hypothesis, not a result, and family G's
-essentiality column is worth +0.00004 on its own, which argues against the
-simplest version of it.
-
-This also explains the uniformity across families without appealing to the
-measurement scale: every family that reads genomic position or context inherits
-the same β, so a change in β multiplies all of them together and preserves the
-ordering, which is what the rank correlation of 0.97 shows.
-
-**A second, smaller contributor remains the base representation.** The
-inflation is nearly uniform — rank correlation 0.97 between the published and
-curated columns, median 3.3× — and a uniform multiplier is also the signature of
-something that changed the *scale of the measurement*. The base
-losing its 63 hand-named dense columns does exactly that: every family that
-supplies dense continuous summaries is now measured against a weaker comparison,
-and the weaker the base, the more any such family is worth. It predicts
-multiplication with the ordering preserved, which is what is observed.
-
-**All four were tested, and the answer is the rows.** Each row below holds
-everything else fixed and changes one thing:
+**Why family A is worth +0.080 on the published matrix and +0.164 on the curated
+one.** Four things changed at once, and each was tested with everything else held
+fixed:
 
 | candidate | test | effect on family A's Δρ |
 |---|---|---:|
 | the **label** | same 8,617 rows, published base, swap `cut_score` for the curated score | **+0.004** (+0.0892 → +0.0936) |
 | **row count** | random 13,880-row subsamples of the curated cohort, 3 draws | **−0.003** (+0.1672 ± 0.0027 against +0.1638 at 33,567) |
-| the **base** | add 41 dense guide-only summary columns to the curated base, then measure family A on top | **+0.013** (+0.1638 → +0.1504) |
+| the **base** | add 41 dense guide-only summary columns to the curated base | **+0.013** (+0.1638 → +0.1504) |
 | **which rows** | the remainder of a +0.084 gap | **≈ +0.070** |
 
-Row count is not merely small, it is **absent**: at the published cohort's own
-row count, the curated cohort still gives family A **+0.167**. The base matters a
-little — giving the base `b_energy`, `c_folding` and `d_mechanics`'s 22 dense
-guide-only columns raises it from 0.5445 to 0.5692 and takes 0.013 off family
-A — which is 8% of the gap, not the explanation. The label is 5%.
+It is the rows, not the label, the count or the base. The cleanest form needs no
+model: the marginal rank correlation between flank GC and activity is +0.069 on the
+8,617 shared guides under Noshay's label and +0.067 under crisprHAL's (the label
+does nothing), and **+0.172 on the 24,950 guides only crisprHAL has** under the same
+label. The relationship is steeper there, not wider-spread: regressing the curated
+label on flank GC at ±500 nt gives a slope β of 5.35 on the shared rows, 8.63 on
+added rows inside Noshay's 1,222-gene panel and **17.03** outside it
+(`curation_variance.py`, `results/curation_variance.csv`); the spread of the
+predictor rises only 1.21× and the label's 1.34×, which pushes r down, so the 2.7×
+rise in r is β (2.96×). Which guides were published inside the panel's genes
+accounts for about ×1.6 of it and the choice of genes for ×2.0.
 
-**The 24,950 guides crisprHAL has and Noshay never published are a different
-population, and the flank effect is 2.5× stronger in them.** The cleanest form of
-this needs no model at all — the marginal rank correlation between a single
-flank-GC column and activity:
-
-| rows | label | `up500.gc` | `up50.gc` | `dn500.gc` |
-|---|---|---:|---:|---:|
-| the 8,617 **shared** | Noshay's `cut_score` | +0.069 | +0.056 | +0.052 |
-| the 8,617 **shared** | crisprHAL's score | +0.067 | +0.060 | +0.054 |
-| the 24,950 **crisprHAL-only** | crisprHAL's score | **+0.172** | **+0.150** | **+0.180** |
-
-**Same rows, two labels: identical. Different rows, same label: 2.5× to 3.5×.**
-That is the whole answer to the original objection, in a statistic with no
-selector, no tree and no folds in it.
-
-*What is different about those rows, as far as we can see.* They are not an
-obviously different class of gene — 6.9% essential against 8.0%, 6.8 guides per
-gene against 7.4. What differs is **dynamic range**: within the same curated
-label, the added rows have **1.34×** the label spread (sd 3.46 against 2.58) and
-**1.21×** the flank-GC spread (0.052 against 0.043). A correlation is
-scale-invariant, so spread alone changes nothing — but spread in the *signal*
-with the noise floor unchanged raises reliability, and attenuation is
-multiplicative in exactly the way the family table is. Noshay published the
-subset of the screen with the least room to measure anything in.
-
-*What would separate "more dynamic range" from "different biology" properly:*
-the per-guide read counts, which give a noise variance per row and hence a
-reliability per subset. We do not have them, and they are in the same PeerJ
-supplement nobody has read. Until then, "the added rows have more dynamic range,
-and that is sufficient to explain a 2–2.5× attenuation difference" is as far as
-this goes.
-
-**So the premise of the objection was right.** If curation had only removed noise
-from the label, the columns should not have changed behaviour — and the label
-change is worth 0.004. What changed behaviour is that crisprHAL's release is a
-**different and wider draw from the Guo screen**, four fifths of which Noshay
-never published, and in which the effect this project is about is simply easier
-to see.
-
-*Consequence for the findings, and it is a favourable one.* The published matrix
-**understated** the flanking-context effect, because it is the narrower,
-lower-range subset. The curated figures are the ones that describe genome-wide
-guide design; the published figures describe a 1,222-gene panel. Nothing in
-Part 1 needs weakening, and Finding 2's effect size needs *raising* when it is
-restated on this cohort — but the restatement has to carry this appendix with it,
-because a reader comparing +0.080 to +0.164 across cohorts without it will think
-the model got better.
+**Consequence.** The published matrix measured a real effect in a part of the genome
+where it is weak, because Guo's screen was built around a 1,222-gene panel and
+Noshay published a subset of it. +0.080 is the right figure for that panel and
++0.164 the right figure genome-wide; neither is an attenuated version of the other,
+and comparing them across cohorts without this explanation reads as the model
+improving. *Why panel genes differ is open.* The added rows have 1.34× the label
+spread and 1.21× the flank-GC spread, which would raise reliability, but separating
+dynamic range from different biology needs per-guide read counts that were not
+used here. The essentiality candidate is argued against by family G's essentiality
+column being worth +0.00004 on its own.
 
 ## Appendix B3 — The family ablations on the curated cohort, and what they measure
 

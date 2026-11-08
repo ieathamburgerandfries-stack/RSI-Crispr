@@ -1,0 +1,10 @@
+model,device,n_guides,latency_ms,guides_per_s,cold_start_s,source
+crisprHAL 2 WT-SpCas9 (shipped),Colab T4,1,77.98,13,9.8,pasted from Colab run 2026-11-08 (colab/inference_bench_t4.py)
+crisprHAL 2 WT-SpCas9 (shipped),Colab T4,100,99.67,1003,9.8,same
+crisprHAL 2 WT-SpCas9 (shipped),Colab T4,10000,2768.06,3613,9.8,same
+SLICER configuration (synthetic data),Colab CPU,1,0.484,2064,,same
+SLICER configuration (synthetic data),Colab CPU,100,1.362,73430,,same
+SLICER configuration (synthetic data),Colab CPU,10000,71.968,138950,,same
+SLICER configuration (synthetic data),Colab T4 (host-resident input),1,2.166,462,,same
+SLICER configuration (synthetic data),Colab T4 (host-resident input),100,2.814,35532,,same
+SLICER configuration (synthetic data),Colab T4 (host-resident input),10000,59.501,168065,,same

@@ -45,9 +45,10 @@ OUT = config.RESULTS / "inference_cost.csv"
 # (TensorFlow 2.19.1). It is kept here as recorded numbers because it needs the
 # other interpreter; re-run that script to refresh them.
 #
-# Both models are on CPU. A GPU would narrow the throughput gap substantially
-# and would not touch the cold start, so the comparison below is a statement
-# about CPU deployment and should not be quoted as an architectural limit.
+# Both models are on this machine's CPU. The like-for-like GPU comparison was run
+# on a Colab T4 (`colab/inference_bench_t4.py`, `results/inference_t4.csv`):
+# crisprHAL 2 takes 78.0 / 99.7 / 2,768 ms for 1 / 100 / 10,000 guides there and
+# 9.8 s to cold-start, and SLICER on the same instance's CPU is 38-160x faster.
 HAL_INFERENCE = {
     "import_and_load_s": 13.4,
     1: dict(latency_s=0.04426, guides_per_s=23),
