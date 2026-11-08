@@ -312,7 +312,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--arm", default="both",
                     choices=["random", "taxonomy", "families", "provenance",
-                             "folds", "nonlinear", "trend", "both"])
+                             "folds", "nonlinear", "trend", "percolumn", "both"])
     a = ap.parse_args(argv)
     if a.arm in ("taxonomy", "both"):
         column_taxonomy()
@@ -328,6 +328,8 @@ def main(argv=None) -> int:
         random_nonlinear()
     if a.arm == "trend":
         recoverability_trend()
+    if a.arm == "percolumn":
+        per_column()
     return 0
 
 
@@ -684,6 +686,54 @@ def recoverability_trend(seeds=(41,), n_splits=5, with_fits: bool = True,
     out = pd.DataFrame(rows)
     if verbose:
         print(f"written -> {TREND_OUT}")
+    return out
+
+
+# Is low recoverability *necessary* for a column to help? The band table shows
+# the 18 columns the guide predicts exactly are worth +0.008 together, which does
+# not settle whether one of them carries all of it. This runs each of them alone.
+PERCOL_OUT = config.RESULTS / "recoverability_percolumn.csv"
+
+
+def per_column(hi: float = 0.99, seeds=(41,), n_splits=5, verbose: bool = True):
+    """Individual increments for every column the guide predicts almost exactly."""
+    from scipy.stats import spearmanr
+
+    X, y, names, protos = _base()
+    A = _onehot(protos, order=2)
+    vals, cols, fams = [], [], []
+    for fam in FAMILIES:
+        try:
+            v, fn = _block(fam, protos)
+        except FileNotFoundError:
+            continue
+        vals.append(v); cols += list(fn); fams += [fam] * len(fn)
+    V = np.hstack(vals)
+    r2 = _oof_r2(V.astype(np.float64), A)
+    sel = np.where(np.isfinite(r2) & (r2 > hi))[0]
+    base_rho, _ = _cv(X, y, seeds=seeds, n_splits=n_splits)
+    if verbose:
+        print(f"  base {base_rho:.4f}; {len(sel)} columns with R2 > {hi}", flush=True)
+
+    rows = []
+    for j in sel:
+        col = V[:, j].astype(np.float32).reshape(-1, 1)
+        rho, _ = _cv(np.hstack([X, col]), y, seeds=seeds, n_splits=n_splits)
+        m = spearmanr(V[:, j].astype(float), y, nan_policy="omit").statistic
+        rows.append(dict(column=cols[j], family=fams[j], oof_r2=float(r2[j]),
+                         abs_rho=float(abs(m)), spearman=rho,
+                         d_spearman=rho - base_rho))
+        if verbose:
+            print(f"  {cols[j][:46]:46s} R2 {r2[j]:.3f}  |rho| {abs(m):.3f}  "
+                  f"d {rho - base_rho:+.4f}", flush=True)
+        pd.DataFrame(rows).to_csv(PERCOL_OUT, index=False)
+    out = pd.DataFrame(rows)
+    if verbose and len(out):
+        print(f"\n  largest individual increment among them: "
+              f"{out.d_spearman.max():+.4f} ({out.loc[out.d_spearman.idxmax(), 'column']})")
+        print(f"  median {out.d_spearman.median():+.4f}, "
+              f"{int((out.d_spearman > 0.01).sum())} of {len(out)} above +0.01")
+        print(f"written -> {PERCOL_OUT}")
     return out
 
 if __name__ == "__main__":

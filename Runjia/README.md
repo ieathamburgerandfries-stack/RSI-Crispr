@@ -70,7 +70,8 @@ screen under the same whole-gene-holdout protocol. That screen-wide figure is an
 average over a cohort 85% of which is non-essential genes, where knockdown barely
 moves growth; restricted to its essential genes family A reads **+0.268**, and
 that +0.268 is the screen's own strand rule — a single strand indicator scores
-ρ 0.662 there on its own, and given it family A adds **+0.007**. So the
+ρ 0.662 there on its own, and given it family A adds **+0.007 to +0.025**, on
+Cui and on a second screen (Rousset) this project had never used. So the
 flanking-context effect belongs to a step that requires a break, not to Cas9
 binding or local accessibility, and the strand result is the positive control the
 comparison previously lacked. Separately, the ceiling
