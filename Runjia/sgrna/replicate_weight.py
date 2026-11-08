@@ -193,10 +193,102 @@ def run(seeds=(41, 42, 43), n_splits=None, arms=ARMS, verbose: bool = True):
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--arms", nargs="*", default=None)
+    ap.add_argument("--raw-label", action="store_true")
     a = ap.parse_args(argv)
-    run(arms=tuple(a.arms) if a.arms else ARMS)
+    if a.raw_label:
+        raw_label()
+    else:
+        run(arms=tuple(a.arms) if a.arms else ARMS)
     return 0
 
+
+# --------------------------------------------------------------------------
+# The one route the posterior label closes off
+# --------------------------------------------------------------------------
+# Weighting fails above because ALDEx2's `diff.btw` is a posterior **mean**: it
+# has already shrunk noisy guides toward the prior, so the reliability was spent
+# before we saw it. That diagnosis makes a prediction. Fit the same model to the
+# **raw** CPM log-ratio -- the plain mean of the two independent estimates, which
+# correlates |rho| 0.957 with the released label -- and the shrinkage is no
+# longer pre-applied, so inverse-variance weighting should help, or at least
+# stop hurting.
+#
+# The comparison is strictly within-label. A model fitted to the raw log-ratio
+# cannot be compared with 0.7084 on the released label: the targets differ, the
+# raw one is noisier by construction, and a lower rho would say nothing. Only
+# weighted-against-unweighted on the same target is meaningful here.
+RAW_OUT = config.RESULTS / "replicate_weight_raw.csv"
+
+
+def _raw_label(protos) -> np.ndarray:
+    """The plain CPM log-ratio: the mean of the two independent estimates."""
+    d = pd.read_csv(COUNTS, sep="\t")
+    for c in ("Cas1_S", "Cas2_S", "dCas1_NS", "dCas2_NS"):
+        d[c + "_cpm"] = d[c] / d[c].sum() * 1e6
+    lr1 = np.log2((d.Cas1_S_cpm + EPS) / (d.dCas1_NS_cpm + EPS))
+    lr2 = np.log2((d.Cas2_S_cpm + EPS) / (d.dCas2_NS_cpm + EPS))
+    d["raw"] = (lr1 + lr2) / 2.0
+    return d.set_index("sgRNA").reindex(protos)["raw"].to_numpy()
+
+
+def raw_label(seeds=(41, 42, 43), n_splits=None,
+              arms=("unweighted", "inverse_variance",
+                    "inverse_variance_permuted"), verbose: bool = True):
+    """Does weighting help once the label is not already shrunk?"""
+    import xgboost as xgb
+    from scipy.stats import spearmanr
+    from sklearn.model_selection import KFold
+
+    from .run_ablation import _impute, champion_params, make_selector
+
+    n_splits = n_splits or config.N_SPLITS
+    X, y_released, names, protos = _base()
+    A, _ = _block("a_flank", protos)
+    X = np.hstack([X, A]).astype(np.float32)
+    noise = replicate_noise(protos)
+    y = _raw_label(protos)
+    ok = np.isfinite(y)
+    if verbose:
+        r = spearmanr(y[ok], y_released[ok]).statistic
+        print(f"  raw log-ratio label: {ok.sum():,} guides, sd {np.nanstd(y[ok]):.3f} "
+              f"(released sd {np.nanstd(y_released[ok]):.3f}), "
+              f"rho against the released label {r:+.4f}", flush=True)
+
+    rows = []
+    for arm in arms:
+        per_fold = []
+        for seed in seeds:
+            rng = np.random.default_rng(seed)
+            w, keep = _weights(arm, noise, rng, y)
+            for tr, va in KFold(n_splits, shuffle=True,
+                                random_state=seed).split(X):
+                tr = tr[keep[tr] & ok[tr]]
+                va = va[ok[va]]
+                A_, B_ = _impute(X[tr], X[va])
+                sel = make_selector(seed)
+                sel.fit(A_, y[tr], sample_weight=w[tr])
+                top = np.argsort(sel.feature_importances_)[::-1][:config.N_FEATURES]
+                m = xgb.XGBRegressor(**champion_params(seed))
+                m.fit(A_[:, top], y[tr], sample_weight=w[tr])
+                per_fold.append(float(spearmanr(y[va],
+                                                m.predict(B_[:, top])).statistic))
+        rows.append(dict(arm=arm, label="raw log-ratio", n_fits=len(per_fold),
+                         spearman=float(np.mean(per_fold)),
+                         spearman_sd=float(np.std(per_fold, ddof=1))))
+        if verbose:
+            print(f"  {arm:28s}: rho {rows[-1]['spearman']:+.4f} "
+                  f"(sd {rows[-1]['spearman_sd']:.4f})", flush=True)
+        pd.DataFrame(rows).to_csv(RAW_OUT, index=False)
+
+    out = pd.DataFrame(rows).set_index("arm")
+    if verbose and "unweighted" in out.index:
+        b = out.loc["unweighted", "spearman"]
+        print("\n  against the unweighted baseline, same label:")
+        for arm in out.index:
+            if arm != "unweighted":
+                print(f"    {arm:28s} {out.loc[arm, 'spearman'] - b:+.4f}")
+        print(f"written -> {RAW_OUT}")
+    return out
 
 if __name__ == "__main__":
     raise SystemExit(main())

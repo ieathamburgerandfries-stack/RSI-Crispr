@@ -281,12 +281,21 @@ base **with** family A, eight model classes span **0.1076 ρ** against 0.116 for
 sixteen without it, so adding the one family that matters does not widen the gap
 between model classes at all.
 
-**And the family is the wrong unit for any of this.** Sorting all 668 family
-columns by how much of each the guide itself explains, rather than by which
-folder they came in, gives the cleanest statement this project has of where its
-performance lives: columns the guide determines are worth **+0.008**, columns it
-does not are worth **+0.201**, and the ratio is twenty-four to one
-(Appendix B).
+**And the family is not the only useful unit.** Sorting the family columns by how
+much of each the guide itself explains, rather than by which folder they came in,
+separates where the performance lives from who built it: of the 636 columns that
+have an R² at all, the 18 the guide determines outright are worth **+0.008** as a
+block and the 602 it cannot predict are worth **+0.201** (Appendix B). *Three
+qualifications, because this comparison is easy to overstate.* The two blocks
+differ in **size** as much as in recoverability — 18 columns against 602 — so part
+of the gap is simply more columns, and the Δρ figures must be read as a
+difference and not as a ratio. The dichotomy also hides a middle: 16 *partly*
+recoverable columns are worth **+0.020**, more than the fully-determined 18, so
+"determined or not" is a cut through a continuum rather than a natural boundary.
+And the cut is in the wrong place: banding the same columns finely puts the step
+at about **R² = 0.2**, not at 0.99 (Appendix B). The family remains the right unit
+for "what should I build next", because families are what get built; the column
+taxonomy is the right unit for "where does the measured gain sit".
 
 *Limit:* "non-inferior by 0.005" was the claim, not "identical" — higher-order
 k-mers do carry a little, which is Finding 4.
@@ -683,13 +692,21 @@ differ and nothing else does (`crispri_screens.py --family-a`,
 | *family A, apparently* | *+0.2749* | *+0.2902* |
 | base + strand | 0.6462 | 0.5878 |
 | base + strand + family A | 0.6610 | 0.6124 |
-| **family A, given strand** | **+0.0148** | **+0.0246** |
+| **family A, given strand** | **+0.0148** | **+0.0245** |
 
 All three steps of the argument hold on the untouched screen: family A looks
 worth about +0.29, a single strand indicator beats the whole 348-column family
 (0.588 against 0.504), and once strand is supplied family A adds +0.025 — against
-**+0.157** on a cutting screen. Screen-wide it is **−0.0206** on Rousset against
-−0.0093 on Cui, so the headline null reproduces too.
+**+0.157** on a cutting screen. The locus control holds there too: under 100 kb
+blocks Rousset gives +0.2916 apparently and **+0.0213** given strand, against
++0.2679 and +0.0069 on Cui. And every subset agrees in sign:
+
+| family A's increment | Cui | Rousset |
+|---|---:|---:|
+| all genic | −0.0093 | **−0.0206** |
+| non-essential genes | −0.0101 | **−0.0250** |
+| essential genes, given strand | +0.0148 | **+0.0245** |
+| essential genes, 100 kb blocks, given strand | +0.0069 | **+0.0213** |
 
 *What the replication does and does not extend.* It makes the cross-assay
 control a three-screen result instead of a one-screen one, which is what Finding
@@ -2898,8 +2915,9 @@ domain knowledge, and the domain is doing the work.
 
 A family is a folder, not a kind. `d_mechanics` bundles 22 columns that restate
 the guide with 8 that read flanking DNA, and its family-level Δρ hides the split
-(Finding 1). So the taxonomy was rebuilt at the column level: regress **all 668
-family columns** on the guide's own one-hot encoding (20×4 mono + 19×16 di = 384
+(Finding 1). So the taxonomy was rebuilt at the column level: regress all **668**
+family columns — of which 636 have a defined R² and 32 are constant — on the
+guide's own one-hot encoding (20×4 mono + 19×16 di = 384
 predictors), out of fold, and sort by how much of each column the guide explains
 (`redescription.py --arm taxonomy`, `results/redescription_columns.csv`).
 
@@ -2912,9 +2930,20 @@ predictors), out of fold, and sort by how much of each column the guide explains
 | all 668 together | 668 | +0.2027 |
 
 **Everything the guide determines is worth +0.008; everything it does not is
-worth +0.20** — a factor of twenty-four, measured without reference to anyone's
-choice of folder. The sum of the three parts (+0.229) exceeds the joint arm
-(+0.203), which is the same overlap the family table shows.
+worth +0.20** — a difference of **0.193**, measured without reference to anyone's
+choice of folder. *Not a factor of twenty-four*, which is how this was stated
+until 8 November: dividing one Δρ by another is not a ratio of information, and
+the two blocks differ in size by more than thirty columns to one, so a quotient
+credits recoverability with what column count also explains. The sum of the three
+parts (+0.229) exceeds the joint arm (+0.203), which is the same overlap the
+family table shows.
+
+Two further cautions on reading this table. The **partly** recoverable row is
+worth more than the fully-determined one (+0.0199 against +0.0083) on fewer
+columns, so recoverability is not monotone at these cuts. And the cuts themselves
+are inherited rather than found: banding the same columns more finely puts the
+step at about **R² = 0.2**, well below the 0.50 used here (see *Ignore the folders
+entirely*, below).
 
 The classification checks itself against two known cases: 13 of `d_mechanics`'s
 30 columns come back as guide-determined and 10 as outside, against the 22/8
@@ -2966,34 +2995,54 @@ R² from the guide's own one-hot encoding, with each band's own marginal
 association and its increment as a block (`redescription.py --arm trend`,
 `results/recoverability_trend.csv`, 1 seed × 5 folds):
 
-| band | columns | mean R² | mean \|ρ\| with the label | Δρ as a block | mostly |
-|---|---:|---:|---:|---:|---|
-| R² ≤ 0.01 | 425 | 0.001 | **0.031** | **+0.180** | `a_flank`, `i_shape` |
-| 0.01 – 0.05 | 121 | 0.030 | 0.096 | +0.148 | `a_flank`, `i_shape` |
-| 0.05 – 0.20 | 43 | 0.072 | **0.115** | +0.129 | `a_flank`, `f_methylation` |
-| 0.20 – 0.50 | 13 | 0.340 | 0.083 | **+0.018** | `f_methylation`, `c_folding` |
-| 0.50 – 0.99 | 16 | 0.672 | 0.082 | +0.021 | `d_mechanics`, `b_energy` |
-| R² > 0.99 | 18 | 1.000 | 0.096 | **+0.008** | `d_mechanics`, `b_energy` |
+| band | columns | mean R² | mean \|ρ\| | **strongest \|ρ\|** | Δρ as a block | mostly |
+|---|---:|---:|---:|---:|---:|---|
+| R² ≤ 0.01 | 425 | 0.001 | 0.031 | **0.168** | **+0.180** | `a_flank`, `i_shape` |
+| 0.01 – 0.05 | 121 | 0.030 | 0.096 | 0.156 | +0.148 | `a_flank`, `i_shape` |
+| 0.05 – 0.20 | 43 | 0.072 | 0.115 | 0.165 | +0.129 | `a_flank`, `f_methylation` |
+| 0.20 – 0.50 | 13 | 0.340 | 0.083 | 0.143 | **+0.018** | `f_methylation`, `c_folding` |
+| 0.50 – 0.99 | 16 | 0.672 | 0.082 | 0.183 | +0.021 | `d_mechanics`, `b_energy` |
+| R² > 0.99 | 18 | 1.000 | 0.096 | **0.184** | **+0.008** | `d_mechanics`, `b_energy` |
 
-**The two kinds of predictive power run in opposite directions.** Across the 636
-columns, ρ(recoverability, \|ρ\| with the label) is **+0.5574**: the columns the
-guide predicts *best* are the ones most strongly correlated with the label, and
-they are exactly the ones that add least. Anybody ranking external data by its
-own correlation with activity would have ranked family A last.
+**Recoverability bounds what a column can add and says nothing about how well
+the column itself correlates.** The two columns of the table move differently and
+the difference is the result: the increment falls from +0.180 to +0.008, while
+the **strongest** association in each band is flat — 0.168, 0.156, 0.165, 0.143,
+0.183, 0.184. Columns the guide predicts exactly reach the same association as
+columns it cannot predict at all; they simply cannot *add* anything, because the
+model already holds what they restate. `results/figures/recoverability_vs_power.png`
+plots both panels.
 
-**And the sharpest form of that, which is the useful sentence:** the 425 columns
-the guide cannot predict at all have a mean marginal association of **0.031** and
-are worth **+0.180** together, while the 18 columns it predicts perfectly average
-**0.096** individually and are worth **+0.008**. Family A's columns are the
-weakest in the matrix one at a time and the strongest in combination. That is why
-the effect was not found by looking at correlations, and it is the concrete
-reason Part 2 insists the family table measures what is *new* rather than what
-*matters*.
+*The mean column of that table is a trap, and it caught this report.* An earlier
+version of this section reported ρ(recoverability, \|ρ\|) = +0.5574 across the 636
+columns and concluded that the two kinds of predictive power are **anti**-
+correlated. That is an artefact of **composition**, not a relationship. The
+low-R² bands are large (425 and 121 columns) and contain many individually weak
+columns — single flank positions, one base at a time — which drag the *mean* down
+while leaving the *maximum* untouched. Using the same statistic the family table
+uses, the strongest column per group, there is **no trend at all**, which is
+exactly what Part 2 reports at family level (0.12–0.18 across six of seven
+families). The two measurements never disagreed; one of them was computed with
+the wrong summary.
 
-**Recoverability acts as a threshold, not as a gradient.** The three low bands
-give +0.180, +0.148 and +0.129 and the three high bands give +0.018, +0.021 and
-+0.008; the step sits at about **R² = 0.2**, and within each side there is no
-clear ordering. So once the guide explains more than about a fifth of a column,
+*Grouping does not rescue a trend either, and the reason is instructive.*
+Collapsing the columns into the 66 variables they measure — all eight windows of
+flank GC as one group, and so on — and scoring each group by its own out-of-fold
+R² against the label puts **every group below recoverability 0.5**, because a
+group mixes recoverable and unrecoverable members. Within that narrow range the
+ordering is driven by how much DNA a group summarises rather than by
+recoverability: single-position indicators like `eng.flank.seq.u8` have zero of
+both, while multi-position summaries like `eng.flank.comp.gc` have a little
+recoverability and most of the predictive power
+(`results/recoverability_groups.csv`). There is no trend to recover because
+recoverability is a **one-sided** condition, which is what Finding 1 says in
+other words: being unrecoverable is permission to help, not a prediction that a
+column will.
+
+**And where it does act, it acts as a threshold rather than a gradient.** The
+three low bands give +0.180, +0.148 and +0.129 and the three high bands give
++0.018, +0.021 and +0.008; the step sits at about **R² = 0.2**, and within each
+side there is no clear ordering. So once the guide explains more than about a fifth of a column,
 that column has nothing left to contribute — well below the 0.5 the taxonomy used
 as its cut and far below 0.99. *The within-side figures should not be read as a
 trend*: the bands differ in size as well as in recoverability (425 columns
