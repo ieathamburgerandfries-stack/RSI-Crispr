@@ -52,7 +52,7 @@ class Cohort:
         return arr[:, keep], [f"{source}.{control or 'real'}.{block}.{n}" for n, k in zip(nm, keep) if k]
 
 
-def run_arm(co: Cohort, label: str, parts: list, seeds=SEEDS, tagpref="shp", n_features=None):
+def run_arm(co: Cohort, label: str, parts: list, seeds=SEEDS, tagpref="shp", n_features=None, overrides=None):
     """parts: list of (array, names, family_label)."""
     Xs, names, fams = [co.X], list(co.names), ["base"] * len(co.names)
     for arr, nm, fam in parts:
@@ -61,7 +61,7 @@ def run_arm(co: Cohort, label: str, parts: list, seeds=SEEDS, tagpref="shp", n_f
     tag = f"{tagpref}_{label}"
     res = cross_validate(X, co.y, names, fams, n_features=n_features or config.N_FEATURES, seeds=list(seeds),
                          n_splits=config.N_SPLITS, verbose=False, groups=co.groups, tag=tag,
-                         experiment=label)
+                         experiment=label, champion_overrides=overrides)
     folds = pd.read_csv(config.RESULTS / f"folds_{tag}.csv")
     folds = folds[folds.experiment == label].sort_values(["seed", "fold"])
     sel = res.get("selected_by_family") if isinstance(res, dict) else None
@@ -139,6 +139,18 @@ def main(argv=None):
                 parts = [(arr, nm, f"S_mc_{blk}_{kind}")]
                 arms.append((f"mc_{blk}[{kind}]", parts))
                 arms.append((f"A+mc_{blk}[{kind}]", Apart + parts))
+    elif a.stage == 11:
+        # fresh seeds (run with --seeds 44 45 46): do the headline comparisons hold on folds never seen before?
+        arms.append(("base#s2", []))
+        arms.append(("A#s2", Apart))
+        arms.append(("mc_all#s2", [P("mc", None, b) for b in ("mean", "vec", "geom")]))
+        arms.append(("A+mc_all#s2", Apart + [P("mc", None, b) for b in ("mean", "vec", "geom")]))
+        arms.append(("A+mc_armshuf_all#s2", Apart + [P("mc", "arm", b) for b in ("mean", "vec", "geom")]))
+    elif a.stage == 10:
+        # capacity check: the champion is depth 4 / 400 trees; give the booster depth 6 / 800 trees
+        arms.append(("A@d6", Apart))
+        arms.append(("A+mc_all@d6", Apart + [P("mc", None, b) for b in ("mean", "vec", "geom")]))
+        arms.append(("A+mc_armshuf_all@d6", Apart + [P("mc", "arm", b) for b in ("mean", "vec", "geom")]))
     elif a.stage == 9:
         for ctl in ("block", "arm"):
             arms.append((f"mc_{ctl}shuf_vec", [P("mc", ctl, "vec")]))
@@ -183,7 +195,8 @@ def main(argv=None):
     for label, parts in arms:
         if label in done():
             print(f"  {label}: cached", flush=True); continue
-        row = run_arm(co, label, parts, seeds=a.seeds, n_features=600 if label.endswith('@600') else None)
+        row = run_arm(co, label, parts, seeds=a.seeds, n_features=600 if label.endswith('@600') else None,
+                      overrides=dict(max_depth=6, n_estimators=800) if label.endswith('@d6') else None)
         append(row)
         print(f"  {label:22s} rho {row['spearman']:.4f} (sd {row['spearman_sd']:.4f}) "
               f"ext cols {row['n_ext']} selected {row['n_selected_ext']:.0f}", flush=True)

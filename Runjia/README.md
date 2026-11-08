@@ -19,6 +19,10 @@ folds → R² 0.2937 ± 0.0015, Spearman 0.5278, Pearson 0.5424 on Noshay's 13,8
 guides — kept because reproducing it to four decimal places is how this pipeline
 is checked, not because it is the current baseline.
 
+**Extension (this fork only).** Two representation ideas the freeze deferred were run outside the
+frozen pipeline (`sgrna/ext/`, `EXTENSION_LOG.md`, Findings 8–9): the flank's shape and 3D structure add nothing to
+its composition, and nuclease descriptors carry an unseen enzyme's PAM usage and little else.
+
 **Working figure (curated frame):** base + family A, ρ **0.7218** on the curated
 five folds; **0.6985** on crisprHAL 2's own held-out partition against the
 **0.695** Browne et al. report for it.
@@ -63,18 +67,20 @@ not a better model. Details and all four conditions: Finding 7 of
 (The source paper this extends reports Pearson 0.502 / R² 0.249 on the same
 feature set.)
 
-**The effect is specific to cleavage, and the label's ceiling is now measured.**
+**The effect is larger with cleavage, and the label's ceiling is now measured.**
 In a dCas9 **CRISPRi** screen — the last external dataset never used for
 anything here — family A adds **−0.009**, against **+0.157** on the cutting
 screen under the same whole-gene-holdout protocol. That screen-wide figure is an
 average over a cohort 85% of which is non-essential genes, where knockdown barely
 moves growth; restricted to its essential genes family A reads **+0.268**, and
 that +0.268 is the screen's own strand rule — a single strand indicator scores
-ρ 0.662 there on its own, and given it family A adds **+0.007 to +0.025**, on
-Cui and on a second screen (Rousset) this project had never used. So the
-flanking-context effect belongs to a step that requires a break, not to Cas9
-binding or local accessibility, and the strand result is the positive control the
-comparison previously lacked. Separately, the ceiling
+ρ 0.662 there on its own, and given it family A adds **+0.007 to +0.025** to the
+pooled ranking, on Cui and on a second screen (Rousset) this project had never
+used. The pooled ranking hides what happens *inside* genes: among coding-strand
+guides family A adds **+0.102 / +0.114** to the within-gene ranking on the two
+dCas9 screens, against **+0.085** on the cutting screen measured the same way,
+which is 13–14% of the attainable gain against 26%. So the flanking-context effect
+does not need a break; it is two to three times larger with one (Finding 3). Separately, the ceiling
 for the label we train on is **0.946 [0.944, 0.948]**, derived from crisprHAL's
 own published per-replicate counts rather than inherited from a different label,
 leaving ~0.22 ρ unaccounted for.

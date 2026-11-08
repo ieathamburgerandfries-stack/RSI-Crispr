@@ -13,7 +13,7 @@ deterministic functions of the guide the matrix already encodes losslessly
 (Finding 1). **The signal the matrix lacks is outside the guide: DNA
 composition in windows of 50–1,000 nt around the cut site, worth +0.164 ρ on the
 curated cohort** — the largest effect in the project, a smooth compositional
-gradient rather than a motif, local to within a kilobase, and about twice as large when Cas9
+gradient rather than a motif, local to within a kilobase, and two to three times as large when Cas9
 cuts as when it only binds (Findings 2–3). The part that decides the
 comparison with the state of the art is its **range**: inside the ±189/166 nt
 span crisprHAL 2 already reads, its convolutions beat our windowed composition,
@@ -24,7 +24,7 @@ published splits** — Δρ +0.0021, 95% CI [−0.0031, +0.0072] — at **~150×
 time**, reaching a given accuracy on about **half the labelled guides**. On our
 own folds we lead by +0.017; on a different assay their model transfers better.
 **The claim that survives every condition is parity at a fraction of the cost,
-plus better data efficiency** — not a better model (Finding 7). Two representation ideas the freeze had deferred were later run in a fork: the flank's shape and 3D structure add nothing to its composition (Finding 8), and nuclease descriptors carry an unseen enzyme's PAM usage but not its sequence rules (Finding 9).
+plus better data efficiency** — not a better model (Finding 7). Two representation ideas the freeze had deferred were later run in a fork: the flank's shape and 3D structure add nothing to its composition (Finding 8), and nuclease descriptors carry an unseen enzyme's PAM usage and, at most, a little of its sequence rules (Finding 9).
 
 **How this document is organised.** **Part 1** is nine findings, each stated as
 a claim, followed by the evidence it rests on and the limit of what it supports.
@@ -556,7 +556,7 @@ question:**
 |---|---|
 | read depth or mappability? | **evidence not traceable — see below.** The row claims the gain survives restricting to guides whose reads cannot be misassigned, +0.078 → +0.051 |
 | gene ranking in disguise? | no — within-gene ρ 0.571 against 0.606 global; flanks worth **+0.061 inside genes** |
-| **Cas9 binding rather than cutting?** | **partly.** Family A adds −0.009 across a dCas9 CRISPRi screen and reads +0.268 inside its essential genes, which is the screen's own strand rule; given a strand indicator it adds +0.007 to the pooled ranking. Among coding-strand guides the *within-gene* ranking gains +0.102 (Cui) and +0.114 (Rousset) against +0.085 on the cutting screen; as a share of the attainable gain that is 13% against 26%, so the effect exists without a break at about half its cutting size (Finding 3, last subsection) |
+| **Cas9 binding rather than cutting?** | **partly.** Family A adds −0.009 across a dCas9 CRISPRi screen and reads +0.268 inside its essential genes, which is the screen's own strand rule; given a strand indicator it adds +0.007 to the pooled ranking. Among coding-strand guides the *within-gene* ranking gains +0.102 (Cui) and +0.114 (Rousset) against +0.085 on the cutting screen; as a share of the attainable gain that is 13–14% against 26%, so the effect exists without a break at one-third to one-half of its cutting size (Finding 3, last subsection) |
 
 *Why these tests and not others.* Each removes one way the effect could be an
 artefact of this dataset rather than a property of the DNA. A new **nuclease**
@@ -971,27 +971,29 @@ the coding-strand stratum.
 
 **The comparison that was missing, now run.** The same within-gene decomposition on
 the cutting screen (curated cohort, 30,203 genic guides in 4,013 genes, gene-grouped
-CV, ten seeds; `ext/cut_within_gene.py`): within-gene ρ 0.618 for the base and 0.704
+CV, ten seeds; `ext/cut_within_gene.py`): within-gene ρ 0.618 for the base and 0.703
 with family A, a gain of **+0.085** (seed sd 0.0007, bootstrap over genes
 [+0.078, +0.090]); between genes +0.275; overall +0.155. In raw ρ the dCas9
 coding-strand gains (+0.102, +0.114) are not smaller than that, but the screens start
 from very different bases (within-gene ρ 0.62 on the cutting screen, 0.17 and 0.08 on
 the dCas9 coding strands), and a gain of 0.1 from 0.08 is not a gain of 0.1 from 0.62.
-Two scale-free comparisons put the cutting effect at about twice the dCas9 one:
+Two scale-free comparisons put the dCas9 effect at between a quarter and a half of the cutting one
+(half by share of the attainable gain, 27–40% by variance explained):
 
 | | within-gene base | with A | share of attainable gain | Δρ² |
 |---|---:|---:|---:|---:|
-| cutting screen (ceiling 0.946, Finding 6) | 0.618 | 0.704 | **26%** | +0.113 |
+| cutting screen (ceiling 0.946, Finding 6) | 0.618 | 0.703 | **26%** | +0.113 |
 | Cui, coding strand (ceiling ≈ 0.93) | 0.172 | 0.274 | **13%** | +0.045 |
-| Rousset, coding strand (ceiling assumed 0.93) | 0.083 | 0.196 | **13%** | +0.031 |
+| Rousset, coding strand (ceiling ≥ 0.864, below) | 0.083 | 0.196 | **14%** | +0.031 |
 
 The dCas9 ceiling is the Spearman–Brown reliability of the mean of the screen's two
 time points (fit at 18 and 75 generations, which agree within genes at ρ 0.768 over
 exactly the 2,289 guides used), square-rooted. **Reading: the flank effect exists
-without a break, at about half its size with one.** What this does not establish:
+without a break, at one-third to one-half of its size with one.** What this does not establish:
 (i) the two time points are not true replicates, so if they differ systematically the
-true ceiling is higher and the dCas9 share smaller; (ii) Rousset's ceiling is assumed
-equal to Cui's; (iii) a within-gene effect in a CRISPRi screen could be gene-local
+true ceiling is higher and the dCas9 share smaller; (ii) Rousset has one readout, so its ceiling is a lower bound from its agreement with the
+E18 screen of the same guides (within-gene ρ 0.805 over the same 1,759 guides, which with
+Cui's reliability puts it at 0.864 or above), and the share is at most 14% on that value (a higher true ceiling makes it smaller); (iii) a within-gene effect in a CRISPRi screen could be gene-local
 transcription context rather than Cas9 binding, which the control above narrows
 (adding A to `g_transcription` still gives +0.096 within genes) without closing.
 Wang's +0.267 is the same stratum (its library is entirely coding-strand). What
@@ -1025,7 +1027,7 @@ through survival and what this model predicts. **The dCas9 result is therefore a
 specification, not a defect**: it says which library a user should and should not
 apply this to (the strand rule dominates a CRISPRi screen and a cutting model has no
 use for it). The flank columns are worth building because they help in both
-assays, by about twice as much when Cas9 cuts, which a pure accessibility
+assays, by two to three times as much when Cas9 cuts, which a pure accessibility
 feature would not do. The one honest gap is the nickase
 row: nothing here speaks to base or prime editors, and the Cui result makes it a
 real question rather than a safe extrapolation.
@@ -1461,7 +1463,7 @@ Both numbers are near-nothing against the 0.458 a model *trained* on that screen
 reaches, so this compares two small quantities. The reason is specific and worth
 stating rather than burying: the transferable signal in a dCas9 screen is
 **guide-sequence** effects, which is what their input is, while our advantage is
-flanking DNA, whose contribution to silencing is about half its contribution to cutting
+flanking DNA, whose contribution to silencing is a third to a half of its contribution to cutting
 and is swamped in a pooled ranking by the strand rule (Finding 3). **Our
 representation is the more specialised of the two**, and that is a real cost of
 the design.
@@ -1662,21 +1664,21 @@ Every cell is ahead in 15 of 15 folds. **On top of family A (ρ 0.7151)**, paire
 
 Real blocks sit 0.0002–0.0018 above their own shuffled controls, which is the cost of adding five hundred columns
 that cannot help. At a 600-column budget instead of 300 the picture is the same (A + mc all −0.0008, mc geom
-−0.0017, against A at 600), so the null is not displacement. On an independent cohort — crisprHAL's *E. coli*
+−0.0018, against A at 600), so the null is not displacement; and with deeper trees (depth 6, 800 trees instead of the champion's 4 and 400; A itself rises 0.0073 to 0.7225) it is the same again: A + mc all −0.0012, A + arm-shuffled mc all −0.0023, so the null is not the shallow trees either. On an independent cohort — crisprHAL's *E. coli*
 eSpCas9 screen, 59,489 guides, 100-kb-block CV — the blocks alone recover 94% of A (+0.0969 against +0.1034),
-and A + mc all is +0.0022 (14/15 folds), A + mc geom +0.0008, **A + arm-shuffled mc all +0.0016**.
+and A + mc all is +0.0022 (14/15 folds), A + mc geom +0.0008, **A + arm-shuffled mc all +0.0016**. On three fresh seeds (44–46, folds never used before) the curated-cohort comparison is unchanged: A + mc all −0.0006, A + arm-shuffled mc all −0.0010, mc all alone +0.1411 against +0.1570 for A.
 
 **Why the standalone gains exist, with each explanation tested.**
 
 1. *The three sources agree on `mean` and `vec` to 0.004 although their parameter values differ* (mean twist
-   34.3/33.1/32.5°, spread across pentamers 1.5/3.8/4.1°). The block is not reading source-specific physics.
+   34.3/33.1/32.5° and spread across pentamers 1.5/3.8/4.1°, for mc/xrc/md). The block is not reading source-specific physics.
 2. *Letters do as well.* Forty columns of base fractions in the same windows give +0.105 against +0.103 for the
    104 shape columns, and adding the shape means to the letters changes ρ by −0.0002.
 3. *The geometry's gain is composition, shown by shuffling.* `mc geom` on a flank shuffled within 25-nt blocks:
    +0.080 (real +0.080); shuffled across the whole arm, keeping only the arm's composition: +0.077.
 4. *What the geometry columns are.* Of the 27 geometry columns that survive selection, the five largest are
    excess twist (summed step twist minus 10.5 bp per turn) over 100–499 nt, which dinucleotide fractions
-   predict with out-of-fold R² **0.963** (mononucleotide fractions 0.66): a sum of step twists is a weighted
+   predict, for the downstream 499-nt window, with out-of-fold R² **0.963** (mononucleotide fractions 0.66): a sum of step twists is a weighted
    dinucleotide count. The rest are path coordinates at +12 and +25 bp, R² ≈ 0 from composition: they are the
    identity of the first 12–25 bp after the PAM.
 5. *Order matters in exactly one place.* `vec` (the first 8 bp of each arm) loses 86% of its gain when the
@@ -1699,8 +1701,9 @@ Everything in the shape/3D blocks falls inside those two parts.
 **Limits.** (i) A *linear* model does see real information beyond A in the same columns — ridge regression on all
 columns: A + mc all **+0.0097** (5/5 folds), A + md all +0.0078, against +0.0002 for the arm-shuffled control —
 mostly from the near-junction `vec` (+0.0048, control −0.0004) and the window means (+0.0054, control +0.0018).
-The boosted trees recover it from A and the base. "Shape adds nothing" is therefore a statement about the
-champion pipeline, not about the pentamer table. (ii) The values are tabulated pentamer means, not
+The boosted trees do not show it, at the champion's depth 4 or at depth 6; whether that is because they already extract it from A and the base, or because
+the gain is too small for trees to split on, was not separated. "Shape adds nothing" is therefore a statement about the
+boosted pipeline, not about the pentamer table. (ii) The values are tabulated pentamer means, not
 measurements of this genome's DNA, and they are static: no stiffness matrix or fluctuation was used. A neural
 shape predictor with seven base pairs of context (Deep DNAshape) was downloaded but **not run** (the sandbox
 refused to execute third-party model code). (iii) One organism: the human case needs hg38 flanks for the
@@ -1709,18 +1712,19 @@ mean step parameters and says nothing about nucleosome-free DNA looping or about
 the nucleoid's own 3D structure (Hi-C) is family E, whose null stands.
 
 
-### 9. Nuclease information: descriptors carry an unseen enzyme's PAM usage, not its sequence rules — and pooling is worth labels
+### 9. Nuclease information: descriptors carry an unseen enzyme's PAM usage and little else — and pooling is worth labels
 
 *Run in a fork, outside the freeze (`sgrna/ext/nuclease_*.py`, `EXTENSION_LOG.md`).* The other deferred idea
 (Part 3): the model is fitted per nuclease and never told which one it is scoring. Three *E. coli* cohorts
 cannot test it, because with three enzymes a descriptor has three values and "which property of the enzyme
 matters" is not identifiable. A public sheet with nine can.
 
-**Claim.** A nuclease-conditioned model gains nothing in distribution; for an enzyme it has not seen,
+**Claim.** A nuclease-conditioned model gains nothing in distribution. For an enzyme it has not seen,
 descriptors built *without measuring it* (its substitutions, and where they sit in the 5F9R R-loop
-structure) recover **which PAM classes it can use** (class ordering ρ 0.855 → 0.908, interval clear of zero)
-and **not how its sequence preferences differ** (within-PAM-class ρ 0.410 → 0.408). Pooling the enzymes is
-worth roughly a fourfold saving in labelled targets for a new one.
+structure) recover **which PAM classes it can use** — ordering of the well-populated PAM classes, ρ 0.857 → 0.903,
+interval clear of zero at both model capacities tried — and give a smaller, capacity-dependent gain on how its sequence preferences
+rank targets inside a PAM class (−0.002 at 500 trees × depth 6, +0.035 at 1,500 × 8, interval including zero).
+Pooling the enzymes is worth about a fourfold saving in labelled targets for a new one.
 
 **The data are four kinds of column in one sheet.** Kim et al. (2020), Supplementary Table 6: 40,128
 30-mers (4 nt + 20-nt protospacer + 3-nt PAM + 3 nt) × nine nucleases (SpCas9, SpCas9-NG, VRQR, xCas9,
@@ -1758,30 +1762,51 @@ larger capacity it does not:
 0.745 (range 0.868–0.872 / 0.739–0.750, eight permutations): the gain is a dense code against a sparse one at
 fixed capacity, not information about the enzymes.
 
-**Leave one nuclease out.** Nine held-out enzymes, three replicates (different training subsamples and
-seeds), four shuffled-descriptor controls each; intervals are a bootstrap over the nine enzymes.
+**Leave one nuclease out.** Nine held-out enzymes, three replicates each (different training subsamples and
+seeds), at two model capacities because the in-distribution result above shows capacity changes the
+answer; intervals are a bootstrap over the nine enzymes, differences are from the no-information model U
+trained on the same rows. Scores are over all targets, over NGG targets only, for the ordering of the PAM
+classes (ρ between the class means of prediction and truth), and within PAM classes (mean ρ inside each
+class with ≥100 test targets).
 
 | | ρ | NGG only | PAM-class ordering | within PAM class |
 |---|---:|---:|---:|---:|
+| **500 trees × depth 6** | | | | |
 | no nuclease information (U) | 0.795 | 0.613 | 0.855 | 0.410 |
-| descriptors, label-free (substitutions + structure) | 0.809 | 0.635 | **0.908** | 0.408 |
+| descriptors, label-free (substitutions + structure) | 0.809 | 0.635 | 0.908 | 0.408 |
 | descriptors, with PAM profile and scale | 0.813 | 0.634 | 0.910 | 0.427 |
 | the same descriptors, permuted across enzymes | 0.757–0.761 | 0.594–0.597 | | |
-| mean of the eight source models | 0.798 | 0.614 | 0.869 | 0.423 |
 | the enzyme's own model (not held out) | 0.881 | 0.793 | 0.972 | 0.545 |
+| **1,500 trees × depth 8** | | | | |
+| U | 0.791 | 0.607 | 0.857 | 0.398 |
+| descriptors, label-free | 0.815 | 0.663 | 0.903 | 0.433 |
+| descriptors, with PAM profile and scale | 0.817 | 0.654 | 0.899 | 0.443 |
 
-Against U: label-free descriptors +0.014 overall [−0.001, +0.039], **+0.053 on PAM-class ordering [+0.007,
-+0.103]**, −0.002 within class [−0.039, +0.040], +0.022 on NGG [−0.015, +0.065]; permuted descriptors are
-*worse* than none (−0.034 to −0.039, intervals clear of zero, 0–1 of 9 enzymes ahead). The label-free
-descriptors recover PAM ordering as well as the PAM profile measured on the new enzyme (0.908 against 0.900).
-The gain is concentrated where PAM usage differs from SpCas9's: SpCas9-NG 0.703 → 0.806; VRQR is inconsistent
-(0.693 → 0.692 label-free, 0.770 for the structure group alone); it is about +0.01 for SpCas9, Sniper-Cas9, HF1 and
-xCas9 and slightly negative for eSpCas9, HypaCas9 and evoCas9 (−0.012, −0.001, −0.005).
+Differences from U with 95% intervals. *500 × 6:* label-free +0.014 overall [−0.001, +0.039], **+0.053 on
+class ordering [+0.007, +0.103]**, −0.002 within class [−0.039, +0.040], +0.022 on NGG [−0.015, +0.065].
+*1,500 × 8:* label-free **+0.023 overall [+0.004, +0.055] (8 of 9 enzymes ahead)**, **+0.047 on class ordering
+[+0.007, +0.090]**, +0.035 within class [−0.021, +0.100], **+0.056 on NGG [+0.004, +0.117]**. Permuted
+descriptors are *worse* than none (−0.034 to −0.039 at 500 × 6, intervals clear of zero, 0–1 of 9 ahead). The
+label-free descriptors recover PAM ordering as well as the PAM profile measured on the new enzyme (0.903 against
+0.899 with it at 1,500 × 8). Largest single gain: SpCas9-NG, where U fails (ρ 0.70) and descriptors give 0.83;
+VRQR is inconsistent across groups (0.69 → 0.69 label-free, 0.77 for the structure group alone at 500 × 6);
+eSpCas9, HypaCas9 and evoCas9 lose up to 0.012.
+
+**Reading.** What descriptors reliably add is the ordering of the well-populated PAM classes. (The class-ordering
+figure depends on which classes enter: at 500 × 6 the label-free gain is +0.111 [+0.015, +0.178] with classes of at least 300
+test targets, +0.053 with at least 100 — the figure quoted — and +0.014 [−0.004, +0.032] with at least 30, where class
+means are noisy; the gain is in ordering the common classes, not the rare ones.) Whether they also add ranking
+*within* a PAM class — the enzyme's own sequence rules — depends on the model: nothing at 500 × 6, +0.035 at
+1,500 × 8 with an interval that includes zero. A larger pooled model can learn nuclease × sequence
+interactions that a smaller one cannot, which would also explain why pooling only matched per-nuclease fits once
+its capacity was raised; that is an explanation consistent with both results, not one that was tested directly,
+and nine enzymes are too few to say more. The enzyme's own model remains 0.06 to 0.13 above
+the best conditioned one on every metric, so descriptors do not substitute for a few labelled targets.
 
 **What a new enzyme's first labels are worth.** With *k* labelled targets of the held-out enzyme added to the
 pool (mean ρ over nine enzymes): k = 100: own model 0.713, pooled + one-hot 0.820, pooled + descriptors 0.828;
 k = 500: 0.807 / 0.843 / 0.851; k = 2,000: 0.843 / 0.859 / 0.865; all (≈30,000): own model 0.881. **Five hundred
-labels plus the pool (0.851) beat two thousand labels alone (0.843)**: at least a fourfold saving. The descriptor's
+labels plus the pool (0.851) match two thousand labels alone (0.843 untuned, 0.847 CV-tuned)**: about a fourfold saving. The descriptor's
 own contribution over the one-hot, once labels exist, is small and consistent: +0.008 [+0.003, +0.014] at k = 500
 (8 of 9 enzymes ahead), +0.005 at k = 2,000.
 
@@ -1790,8 +1815,10 @@ of the three groups (substitutions, structure, PAM profile) gives about the same
 set, not about which property of the enzyme matters. (ii) The sheet is human-cell indel frequency on a
 synthetic library, not survival in *E. coli*; it is the dataset that makes the test identifiable, and the
 conclusion about *what* descriptors carry (PAM usage) is biochemically what a PI-domain substitution should
-do, which is consistent but also what makes it unsurprising. (iii) The k-only baseline is untuned and the
-10%-of-weight scheme for the k labelled targets is a choice. (iv) No published-accuracy comparison: the
+do, which is consistent but also what makes it unsurprising. (iii) The 10%-of-weight scheme for the k labelled targets is a choice, and the pooled arms in the k table used 500 × 6
+trees (the lower-capacity setting, so conservative for them). The k-only baseline is not a tuning artefact: choosing its
+hyperparameters by 4-fold CV on the k targets gives 0.712 / 0.804 / 0.847 at k = 100 / 500 / 2,000 against 0.713 / 0.807 /
+0.843 untuned. (iv) No published-accuracy comparison: the
 per-variant Spearman values of the paper's DeepSpCas9variants were not retrievable (the article is paywalled)
 and its trained weights were not run (external model code), so the figures above are baselines under this
 project's featurisation, not a state-of-the-art claim. (v) All of it is the 30-mer; flanking DNA beyond 3 nt is
@@ -1871,7 +1898,7 @@ mechanism.
    survives 10 kb) and no dependence on where the window edges are put (+0.1634
    against +0.1638 at four widths sharing no value with the originals). There is
    no motif to find.
-2. **The effect does not need a break, and is about twice as large with one.** In a
+2. **The effect does not need a break, and is two to three times as large with one.** In a
    dCas9 CRISPRi screen on the same genome the same features add −0.009 across the
    screen and +0.007 to +0.025 to the pooled ranking inside the essential genes where
    knockdown has a measurable phenotype, once that screen's own strand rule is
@@ -1880,8 +1907,9 @@ mechanism.
    guides, the ranking *within* genes gains +0.102 on Cui and +0.114 on Rousset (ten
    seeds, intervals clear of zero) against +0.085 on the cutting screen measured the
    same way. Raw ρ gains cannot be compared across screens whose bases differ, so as a
-   share of the attainable gain (to each label's reliability ceiling) it is 13% on the
-   dCas9 coding strand and 26% on the cutting screen. The earlier reading — that dCas9
+   share of the attainable gain (to each label's reliability ceiling) it is 13–14% on the
+   dCas9 coding strand and 26% on the cutting screen (and +0.03 to +0.05 against +0.11 in variance
+   explained). The earlier reading — that dCas9
    shows no flank effect and so the effect "requires a break" — rested on a pooled
    metric and does not survive the within-gene one (Finding 3). Binding- or
    gene-context-limited accounts therefore produce part of the effect; the
@@ -2083,8 +2111,8 @@ In a pooled Cas9 depletion screen a guide scores as efficient when the cells
 carrying it fail to survive. Measured efficiency is therefore
 **P(cut) × P(the break is unsurvivable)**, and every model in this literature,
 including this one, is fitted to the product, and no experiment here separates
-the two terms. The dCas9 contrast puts about half of the effect in a term that
-does not need a break and the other half in one that does (Finding 3), which is as
+the two terms. The dCas9 contrast puts a third to a half of the effect in a term that
+does not need a break and the rest in one that does (Finding 3), which is as
 far as sequence data reach: it does not say whether what varies is P(cut) or
 P(the break is unsurvivable), so **both of those terms remain open**. One repair route testable from sequence alone —
 RecBCD attenuation at Chi sites — is **excluded** on its own merits: Chi behaves
@@ -2305,7 +2333,7 @@ three kinds, and only one kind is worth more compute.
 | limit | why it binds | what it would take |
 |---|---|---|
 | **0.22 ρ of real, repeatable variance is unexplained** | the ceiling is 0.946 and the best model reaches 0.7218. Eleven feature families from the genome, thermodynamics, ChIP-seq and quantum chemistry have not closed it | not more features of the kinds tried. The sequence-derived candidates with a mechanism attached are now *excluded* rather than unexamined — shape and 3D path (Finding 8), periodicity, Chi, supercoiling — which makes this a measurement problem rather than a modelling one |
-| The long-range mechanism is unidentified | about half of the effect survives without a break (dCas9, Finding 3) and the other half needs one; the candidate routes that read 500 nt are excluded | an intervention rather than an observation: a designed library that varies flank composition at a **fixed guide**. Nothing in a pooled screen can do this, because guide and locus are confounded by construction in every existing dataset |
+| The long-range mechanism is unidentified | between a third and a half of the effect survives without a break (dCas9, Finding 3) and the rest needs one; the candidate routes that read 500 nt are excluded | an intervention rather than an observation: a designed library that varies flank composition at a **fixed guide**. Nothing in a pooled screen can do this, because guide and locus are confounded by construction in every existing dataset |
 | One organism and two relatives | no genome-wide Cas9 *cutting* screen exists outside *Enterobacteriaceae*; what exists elsewhere is CRISPRi, a different measured quantity | wet lab. This is the single largest external-validity gap |
 | No untouched external set remains **for the cutting claims** | eSpCas9 turned out to be confirmatory rather than untouched, and Cui's screen has been spent | permanent on the cutting side. **Partly lifted on the dCas9 side**: Rousset and Wang are untouched by this project and now carry Finding 3's replication (Appendix B). The automatable adaptive component is still bounded at **+0.0087**; the human part is unquantified above it and the cohort choice is unquantifiable by design |
 | Nothing here speaks to specificity | six of `h_offtarget`'s thirteen columns are constant zero because the cohort keeps only uniquely-targeting guides | a cohort that retains multi-targeting guides. The question was filtered out before the measurement, so no re-analysis reaches it |
@@ -2316,12 +2344,13 @@ Findings 8 and 9.** *Tensor-valued descriptors of the flank:* built as designed 
 shape vectors from three independent sources and a rigid-body 3D reconstruction of the
 helical path in a frame attached to the cut, with shuffled-flank controls), they recover
 up to 90% of family A alone and add −0.0008 to +0.0006 on top of it; the earlier null for
-shape was about the information, not about the scalar summary (Finding 8). *Nuclease
+shape was not an artefact of the scalar summary (Finding 8). *Nuclease
 information:* three *E. coli* cohorts could not test it and a public nine-nuclease sheet
 could — descriptors are worth nothing in distribution, carry an unseen enzyme's PAM usage
-but not its sequence rules, and pooling is worth about a fourfold saving in labels for a
+and little of its sequence rules, and pooling is worth about a fourfold saving in labels for a
 new enzyme (Finding 9). Both ran outside the frozen pipeline (`sgrna/ext/`,
-`EXTENSION_LOG.md`), on a fork, and neither changes a number in Findings 1–7.
+`EXTENSION_LOG.md`), on a fork, and neither changes a number in Findings 1–7; the revision of
+Finding 3's dCas9 conclusion comes from the within-gene analysis, not from these two ideas.
 
 **The one-sentence version.** Everything cheap has been done, two things are
 declined on cost with the reason written down, and what is left is a measurement
@@ -2556,7 +2585,7 @@ cost, because the cost was not small.
 | the GC account | conditioning *raises* flank GC's association — on the curated cohort, **+0.176 marginal → +0.221 partial** — and it is positive in all five target-GC strata (+0.425 down to +0.068), strongest where the target itself is GC-poor |
 | the reduced representation | **412 columns** computable from any 20-mer land 0.00003 ρ from all 6,232 — portability, not just sufficiency |
 | data efficiency | survives all five folds; the ρ ≥ 0.68 ratio goes **1.4× → 2.5×** |
-| the mechanism | the dCas9 null survived the first re-examination (the +0.268 inside essential genes is the screen's own strand rule; given a strand indicator the family is worth +0.007 to +0.025 to the pooled ranking) and **did not survive the second**: among coding-strand guides the within-gene ranking gains +0.102 (Cui) and +0.114 (Rousset), against +0.085 on the cutting screen, so the effect exists without a break at about half its cutting size (13% against 26% of the attainable gain). "Specific to cleavage" is withdrawn; "larger with cleavage" replaces it (Finding 3, last subsection) |
+| the mechanism | the dCas9 null survived the first re-examination (the +0.268 inside essential genes is the screen's own strand rule; given a strand indicator the family is worth +0.007 to +0.025 to the pooled ranking) and **did not survive the second**: among coding-strand guides the within-gene ranking gains +0.102 (Cui) and +0.114 (Rousset), against +0.085 on the cutting screen, so the effect exists without a break at one-third to one-half of its cutting size (13–14% against 26% of the attainable gain; 27–40% by variance explained). "Specific to cleavage" is withdrawn; "larger with cleavage" replaces it (Finding 3, last subsection) |
 | the flanking-context thesis | on the curated cohort nothing confined to the guide clears **+0.019** and nothing above **+0.05** is confined to it. Arrived at by withdrawing a claim that pointed the other way, and since re-scoped: the ordering is by what the model cannot already compute, not by what the phenotype depends on (Part 2) |
 
 ### What that means
@@ -3795,7 +3824,7 @@ thing left on this list.
 
 ### Is the flank effect a *repair* effect? The Chi-site test: a null
 
-The dCas9 comparison (Finding 3) puts about half of the effect at or after the cut, and the
+The dCas9 comparison (Finding 3) puts half or more of the effect at or after the cut, and the
 effect is large (+0.164), compositional with no motif out to ~500 nt (Finding 2)
 and orientation-dependent (Jacky's result). Almost nothing at a cut site reads
 five hundred nucleotides; one process in *E. coli* does. **RecBCD** enters a

@@ -21,6 +21,21 @@ The report (`PROGRESS_REPORT.md`) carries only what survived.
 Deep DNAshape (JinsenLi/deepDNAshape) was cloned to `external_data/deepDNAshape_src` and **not run**:
 the sandbox refused to execute third-party model code. The pentamer table is the data route.
 
+### 0b. The search: what was found, what was used, what was not
+
+| candidate | what it offers | outcome |
+|---|---|---|
+| Kim et al. 2020 (Nat Biotechnol) Supplementary Tables | 40,128 targets x 9 Cas9 variants with the authors' split; 256-PAM profiles | **used** (Finding 9); the only public sheet found that gives >= 9 nucleases on the same targets with processed activities |
+| DNAshapeR pentamer table (Rohs lab) | 512 pentamers x 90 numbers: MC, X-ray and MD shape parameters, step parameters included | **used** (Finding 8); the "several kinds of column in one table" case |
+| PDB 5F9R (Jiang et al. 2016) | Cas9 - sgRNA - target / non-target DNA R-loop | **used** for nuclease structure descriptors |
+| Deep DNAshape (Li, Chiu, Rohs; GitHub JinsenLi/deepDNAshape) | neural predictor, 14 shape features with up to 7 bp of context | cloned, **not run**: the sandbox refused to execute third-party model code. The DNAshapeR table gives the 5-mer-context version of the same features; the wider context is what was not tested |
+| ABC / muABC tetranucleotide MD stiffness (Pasi et al. 2014) | 6x6 stiffness per tetranucleotide | **not obtained**: no direct download page found; this is the data that a true stiffness-tensor encoding would need, and its absence is the main limit of Finding 8 |
+| E. coli Hi-C / 3D chromosome (Lioy et al. 2018, GSE107301) | contact maps, 3D coordinates | already family E (`eng.nuc`), a null; not repeated |
+| E. coli NAP ChIP-seq (GSE24991 H-NS/Fis; SRP008538 IHF/HU) and IPOD-HR protein occupancy (GSE164796) | protein-bound DNA tracks | **not used**: no processed track was fetched; these describe the nucleoid, and Hi-C-derived family E was already null. An open item |
+| DeepSpCas9variants (GitHub NahyeKim) | trained models only, no training data; published accuracies are in the paywalled article | **not used**; no state-of-the-art comparison for human nuclease variants is made |
+| Schmid-Burgk et al. 2020 (Mol Cell), others | specificity profiling with 59 guides | too small to condition a model on |
+| human flank sequences for the project's human matrix | would let Finding 8 be run on human | not available locally (the matrix carries computed columns, not sequence); needs hg38 coordinates |
+
 ## 1. Prerequisite: the within-gene effect of family A on the cutting screen
 
 **Run.** `ext/cut_within_gene.py` -- the same decomposition used on Cui and Rousset
@@ -31,7 +46,7 @@ the sandbox refused to execute third-party model code. The pentamer table is the
 |---|---:|---:|---:|---:|---:|
 | overall rho | 0.561 | 0.717 | +0.155 | 0.0008 | |
 | between genes | 0.438 | 0.713 | +0.275 | 0.0029 | |
-| **within genes** | 0.618 | 0.704 | **+0.085** | 0.0007 | [+0.078, +0.090] |
+| **within genes** | 0.618 | 0.703 | **+0.085** | 0.0007 | [+0.078, +0.090] |
 
 **Inference (the earlier dCas9 claim, re-examined).** Finding 3 said family A adds nothing to the
 dCas9 screens beyond the strand rule. The within-gene decomposition already showed +0.102 (Cui,
@@ -42,17 +57,18 @@ screen, 0.17 and 0.08 on the dCas9 coding strands) and a gain of 0.1 from 0.08 i
 from 0.62. Two scale-free comparisons:
 
 * *Fraction of the attainable gain closed.* Cutting: ceiling 0.946 (the label's replicate ceiling,
-  Finding 6), (0.704 - 0.618) / (0.946 - 0.618) = **26%**. Cui coding strand: the two time points
+  Finding 6), (0.7035 - 0.6181) / (0.946 - 0.6181) = **26%**. Cui coding strand: the two time points
   of the screen (fit18, fit75) agree within genes at rho 0.768 on exactly these 2,289 guides, which
   by Spearman-Brown puts the reliability of their mean at 0.869 and the ceiling near 0.93;
-  (0.274 - 0.172) / (0.93 - 0.172) = **13%**. Rousset has no second readout; with the same
-  ceiling assumed, (0.196 - 0.083) / (0.93 - 0.083) = **13%**.
+  (0.274 - 0.172) / (0.93 - 0.172) = **13%**. Rousset has no second readout, but the same 1,759 coding-strand guides
+  were screened at E18 and E75 and agree within genes at rho 0.805, which with Cui's reliability puts Rousset's
+  ceiling at 0.864 or above (r^2 / rel_C = 0.746); (0.196 - 0.083) / (0.864 - 0.083) = **14%**.
 * *Variance explained* (rho squared): +0.113 (cutting) against +0.045 (Cui) and +0.031 (Rousset).
 
-Both say the same thing: the dCas9 within-gene effect is **real and about half the size of the
-cutting one**, not absent and not equal. **Status: verified** for "not absent" (ten seeds, bootstrap
+Both say the same thing: the dCas9 within-gene effect is **real and between a third and a half the size of
+the cutting one** (half by share of the attainable gain, 27-40% by variance explained), not absent and not equal. **Status: verified** for "not absent" (ten seeds, bootstrap
 interval clear of zero, two screens, survives conditioning on transcription context); **open** for
-"half the size" (rests on a reliability ceiling estimated from time points that are not true
+"a third to a half the size" (rests on a reliability ceiling estimated from time points that are not true
 replicates, and on assuming Rousset's ceiling equals Cui's).
 
 ## 2. Verification of the building blocks (done before any result below was trusted)
@@ -297,6 +313,8 @@ excess twist (a dinucleotide count) plus the identity of the first 12-25 bp.
 | vec block, flank shuffled (`mc_blockshuf_vec`, `mc_armshuf_vec`) | real vec +0.0534; block-shuffled +0.0076; arm-shuffled +0.0034 (13/15 folds) | vec's gain is local order, not composition: it loses 86-94% when order is destroyed |
 | 600-column budget instead of 300 | A@600 0.7158; A + mc_all @600 0.7150 (-0.0008 against A@600); A + mc_geom @600 0.7141 (-0.0017) | displacement inside the 300-slot budget hiding a small gain (the budget itself is worth +0.0007 to A) |
 | independent cohort: crisprHAL's *E. coli* eSpCas9 screen, 59,489 guides, 100-kb-block CV | base 0.6802, A 0.7836 (+0.1034), mc_all alone +0.0969 (94% of A), letters in windows alone +0.0784; A + mc_all **+0.0022** (14/15 folds), A + mc_geom +0.0008, **A + arm-shuffled mc_all +0.0016** (13/15) | the null being specific to one cohort or one nuclease; the real columns exceed their shuffled control by 0.0006 |
+| fresh seeds 44-46 (folds never used) | A +0.1570 over base; mc all alone +0.1411; A + mc all -0.0006 (5/15 folds); A + arm-shuffled mc all -0.0010 | the null being specific to the seeds/folds used while the analysis was built |
+| deeper trees: depth 6, 800 trees (the champion is depth 4, 400) | A@d6 0.7225 (+0.0073 over A: the champion is under-capacity for A); A + mc all -0.0012; A + arm-shuffled mc all -0.0023 | the null being the shallow trees' inability to use the extra columns |
 | ridge instead of boosted trees | A + mc_all +0.0097 over A (5/5 folds); arm-shuffled +0.0002 (see 4.4) | the null being a property of the data rather than of the pipeline: it is not |
 
 **Inference (Finding 8 in the report).** Everything cheap and sequence-derived that describes the flank's
@@ -308,3 +326,56 @@ columns, which the trees extract from A and the base. **Status: verified** (two 
 shuffled controls, two model classes, two budgets) that tensor-valued 3D flank descriptors do not improve the
 champion; **verified** that the standalone gain is composition; **open**: whether a *measured* (not tabulated)
 shape or a stiffness matrix would differ, and the human case.
+
+### 3.6 Correction to 3.4: the within-PAM-class result depends on model capacity
+
+Section 3.4 concluded that descriptors "do not tell the model the enzyme's own sequence-dependent
+efficiency rules" (within-class rho 0.410 -> 0.408). That was measured at 500 trees x depth 6, the same
+setting that had just produced the false "pooling hurts" result of 3.2. Repeating the leave-one-nuclease-out
+run at 1,500 x 8 (three replicates, `nuclease_lono_bigcap*.csv`, `lono_preds_bigcap/`):
+
+| (differences from U, label-free descriptors) | 500 x 6 | 1,500 x 8 |
+|---|---:|---:|
+| overall rho | +0.014 [-0.001, +0.039] | **+0.023 [+0.004, +0.055]**, 8/9 ahead |
+| NGG only | +0.022 [-0.015, +0.065] | **+0.056 [+0.004, +0.117]**, 6/9 |
+| PAM-class ordering | **+0.053 [+0.007, +0.103]** | **+0.047 [+0.007, +0.090]**, 5/9 |
+| within PAM class | -0.002 [-0.039, +0.040] | +0.035 [-0.021, +0.100], 5/9 |
+
+**Inference, revised.** The effect on PAM-class ordering is robust to capacity (+0.05 both times, intervals
+clear of zero). The effect on ranking inside a PAM class is not: nil at the smaller model, +0.035 at the
+larger with an interval that still includes zero; NGG-only ranking, which is the same thing restricted to
+the canonical PAM, crosses zero at the larger model. A pooled model with enough capacity can learn
+nuclease x sequence interactions, and that is the only reading that explains both this and the capacity
+dependence of 3.2. **The report therefore says "PAM usage and little else", not "PAM usage, not sequence
+rules".** Status: PAM ordering **verified** (two capacities x three replicates, shuffled control);
+within-class transfer **open** (sign depends on capacity, nine enzymes cannot settle it).
+This is the second time in this work that a capacity change reversed a reading; the first (3.2) would
+have been reported as a finding had capacity not been varied.
+
+### 3.7 The few-shot baseline is not a tuning artefact
+`nuclease_fewshot_tuned.csv`: the k-only model with hyperparameters chosen by 4-fold CV on the k targets
+(24-point grid over trees, depth, learning rate, column fraction) scores 0.712 / 0.804 / 0.847 at
+k = 100 / 500 / 2,000, against 0.713 / 0.807 / 0.843 for the fixed setting. Pooled with descriptors (500 x 6):
+0.828 / 0.851 / 0.865. So 500 labels plus the pool (0.851) match 2,000 labels alone (0.847): about a fourfold saving.
+The pooled arms used the lower-capacity setting, so the saving is if anything conservative.
+
+## 6. Audit
+
+`ext/verify_numbers.py` recomputes 98 of the numbers quoted in Findings 8-9 and the Finding 3 addendum from
+the result files and compares them with the report's text. First run: 3 mismatches, all rounding (A + mc geom
+at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
+tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
+
+Errors made and caught on the way, because they bear on how much to trust the rest:
+* a splice that duplicated 350 lines of the report (the end marker preceded the start marker after an earlier
+  reordering); caught by a line count, restored from the saved copy and redone with order assertions;
+* "pooling hurts" (3.2) and "descriptors do not transfer sequence rules" (3.4): both capacity artefacts;
+* a hypothesis that the MD geometry deficit came from its mean twist (4.3.5): tested and rejected;
+* a dinucleotide-composition result first written as "+0.0005" that was +0.0025 over the shape means
+  alone (corrected before use).
+
+### 3.8 Sensitivity of the PAM-class-ordering metric to the class-size threshold
+Label-free descriptors minus U, 500 x 6, bootstrap over nuclease: classes with >= 300 test targets: ordering +0.111 [+0.015, +0.178],
+within class +0.006 [-0.011, +0.025]; >= 100 (the threshold used throughout): +0.053 [+0.009, +0.106], -0.002 [-0.038, +0.037]; >= 30: +0.014
+[-0.004, +0.032], -0.011 [-0.036, +0.020]. The ordering gain is real for the well-populated classes and not detectable once rare
+classes with noisy means are included. The report quotes the >= 100 figure and states this dependence.

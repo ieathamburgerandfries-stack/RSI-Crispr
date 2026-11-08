@@ -87,3 +87,38 @@ if __name__ == "__main__":
         p = t.pivot(index="arm", columns="nuclease", values=m)
         p["mean"] = p.mean(axis=1)
         print(f"\n{m}"); print(p.round(3).to_string())
+
+
+def bigcap():
+    """High-capacity (1500 trees, depth 8) leave-one-nuclease-out: three replicates, PAM-class split."""
+    from scipy.stats import spearmanr
+
+    from . import nuclease_desc as nd
+    from . import nuclease_model as nm
+    d = nm.load(); pam = d.seq.str[25:27].to_numpy()
+    rows = []
+    for hk, hn in zip(nd.SHORT, nd.NUCLEASES):
+        te = nm.rows_for(d, hk, "Test"); y = d[hk].to_numpy()[te]; pm = pam[te]
+        classes = [c for c in np.unique(pm) if (pm == c).sum() >= 100]
+        for arm in ("U", "D_label-free", "D_all"):
+            for rep in range(3):
+                f = OUT / "lono_preds_bigcap" / (f"{arm}__{hn}.npy" if rep == 0 else f"{arm}__{hn}__r{rep}.npy")
+                p = np.load(f)
+                cm = np.array([[y[pm == c].mean(), p[pm == c].mean()] for c in classes])
+                rows.append(dict(nuclease=hn, arm=arm, rep=rep, all=spearmanr(y, p).statistic,
+                                 ngg=spearmanr(y[pm == "GG"], p[pm == "GG"]).statistic,
+                                 class_order=spearmanr(cm[:, 0], cm[:, 1]).statistic,
+                                 within_class=np.nanmean([spearmanr(y[pm == c], p[pm == c]).statistic for c in classes])))
+    t = pd.DataFrame(rows).groupby(["arm", "nuclease"]).mean(numeric_only=True).drop(columns="rep").reset_index()
+    t.to_csv(OUT / "lono_bigcap_by_pam_class.csv", index=False)
+    rng = np.random.default_rng(0)
+    out = []
+    for m in ("all", "ngg", "class_order", "within_class"):
+        q = t.pivot(index="arm", columns="nuclease", values=m)
+        for arm in ("U", "D_label-free", "D_all"):
+            diff = (q.loc[arm] - q.loc["U"]).to_numpy()
+            bs = [diff[rng.integers(0, 9, 9)].mean() for _ in range(2000)]
+            out.append(dict(metric=m, arm=arm, mean=q.loc[arm].mean(), d_vs_U=diff.mean(),
+                            lo=np.percentile(bs, 2.5), hi=np.percentile(bs, 97.5), ahead=f"{int((diff > 0).sum())}/9"))
+    r = pd.DataFrame(out); r.to_csv(OUT / "lono_bigcap_summary.csv", index=False)
+    return r, t
