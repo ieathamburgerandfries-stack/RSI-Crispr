@@ -555,7 +555,7 @@ question:**
 |---|---|
 | read depth or mappability? | **evidence not traceable — see below.** The row claims the gain survives restricting to guides whose reads cannot be misassigned, +0.078 → +0.051 |
 | gene ranking in disguise? | no — within-gene ρ 0.571 against 0.606 global; flanks worth **+0.061 inside genes** |
-| **Cas9 binding rather than cutting?** | no — but only after a second control. Family A adds −0.009 across a dCas9 CRISPRi screen and reads **+0.268** inside its essential genes; that +0.268 is the screen's own strand rule, and given a strand indicator the family adds **+0.007** to the pooled ranking there. Among coding-strand guides alone it adds **+0.12** on Cui and **+0.13 to +0.16** on Rousset, a third to a half of it within genes, so the answer is qualified (Finding 3, last subsection) |
+| **Cas9 binding rather than cutting?** | no — but only after a second control. Family A adds −0.009 across a dCas9 CRISPRi screen and reads **+0.268** inside its essential genes; that +0.268 is the screen's own strand rule, and given a strand indicator the family adds **+0.007** to the pooled ranking there. Among coding-strand guides alone it adds **+0.12** on Cui and **+0.13 to +0.16** on Rousset, about a third to a half of it within genes (+0.10 to +0.11, intervals clear of zero), so the answer is qualified (Finding 3, last subsection) |
 
 *Why these tests and not others.* Each removes one way the effect could be an
 artefact of this dataset rather than a property of the DNA. A new **nuclease**
@@ -896,34 +896,45 @@ against −1.19). Among sequence families, A is the largest in both groupings;
 `g_transcription` is larger and `d_supercoiling` is larger under gene grouping only.
 `e_nucleoid` changes from −0.008 to +0.127 between groupings and is not claimed.
 
-**4. Is the coding-strand gain between genes or within them?** One seed, the 206
-genes with at least five coding-strand guides (2,289 guides); out-of-fold
-predictions split into the ρ of gene means and the ρ of values with each gene's
-mean removed (`strand_within_gene.py`):
+**4. Is the coding-strand gain between genes or within them?** Out-of-fold
+predictions split into the ρ of gene means (between) and the ρ of values with each
+gene's mean removed (within), for the 206 Cui genes with at least five coding-strand
+guides (2,289 guides); ten seeds (41–50), one cross-validation per seed
+(`strand_within_gene.py`). Differences are against `base`; "seed sd" is the sd of
+the paired difference over seeds (how much the split moves it) and the interval is
+a bootstrap over genes of the seed-averaged predictions (sampling):
 
-| arm | overall | between genes | within genes |
-|---|---:|---:|---:|
-| base | 0.128 | 0.084 | 0.177 |
-| + a_flank | 0.255 | 0.253 | **0.272** |
-| + g_transcription | 0.365 | 0.450 | 0.240 |
-| + d_supercoiling | 0.281 | 0.341 | 0.205 |
-| + j_periodicity | 0.155 | 0.154 | 0.169 |
-| + i_shape | 0.145 | 0.124 | 0.168 |
+| arm | between genes | within genes | Δ between (seed sd) | Δ within (seed sd) | Δ within, 95% bootstrap |
+|---|---:|---:|---:|---:|---:|
+| base | 0.068 | 0.172 | | | |
+| **+ a_flank** | 0.228 | **0.274** | +0.160 (0.062) | **+0.102 (0.016)** | [+0.081, +0.164] |
+| + g_transcription | 0.457 | 0.242 | +0.389 (0.060) | +0.070 (0.010) | [+0.044, +0.111] |
+| + d_mechanics | 0.155 | 0.214 | +0.087 (0.049) | +0.043 (0.012) | [+0.027, +0.074] |
+| + d_supercoiling | 0.299 | 0.192 | +0.231 (0.062) | +0.020 (0.012) | [−0.006, +0.054] |
+| + i_shape | 0.147 | 0.177 | +0.079 (0.055) | +0.005 (0.014) | [−0.025, +0.051] |
 
-Transcription context and supercoiling gain mostly between genes (+0.37 and +0.26
-between, +0.06 and +0.03 within), as their contents suggest. Family A gains on both
-(+0.17 between, **+0.095 within**), and its within-gene gain is larger than
-`g_transcription`'s even though `g_transcription` carries the guide's relative
-position in its gene.
+Transcription context and supercoiling gain mostly between genes, as their contents
+suggest (+0.39 and +0.23 between, +0.07 and +0.02 within). Family A gains on both
+and has the largest within-gene gain of any family. The between-gene gains are
+noisy across seeds (sd 0.05–0.06); the within-gene gains are tight (sd 0.01–0.02).
+
+*Does family A add within genes beyond transcription context?* `g_transcription`
+carries the guide's relative position in its gene, the obvious within-gene
+confound. Adding A to it (same ten seeds, `--joint`): between genes 0.457 → 0.463
+(paired Δ **+0.006**, seed sd 0.017), within genes 0.242 → 0.338 (paired Δ
+**+0.096**, seed sd 0.012, range +0.079 to +0.115 over the ten seeds). So A's
+between-gene gain is gene-level context that transcription context already holds,
+and its within-gene gain is separate from it.
 
 **5. Rousset, the same test (replication).** Rousset's essential-gene guides split
 into 2,074 coding-strand and 2,566 template-strand (`strand_strata.py --rousset`).
 Family A over `base` inside the stratum: coding **+0.159** (genes) and **+0.133**
 (100 kb blocks); template **−0.019** and **−0.022**. The coding-strand base alone
 is ρ 0.066 / 0.056, so A takes it to 0.224 / 0.188. Between versus within genes
-(one seed, 182 genes with at least five coding-strand guides): between genes
-−0.031 → 0.217, within genes 0.073 → 0.178. The Cui pattern replicates: the gain is
-confined to the coding strand and is about a third to a half within genes.
+(182 genes with at least five coding-strand guides, ten seeds): between genes
+−0.059 → 0.183 (Δ +0.242, seed sd 0.047), within genes 0.083 → 0.196 (Δ **+0.114**,
+seed sd 0.013, bootstrap [+0.084, +0.189]). The Cui pattern replicates: the gain is
+confined to the coding strand, and a third to a half of it is within genes.
 
 **6. What the strand column carries: telling the model the wrong strand.** Train
 `base + strand` as usual (gene-grouped, three seeds, the strand column selected in
@@ -955,8 +966,11 @@ Wang's +0.267 comes from a library that is entirely coding-strand, so the Wang
 column and these strata agree rather than conflict. The statement that the dCas9
 screen gives no flank effect is therefore established for the pooled ranking and
 not for the coding-strand stratum. What would settle it, not yet run: the
-within-gene ρ over all three seeds with a paired interval, and the cutting-screen
-figure computed on the same within-gene definition.
+cutting-screen figure computed on the same within-gene definition, which is the
+comparison the original +0.157 needs. The within-gene gain is established on two
+screens (+0.102 and +0.114, intervals clear of zero) and survives conditioning on
+transcription context; what it is, whether a local flank property or a position
+effect that gene-relative position does not capture, is not identified.
 
 #### What the predictor is therefore for
 
