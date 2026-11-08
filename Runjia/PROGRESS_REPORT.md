@@ -555,7 +555,7 @@ question:**
 |---|---|
 | read depth or mappability? | **evidence not traceable — see below.** The row claims the gain survives restricting to guides whose reads cannot be misassigned, +0.078 → +0.051 |
 | gene ranking in disguise? | no — within-gene ρ 0.571 against 0.606 global; flanks worth **+0.061 inside genes** |
-| **Cas9 binding rather than cutting?** | no — but only after a second control. Family A adds −0.009 across a dCas9 CRISPRi screen and reads **+0.268** inside its essential genes; that +0.268 is the screen's own strand rule, and given a strand indicator the family adds **+0.007** to the pooled ranking there. Among coding-strand guides alone it adds **+0.12**, about half of it between genes, so the answer is qualified (Finding 3, last subsection) |
+| **Cas9 binding rather than cutting?** | no — but only after a second control. Family A adds −0.009 across a dCas9 CRISPRi screen and reads **+0.268** inside its essential genes; that +0.268 is the screen's own strand rule, and given a strand indicator the family adds **+0.007** to the pooled ranking there. Among coding-strand guides alone it adds **+0.12** on Cui and **+0.13 to +0.16** on Rousset, a third to a half of it within genes, so the answer is qualified (Finding 3, last subsection) |
 
 *Why these tests and not others.* Each removes one way the effect could be an
 artefact of this dataset rather than a property of the DNA. A new **nuclease**
@@ -916,17 +916,47 @@ between, +0.06 and +0.03 within), as their contents suggest. Family A gains on b
 `g_transcription`'s even though `g_transcription` carries the guide's relative
 position in its gene.
 
+**5. Rousset, the same test (replication).** Rousset's essential-gene guides split
+into 2,074 coding-strand and 2,566 template-strand (`strand_strata.py --rousset`).
+Family A over `base` inside the stratum: coding **+0.159** (genes) and **+0.133**
+(100 kb blocks); template **−0.019** and **−0.022**. The coding-strand base alone
+is ρ 0.066 / 0.056, so A takes it to 0.224 / 0.188. Between versus within genes
+(one seed, 182 genes with at least five coding-strand guides): between genes
+−0.031 → 0.217, within genes 0.073 → 0.178. The Cui pattern replicates: the gain is
+confined to the coding strand and is about a third to a half within genes.
+
+**6. What the strand column carries: telling the model the wrong strand.** Train
+`base + strand` as usual (gene-grouped, three seeds, the strand column selected in
+15 of 15 folds) and change only the held-out strand column
+(`strand_strata.py --flip`):
+
+| held-out strand column | `base + strand` | `base + strand + a_flank` |
+|---|---:|---:|
+| true | 0.646 | 0.661 |
+| **flipped on every guide** | **−0.528** | **−0.503** |
+| shuffled across guides | 0.065 | 0.180 |
+| set to the training mean | 0.140 | 0.348 |
+
+A model told the wrong strand every time ranks the screen backwards (ρ −0.53),
+because the one column that carries most of the ranking now points the other way;
+the within-strand ordering from the guide's own sequence survives, which is why it
+is −0.53 and not −0.65. Removing the information instead (shuffled or set to the
+mean) leaves 0.07 to 0.14, below the 0.27 of a model trained without the column.
+With family A present, the same removals leave 0.18 and 0.35: A's flank
+composition partly stands in for the strand (the purine proxy), which is the
+same fact seen from the other side.
+
 **What this changes.** The strand-supplied increments of +0.007 to +0.025 are the
 gain to the *pooled* ranking, and the strand split (0.28 → 0.65 from one column)
 dominates that ranking. It says family A adds almost nothing once the strand is
 known to a model that ranks both strands together; it does not say A is inert among
-coding-strand guides, where it adds +0.12. Wang's +0.267 comes from a library that
-is entirely coding-strand, so the Wang column and this stratum agree rather than
-conflict. The statement that the dCas9 screen gives no flank effect is therefore
-established for the pooled ranking and not for the coding-strand stratum. What would
-settle it, not yet run: the same stratified increment on Rousset's coding-strand
-guides; the within-gene ρ over all three seeds with a paired interval; and the
-cutting-screen figure computed on the same within-gene definition.
+coding-strand guides, where it adds +0.12 on Cui and +0.13 to +0.16 on Rousset.
+Wang's +0.267 comes from a library that is entirely coding-strand, so the Wang
+column and these strata agree rather than conflict. The statement that the dCas9
+screen gives no flank effect is therefore established for the pooled ranking and
+not for the coding-strand stratum. What would settle it, not yet run: the
+within-gene ρ over all three seeds with a paired interval, and the cutting-screen
+figure computed on the same within-gene definition.
 
 #### What the predictor is therefore for
 
@@ -945,7 +975,7 @@ So the scope is narrower than "CRISPR" and wider than "killing bacteria":
 |---|---|
 | gene knockout, HDR knock-in, any edit that needs a double-strand break | **yes** — this is the quantity being predicted |
 | pooled knockout screens using Cas9 cutting as the perturbation | **yes**, and these are the screens it was fitted on |
-| CRISPRi / CRISPRa with dCas9 | **no** — measured on two screens, −0.009 to −0.021 across the screen and +0.007 to +0.025 to the pooled ranking where its phenotype is measurable (+0.12 among coding-strand guides alone on Cui, unresolved), and a guide-sequence model is the right tool there |
+| CRISPRi / CRISPRa with dCas9 | **no** — measured on two screens, −0.009 to −0.021 across the screen and +0.007 to +0.025 to the pooled ranking where its phenotype is measurable (+0.12 among coding-strand guides alone on Cui, +0.13 to +0.16 on Rousset, unresolved), and a guide-sequence model is the right tool there |
 | base and prime editing (nickase-based) | **untested**, and genuinely uncertain — these bind and nick rather than cut, which puts them between the two cases |
 
 In each of those the quantity wanted is cleavage efficiency — whether a knockout
@@ -1450,9 +1480,10 @@ between ρ 0.71 and ρ 0.946 looks.
 more lopsided.** Every cost figure above is about *fitting*. What a user does is
 fit once and then score every candidate guide for every target they care about,
 which is tens of thousands to millions of forward passes against a handful of
-fits. Two measurements, because the fair comparison depends on the hardware each
-model would actually be given. **On one Colab instance** — crisprHAL 2's shipped
-model on its T4, SLICER's configuration on the same instance's CPU and on its T4
+fits. A forward-pass ratio is only like-for-like when both models run on the same
+type of hardware, so the pairings below are labelled by hardware. **On one Colab
+instance** — crisprHAL 2's shipped model on its T4, SLICER's configuration on the
+same instance's CPU and on its T4
 (`colab/inference_bench_t4.py`, `results/inference_t4.csv`; SLICER timed on
 synthetic data of the champion's shape, since scoring cost depends on tree count
 and depth and not on the values):
@@ -1463,9 +1494,15 @@ and depth and not on the values):
 | **SLICER, same instance's CPU** | **0.48 ms** | **1.36 ms** | **72.0 ms** | **138,950 guides/s** | not measured here |
 | SLICER, same instance's T4 | 2.17 ms | 2.81 ms | 59.5 ms | 168,065 guides/s | not measured here |
 
-**Against a GPU-served crisprHAL 2, SLICER on CPU is about 160× faster for one
-guide, 73× for a hundred, and 38× for ten thousand** (rates, so ratios are
-legitimate here, unlike the Δρ quotients this report refuses). The GPU did not
+**GPU against GPU (same hardware type): SLICER is 36× faster for one guide, 35×
+for a hundred and 47× for ten thousand** (rates, so ratios are legitimate here,
+unlike the Δρ quotients this report refuses; SLICER's input starts on the host, so
+its transfer is included). This is the like-for-like pairing and the smallest of
+the ratios. **CPU against CPU on this instance is not yet measured**: crisprHAL 2
+was run only on the T4; `colab/inference_bench_t4.py` now times both models on both
+hardware types, with cold starts. The 160× / 73× / 38× obtained by setting
+SLICER's CPU row against crisprHAL 2's T4 row is a *deployment* comparison (each
+model on the hardware it would be given), not a same-hardware one. The GPU did not
 help the deep model where it matters to a user scoring a few guides: one guide
 takes 78 ms on the T4 against 44 ms on a CPU, because a 37-layer network pays a
 fixed dispatch cost per call. It only wins at bulk (3,613 guides/s against 1,225
@@ -1474,7 +1511,7 @@ on CPU). Putting SLICER on the GPU buys almost nothing at bulk (168 k against
 with the input on the host, so it includes a transfer, and is not a tuned GPU
 number.
 
-**On the local machine's CPU, both models** (a 10-core laptop, scoring in batches
+**CPU against CPU on the local machine** (a 10-core laptop, scoring in batches
 of 10,000; `inference_cost.py`, `results/inference_cost.csv`; crisprHAL's side by
 `colab/crisprhal_inference_bench.py` under its own TensorFlow interpreter):
 
@@ -1483,11 +1520,11 @@ of 10,000; `inference_cost.py`, `results/inference_cost.csv`; crisprHAL's side b
 | **SLICER** | **0.35 ms** | **0.80 ms** | **6.7 ms** | **~2.1 M guides/s** | a fraction of a second |
 | crisprHAL 2, shipped | 44.3 ms | 101.7 ms | 8,162 ms | 1,225 guides/s | **13.4 s** |
 
-That is a factor of about 1,700 on throughput, and it is **a CPU-deployment
-figure, not the headline**: the same SLICER model is 15 times faster on ten
-laptop cores than on Colab's two vCPUs, which is most of the difference between
-the two tables, and the like-for-like T4 comparison above is the smaller and
-more defensible one. Either way the cheap-model argument is stronger at inference
+That is 127× for one guide and for a hundred, 1,200× at ten thousand by latency,
+and a factor of about 1,700 on throughput. It is **a ten-core-laptop figure, not
+the headline**: the same SLICER model is 15 times faster on ten laptop cores than
+on Colab's two vCPUs, which is most of the difference between the two tables, and
+the GPU-against-GPU comparison above is the smaller and more defensible one. Either way the cheap-model argument is stronger at inference
 than at training (~150× CPU-seconds), which is the opposite of how it is usually
 presented, and **cold start** is the other half: loading crisprHAL 2 costs 9.8 s
 on the T4 instance and 13.4 s on the laptop before the first prediction, which for
@@ -1592,7 +1629,7 @@ mechanism.
    been right for a reason the average cannot show (Finding 3). **It is weaker
    than this paragraph reads.** The +0.007 to +0.025 is the gain to the pooled
    ranking, which the strand split dominates. Among coding-strand guides alone
-   family A adds +0.12 on Cui, about half of it between genes and half within
+   family A adds +0.12 on Cui and +0.13 to +0.16 on Rousset, about half of it between genes and half within
    them (Finding 3, last subsection); that is not yet comparable with the +0.157
    on the cutting screen, and the comparison is the open test.
 3. **It is a local property of the target, not a property of its gene.** Asked
@@ -2287,7 +2324,7 @@ cost, because the cost was not small.
 | the GC account | conditioning *raises* flank GC's association — on the curated cohort, **+0.176 marginal → +0.221 partial** — and it is positive in all five target-GC strata (+0.425 down to +0.068), strongest where the target itself is GC-poor |
 | the reduced representation | **412 columns** computable from any 20-mer land 0.00003 ρ from all 6,232 — portability, not just sufficiency |
 | data efficiency | survives all five folds; the ρ ≥ 0.68 ratio goes **1.4× → 2.5×** |
-| the mechanism | the dCas9 null survived the one re-examination that looked fatal to it. Restricted to the essential genes where knockdown has a phenotype, family A reads **+0.268** — but that is the screen's own strand rule, and given a strand indicator the family is worth **+0.007 to +0.025** there, on two independent screens, against +0.157 on a cutting screen, in the pooled ranking. Held to the coding strand the family adds +0.12 on Cui, which this row does not account for (Finding 3, last subsection) |
+| the mechanism | the dCas9 null survived the one re-examination that looked fatal to it. Restricted to the essential genes where knockdown has a phenotype, family A reads **+0.268** — but that is the screen's own strand rule, and given a strand indicator the family is worth **+0.007 to +0.025** there, on two independent screens, against +0.157 on a cutting screen, in the pooled ranking. Held to the coding strand the family adds +0.12 on Cui and +0.13 to +0.16 on Rousset, which this row does not account for (Finding 3, last subsection) |
 | the flanking-context thesis | on the curated cohort nothing confined to the guide clears **+0.019** and nothing above **+0.05** is confined to it. Arrived at by withdrawing a claim that pointed the other way, and since re-scoped: the ordering is by what the model cannot already compute, not by what the phenotype depends on (Part 2) |
 
 ### What that means
