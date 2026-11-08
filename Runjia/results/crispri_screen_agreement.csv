@@ -1,0 +1,13 @@
+pair,a,b,n_shared,subset,spearman,label_sd,n_essential
+Rousset (self),Rousset,Rousset,59246,all,,1.278743872557139,4640
+Cui (self),Cui,Cui,59246,all,,1.6092787740997783,4640
+Wang (self),Wang,Wang,52104,all,,2.074227391691395,4197
+Rousset vs Cui,Rousset,Cui,59246,all,0.6887811567037972,1.278733080695507,4640
+Rousset vs Cui,Rousset,Cui,4640,essential genes,0.9014709680415586,2.9733124032425327,4640
+Rousset vs Cui,Rousset,Cui,54606,non-essential genes,0.658787529418516,0.8261138961320572,4640
+Rousset vs Wang,Rousset,Wang,6139,all,0.4290003152674026,1.7641673626680519,529
+Rousset vs Wang,Rousset,Wang,529,essential genes,0.7898126011168933,3.1099145247536057,529
+Rousset vs Wang,Rousset,Wang,5610,non-essential genes,0.29806371300877077,1.0002001775275924,529
+Cui vs Wang,Cui,Wang,6139,all,0.4011056277944504,1.9203101661461361,529
+Cui vs Wang,Cui,Wang,529,essential genes,0.7651941981372916,2.8114670448577717,529
+Cui vs Wang,Cui,Wang,5610,non-essential genes,0.2711972123742351,1.4179659636823072,529

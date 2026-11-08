@@ -649,6 +649,27 @@ detect a guide-positioning effect — it detects one at ρ 0.66 from a single co
 — so an accessibility- or binding-limited flank effect of the size family A
 shows on a cutting screen would not have gone unseen here.
 
+**And the strand result replicates on two screens this project did not make.**
+Barquist et al. (2024) assembled three *E. coli* CRISPRi screens for a
+mixed-effect guide-efficiency model, two of which — Rousset and Wang — this
+project had never used. Their tables carry `coding_strand` and
+`gene_essentiality`, so the claim is testable in someone else's processing
+(`crispri_screens.py --strand`, `results/crispri_screen_strand.csv`):
+
+| screen | ρ(coding strand, label), essential genes | mean label on strand / off | ρ in non-essential genes |
+|---|---:|---|---:|
+| **Rousset** — never used here before | **−0.633** | −4.74 / −0.92 | −0.056 |
+| Cui, their processing | −0.599 | −5.04 / −1.51 | −0.048 |
+| Cui, ours (`screen_data.csv`) | — | −5.07 / −1.19 | — |
+| Wang | not testable — its library is coding-strand only | −5.25 / — | — |
+
+Their `log2FC` is negative for a depleted guide, so a negative ρ means
+coding-strand guides deplete more, which is the same direction measured here.
+**The effect is also essential-gene specific in both screens** — −0.63 and
+−0.60 inside essential genes against −0.056 and −0.048 outside them — which
+corroborates the essentiality argument above from a direction it was not built
+on: the strand rule only operates where knockdown has a phenotype at all.
+
 *What this still is not.* The informative subset is 5,514 guides across 44
 blocks, the control rests on one strand indicator, and nothing here is an
 intervention — so this localises the effect to a step that requires a break
@@ -1559,7 +1580,7 @@ three kinds, and only one kind is worth more compute.
 | **0.22 ρ of real, repeatable variance is unexplained** | the ceiling is 0.946 and the best model reaches 0.7218. Eleven feature families from the genome, thermodynamics, ChIP-seq and quantum chemistry have not closed it | not more features of the kinds tried. The sequence-derived candidates with a mechanism attached are now *excluded* rather than unexamined — shape, periodicity, Chi, supercoiling — which makes this a measurement problem rather than a modelling one |
 | The long-range mechanism is localised but unidentified | the dCas9 comparison puts it at or after the cut, and the candidate routes that read 500 nt are excluded | an intervention rather than an observation: a designed library that varies flank composition at a **fixed guide**. Nothing in a pooled screen can do this, because guide and locus are confounded by construction in every existing dataset |
 | One organism and two relatives | no genome-wide Cas9 *cutting* screen exists outside *Enterobacteriaceae*; what exists elsewhere is CRISPRi, a different measured quantity | wet lab. This is the single largest external-validity gap |
-| No untouched external set remains | eSpCas9 turned out to be confirmatory rather than untouched, and Cui's screen has now been spent | permanent. The automatable adaptive component is bounded at **+0.0087**; the human part is unquantified above it and the cohort choice is unquantifiable by design |
+| No untouched external set remains **for the cutting claims** | eSpCas9 turned out to be confirmatory rather than untouched, and Cui's screen has been spent | permanent on the cutting side. **Partly lifted on the dCas9 side**: Rousset and Wang are untouched by this project and now carry Finding 3's replication (Appendix B). The automatable adaptive component is still bounded at **+0.0087**; the human part is unquantified above it and the cohort choice is unquantifiable by design |
 | Nothing here speaks to specificity | six of `h_offtarget`'s thirteen columns are constant zero because the cohort keeps only uniquely-targeting guides | a cohort that retains multi-targeting guides. The question was filtered out before the measurement, so no re-analysis reaches it |
 | Nothing here speaks to nickase editors | base and prime editors bind and nick rather than cut, which puts them between the two assays this project compares | the Cui result makes this a real question rather than a safe extrapolation, and it needs an editing outcome readout |
 
@@ -1583,7 +1604,11 @@ two CV schemes (`results/transfer.csv`), with a flank gain of **+0.104 under
 `arc5`** quoted in `RESULTS.md` (now `RESULTS_archive_2026-10-10.md`). Nothing was ever *selected* on it, so it is
 confirmatory rather than contaminated, but "evaluated once" was never
 available, and the last genuinely unused dataset (Cui's CRISPRi screen) has now
-been spent too. **No untouched external set remains.**
+been spent too. **For the cutting claims, no untouched external set remains** —
+and for the dCas9 claims that changed on 8 November, when Rousset and Wang were
+pulled in (Appendix B). They are untouched *by this project*, which is what the
+phrase has always meant here, and they are CRISPRi, so they bear on Finding 3's
+cross-assay argument and on nothing else.
 
 
 Two existing external checks, neither a substitute for that: the baseline anchor
@@ -2346,6 +2371,55 @@ curated label we train on, and the curated figure (0.946, Finding 6) comes from
 a replicate split that *is* available for that label. Both appear in the report
 because arms on the two cohorts are compared, and quoting 0.937 against a curated
 number would understate the headroom.
+
+### A second ceiling: how much of a screen's signal is not about the guide
+
+Finding 6's ceiling of 0.946 is a **within-experiment** quantity — two replicates
+of one screen, so it measures counting and clone noise. It says nothing about how
+much of the remaining signal is specific to a library, a dCas9 dosage, a growth
+medium or a laboratory. That needs two screens, and until now this project had
+one of each assay.
+
+Barquist et al.'s three *E. coli* CRISPRi tables make the second measurement
+possible, and the design is unusually clean: **Rousset and Cui are the same
+59,246-guide library** under a weaker and a stronger dCas9 promoter, so comparing
+them varies the dosage and nothing else, while **Wang is a different library**
+sharing 6,139 guides with them (`crispri_screens.py --agreement`,
+`results/crispri_screen_agreement.csv`):
+
+| pair | what differs | all guides | essential genes | non-essential |
+|---|---|---:|---:|---:|
+| Rousset vs Cui | dCas9 promoter strength only | +0.689 | **+0.902** | +0.659 |
+| Rousset vs Wang | library, laboratory, protocol | +0.429 | **+0.790** | +0.298 |
+| Cui vs Wang | the same | +0.401 | **+0.765** | +0.271 |
+| | *n* | 6,139–59,246 | 529–4,640 | 5,610–54,606 |
+
+**Two things follow, and the second reframes the headline gap.**
+
+*A transferable-signal ceiling, which is lower than the replicate one.* A model
+fitted on one screen cannot score above that screen's agreement with another when
+tested on it. Across libraries and laboratories that is **≈ 0.77–0.79 inside
+essential genes and ≈ 0.27–0.30 outside them**. Holding the library fixed and
+changing only dCas9 dosage already costs the drop from 0.902 to those figures. So
+a substantial share of what any single screen measures is a property of *that
+screen*, and no sequence model can or should predict it. The two ceilings answer
+different questions and the smaller one binds any claim about transfer.
+
+*It corroborates the essentiality argument independently.* Agreement inside
+essential genes is 0.77–0.90; outside them it is 0.27–0.30. Two screens of the
+same genome disagree almost completely about non-essential guides, which is what
+"no measurable phenotype" looks like when you have a second measurement of it
+rather than a label standard deviation. Finding 3's split was argued from
+within-screen variance; this is the same conclusion from between-screen
+agreement, and the two were not built from each other.
+
+*The caution that goes with it.* These are CRISPRi screens, so the ceiling bounds
+the **dCas9** claims and not the cutting ones; the curated Cas9 cohort still has
+only its own replicates. And Barquist et al. report `distance_start_codon` among
+their strongest features, where the raw marginal association here is +0.042 to
++0.091 — their figure is an effect estimated *net of* gene identity by a
+mixed-effect model, which is a reminder that a feature ranking is a property of
+the model that produced it (Finding 5).
 
 ### Can the label's per-guide reliability be used? No, and the control says why
 

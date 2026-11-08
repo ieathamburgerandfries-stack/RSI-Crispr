@@ -79,6 +79,8 @@ marked **[P]** published or **[C]** curated. They are not interchangeable.
 
 | claim | number | frame | evidence | command |
 |---|---|---|---|---|
+| **The strand result replicates on a screen this project never made**: Rousset, in Barquist et al.'s processing | ρ(coding strand, label) **−0.633** essential / −0.056 non-essential; Cui −0.599 / −0.048; mean label −4.74 on strand vs −0.92 off | Rousset | `crispri_screen_strand.csv` | `python -m sgrna.crispri_screens --strand` |
+| **A second, lower ceiling: cross-screen agreement bounds transfer** — and non-essential guides barely agree between screens at all | same library, dosage only: +0.902 essential / +0.659 non-ess; across libraries and labs: +0.765 to +0.790 essential / +0.271 to +0.298 non-ess | Rousset, Cui, Wang | `crispri_screen_agreement.csv` | `python -m sgrna.crispri_screens --agreement` |
 | **The effect is specific to cleavage, not Cas9 binding** | −0.009 vs +0.157; +0.007 inside essential genes with strand controlled | Cui | `cui_screen.csv`, `cui_essential_strand.csv` | `python -m sgrna.cui_screen` |
 | Orientation to the nearest TSS matters | Δ 0.051 [0.020, 0.082] | [P] | `../../RSI-Crispr/Jacky/orientation-controls/results/intergenic_orientation_controls_delta_ci.csv` (row `tss`); our strand audit is `asymmetry_strand_audit.csv` | Jacky's orientation controls |
 | **Flanking context crosses kingdoms; the guide-derived columns do not** — built on both sides, transfer flips from ≈0.049 against to positive in both directions | E→H **+0.022**, H→E **+0.017**; flanks alone +0.042 / +0.108; family A on human +0.052 (0.382 → 0.434) | [P] | `../../RSI-Crispr/Jacky/human-boundary/results/family_a_kingdom_transfer.csv`, `human_ladder.csv` | Jacky's human-boundary Tier 3 |
