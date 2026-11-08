@@ -1,0 +1,10 @@
+model,device,n_guides,latency_ms,cpu_seconds_over_wall,best_batch_size,source
+crisprHAL 2 WT-SpCas9 (shipped),laptop CPU one host thread,1,15.64,1.07,1,colab/inference_bench_onecore.py worker; local run 2026-11-08
+crisprHAL 2 WT-SpCas9 (shipped),laptop CPU one host thread,100,130.41,1.01,100,same
+crisprHAL 2 WT-SpCas9 (shipped),laptop CPU one host thread,10000,11578.93,1.00,2048,same
+crisprHAL 2 WT-SpCas9 (shipped) at Keras default batch 32,laptop CPU one host thread,1,16.31,,32,same
+crisprHAL 2 WT-SpCas9 (shipped) at Keras default batch 32,laptop CPU one host thread,100,148.99,,32,same
+crisprHAL 2 WT-SpCas9 (shipped) at Keras default batch 32,laptop CPU one host thread,10000,13488.31,,32,same
+SLICER configuration (synthetic data),laptop CPU one host thread,1,0.0475,1.01,,same
+SLICER configuration (synthetic data),laptop CPU one host thread,100,0.2063,1.00,,same
+SLICER configuration (synthetic data),laptop CPU one host thread,10000,14.176,1.00,,same

@@ -1523,8 +1523,13 @@ the in-process measurement in the same session so the next run settles it. The
 GPU-against-GPU figures use fresh-subprocess SLICER timings and may carry the same
 inflation, which would make them conservative.
 
-The GPU does not help the deep model where it matters to a user scoring a few
-guides: one guide takes 75 ms on the T4 against 103 ms on Colab's CPU, and 44 ms
+**The GPU rows above are not at crisprHAL 2's best.** They call Keras' `predict` at
+its default batch size of 32, which sends a 10,000-guide request to the T4 as 313
+small batches (4,026 ms is about 13 ms per batch); at one guide the batch size does
+not matter, but at 10,000 the GPU-against-GPU ratios (84×, 603×) are probably
+inflated, and `colab/inference_bench_onecore.py` sweeps the batch size and keeps
+crisprHAL's best. The GPU does not help the deep model where it matters to a user
+scoring a few guides: one guide takes 75 ms on the T4 against 103 ms on Colab's CPU, and 44 ms
 on the laptop, because a 37-layer network pays a fixed dispatch cost per call; it
 wins only at bulk (4,026 ms against 24,886 ms for ten thousand). An earlier session
 gave crisprHAL 2 on the T4 as 78.0 / 99.7 / 2,768 ms, agreeing at one and a hundred
@@ -1544,7 +1549,25 @@ of 10,000; `inference_cost.py`, `results/inference_cost.csv`; crisprHAL's side b
 | crisprHAL 2, shipped | 44.3 ms | 101.7 ms | 8,162 ms | 1,225 guides/s | **13.4 s** |
 
 That is 127× for one guide and for a hundred, 1,200× at ten thousand by latency,
-and a factor of about 1,700 on throughput. It is **a ten-core-laptop figure, not
+and a factor of about 1,700 on throughput. The ten-core runs are not a clean
+per-model comparison, because the two models use ten cores very differently:
+pinned to **one host thread** (CPU-seconds equal to wall-seconds, checked), on the
+same laptop, with crisprHAL 2's batch size swept and its best kept
+(`colab/inference_bench_onecore.py`, `results/inference_onecore_local.csv`):
+
+| one host thread, laptop CPU | one guide | 100 guides | 10,000 guides |
+|---|---:|---:|---:|
+| crisprHAL 2 (best batch size) | 15.6 ms | 130.4 ms | 11,579 ms |
+| **SLICER** | **0.047 ms** | **0.206 ms** | **14.2 ms** |
+| **crisprHAL 2 / SLICER** | **329×** | **632×** | **817×** |
+
+Pinning to one thread makes crisprHAL 2 faster for a single guide (15.6 ms, against
+44.3 ms on ten cores) because ten threads on a one-guide call are overhead, and
+makes SLICER faster there too (0.047 against 0.35 ms); at ten thousand guides
+SLICER's ten cores buy 2.1× (14.2 → 6.7 ms) and crisprHAL 2's buy 1.4× (11,579 →
+8,162 ms). Keras' default batch size of 32 costs crisprHAL 2 about 10% on the CPU
+(13,488 ms at ten thousand guides, 149 ms at a hundred). Per-core, the ratio is
+329× to 817×; the single-core Colab and GPU runs are pending. It is **a ten-core-laptop figure, not
 the headline**: the same SLICER model is 15 times faster on ten laptop cores than
 on Colab's two vCPUs, which is most of the difference between the two tables, and
 the same-hardware Colab comparison above is the more defensible one. Either way the cheap-model argument is stronger at inference
