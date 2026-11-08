@@ -115,9 +115,12 @@ marked **[P]** published or **[C]** curated. They are not interchangeable.
 | Under equal input DNA the ranking depends on the window | theirs +0.023 at 378 nt, ours +0.065 at ±1 kb | [C] | `crisprhal_wide_window.csv` (`seqnet_matched.csv` †) | `colab/crisprhal_wide_window.py`, `python -m sgrna.seqnet` |
 | On an assay neither model trained on, theirs transfers better | −0.0258 [−0.0289, −0.0227] | Cui | `cui_final_exam.csv` | `python -m sgrna.cui_final_exam` |
 | Data efficiency: the lead is a small-data lead | +0.0133 at 26.9k, +0.0021 at 47.6k | both | `sample_complexity.csv`, `learning_curve.csv` | `python -m sgrna.sample_complexity` |
-| **At inference the gap is ~1,700×, not 150×** — and crisprHAL needs 13.4 s of cold start before its first prediction. Both on CPU; a GPU narrows throughput but not cold start | 2.1 M guides/s vs 1,225 guides/s; 6.7 ms vs 8,162 ms for 10,000 guides | — | `inference_cost.csv` | `python -m sgrna.inference_cost` |
+| **At inference the gap is ~1,700×, not 150×** — and crisprHAL needs 13.4 s of cold start before its first prediction. Both on CPU only; the T4 comparison is `colab/inference_bench_t4.py`, not yet run | 2.1 M guides/s vs 1,225 guides/s; 6.7 ms vs 8,162 ms for 10,000 guides | — | `inference_cost.csv` | `python -m sgrna.inference_cost` |
 | Cost: ~150× in CPU-seconds, 92× wall-clock, comparable memory | 65.8 s vs ~10,000 s per fold | — | `cost_cpu_seconds.csv`, `cost_flops.csv`, `cost_panel.csv`, `memory_comparison.csv` | `python -m sgrna.cost` |
 | Model size: 6,348 fitted leaf values against 790,533 parameters | 125× | — | `complexity.json` | `python -m sgrna.complexity` |
+| Attributions are faithful to the fixed model: sensitivity-*n* | +0.928 single columns, +0.969 six-block subsets (permuted attributions ≈ 0) | curated, 100 held-out guides | `interp_sensitivity_n.csv` | `python -m sgrna.interp_extra --sens` |
+| Pairwise terms are 14.7% of the output's variance; single-column terms 70.2% | 0.147 / 0.702 | curated, 400 held-out guides | `interp_interactions.csv`, `interp_interaction_blocks.csv`, `interp_interaction_pairs.csv` | `python -m sgrna.interp_extra --inter` |
+| Flank edits move the prediction through composition: GC +5 points +0.458, −5 points −0.882; GC-preserving swaps +0.003 to +0.016 | bootstrap 95% CIs in file | curated, 1,500 held-out guides | `interp_counterfactual.csv` | `python -m sgrna.interp_extra --cf` |
 | **SLICER against Noshay's own model, on Noshay's data** | iRF 0.4785 against SLICER 0.6060 | [P] | `noshay_replication.csv`, `ablation_main.csv`, `shift_null.csv` | `python -m sgrna.noshay_replicate` |
 
 ## Where it stops

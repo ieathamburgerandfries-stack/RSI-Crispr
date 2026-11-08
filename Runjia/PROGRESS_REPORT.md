@@ -946,6 +946,77 @@ times the damage for the same share of the explanation removed, while both
 concentrate importance almost identically (44 and 37 columns for half of it).
 
 
+#### Three interpretability tests that need no refit
+
+The faithfulness probes above all refit, and refitting is where redundancy does its
+damage. Three tests run on one fixed model instead — the production recipe
+(base + family A, gain-ranked top 300, champion XGBoost) fitted on a random 80%
+of the curated cohort and scored at ρ 0.712 on the other 20%
+(`interp_extra.py`; one fit, so the figures below are not averaged over seeds).
+
+**1. Do the attributions track what the model does? Yes, at column level as well
+as block level (sensitivity-*n*).** For random subsets of *n* columns, the sum of
+SHAP values over the subset is correlated, across subsets and within each of 100
+held-out guides, with what the prediction loses when those columns are replaced by
+values from 50 training guides (`results/interp_sensitivity_n.csv`):
+
+| subset | n | SHAP | ridge surrogate | SHAP with columns permuted |
+|---|---:|---:|---:|---:|
+| columns | 1 | **+0.928** | +0.079 | −0.000 |
+| columns | 10 | **+0.941** | +0.182 | −0.012 |
+| columns | 100 | **+0.957** | +0.210 | +0.007 |
+| blocks | 1 | **+0.956** | +0.396 | −0.011 |
+| blocks | 6 | **+0.969** | +0.423 | +0.038 |
+
+The permuted column is the control: the same numbers assigned to the wrong
+columns correlate at zero, so the 0.93–0.97 is the attribution's content and not
+a property of the test. The ridge surrogate fails because it is attributing a
+*different* model. **This does not contradict the claim above that attributions
+are uninterpretable on this matrix, and the two should be read together.** SHAP is
+a faithful account of *this fitted model's* output, even for a single column; what
+it cannot do is make a column's credit mean the same thing in a second fit, where
+a correlated neighbour carries it instead. Faithful to the model, unstable across
+models, is exactly the pattern redundancy predicts. *Limits:* the correlation does
+not test the attribution's scale, only its ordering of subsets; and the SHAP is
+the path-dependent variant (the interventional one refuses this XGBoost build)
+checked against an interventional ablation, so the agreement is also evidence that
+the two conventions coincide here.
+
+**2. How much of the output is interaction? About 15% of its variance, mostly
+among correlated descriptors.** SHAP interaction values split each prediction into
+single-column terms and pairwise terms (400 held-out guides, all 300 columns;
+`interp_interactions.csv`, `interp_interaction_blocks.csv`). The single-column
+terms carry **70.2%** of the output's variance and the pairwise terms **14.7%**;
+the remainder is their covariance. Off-diagonal terms hold 52.7% of the absolute
+interaction mass, because pairwise terms are many and individually small and
+partly cancel. Of that off-diagonal mass, 46% lies between two protospacer blocks,
+15% between two flank blocks and **39% between a flank block and a protospacer
+block** — the flank gradient is not an independent additive term. The strongest
+pairs are not interpretable biology: they are descriptors of the same base pairs
+(`p18dimer.Hbond.energyraw` with `p20basepair.Hbond.energyraw`, 0.034, and the
+other terminal-position pairs), which is the model splitting credit between near
+copies. **Reconciling this with the 95.6%:** that figure says a linear model gets
+nearly all the *ranking* right; this one says the boosted model's *output* is
+15% pairwise. Both hold, because the interaction part of the output is small
+relative to the part that orders the guides correctly, and the single-column terms
+here are non-linear functions, not slopes. What this does not license is a claim
+about biological interaction between flank and guide: with credit split among
+correlated columns, a flank × guide term is at least as likely to be redundancy as
+mechanism.
+
+**3. Edited flanks move the prediction through composition and little else.**
+Rewriting everything beyond the 20 nt next to the cut on 1,500 held-out guides and
+rebuilding family A from the edited DNA (the unedited rebuild reproduces the stored
+matrix exactly): GC +5 points moves the prediction by +0.46 [+0.42, +0.50] and −5
+points by −0.88 [−0.93, −0.83], against a label sd of 3.29, while changing as many
+bases without moving GC moves it by 0.003 to 0.016 — the control. Shuffling the
+order at fixed composition moves it by +0.23, through the run-length and windowed
+quantum columns. These are properties of the fitted model, not measurements of the
+genome: 1 kb flank GC has an sd of 4.5 points across guides, so ±10 is a 2.2 sd
+extrapolation where trees are cliff-edged and the response is not a dose–response,
+and no experiment has varied flank composition at a fixed guide (Part 3)
+(`interp_counterfactual.csv`).
+
 ### 6. The label's ceiling is 0.946, measured from crisprHAL's own replicates
 
 **Measured for the curated label, 15 October: 0.946 [0.944, 0.948]**, and the
@@ -1174,25 +1245,48 @@ is better on Noshay's cohort; nothing here tests that, and the sample-complexity
 curves predict the opposite, since their model degrades faster as labels get
 scarce (Appendix B).
 
-#### Size and interpretability, where there is no common unit
+#### Complexity: what each model has to fit to reach the same accuracy
 
-**On model size there is no common unit, so both are reported.** A CNN is quoted
-by its trainable parameter count; crisprHAL 2's WT-SpCas9 model holds **790,533**
-of them across 37 layers (823,301 for eSpCas9). A boosted ensemble has no weight
-matrices, and the closest analogue is what the fit stores: **6,348 leaf values**
-over 400 trees, or **18,244 numbers** counting each internal node's feature index
-and threshold (`complexity.py`). That is **125×** fewer fitted values, or 43× on
-the inclusive count — the same order as the compute ratio, which is not a
-coincidence.
+**SLICER reaches statistical parity with crisprHAL 2 while fitting 125× fewer
+numbers, and the numbers it fits have a structure that can be read off.** This is
+a result of its own, separate from the compute and sample-complexity claims,
+because it says how much model the task needed rather than how fast the model
+runs. There is no common unit, so both definitions are given
+(`complexity.py`, `results/complexity.json`):
 
-Three things say more about interpretability than any of those totals, and have
-no CNN equivalent: the fit **caps interaction order at four** by construction,
-**45 of the 300 offered columns carry half its gain** (280 are ever split on, the
-top ten hold 19.5%), and a **ridge reproduces 95.6% of its ρ** on a decorrelated
-basis — so about 4% of the accuracy needs interactions at all, and the rest reads
-as a sum of per-column effects in named units. What those numbers do and do not
-license, including the fact that depth 4 was inherited rather than chosen, is in
-Appendix B.
+| | crisprHAL 2 (WT-SpCas9) | SLICER champion | ratio |
+|---|---:|---:|---:|
+| fitted real numbers | **790,533** trainable parameters, 37 layers | **6,348** leaf values over 400 trees | 125× |
+| counting structure too | the same 790,533 (weights already include it) | **18,244** (leaf values plus each internal node's column index and threshold) | 43× |
+| work to score one guide | a dense pass through a 378 nt convolutional and recurrent stack | one root-to-leaf walk per tree: 400 × depth 4 = **1,600 comparisons** | different units, not divided |
+| input read | 378 nt | 300 columns, chosen from 6,517 | — |
+
+Three properties of the SLICER number have no counterpart in a parameter count,
+and they are what turns "smaller" into "interpretable":
+
+* **Interaction order is capped at four by construction.** With `max_depth` 4, no
+  term in the fitted function involves more than four columns. That is a
+  structural bound, not an empirical observation about what the network happened
+  to learn.
+* **The fit is concentrated.** 280 of the 300 offered columns are ever split on,
+  **45 carry half the gain**, and the top ten hold 19.5%.
+* **Most of it is additive.** A ridge on a decorrelated basis reproduces **95.6%**
+  of the boosted model's ρ, so at most about 4% of the accuracy depends on anything
+  a linear model on that basis cannot express — non-linearity and interactions
+  together. That is a statement about accuracy; how much of the model's *output*
+  is interaction is a different quantity and is larger (Finding 5, 15% of its
+  variance).
+
+*What this does not show, stated so it is not read in.* A parameter count is a
+loose proxy for capacity in both model classes and the 125× is not a measure of
+how much either model *learned*. SLICER's count excludes a choice that does
+carry information — which 300 of 6,517 columns to offer — and depth 4 was
+inherited rather than chosen (Appendix B). The ratio is therefore the size of the
+stored model, evaluated at equal accuracy on the two splits where the accuracies
+are statistically equivalent; it is not a claim that the task has 6,348
+degrees of freedom. What the comparison does support is narrower and still
+useful: no part of the accuracy requires a model of the size the field has been
+fitting.
 
 **And on a screen neither model trained on, their raw-sequence model transfers
 better than our engineered one** — \|ρ\| 0.0867 against 0.0609 zero-shot on Cui's
@@ -1215,7 +1309,8 @@ use:
 > equivalent to crisprHAL 2 on both of crisprHAL 2's own published splits — Δρ
 > +0.0021, 95% CI [−0.0031, +0.0072] on eSpCas9, +0.005 on SpCas9 — at roughly
 > 150× less compute, and reaches a given accuracy on about half the labelled
-> guides. Under equal input DNA the ranking depends on the window: crisprHAL 2 is
+> guides, while fitting 125× fewer numbers (6,348 leaf values against 790,533
+> parameters). Under equal input DNA the ranking depends on the window: crisprHAL 2 is
 > better inside its own 378 nt span, and SLICER is better once the window reaches
 > the 250–1,000 nt its input cannot see.
 
@@ -1270,19 +1365,26 @@ fits. Measured on the same CPU, scoring in batches of 10,000
 | **SLICER** | **0.35 ms** | **0.80 ms** | **6.7 ms** | **~2.1 M guides/s** | a fraction of a second |
 | crisprHAL 2, shipped | 44.3 ms | 101.7 ms | 8,162 ms | 1,225 guides/s | **13.4 s** |
 
-**A factor of about 1,700 on throughput**, against ~150 on training CPU-seconds
-— so the cheap-model argument is an order of magnitude stronger at inference
-than at training, which is the opposite of how it is usually presented. The cold
-start is the other half: importing TensorFlow and loading the network costs
-**13.4 s** before the first prediction, which for a researcher scoring a few
-guides is the entire interaction.
+**A factor of about 1,700 on throughput, on CPU**, against ~150 on training
+CPU-seconds — so on CPU the cheap-model argument is an order of magnitude stronger
+at inference than at training, which is the opposite of how it is usually
+presented. The cold start is the other half: importing TensorFlow and loading the
+network costs **13.4 s** before the first prediction, which for a researcher
+scoring a few guides is the entire interaction.
 
-*Three caveats, and the first is the one that matters.* **Both models are on
-CPU.** A GPU would narrow the throughput gap substantially — it would not touch
-the cold start — so this is a statement about CPU deployment and not an
-architectural limit. Second, these are rates and therefore legitimate ratios,
-unlike the Δρ quotients this report refuses elsewhere. Third, the absolute
-numbers move with machine load; the gap does not.
+*Three caveats, and the first is the one that matters.* **Both models were timed
+on CPU, and a deep network is not normally deployed there.** A GPU should narrow
+the throughput gap substantially; it is not expected to remove the 13.4 s of
+import and model-loading, which is mostly CPU work either way, but that too is
+unmeasured. The 1,700× is a statement about
+CPU deployment and should not be quoted without that qualifier. The like-for-like
+measurement is crisprHAL 2 on a Colab **T4**, with SLICER timed on the same
+instance on both its CPU and the GPU (`colab/inference_bench_t4.py`, which writes
+`inference_t4.json`); it is written and has not been run, so what is
+established today is the CPU result and nothing about GPU deployment. Second,
+these are rates and therefore legitimate ratios, unlike the Δρ quotients this
+report refuses elsewhere. Third, the absolute numbers move with
+machine load, and how far the *ratio* moves has not been measured.
 
 *The forward-FLOPs column is also derivable rather than absent.* Scoring one
 guide costs one root-to-leaf walk per tree — 400 trees at depth 4 is **1,600
@@ -1783,7 +1885,7 @@ three kinds, and only one kind is worth more compute.
 | Everything interpretive is conditioned on a redundancy-blind selector | the 300 columns are the top *k* of a gain ranking, and gain over-weights binary columns by 14 points of composition. "45 columns carry half the gain", the concentration figures and every family increment inherit that | **not at the selector — tested and it fails.** A redundancy-penalised rule costs −0.0023 and leaves a *more* binary, less readable set, because the redundant columns here are the informative ones (Appendix B). The limit stands; the fix is block-level attribution, which Finding 5 already prescribes |
 | The label is **P(cut) × P(the break kills)** and no arm separates the terms | survival is the only readout, so the model is fitted to the product (Part 2) | partial, and cheap: Cui's screen carries **two time points**, 18 and 75 generations, which the pipeline averages for reliability. Their *difference* is a depletion-rate signal, and rate separates "cuts fast" from "eventually dies" in a way an endpoint cannot. Applies to the dCas9 cohort only, which is the limit of it |
 | **Family A's composition columns are absolute, so they do not mean the same thing in two genomes** | its strongest column is `eng.flank.comp.up250.gc`, a raw GC *fraction*. *E. coli* K-12 is **50.79%** GC and *C. rodentium* is **54.72%**, so a flank at 52% GC is 1.2 points **above** background in one genome and 2.7 points **below** it in the other. The feature carries the opposite sign of local enrichment across the two, and the cross-organism transfer that retains 88–91% does so despite this | express each window's composition **relative to its own genome**: a z-score against the genome-wide distribution, or a percentile rank, instead of a raw fraction. Both genomes and the transfer harness are already on disk (`transfer.py`), so this is a rebuild of family A plus a re-run of the existing arms. It is the single cheapest thing that could make the representation species-portable, and the ~10% currently lost on the *C. rodentium* transfer is the budget it is competing for |
-| Faithfulness is only ever measured by refitting | every drop-and-refit measure is confounded by redundancy in the refit itself, including the cluster-removal version that was built to fix it | a perturbation measure needs no refit: sensitivity-*n* correlates summed attributions against the actual change in the **fixed** model's output. That removes the refit, which is where redundancy does its damage in both existing measures. It does not make the number redundancy-free — correlated columns still have their credit split arbitrarily between them — but the failure mode moves from the probe to the attribution, where it can be read at block level |
+| ~~Faithfulness is only ever measured by refitting~~ | every drop-and-refit measure is confounded by redundancy in the refit itself | **done, and the attribution is faithful to the fixed model**: sensitivity-*n* is +0.93 for single columns and +0.97 for six-block subsets against ≈0 for permuted attributions (Finding 5). What remains is not faithfulness but stability: correlated columns still split credit arbitrarily *between* fits, so the unit stays the block |
 | Per-guide label reliability is heterogeneous and ignored | the 0.946 ceiling is an average over guides whose replicate disagreement spans 0.06 to 2.39 log2 units | **measured, and the answer is no** (Appendix B). Inverse-variance weighting costs −0.0050, of which −0.0041 is reproduced by permuting the weights, and dropping the noisiest decile is indistinguishable from dropping a random one. ALDEx2's posterior has already spent the information. The limit is real; the obvious lever is not the way to move it |
 
 **Addressable, but only with compute we have chosen not to spend.**
@@ -1803,6 +1905,40 @@ three kinds, and only one kind is worth more compute.
 | No untouched external set remains **for the cutting claims** | eSpCas9 turned out to be confirmatory rather than untouched, and Cui's screen has been spent | permanent on the cutting side. **Partly lifted on the dCas9 side**: Rousset and Wang are untouched by this project and now carry Finding 3's replication (Appendix B). The automatable adaptive component is still bounded at **+0.0087**; the human part is unquantified above it and the cohort choice is unquantifiable by design |
 | Nothing here speaks to specificity | six of `h_offtarget`'s thirteen columns are constant zero because the cohort keeps only uniquely-targeting guides | a cohort that retains multi-targeting guides. The question was filtered out before the measurement, so no re-analysis reaches it |
 | Nothing here speaks to nickase editors | base and prime editors bind and nick rather than cut, which puts them between the two assays this project compares | the Cui result makes this a real question rather than a safe extrapolation, and it needs an editing outcome readout |
+
+**Deferred by the freeze: two representation ideas, kept here rather than started.**
+Both would change the feature pipeline after 11 October, so neither has been run;
+each is written as a design with its control, so that it can be started without
+re-deriving the argument.
+
+* **Tensor-valued descriptors of the flank.** Every column in the matrix is a
+  scalar, but several of the quantities it summarises are vectors or matrices:
+  DNA shape is a six-component vector per step (shear, stretch, stagger, buckle,
+  propeller, opening) with a 6×6 stiffness coupling between the components, and
+  supercoiling is a twist–writhe pair rather than one density. Averaging them to
+  a scalar discards their direction, and the matrix has no way to say that a
+  flank is stiff in one deformation mode and soft in another. The natural
+  encoding keeps the vector per step, or the stiffness matrix's eigen-structure,
+  for the **flank only**: the 20-mer's own tensors are deterministic functions of
+  the 20-mer, so they can add no information that the one-hot columns do not
+  already carry (the no-information argument of Appendix B), whereas the flank
+  is outside it. Control: the same encoding built from a shuffled flank, which
+  keeps the dimensionality and removes the content. What it could show is
+  limited by Appendix B's finding that shape added nothing once family A was
+  present; a tensor encoding is a test of whether that null was about the
+  *information* or about the *scalar summary*.
+* **Nuclease information.** The model is fitted per nuclease and never told which
+  one it is scoring, so what distinguishes SpCas9, eSpCas9 and TevSpCas9 is
+  absorbed into three separate fits. A nuclease-conditioned model would pool the
+  three cohorts and add a descriptor of the enzyme — the PAM it reads, which
+  residues of the REC3 domain differ in eSpCas9, whether a Tev nuclease domain
+  is fused — so that what transfers between enzymes (the flank gradient does, at
+  88–91%) is fitted once. Control: an enzyme label shuffled across guides, and
+  the leave-one-enzyme-out score, which is the quantity that would show whether
+  the descriptor generalises to an enzyme it has not seen. It needs a pooled
+  multi-task fit that the current harness does not support, and with three
+  enzymes the descriptor has three distinct values, so any claim about *which*
+  property of the enzyme matters is not identifiable from this data.
 
 **The one-sentence version.** Everything cheap has been done, two things are
 declined on cost with the reason written down, and what is left is a measurement
@@ -2474,16 +2610,14 @@ against their published weights — their tuning, their search, their published
 numbers, which our harness reproduces to three decimals (ρ 0.782 → 0.7821 on
 eSpCas9). Whatever budget they used is already inside the +0.005 and +0.002.
 
-### What are all of XGBoost's hyperparameters, and does this project need them?
+### Hyperparameter sensitivity of the champion
 
-The champion is an `XGBRegressor`, so "have we tuned it?" has a countable
-answer. The sklearn API exposes **40 constructor parameters**, twenty-two of them
+The champion is an `XGBRegressor`. The sklearn API exposes **40 constructor parameters**, twenty-two of them
 plumbing — objective, threading, seeds, verbosity, device, the categorical group
 this project never enables, the classification-only ones — which leaves **18
 real knobs**. Six have been varied by a search here; **eleven had never moved.**
 
-One piece of bookkeeping goes with that, because the report leaned on it for
-weeks: **the 627-draw search was run on LightGBM, not XGBoost** (`tune.py`'s
+**The 627-draw search was run on LightGBM, not XGBoost** (`tune.py`'s
 `sample_config` draws `num_leaves` and `min_child_samples`, which are LightGBM
 names). The only XGBoost search in the project is the 8-draw one inside the
 sealed holdout.
@@ -2660,93 +2794,46 @@ their strongest features, where the raw marginal association here is +0.042 to
 mixed-effect model, which is a reminder that a feature ranking is a property of
 the model that produced it (Finding 5).
 
-### Can the label's per-guide reliability be used? No, and the control says why
+### Per-guide label reliability cannot be used as a training weight
 
-Finding 6's ceiling of 0.946 is an **average**. Every one of the 33,567 curated
-guides joins exactly to crisprHAL's per-replicate counts, and pairing Cas9
-replicate 1 with control 1 and replicate 2 with control 2 gives two independent
-estimates of each guide's score whose disagreement runs **0.06 / 0.71 / 2.39**
-log2 units at the 5th / 50th / 95th percentiles. So the model is fitted to a
-target it treats as uniformly reliable and which is not. Inverse-variance
-weighting is the standard response, and it had never been tried here.
-
-Two properties of the noise shape the design. It is **not** a read-depth effect
-— ρ(disagreement, total counts) = **−0.053**, so the obvious proxy misses it —
-and it is mildly related to the label, ρ(|y|, disagreement) = **−0.236**, because
-large effects are measured more consistently. The second means inverse-variance
-weighting does two things at once: it down-weights noisy guides *and* tilts the
-fit toward extreme ones.
-
-Weights apply to **training only**; every validation row is scored unweighted
-against the released label. Weighting the evaluation would repeat the criticism
-this report makes of their read-count cutoff, which is applied before the split
-and so cleans the test set too. Champion, 300-column selection inside each
-training fold, 3 seeds × 5 folds (`replicate_weight.py`,
+Finding 6's ceiling of 0.946 is an average. Pairing Cas9 replicate 1 with control
+1 and replicate 2 with control 2 gives two independent estimates of each curated
+guide's score whose disagreement runs **0.06 / 0.71 / 2.39** log2 units at the
+5th / 50th / 95th percentile. The noise is not a read-depth effect
+(ρ(disagreement, total counts) = −0.053) and is mildly tied to the label
+(ρ(|y|, disagreement) = −0.236). Weights apply to training rows only, and every
+validation row is scored unweighted against the released label. Champion,
+selection inside each training fold, 3 seeds × 5 folds (`replicate_weight.py`,
 `results/replicate_weight.csv`):
 
-| arm | ρ | vs unweighted | train rows |
-|---|---:|---:|---:|
-| **unweighted** | **0.7083** | — | 33,567 |
-| inverse variance, moderated | 0.7032 | **−0.0050** | 33,567 |
-| *the same weights, permuted across guides* | *0.7041* | *−0.0041* | 33,567 |
-| inverse variance, flattened within \|y\| bins | 0.7052 | −0.0031 | 33,567 |
-| weighted by read depth | 0.6841 | −0.0241 | 33,567 |
-| drop the noisiest decile | 0.7066 | −0.0016 | 30,210 |
-| *drop a random decile* | *0.7068* | *−0.0014* | 30,221 |
-
-The unweighted arm reproduces the headline curated figure to four decimals,
-which is what certifies this hand-written loop against the frozen harness.
-
-**The answer is no, and the permutation control is why it is interesting.**
-Shuffling the weights across guides — same distribution, no correspondence with
-anything — costs **−0.0041** of the −0.0050. So **four fifths of the damage is
-from having non-uniform weights at all**, not from where they point: a 98:1
-weight ratio spends effective sample size, and that costs about four thousandths
-whatever the weights mean. The information in the correspondence is worth the
-remaining 0.0009, which is nothing. Flattening the |y| tilt recovers 0.002, so
-the extremity tilt was a minor contributor rather than the explanation.
-
-**The trim arms are the cleanest form of the result.** Dropping the noisiest 10%
-of training guides costs −0.0016; dropping a random 10% costs −0.0014. They are
-identical within noise, so the noisiest decile is not harming the fit — removing
-those particular guides is indistinguishable from removing any guides at all.
-
-**And depth is the wrong instrument by an order of magnitude** (−0.0241), which
-is the predicted consequence of ρ(disagreement, depth) = −0.053: weighting by
-depth imposes a 157:1 ratio while tracking almost none of the actual noise.
-
-*Why the information is not there to be used, and it is not the reason this
-report first gave.* The obvious explanation is that the released label is
-ALDEx2's posterior **mean**, which shrinks noisy guides toward the prior — the
-reason Finding 6 calls 0.946 a lower bound — so the reliability was spent before
-we saw it and weighting double-counts a correction already applied. **That
-explanation is wrong, and the test that settles it is the raw label.** Refitting
-everything to the plain CPM log-ratio of the same counts, where no shrinkage has
-been applied (`replicate_weight.py --raw-label`,
-`results/replicate_weight_raw.csv`):
-
-| arm, raw log-ratio label | ρ | vs unweighted |
+| arm | ρ | vs unweighted |
 |---|---:|---:|
-| unweighted | 0.6864 | — |
-| inverse variance | 0.6824 | −0.0040 |
-| *the same weights, permuted* | *0.6820* | *−0.0043* |
+| **unweighted** | **0.7083** | — |
+| inverse variance, moderated | 0.7032 | **−0.0050** |
+| *the same weights, permuted across guides* | *0.7041* | *−0.0041* |
+| inverse variance, flattened within \|y\| bins | 0.7052 | −0.0031 |
+| weighted by read depth | 0.6841 | −0.0241 |
+| drop the noisiest decile of training guides | 0.7066 | −0.0016 |
+| *drop a random decile* | *0.7068* | *−0.0014* |
 
-The permuted arm costs **more** than the real one, so on a label with no
-shrinkage the correspondence with measured noise is worth **+0.0003** — nothing,
-exactly as on the posterior label. So the shrinkage was never the reason. **The
-reason is the one the permutation isolates on both labels: non-uniform weighting
-costs about four thousandths of ρ in effective sample size, whatever the weights
-mean, and per-guide reliability is worth less than that.** On 33,567 rows against
-a feature set worth +0.164, trading rows for precision is a bad exchange at any
-weighting this noise distribution implies.
+**Four fifths of the damage comes from having non-uniform weights at all, not
+from where they point.** Permuting the weights, which keeps their distribution and
+destroys their correspondence with measured noise, costs −0.0041 of the −0.0050: a
+98:1 weight ratio spends effective sample size, and that costs about four
+thousandths whatever the weights mean. Dropping the noisiest decile is
+indistinguishable from dropping a random one, and depth is the wrong instrument by
+an order of magnitude because it tracks almost none of the noise.
 
-*One thing the raw label does establish.* It is **less predictable** than the
-released one — 0.6864 against 0.7083 on the same rows, folds and features — so
-ALDEx2's processing is worth about **+0.022** of fit on its own. That is five
-times what a label *swap* at fixed rows buys (+0.004, Part 3) and far more than
-any weighting scheme on either label. Whatever curation is doing for this model,
-it is doing it in the label's construction and not in anything a downstream
-reweighting can reach.
+The same holds on a label with no shrinkage applied. Refitting to the plain CPM
+log-ratio of the same counts (`--raw-label`, `results/replicate_weight_raw.csv`),
+inverse-variance weighting costs −0.0040 and the permuted weights −0.0043, so the
+correspondence with measured noise is worth +0.0003 on that label as well.
+Per-guide reliability is worth less than the effective sample size it costs, on
+33,567 rows against a feature set worth +0.164. The raw label is also **less
+predictable**, 0.6864 against 0.7083 on identical rows, folds and features: ALDEx2's
+processing is worth about +0.022 of fit, five times what swapping the label at
+fixed rows buys (+0.004, Part 3), and it is done in the label's construction,
+where no downstream reweighting reaches it.
 
 ### The reduced-representation ladder, and the budget that was never tested
 
@@ -2848,39 +2935,6 @@ top two rows from the bottom six is not depth, recurrence or ensembling — it i
 Representation decides the task; model class decides a tenth of a correlation
 (Finding 1).
 
-### Why does boosting beat random forest, and ridge beat both forests?
-
-| | ρ |
-|---|---:|
-| LightGBM / XGBoost | 0.609 / 0.608 |
-| **Ridge** | **0.577** |
-| extra trees / random forest | 0.556 / 0.550 |
-| k-NN | 0.495 |
-
-**The signal is overwhelmingly additive** — a straight line gets within 0.03, so
-the interactions boosting captures are worth ~0.03 ρ. Boosting reduces bias
-sequentially, which is the right move for a sum of many small independent
-effects; bagging reduces variance, which is not the binding constraint. Random
-forest's `max_features='sqrt'` offers only ~81 of 6,517 columns per node, most of
-them restatement. And **k-NN failing confirms the shape**: guides with similar
-features do not have similar scores, which is what many small additive terms
-look like.
-
-Checked on a basis with the redundancy removed, because the gap was measured on
-selected columns: on 427 columns ridge reaches **95.6%** of boosting's ρ
-(0.5029 against 0.5258), re-derived independently at 95.8%. **So the additivity
-is not an artefact of feature selection.**
-
-*What does not survive re-derivation is the companion sentence.* This appendix
-said that ridge on the raw 6,232 columns "collapses to 0.423 from collinearity",
-and the collapse is real only at a **fixed** penalty: `Ridge(alpha=1)` gives
-0.4231, reproducing the stored figure, while `RidgeCV` over 10⁻²–10⁴ gives
-**0.4945**. Choosing the penalty is what ridge is *for* under collinearity, so
-the original number measured an unsearched hyperparameter rather than a property
-of the matrix. The reduced basis still helps a linear model, by **+0.009**
-(0.5036 against 0.4945) rather than by +0.071 — a real effect and a small one
-(`python -m sgrna.rederive --only additivity_reduced`).
-
 ### What the interpretability numbers license, and what they do not
 
 Finding 7 quotes three of them. Each is worth stating precisely, because two are
@@ -2930,107 +2984,41 @@ the model as a set of per-column effects rather than inferred from attributions.
 
 **B.3 — What is the representation worth?**
 
-### The selector ranks columns with the one metric this report says never to use
+### The selector ranks columns by gain, and that is an interpretability limit, not an accuracy one
 
-`run_ablation.make_selector` fits a throwaway XGBoost and takes
-`feature_importances_` with `importance_type="gain"` set explicitly; the
-LightGBM alternative sets it too. Finding 5 is that gain is the attribution
-which does not survive a change of model — ρ 0.05 per column against SHAP's
-0.50 — and that **gain credits a column for being binary**, worth 26 percentage
-points of XGBoost's attributed importance. So the pipeline chooses which 300 of
-6,517 columns the champion ever sees using the ranking the report tells its
-readers not to trust.
+`run_ablation.make_selector` picks which 300 of 6,517 columns the champion sees
+using XGBoost's gain, the attribution Finding 5 shows does not survive a change of
+model and that credits a column for being binary. The curated base is 5,957
+strictly binary indicators out of 6,169 while every family is dense, so a
+binary-biased ranker is biased against exactly the columns this project builds.
+Three axes of the selection were measured (`selector_audit.py`,
+`results/selector_audit.csv`, `results/selector_redundancy.csv`):
 
-That matters more here than it would elsewhere, because the curated base is
-**5,957 strictly binary k-mer indicators** out of 6,169 while every feature
-family is dense and continuous. A ranker biased toward binary columns is biased
-against exactly the columns this project builds.
+| axis | comparison | Δρ |
+|---|---|---:|
+| **size** | 300 against 600, 1,200 and every column | within ±0.0005 |
+| **metric** | top 300 by gain against top 300 by mean \|SHAP\|, same fitted model | +0.0007 (0.7096 against 0.7103) |
+| **rule** | top *k* of the ranking against greedy relevance-over-redundancy | **−0.0023** (0.7084 against 0.7061) |
 
-The bias is real and it is measurable (`selector_audit.py`,
-`results/selector_audit.csv`): one selector fit on all 33,567 rows, ranked twice,
-the two top-300 sets compared.
+The metric changes the *composition* of the set and not its worth: gain puts 144
+binary indicators (48%) and 78 flank columns in the top 300 against 102 (34%) and
+97 under SHAP — a 14-point shift — and the two sets share 239 of 300 columns. Both
+metric arms were selected on all rows, so their levels sit above the leakage-safe
+0.7084 and only their difference is quotable. The redundancy-penalised rule does
+what it is built to do (the mean largest correlation inside the chosen set falls
+from 0.647 to 0.544) and costs accuracy, because decorrelation and relevance point
+in opposite directions on this matrix: it chooses *more* binary indicators (174
+against 145) and fewer flank columns (69 against 80). Position-specific k-mer
+indicators are near-independent by construction, while the dense family columns
+are strongly correlated with one another — flank GC at ±250 and ±500 nt measure
+nearly the same DNA — so penalising redundancy removes the informative columns.
 
-| top 300 ranked by | binary columns | from `a_flank` | dense columns |
-|---|---:|---:|---:|
-| **gain**, as the pipeline does | **144 (48%)** | 78 | 156 |
-| **mean \|SHAP\|**, same fitted model | **102 (34%)** | 97 | 198 |
-
-**Gain puts 42 more binary indicators in and 19 fewer flank columns**, a
-14-percentage-point shift in composition, and the two selections still share 239
-of 300 columns.
-
-**And it costs no accuracy.** Handing each frozen selection to the champion with
-selection switched off, 3 seeds × 5 folds: **0.7096** for the gain set against
-**0.7103** for the SHAP set, a difference of +0.0007 — an order of magnitude
-below the +0.0087 adaptive component and inside a single fold's spread. *Neither
-figure is a performance number:* both selections were fitted on all rows, so both
-arms saw the validation folds during selection, which is why they sit above the
-champion's leakage-safe 0.7084. The comparison between them is fair because the
-leakage is identical; the levels are not quotable.
-
-**So this is an interpretability defect and not a performance one**, which is the
-more awkward of the two outcomes. The redundancy that makes the budget free
-(±0.0005) and the model class nearly free (0.108 ρ across eight classes) also
-makes the *choice* of ranker free — there are many near-equivalent routes to the
-same prediction, so a biased ranker finds one of them. What it does not leave
-untouched is every statement this report makes **about the selected set**: "45 of
-the 300 offered columns carry half its gain", the concentration figures in
-Finding 7, and each family's increment, are all properties of a column set chosen
-by the biased ranker. They are not wrong, but they are conditioned on it, and the
-honest form adds "under gain-based selection".
-
-**What would be done differently starting again.** Not SHAP-based selection — it
-buys +0.0007 and costs a TreeSHAP pass per fold. The change worth making is to
-the *composition rule* rather than the metric or the size — and the distinction
-matters, because the size has already been settled and the rule has not.
-
-**What has been tested is the number, never which ones.** `N_FEATURES = 300` was
-inherited from the baseline script rather than searched (Part 4's register), and
-was then *checked*: 600 columns and 1,200 columns give a family-A increment of
-+0.0808 and +0.0831 against 300's +0.080, with the baseline moving −0.002, and
-selecting 300 against using every column is ±0.0005 on both cohorts. So "the
-budget does not bind" is established — but every one of those arms takes the
-**top *k* of the same gain ranking**, so what they show is that *more of the same
-ordering* does not help. They say nothing about whether a different 300 would be
-better, and the gain-against-SHAP comparison above is the first evidence on that
-question: a 20% different set, +0.0007.
-
-**So the rule was tested too, and it is the one axis with a real answer — it is
-worse.** 300 columns on a matrix where 6,095 restate about twenty variables lets
-the selector spend its whole budget on one variable spelled three hundred ways,
-and it does: the mean largest absolute correlation between a selected column and
-any other selected column is **0.647**. Greedy max-relevance / min-redundancy
-selection — score each candidate as relevance divided by 1 + its largest
-correlation with what is already chosen, run inside each training fold like the
-selection it replaces (`selector_audit.redundancy`,
-`results/selector_redundancy.csv`):
-
-| rule | ρ | redundancy of the chosen set | binary | from `a_flank` |
-|---|---:|---:|---:|---:|
-| top *k* of the gain ranking | **0.7084** | 0.647 | 145 | 80 |
-| redundancy-penalised | 0.7061 | **0.544** | 174 | 69 |
-
-**It does what it was designed to do and costs −0.0023 for it.** And the reason
-is the interesting part, because it is the opposite of what this section
-predicted: the penalised rule picks **more** binary indicators (174 against 145)
-and **fewer** flank columns (69 against 80). Position-specific k-mer indicators
-are close to mutually independent by construction — the indicator for A at
-position 7 says almost nothing about the one for G at position 12 — while the
-dense family columns are strongly correlated with each other, because flank GC at
-±250 and at ±500 nt are measuring nearly the same DNA. So on this matrix
-**decorrelation and relevance point in opposite directions**: the redundant
-columns are the informative dense ones and the decorrelated ones are the weak
-sparse ones, and penalising redundancy removes signal.
-
-*That retracts the proposal this section made before it was run.* The claim was
-that a redundancy-aware rule would cost nothing and would leave 300 columns that
-could be read directly. It costs 0.0023, and the set it leaves is **more**
-binary, so it is less readable rather than more. The honest conclusion is the
-narrower one: on a matrix whose redundancy is concentrated in exactly the columns
-that carry the effect, there is no selection rule that is both decorrelated and
-informative, and the interpretability problem cannot be fixed at the selector.
-It has to be handled where the report already handles it — by reporting
-attribution at **block** level rather than per column (Finding 5).
+**Consequence.** No selection rule is both decorrelated and informative here, so
+the interpretability problem cannot be fixed at the selector; it is handled by
+reporting attribution at **block** level (Finding 5). Every statement about the
+selected set — "45 of the 300 offered columns carry half the gain", the
+concentration figures, each family's increment — is conditioned on gain-based
+selection and should be read that way.
 
 ### Is re-description worth anything, or only the *right* re-description?
 
@@ -3077,167 +3065,59 @@ every interaction order from 2 to 8, against +0.0117 for the real column (see
 *Every family split the way `d_mechanics` was*). Choosing the summary well is
 domain knowledge, and the domain is doing the work.
 
-### Columns sorted by what the guide determines, instead of by family
+### Recoverability: what the guide already determines caps what a column can add
 
-A family is a folder, not a kind. `d_mechanics` bundles 22 columns that restate
-the guide with 8 that read flanking DNA, and its family-level Δρ hides the split
-(Finding 1). So the taxonomy was rebuilt at the column level: regress all **668**
-family columns — of which 636 have a defined R² and 32 are constant — on the
-guide's own one-hot encoding (20×4 mono + 19×16 di = 384
-predictors), out of fold, and sort by how much of each column the guide explains
-(`redescription.py --arm taxonomy`, `results/redescription_columns.csv`).
-
-| | columns | Δρ over the curated base |
-|---|---:|---:|
-| **linearly recoverable from the guide** (R² ≥ 0.99) | 18 | **+0.0083** |
-| partly recoverable (0.50 < R² < 0.99) | 16 | +0.0199 |
-| **not linearly recoverable** (R² ≤ 0.50) | 602 | **+0.2012** |
-| constant on this cohort, so no R² exists | 32 | −0.0003 |
-| all 668 together | 668 | +0.2027 |
-
-**Everything the guide determines is worth +0.008; everything it does not is
-worth +0.20** — a difference of **0.193**, measured without reference to anyone's
-choice of folder. *A difference and not a factor:* dividing one Δρ by another is
-not a ratio of information, and the two blocks differ in size by more than thirty
-columns to one, so a quotient credits recoverability with what column count also
-explains. The sum of the three
-parts (+0.229) exceeds the joint arm (+0.203), which is the same overlap the
-family table shows.
-
-Two further cautions on reading this table. The **partly** recoverable row is
-worth more than the fully-determined one (+0.0199 against +0.0083) on fewer
-columns, so recoverability is not monotone at these cuts. And the cuts themselves
-are inherited rather than found: banding the same columns more finely puts the
-step at about **R² = 0.2**, well below the 0.50 used here (see *Ignore the folders
-entirely*, below).
-
-The classification checks itself against two known cases: 13 of `d_mechanics`'s
-30 columns come back as guide-determined and 10 as outside, against the 22/8
-split measured a different way in Finding 1; and 320 of `a_flank`'s 348 land
-outside, as do all 152 of `i_shape`, as they must.
-
-**And it turned up 32 columns that can never contribute anything, for two
-different reasons.** Both are properties of the feature set rather than of the
-model, and neither had been noticed:
-
-* **26 of family A** are `eng.flank.qct.dimer.Noelectrons.*` — the electron
-  count of the dinucleotide at each position — and every one of them is
-  **196 for every guide**. That is chemistry, not a bug: an A·T base pair and a
-  G·C base pair contain the same number of electrons, so a per-base-pair electron
-  count cannot vary with sequence. The descriptor is degenerate by construction
-  and has been carried in every family A run since September.
-* **6 of `h_offtarget`** — `mm1`, `mm2` and `seed_exact_mm1..4` — are **zero for
-  every guide**, because the curated cohort keeps only uniquely-targeting guides,
-  so no close off-target survives the filter. Those columns measure something
-  the cohort has defined away.
-
-Added as a block they are worth **−0.0003**, which is the right answer for 32
-constants competing for a 300-column budget.
-
-**A third defect of the same kind turned up later: duplication across families.**
-`eng.dg.guide_selffold` (family B) and `eng.fold.spacer_mfe` (family C) are the
-same spacer fold energy at Pearson 0.9993, and `eng.fold.scaffold_delta` is
-`eng.fold.full_mfe` shifted by the constant scaffold energy. Constants, degenerate
-descriptors and cross-family duplicates are all invisible to a family-level
-ablation, which is the recurring lesson of this appendix: **the folder is not the
-unit of analysis, and nobody had read the column lists.**
-
-*What the probe measures, and what it does not.* It measures **linear**
-recoverability from mono- and dinucleotide indicators, which is a lower bound on
-determinism and a reasonable proxy for *cheapness* to a depth-limited tree — the
-quantity the mechanism in Finding 1 is actually about. It is not a test of
-whether a column is a function of the guide: `c_folding` is deterministic in the
-guide and all seven of its columns land in the "not linearly recoverable" group,
-because RNA folding is not a linear sum. Read the groups as *cheap*, *partly
-cheap* and *not cheap*, not as *determined* and *free*.
-
-### Ignore the folders entirely: rank every column by how well the guide predicts it
-
-The taxonomy above uses three coarse bins. Finer bands answer two questions it
-cannot: whether recoverability predicts *marginal* association as well as
-increment, and whether there is a gradient inside the large mass of columns the
-guide cannot predict at all. All 636 usable family columns, banded by out-of-fold
-R² from the guide's own one-hot encoding, with each band's own marginal
-association and its increment as a block (`redescription.py --arm trend`,
+A family is a folder, not a kind: `d_mechanics` bundles 22 columns that restate the
+guide with 8 that read flanking DNA, and its family-level Δρ hides the split
+(Finding 1). The unit that matters is the column, so all 636 family columns with
+a defined R² were regressed on the guide's own one-hot encoding (384 predictors),
+out of fold, and banded by how much of each the guide explains. Each band's
+increment is the block's Δρ over the curated base (`redescription.py --arm trend`,
 `results/recoverability_trend.csv`, 1 seed × 5 folds):
 
-| band | columns | mean R² | mean \|ρ\| | **strongest \|ρ\|** | Δρ as a block | mostly |
-|---|---:|---:|---:|---:|---:|---|
-| R² ≤ 0.01 | 425 | 0.001 | 0.031 | **0.168** | **+0.180** | `a_flank`, `i_shape` |
-| 0.01 – 0.05 | 121 | 0.030 | 0.096 | 0.156 | +0.148 | `a_flank`, `i_shape` |
-| 0.05 – 0.20 | 43 | 0.072 | 0.115 | 0.165 | +0.129 | `a_flank`, `f_methylation` |
-| 0.20 – 0.50 | 13 | 0.340 | 0.083 | 0.143 | **+0.018** | `f_methylation`, `c_folding` |
-| 0.50 – 0.99 | 16 | 0.672 | 0.082 | 0.183 | +0.021 | `d_mechanics`, `b_energy` |
-| R² > 0.99 | 18 | 1.000 | 0.096 | **0.184** | **+0.008** | `d_mechanics`, `b_energy` |
+| band (out-of-fold R²) | columns | mean R² | strongest \|ρ\| | Δρ as a block |
+|---|---:|---:|---:|---:|
+| ≤ 0.01 | 425 | 0.001 | 0.168 | **+0.180** |
+| 0.01 – 0.05 | 121 | 0.030 | 0.156 | +0.148 |
+| 0.05 – 0.20 | 43 | 0.072 | 0.165 | +0.129 |
+| 0.20 – 0.50 | 13 | 0.340 | 0.143 | **+0.018** |
+| 0.50 – 0.99 | 16 | 0.672 | 0.183 | +0.021 |
+| > 0.99 | 18 | 1.000 | 0.184 | **+0.008** |
 
-**Recoverability bounds what a column can add and says nothing about how well
-the column itself correlates.** The two columns of the table move differently and
-the difference is the result: the increment falls from +0.180 to +0.008, while
-the **strongest** association in each band is flat — 0.168, 0.156, 0.165, 0.143,
-0.183, 0.184. Columns the guide predicts exactly reach the same association as
-columns it cannot predict at all; they simply cannot *add* anything, because the
-model already holds what they restate. `results/figures/recoverability_vs_power.png`
-plots both panels.
+**Recoverability bounds what a column can add and says nothing about how well the
+column correlates with the label.** The increment falls from +0.180 to +0.008
+while the strongest association in each band is flat, so columns the guide
+predicts exactly reach the same marginal association as columns it cannot predict
+at all; they cannot *add* anything, because the model already holds what they
+restate. The step is at about **R² = 0.2**. The bands differ in size (425 columns
+against 43), so the slope within either side is not interpretable; the step is.
+Summed over the coarse cut, everything the guide determines (R² ≥ 0.99) is worth
++0.008 and everything it does not (R² ≤ 0.50) +0.201, a difference of 0.193;
+`results/figures/recoverability_vs_power.png` plots both quantities.
 
-*The mean column of that table is a trap.* Taking ρ(recoverability, \|ρ\|) across
-the 636 columns gives **+0.5574**, which reads as the two kinds of predictive
-power being **anti**-correlated. That is an artefact of **composition**, not a
-relationship. The
-low-R² bands are large (425 and 121 columns) and contain many individually weak
-columns — single flank positions, one base at a time — which drag the *mean* down
-while leaving the *maximum* untouched. Using the same statistic the family table
-uses, the strongest column per group, there is **no trend at all**, which is
-exactly what Part 2 reports at family level (0.12–0.18 across six of seven
-families). The two measurements never disagreed; one of them was computed with
-the wrong summary.
+**It is a bound, not a prohibition.** Run one at a time (`--arm percolumn`,
+`results/recoverability_percolumn.csv`), the 18 fully recoverable columns are each
+worth up to +0.0065 (median +0.0038, none above +0.01) even though
+`eng.dg.hybridisation_weighted` has R² 1.000 and the matrix's strongest marginal
+association (|ρ| 0.184): a deterministic function of the guide adds no
+information but can still help a depth-limited tree (Finding 1), by about a
+hundredth at most. A column the guide cannot predict may be worth anything from
+zero to +0.18; being unrecoverable is permission to matter, not a promise.
 
-*Grouping does not rescue a trend either, and the reason is instructive.*
-Collapsing the columns into the 66 variables they measure — all eight windows of
-flank GC as one group, and so on — and scoring each group by its own out-of-fold
-R² against the label puts **every group below recoverability 0.5**, because a
-group mixes recoverable and unrecoverable members. Within that narrow range the
-ordering is driven by how much DNA a group summarises rather than by
-recoverability: single-position indicators like `eng.flank.seq.u8` have zero of
-both, while multi-position summaries like `eng.flank.comp.gc` have a little
-recoverability and most of the predictive power
-(`results/recoverability_groups.csv`). There is no trend to recover because
-recoverability is a **one-sided** condition, which is what Finding 1 says in
-other words: being unrecoverable is permission to help, not a prediction that a
-column will.
+*The probe measures linear recoverability*, a lower bound on determinism and a
+reasonable proxy for how cheaply a depth-limited tree can compute a column. It is
+not a test of whether a column is a function of the guide: all seven `c_folding`
+columns are deterministic in the guide and none is linearly recoverable.
 
-**Does helping *require* low recoverability? No — and the per-column run says so
-directly.** The band table could be read as "only unrecoverable columns help",
-and that reading is wrong twice over. It is wrong analytically, because
-Finding 1 establishes that a deterministic function of the guide adds no
-*information* yet can still add *performance* to a depth-limited tree. And it is
-wrong empirically: running each of the 18 fully-recoverable columns on its own
-(`redescription.py --arm percolumn`, `results/recoverability_percolumn.csv`),
-`eng.dg.hybridisation_weighted` — R² **1.000** from the guide, and the strongest
-marginal association in the entire matrix at \|ρ\| 0.184 — is worth **+0.0063 by
-itself**, with `eng.dg.hybridisation` at +0.0059 and `eng.dg.dna_opening` at
-+0.0058. Across all 18, the largest is **+0.0065** (`eng.mech.proto.dH`), the
-median is **+0.0038**, and **none reaches +0.01** — so the cap is tight as well as
-real, and no single guide-determined column is hiding a large effect inside the
-block's +0.0083.
-
-So the honest form is a **bound, not a prohibition**: a column the guide predicts
-exactly is capped at about a hundredth, while a column it cannot predict may be
-worth anything between zero and +0.18. Being unrecoverable is permission to
-matter, not a promise. The three figures above also explain why the whole
-18-column block is only +0.0083: they are CRISPRoff energy terms computed from
-the same 20-mer, so each is worth about +0.006 alone and they almost entirely
-overlap.
-
-**And where recoverability does act, it acts as a threshold rather than a
-gradient.** The
-three low bands give +0.180, +0.148 and +0.129 and the three high bands give
-+0.018, +0.021 and +0.008; the step sits at about **R² = 0.2**, and within each
-side there is no clear ordering. So once the guide explains more than about a fifth of a column,
-that column has nothing left to contribute — well below the 0.5 the taxonomy used
-as its cut and far below 0.99. *The within-side figures should not be read as a
-trend*: the bands differ in size as well as in recoverability (425 columns
-against 43), and a larger block is worth more for that reason alone. The step is
-robust to that; the slope inside each side is not.
+**The same pass found 32 columns that can never contribute.** 26 of family A are
+`eng.flank.qct.dimer.Noelectrons.*`, equal to 196 for every guide (an A·T and a
+G·C pair contain the same number of electrons, so the descriptor is degenerate by
+construction); 6 of `h_offtarget` are zero for every guide because the cohort
+keeps only uniquely-targeting guides. Added as a block they are worth −0.0003.
+Cross-family duplicates are equally invisible to a family ablation:
+`eng.dg.guide_selffold` (B) and `eng.fold.spacer_mfe` (C) are the same spacer fold
+energy at Pearson 0.9993. The folder is not the unit of analysis, and a column
+list should be read before a family is ablated.
 
 ### Is the folding gain the physics, or only the non-linearity?
 
@@ -3576,21 +3456,6 @@ alongside the base — which is a displacement result inside a 300-column budget
 not an inability to fit.
 
 **B.4 — Mechanism: what the effect is, and what it is not**
-
-### What other long-range features could be built without new data?
-
-Two of the three most mechanistically motivated candidates have now been built
-and are nulls: **GC skew, A-tract phasing and bendability periodicity**, as
-family J (−0.001 alone, +0.0004 on top of family A, with its own permutation
-control scoring higher), and **Chi sites**, in the section below. That makes the
-long-range asymmetry harder to explain rather than easier — the candidates that
-came with a mechanism attached are now excluded rather than unexamined. What
-remains unbuilt is k-mer entropy, homopolymer run-length and REP density from the
-genome, and from RegulonDB the distance and orientation to the nearest annotated
-TSS, terminator and operon boundary. None of the first three carries a mechanism
-of its own; the RegulonDB items are the properly-annotated version of the
-nearest-gene proxy behind Jacky's orientation result, and so the highest-value
-thing left on this list.
 
 ### Is the flank effect a *repair* effect? The Chi-site test, and it is a null
 
@@ -4273,51 +4138,6 @@ overlap only through the 20-mer and are the most additive at **70%**; the flank
 and positional families, which read overlapping DNA, land at 45–62%. Had the
 control also come in near 50%, the right conclusion would have been a pipeline
 artefact rather than an interpretation.
-
-#### Should every ordering of a ladder be searched? No, and the frame is wrong
-
-With 71% of the summed increments being overlap, **where a family sits in a
-ladder decides most of what it appears to be worth**. The table above already
-gives the range for two of them:
-
-| family | first in the ladder | after `a_flank` | after `a_flank` + `d_supercoiling` |
-|---|---:|---:|---:|
-| `i_shape` | +0.120 | +0.0009 | 0.0000 |
-| `d_supercoiling` | +0.139 | +0.024 | — |
-
-So one family's increment moves by about **0.12** depending on position, which is
-the entire effect size of the second-largest family in the project. Any single
-ordering is therefore a choice, and this report's choice is stated: every Δρ is
-an increment over a base that already holds the guide, with marginal association
-given beside it as the complementary measure (Part 2).
-
-*Three reasons not to enumerate.* **First, "every permutation" is the wrong
-object.** The order-independent summary of a block's contribution is its Shapley
-value, and that needs every **subset**, not every ordering: for eleven families
-that is 2<sup>11</sup> = 2,048 model fits rather than 11! ≈ 40 million orderings,
-and a Monte Carlo average over a few hundred random orderings converges on the
-same thing at ≈ 1/√m. The combinatorial objection to doing this is a mirage.
-
-**Second, it would answer a question this project is not asking.** A Shapley
-value apportions shared credit — with 71% overlap it would split one effect
-across many families and hand `i_shape` a sizeable share of what `a_flank`
-measures. That is the right tool for "who deserves credit" and the wrong one for
-"what should I add to this model", which is the question the increments are
-defined to answer and the one a reader building on this needs.
-
-**Third, the cheap sufficient statistic already exists**, and it is the table
-above: the joint arm bounds every ordering at once. No permutation can make the
-eleven families worth more than +0.203 together, and none can make any family
-worth more than its standalone figure. Those two numbers bracket the whole
-space, which is what a search would have cost 2,048 fits to establish.
-
-*What is worth doing instead, and is not done.* Exact Shapley on a **small**
-chosen set — four or five blocks, so 16 or 32 fits — would settle whether the
-single-ordering increments are roughly ordinal or actively misleading. The
-candidates pick themselves: `a_flank`, `d_mechanics`, `i_shape` and the locus
-trio are the blocks already known to overlap heavily. That is a bounded
-experiment with a clear answer, and it is the honest version of what "search the
-permutations" was reaching for.
 
 ## Appendix C0 — Reproducibility: versions, seeds and protocol
 

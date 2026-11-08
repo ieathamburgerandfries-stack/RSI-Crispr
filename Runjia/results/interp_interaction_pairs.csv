@@ -1,0 +1,16 @@
+col_i,col_j,mean_abs_interaction
+p18dimer.Hbond.energyraw,p19dimer.Hbond.stackingraw,0.034035854041576385
+p20basepair.Hbond.energyraw,p19dimer.HLgap.eVEraw,0.032159071415662766
+p19dimer.Hbond.energyraw,p19dimer.HLgap.eVEraw,0.02912934496998787
+p20basepair.Hbond.energyraw,p19dimer.Hbond.stackingraw,0.028906509280204773
+eng.flank.comp.up250.gc,eng.flank.win.dn250.trimer.Hbondenergy.mean,0.02650885283946991
+p19dimer.Hbond.energyraw,p18basepair.Hbond.energyraw,0.024732621386647224
+eng.flank.qct.dimer.Hbondenergy.d3,eng.flank.qct.monomer.Noelectrons.d1,0.02191702276468277
+p19dimer.HLgap.eVEraw,p18trimer.Hbond.energyraw,0.017985306680202484
+p20basepair.Hlgap.eVEraw,p19dimer.Hbond.stackingraw,0.017782051116228104
+p18basepair.Hbond.energyraw,p18dimer.Hbond.stackingraw,0.017045632004737854
+eng.flank.comp.up250.gc,eng.flank.comp.dn250.gc,0.016987867653369904
+p20basepair.Hbond.energyraw,V72.xsgRNA.raw,0.01522846706211567
+p19dimer.Hbond.energyraw,V73.xsgRNA.raw,0.015181094408035278
+eng.flank.qct.dimer.Hbondenergy.d3,eng.flank.seq.d5.T,0.014986994676291943
+p19dimer.Hbond.stackingraw,p18trimer.Hbond.stackingraw,0.014937793835997581

@@ -1,0 +1,2 @@
+rows,columns,var_total,var_main,var_interaction,share_variance_interaction,share_variance_main,share_abs_mass_offdiagonal,corr_main_vs_total
+400,300,4.459500789642334,3.1310598850250244,0.6565801501274109,0.14723175764083862,0.7021099328994751,0.5271151065826416,0.927820173204875
