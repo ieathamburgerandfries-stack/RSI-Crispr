@@ -1,4 +1,0 @@
-# Large journal supplements — keep local / Drive; do not push binaries
-*.xlsx
-*.pdf
-!README.md

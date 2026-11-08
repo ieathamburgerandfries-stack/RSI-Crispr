@@ -24,3 +24,9 @@ __pycache__/
 *.gb
 *.fasta
 *.fa
+/data
+/external_data
+/results
+.venv*
+__pycache__/
+*.pyc
