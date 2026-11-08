@@ -100,16 +100,20 @@ the gradient holds in both organisms even though *C. rodentium*'s own screen is
 too narrow for a correlation to reveal it
 (`results/RESULTS_archive_2026-10-10.md` §15).
 
-**And where it stops.** Carried to Noshay et al.'s human matrix — 6,216 shared
-columns, so no change of representation — transfer is **−0.039
+**And where it stops — which is further out than we thought.** Carried to Noshay
+et al.'s human matrix on the **6,216 shared columns**, transfer is **−0.039
 [−0.054, −0.024]** going to human and **−0.006 [−0.023, +0.011]**, which is zero,
-coming back: useless in both directions, with the human model fitted to the
-human matrix rather than to *E. coli*'s hyperparameters. That distinction is
-worth the extra run — the human signal is far less additive than *E. coli*'s
-(ridge reaches 64% of boosting's ρ against 96%), so our champion is the wrong
-shape for it by 0.10 ρ. The strand-invasion mechanism behind the effect also
-inverts (GC vs cut score: −0.20 in *E. coli*, +0.02 in human). Every claim here
-is a bacterial one, and the boundary is measured rather than assumed.
+coming back: useless in both directions, with the human model fitted to the human
+matrix rather than to *E. coli*'s hyperparameters. That distinction is worth the
+extra run — the human signal is far less additive than *E. coli*'s (ridge reaches
+64% of boosting's ρ against 96%), so our champion is the wrong shape for it by
+0.10 ρ. But the shared columns carry **no flanking context on the human side**,
+because family A needs guides located on a genome and that arm never was. Jacky
+has since built it there, and with flanks on both sides transfer **flips
+positive** — +0.022 and +0.017, flanks alone +0.042 and +0.108. So the wall
+belongs to the guide-derived half of the representation; the genomic-context half
+crosses. The GC association still inverts (−0.20 in *E. coli*, +0.02 in human),
+and every *model* here is still a bacterial one.
 
 The contribution is not the prediction, though. It is decoding the published
 matrix so it can be computed for any guide, showing which feature families

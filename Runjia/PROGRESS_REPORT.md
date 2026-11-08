@@ -1105,7 +1105,8 @@ effect here; a spatially local compositional gradient rather than a motif, shown
 with a texture-preserving null that also measures its autocorrelation length;
 not mappability, not gene ranking, and it survives holding out whole genes. It
 transfers across nuclease and organism — 88–91% retained with no retraining —
-and not across kingdoms. It does **not** appear in a dCas9
+and, built on both sides, across kingdoms too, where the shared published columns
+alone do not (Jacky's result, Part 3). It does **not** appear in a dCas9
 silencing screen — −0.009 across the screen, and **+0.007** inside the essential
 genes where the phenotype is measurable, once that assay's own strand rule is
 controlled for — which localises it to a step requiring a break rather than to
@@ -1204,12 +1205,20 @@ candidate.**
     tried. That number is the most useful thing in this list for anyone deciding
     what to work on next.
 
-**One cross-kingdom observation**, which is biology rather than bookkeeping: the
+**Two cross-kingdom observations**, both biology rather than bookkeeping. The
 association between GC content and cutting efficiency **inverts** between
 *E. coli* and human (−0.20 against +0.02), and the human phenotype is far less
 additive — a linear model reproduces 96% of a boosted tree's ρ in *E. coli* and
 only 64% in human. Bacterial cutting efficiency is close to a sum of small
 independent effects; human cutting efficiency is not.
+
+And **flanking context is the part of the representation that does cross**:
+built on both sides it is worth +0.052 ρ on the human matrix on its own ground,
+and it turns cross-kingdom transfer from ≈0.049 against to +0.022 for, in both
+directions (Jacky's result, Part 3). The GC inversion and the transfer failure
+therefore belong to the *guide* half of the representation. Whatever the flanking
+DNA is doing, it is doing something a human genome and a bacterial one share, and
+that is a stronger statement than anything the *E. coli* arms alone can make.
 
 ### Further inferences about the process, from results not collected to make them
 
@@ -1424,15 +1433,28 @@ biology paper.
 
 ## Part 3 — Where this stops
 
-- **Everything is bacterial.** Cross-kingdom transfer is useless in both
-  directions, and the two directions are not the same kind of useless. With the
-  human model fitted to the human matrix rather than to *E. coli*'s
-  hyperparameters, *E. coli* → human is **ρ −0.039 [−0.054, −0.024]**, clear of
-  zero, while human → *E. coli* is **−0.006 [−0.023, +0.011]**, which is zero
+- **Everything is bacterial — and that boundary turns out to be a property of
+  the representation, not of the kingdoms.** On the **shared published columns**,
+  cross-kingdom transfer is useless in both directions, and the two directions
+  are not the same kind of useless: with the human model fitted to the human
+  matrix rather than to *E. coli*'s hyperparameters, *E. coli* → human is
+  **ρ −0.039 [−0.054, −0.024]**, clear of zero, while human → *E. coli* is
+  **−0.006 [−0.023, +0.011]**, which is zero
   (`results/kingdom_transfer_boot.csv`, 2,000 test-row resamples). Both
   directions excluded zero only while the human model was undertuned; fitting it
-  properly moved one of them to zero. The boundary is real either way — nothing
-  transfers — but it is a wall, not a reversal.
+  properly moved one of them to zero.
+  **But the shared columns have no family A on the human side**, because family A
+  needs each guide located on a reference genome and the human arm never was.
+  Jacky has since built it there, and with flanking context on *both* sides the
+  sign flips: *E. coli* → human **+0.022**, human → *E. coli* **+0.017**, and
+  flanks alone **+0.042** and **+0.108** — his result, in
+  `Jacky/human-boundary/results/family_a_kingdom_transfer.csv`, and the one that
+  retires the version of this bullet that said "nothing transfers". Residualising
+  GC, GC-range matching and histogram matching all leave the shared-column figure
+  at ≈−0.049, so the fix is the representation and not the covariate.
+  What survives is narrower and more interesting: **the guide-derived half of the
+  representation does not cross kingdoms and the genomic-context half does**,
+  which is the same asymmetry Findings 1–2 find inside *E. coli*.
 - **Our human baseline was undertuned, and by more than was thought.** At the
   teammate's settings the human matrix reaches **ρ 0.5076 ± 0.0149** against the
   0.404 this harness had been quoting — so the ρ 0.472 attributed to an early
