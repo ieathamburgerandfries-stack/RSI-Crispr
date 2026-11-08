@@ -1481,35 +1481,46 @@ more lopsided.** Every cost figure above is about *fitting*. What a user does is
 fit once and then score every candidate guide for every target they care about,
 which is tens of thousands to millions of forward passes against a handful of
 fits. A forward-pass ratio is only like-for-like when both models run on the same
-type of hardware, so the pairings below are labelled by hardware. **On one Colab
-instance** — crisprHAL 2's shipped model on its T4, SLICER's configuration on the
-same instance's CPU and on its T4
-(`colab/inference_bench_t4.py`, `results/inference_t4.csv`; SLICER timed on
-synthetic data of the champion's shape, since scoring cost depends on tree count
-and depth and not on the values):
+type of hardware, so each pairing below is labelled. **On one Colab instance** (2
+vCPUs and a T4; `colab/inference_bench_t4.py`, `results/inference_colab.csv`) both
+models were timed on the CPU and on the GPU, each cold start in a fresh process.
+SLICER's configuration is timed on synthetic data of the champion's shape, since
+scoring cost depends on tree count and depth and not on the values:
 
-| | one guide | 100 guides | 10,000 guides | throughput at 10,000 | cold start |
-|---|---:|---:|---:|---:|---:|
-| crisprHAL 2, T4 | 78.0 ms | 99.7 ms | 2,768 ms | 3,613 guides/s | **9.8 s** |
-| **SLICER, same instance's CPU** | **0.48 ms** | **1.36 ms** | **72.0 ms** | **138,950 guides/s** | not measured here |
-| SLICER, same instance's T4 | 2.17 ms | 2.81 ms | 59.5 ms | 168,065 guides/s | not measured here |
+| median ms per call | 1 guide | 100 guides | 10,000 guides | cold start |
+|---|---:|---:|---:|---:|
+| crisprHAL 2, CPU | 103.4 | 286.2 | 24,886 | 6.0 s |
+| **SLICER, CPU** | **8.00** | **8.01** | **97.9** | **1.9 s** |
+| crisprHAL 2, T4 | 75.4 | 92.3 | 4,026 | 9.9 s |
+| **SLICER, T4, input on the host** | **2.78** | **3.51** | **47.9** | **1.4 s** |
+| SLICER, T4, input already on the card | 2.22 | 2.58 | 6.68 | — |
 
-**GPU against GPU (same hardware type): SLICER is 36× faster for one guide, 35×
-for a hundred and 47× for ten thousand** (rates, so ratios are legitimate here,
-unlike the Δρ quotients this report refuses; SLICER's input starts on the host, so
-its transfer is included). This is the like-for-like pairing and the smallest of
-the ratios. **CPU against CPU on this instance is not yet measured**: crisprHAL 2
-was run only on the T4; `colab/inference_bench_t4.py` now times both models on both
-hardware types, with cold starts. The 160× / 73× / 38× obtained by setting
-SLICER's CPU row against crisprHAL 2's T4 row is a *deployment* comparison (each
-model on the hardware it would be given), not a same-hardware one. The GPU did not
-help the deep model where it matters to a user scoring a few guides: one guide
-takes 78 ms on the T4 against 44 ms on a CPU, because a 37-layer network pays a
-fixed dispatch cost per call. It only wins at bulk (3,613 guides/s against 1,225
-on CPU). Putting SLICER on the GPU buys almost nothing at bulk (168 k against
-139 k guides/s) and costs speed for small batches; the figure shown was timed
-with the input on the host, so it includes a transfer, and is not a tuned GPU
-number.
+**Same hardware type, crisprHAL 2 over SLICER:** CPU against CPU **13× / 36× /
+254×** for 1 / 100 / 10,000 guides; GPU against GPU **27× / 26× / 84×** with
+SLICER's input starting on the host (so its transfer is included), and 34× / 36× /
+603× with the input already on the card. These are rates, so ratios are legitimate
+here, unlike the Δρ quotients this report refuses. SLICER's cold start is almost
+entirely importing xgboost (1.4 to 1.9 s); crisprHAL 2's is 6.0 s on the CPU and
+9.9 s with the GPU initialised.
+
+*Two things the table does not settle.* An earlier session on a different instance
+(`results/inference_t4.csv`) gave crisprHAL 2 on the T4 as 78.0 / 99.7 / 2,768 ms
+and SLICER on the CPU as **0.48 / 1.36 / 72.0 ms**, with the model trained in the
+same process. The crisprHAL rows agree at one and a hundred guides and differ by
+45% at ten thousand, which is instance-to-instance spread. SLICER's CPU row agrees
+within 36% at ten thousand but is **16× apart at one guide** (8.00 against 0.48
+ms), and the second run loaded the model from disk in a fresh process; the cause is
+not known (`colab/slicer_cpu_check.py` times the same model four ways to find it).
+Until it is, the CPU-against-CPU ratio at one guide is anywhere from 13× to about
+215×, and only the large-batch figures (254× to 346× on the CPU, 47× to 84× on the
+GPU with host input) are quoted. Second, the GPU does not help the deep model where
+it matters to a user scoring a few guides: one guide takes 75 ms on the T4 against
+103 ms on Colab's CPU, and 44 ms on the laptop, because a 37-layer network pays a
+fixed dispatch cost per call; it wins only at bulk (4,026 ms against 24,886 ms for
+ten thousand). Putting SLICER on the GPU roughly halves its time at ten thousand
+with host input (47.9 against 97.9 ms) and costs nothing at one guide; the
+device-resident figure (6.68 ms) is a bound for a pipeline that keeps batches on the
+card, not what one request sees.
 
 **CPU against CPU on the local machine** (a 10-core laptop, scoring in batches
 of 10,000; `inference_cost.py`, `results/inference_cost.csv`; crisprHAL's side by
@@ -1524,12 +1535,12 @@ That is 127× for one guide and for a hundred, 1,200× at ten thousand by latenc
 and a factor of about 1,700 on throughput. It is **a ten-core-laptop figure, not
 the headline**: the same SLICER model is 15 times faster on ten laptop cores than
 on Colab's two vCPUs, which is most of the difference between the two tables, and
-the GPU-against-GPU comparison above is the smaller and more defensible one. Either way the cheap-model argument is stronger at inference
+the same-hardware Colab comparison above is the more defensible one. Either way the cheap-model argument is stronger at inference
 than at training (~150× CPU-seconds), which is the opposite of how it is usually
 presented, and **cold start** is the other half: loading crisprHAL 2 costs 9.8 s
-on the T4 instance and 13.4 s on the laptop before the first prediction, which for
-a researcher scoring a few guides is the entire interaction. SLICER's cold start
-was timed only locally. Absolute numbers move with machine load; the Colab and
+on the T4 instance (6.0 s on its CPU) and 13.4 s on the laptop before the first
+prediction, which for a researcher scoring a few guides is the entire interaction;
+SLICER's is 1.4 to 1.9 s on Colab, nearly all of it the xgboost import. Absolute numbers move with machine load; the Colab and
 laptop SLICER figures differ by 15× for hardware alone.
 
 *The forward-FLOPs column is also derivable rather than absent.* Scoring one
