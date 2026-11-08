@@ -1510,6 +1510,46 @@ biology paper.
   on our own folds should be read the same way; the parity claim on their splits
   is untouched (Part 4).
 
+### What limits this now, and which limits can be moved
+
+The bullets above are the standing scope conditions. This is the same list sorted
+by a different question — *what would it take to lift each one* — because after a
+round of iterating on the model and the data, the limits divide sharply into
+three kinds, and only one kind is worth more compute.
+
+**Addressable from data already on disk.**
+
+| limit | why it binds | what would move it |
+|---|---|---|
+| Everything interpretive is conditioned on a redundancy-blind selector | the 300 columns are the top *k* of a gain ranking, and gain over-weights binary columns by 14 points of composition (Appendix B). "45 columns carry half the gain", the concentration figures and every family increment inherit that | greedy selection penalised by correlation with what is already chosen. The clusters are already built in `faithfulness.clusters_around`. It will not move ρ — nothing does — but it would make 300 columns readable for the first time |
+| The label is **P(cut) × P(the break kills)** and no arm separates the terms | survival is the only readout, so the model is fitted to the product (Part 2) | partial, and cheap: Cui's screen carries **two time points**, 18 and 75 generations, which the pipeline averages for reliability. Their *difference* is a depletion-rate signal, and rate separates "cuts fast" from "eventually dies" in a way an endpoint cannot. Applies to the dCas9 cohort only, which is the limit of it |
+| Faithfulness is only ever measured by refitting | every drop-and-refit measure is confounded by redundancy in the refit itself, including the cluster-removal version that was built to fix it | a perturbation measure needs no refit: sensitivity-*n* correlates summed attributions against the actual change in the **fixed** model's output. That removes the refit, which is where redundancy does its damage in both existing measures. It does not make the number redundancy-free — correlated columns still have their credit split arbitrarily between them — but the failure mode moves from the probe to the attribution, where it can be read at block level |
+| Per-guide label reliability is heterogeneous and ignored | the 0.946 ceiling is an average over guides whose replicate disagreement spans 0.06 to 2.39 log2 units | **measured, and the answer is no** (Appendix B). Inverse-variance weighting costs −0.0050, of which −0.0041 is reproduced by permuting the weights, and dropping the noisiest decile is indistinguishable from dropping a random one. ALDEx2's posterior has already spent the information. The limit is real; the obvious lever is not the way to move it |
+
+**Addressable, but only with compute we have chosen not to spend.**
+
+| limit | why it binds | what would move it |
+|---|---|---|
+| The margin on our own folds is formally an upper bound | our search used 97–157 draws per fold against crisprHAL's 5–8, a residual ~20× | ~40 GPU-hours for a matched search. Declined on 16 October with the reason recorded: the cheap version already reverts to their published configuration in four folds of five |
+| "Degraded by wider input" is a claim about their *published configuration* | their epochs, dropout, filters and GRU width were all chosen at 378 nt | 4–6 GPU-hours. `colab/crisprhal_tune_by_width.py` is written, anchored on the 378 nt positive control, with the interpretation pre-registered both ways |
+
+**Not addressable without new experiments — and these are the ones that matter.**
+
+| limit | why it binds | what it would take |
+|---|---|---|
+| **0.22 ρ of real, repeatable variance is unexplained** | the ceiling is 0.946 and the best model reaches 0.7218. Eleven feature families from the genome, thermodynamics, ChIP-seq and quantum chemistry have not closed it | not more features of the kinds tried. The sequence-derived candidates with a mechanism attached are now *excluded* rather than unexamined — shape, periodicity, Chi, supercoiling — which makes this a measurement problem rather than a modelling one |
+| The long-range mechanism is localised but unidentified | the dCas9 comparison puts it at or after the cut, and the candidate routes that read 500 nt are excluded | an intervention rather than an observation: a designed library that varies flank composition at a **fixed guide**. Nothing in a pooled screen can do this, because guide and locus are confounded by construction in every existing dataset |
+| One organism and two relatives | no genome-wide Cas9 *cutting* screen exists outside *Enterobacteriaceae*; what exists elsewhere is CRISPRi, a different measured quantity | wet lab. This is the single largest external-validity gap |
+| No untouched external set remains | eSpCas9 turned out to be confirmatory rather than untouched, and Cui's screen has now been spent | permanent. The automatable adaptive component is bounded at **+0.0087**; the human part is unquantified above it and the cohort choice is unquantifiable by design |
+| Nothing here speaks to specificity | six of `h_offtarget`'s thirteen columns are constant zero because the cohort keeps only uniquely-targeting guides | a cohort that retains multi-targeting guides. The question was filtered out before the measurement, so no re-analysis reaches it |
+| Nothing here speaks to nickase editors | base and prime editors bind and nick rather than cut, which puts them between the two assays this project compares | the Cui result makes this a real question rather than a safe extrapolation, and it needs an editing outcome readout |
+
+**The one-sentence version.** Everything cheap has been done, two things are
+declined on cost with the reason written down, and what is left is a measurement
+problem: the model is within 0.22 ρ of its label's ceiling, the sequence-derived
+explanations for the gap are exhausted rather than untried, and closing it needs
+an experiment in which guide and locus are not confounded.
+
 ---
 
 ## Part 4 — The freeze, and what remains
@@ -2288,6 +2328,76 @@ a replicate split that *is* available for that label. Both appear in the report
 because arms on the two cohorts are compared, and quoting 0.937 against a curated
 number would understate the headroom.
 
+### Can the label's per-guide reliability be used? No, and the control says why
+
+Finding 6's ceiling of 0.946 is an **average**. Every one of the 33,567 curated
+guides joins exactly to crisprHAL's per-replicate counts, and pairing Cas9
+replicate 1 with control 1 and replicate 2 with control 2 gives two independent
+estimates of each guide's score whose disagreement runs **0.06 / 0.71 / 2.39**
+log2 units at the 5th / 50th / 95th percentiles. So the model is fitted to a
+target it treats as uniformly reliable and which is not. Inverse-variance
+weighting is the standard response, and it had never been tried here.
+
+Two properties of the noise shape the design. It is **not** a read-depth effect
+— ρ(disagreement, total counts) = **−0.053**, so the obvious proxy misses it —
+and it is mildly related to the label, ρ(|y|, disagreement) = **−0.236**, because
+large effects are measured more consistently. The second means inverse-variance
+weighting does two things at once: it down-weights noisy guides *and* tilts the
+fit toward extreme ones.
+
+Weights apply to **training only**; every validation row is scored unweighted
+against the released label. Weighting the evaluation would repeat the criticism
+this report makes of their read-count cutoff, which is applied before the split
+and so cleans the test set too. Champion, 300-column selection inside each
+training fold, 3 seeds × 5 folds (`replicate_weight.py`,
+`results/replicate_weight.csv`):
+
+| arm | ρ | vs unweighted | train rows |
+|---|---:|---:|---:|
+| **unweighted** | **0.7083** | — | 33,567 |
+| inverse variance, moderated | 0.7032 | **−0.0050** | 33,567 |
+| *the same weights, permuted across guides* | *0.7041* | *−0.0041* | 33,567 |
+| inverse variance, flattened within \|y\| bins | 0.7052 | −0.0031 | 33,567 |
+| weighted by read depth | 0.6841 | −0.0241 | 33,567 |
+| drop the noisiest decile | 0.7066 | −0.0016 | 30,210 |
+| *drop a random decile* | *0.7068* | *−0.0014* | 30,221 |
+
+The unweighted arm reproduces the headline curated figure to four decimals,
+which is what certifies this hand-written loop against the frozen harness.
+
+**The answer is no, and the permutation control is why it is interesting.**
+Shuffling the weights across guides — same distribution, no correspondence with
+anything — costs **−0.0041** of the −0.0050. So **four fifths of the damage is
+from having non-uniform weights at all**, not from where they point: a 98:1
+weight ratio spends effective sample size, and that costs about four thousandths
+whatever the weights mean. The information in the correspondence is worth the
+remaining 0.0009, which is nothing. Flattening the |y| tilt recovers 0.002, so
+the extremity tilt was a minor contributor rather than the explanation.
+
+**The trim arms are the cleanest form of the result.** Dropping the noisiest 10%
+of training guides costs −0.0016; dropping a random 10% costs −0.0014. They are
+identical within noise, so the noisiest decile is not harming the fit — removing
+those particular guides is indistinguishable from removing any guides at all.
+
+**And depth is the wrong instrument by an order of magnitude** (−0.0241), which
+is the predicted consequence of ρ(disagreement, depth) = −0.053: weighting by
+depth imposes a 157:1 ratio while tracking almost none of the actual noise.
+
+*Why the information is not there to be used.* Two reasons, and the first is
+already in this report. The released label is ALDEx2's posterior **mean**, which
+shrinks noisy guides toward the prior — the reason Finding 6 calls 0.946 a lower
+bound. The reliability has therefore been spent before we see it, and weighting
+on top double-counts a correction already applied. The second is the
+effective-sample-size cost the permutation isolates: on 33,567 rows against a
+feature set worth +0.164, trading rows for precision is a bad exchange at any
+weighting this noise distribution implies.
+
+*What it does not rule out.* A model fitted to the **raw log-ratio** rather than
+to the posterior mean, with weights, would be a genuine test of the idea — there
+the shrinkage would not be pre-applied. That is a different label and so a
+different experiment, and it would not be comparable with any number in this
+report.
+
 ### The reduced-representation ladder, and the budget that was never tested
 
 Finding 1's reduction was established on the published matrix. All arms from one
@@ -2506,14 +2616,30 @@ honest form adds "under gain-based selection".
 
 **What would be done differently starting again.** Not SHAP-based selection — it
 buys +0.0007 and costs a TreeSHAP pass per fold. The change worth making is to
-the *budget* rather than the metric: 300 columns on a matrix where 6,095 columns
-restate about twenty variables means the selector can spend its whole budget on
-one variable spelled three hundred ways, and a redundancy-aware rule — greedy
-selection penalised by correlation with what is already chosen — would spend it
-on distinct quantities instead. The correlation structure needed for that is
-already computed, in `faithfulness.clusters_around`. On this cohort it would most
-likely buy nothing in ρ, for the same reason everything else does; its value
-would be that the resulting 300 columns could be interpreted directly.
+the *composition rule* rather than the metric or the size — and the distinction
+matters, because the size has already been settled and the rule has not.
+
+**What has been tested is the number, never which ones.** `N_FEATURES = 300` was
+inherited from the baseline script rather than searched (Part 4's register), and
+was then *checked*: 600 columns and 1,200 columns give a family-A increment of
++0.0808 and +0.0831 against 300's +0.080, with the baseline moving −0.002, and
+selecting 300 against using every column is ±0.0005 on both cohorts. So "the
+budget does not bind" is established — but every one of those arms takes the
+**top *k* of the same gain ranking**, so what they show is that *more of the same
+ordering* does not help. They say nothing about whether a different 300 would be
+better, and the gain-against-SHAP comparison above is the first evidence on that
+question: a 20% different set, +0.0007.
+
+**The untested rule is a redundancy-penalised one.** 300 columns on a matrix
+where 6,095 restate about twenty variables lets the selector spend its whole
+budget on one variable spelled three hundred ways, which is what both rankings
+above partly do. Greedy selection penalised by correlation with what is already
+chosen would spend it on distinct quantities instead, and the correlation
+structure needed is already computed in `faithfulness.clusters_around`. On this
+cohort it would most likely buy nothing in ρ — nothing does, and raising *k* to
+1,200 is the direct evidence that the ranking's tail is not where the signal is.
+Its value would be that the resulting 300 columns could be read directly, which
+is the one thing no arm in this project has ever been able to do.
 
 ### Is re-description worth anything, or only the *right* re-description?
 
