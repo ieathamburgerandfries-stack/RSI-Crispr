@@ -312,7 +312,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--arm", default="both",
                     choices=["random", "taxonomy", "families", "provenance",
-                             "folds", "nonlinear", "both"])
+                             "folds", "nonlinear", "trend", "both"])
     a = ap.parse_args(argv)
     if a.arm in ("taxonomy", "both"):
         column_taxonomy()
@@ -326,6 +326,8 @@ def main(argv=None) -> int:
         random_folds()
     if a.arm == "nonlinear":
         random_nonlinear()
+    if a.arm == "trend":
+        recoverability_trend()
     return 0
 
 
@@ -598,6 +600,91 @@ def random_folds(table_seeds=(0, 1, 2), model_seeds=(41,), verbose=True):
         print(f"written -> {FOLDS_OUT}")
     return out
 
+
+# --------------------------------------------------------------------------
+# Ignore the folders: rank every external column by how well the guide
+# predicts it, and ask whether that ranks predictive power too
+# --------------------------------------------------------------------------
+# `column_taxonomy` does this in three coarse bins and reports increments. It
+# leaves two things unmeasured. First, the *other* kind of predictive power --
+# each column's own marginal association with the label -- which is free to
+# compute and is the quantity a reader intuitively means. Second, whether there
+# is a gradient inside the large mass of columns the guide cannot predict at all,
+# or whether recoverability stops mattering below some threshold.
+#
+# The two measures are expected to disagree, because Part 2 says increment and
+# marginal association answer different questions. How *much* they disagree, and
+# in which direction, is the point.
+TREND_OUT = config.RESULTS / "recoverability_trend.csv"
+BANDS = ((-np.inf, 0.01), (0.01, 0.05), (0.05, 0.20), (0.20, 0.50),
+         (0.50, 0.99), (0.99, np.inf))
+
+
+def recoverability_trend(seeds=(41,), n_splits=5, with_fits: bool = True,
+                         verbose: bool = True):
+    """Does recoverability from the guide rank predictive power, and which kind?"""
+    from scipy.stats import spearmanr
+
+    X, y, names, protos = _base()
+    A = _onehot(protos, order=2)
+    vals, cols, fams = [], [], []
+    for fam in FAMILIES:
+        try:
+            v, fn = _block(fam, protos)
+        except FileNotFoundError:
+            continue
+        vals.append(v)
+        cols += list(fn)
+        fams += [fam] * len(fn)
+    V = np.hstack(vals)
+    r2 = _oof_r2(V.astype(np.float64), A)
+
+    rho = np.full(V.shape[1], np.nan)
+    for j in range(V.shape[1]):
+        col = V[:, j].astype(float)
+        if np.nanstd(col) > 0:
+            rho[j] = spearmanr(col, y, nan_policy="omit").statistic
+    live = np.isfinite(rho) & np.isfinite(r2)
+    rc = np.clip(r2[live], 0.0, 1.0)
+    ar = np.abs(rho[live])
+    if verbose:
+        print(f"  {live.sum()} usable columns of {V.shape[1]}")
+        print(f"  spearman(recoverability, |rho| with label) = "
+              f"{spearmanr(rc, ar).statistic:+.4f}", flush=True)
+
+    base_rho, _ = _cv(X, y, seeds=seeds, n_splits=n_splits) if with_fits else (np.nan, 0)
+    rows = []
+    for lo, hi in BANDS:
+        sel = np.isfinite(r2) & (r2 > lo) & (r2 <= hi) & np.isfinite(rho)
+        if sel.sum() == 0:
+            continue
+        d = np.nan
+        if with_fits:
+            rho_arm, _ = _cv(np.hstack([X, V[:, sel]]), y, seeds=seeds,
+                             n_splits=n_splits)
+            d = rho_arm - base_rho
+        rows.append(dict(
+            band=f"{'' if lo == -np.inf else f'{lo:g}<'}R2<={hi:g}"
+                 if hi != np.inf else "R2>0.99",
+            lo=lo, hi=hi, n_cols=int(sel.sum()),
+            mean_r2=float(np.nanmean(np.clip(r2[sel], 0, 1))),
+            mean_abs_rho=float(np.nanmean(np.abs(rho[sel]))),
+            max_abs_rho=float(np.nanmax(np.abs(rho[sel]))),
+            d_spearman=d,
+            top_families=", ".join(
+                f"{f}:{c}" for f, c in
+                pd.Series(np.array(fams)[sel]).value_counts().head(3).items())))
+        if verbose:
+            r = rows[-1]
+            print(f"  {r['band']:>14s}  {r['n_cols']:3d} cols  "
+                  f"mean|rho| {r['mean_abs_rho']:.4f}  "
+                  f"d {r['d_spearman']:+.4f}  [{r['top_families']}]", flush=True)
+        pd.DataFrame(rows).to_csv(TREND_OUT, index=False)
+
+    out = pd.DataFrame(rows)
+    if verbose:
+        print(f"written -> {TREND_OUT}")
+    return out
 
 if __name__ == "__main__":
     raise SystemExit(main())

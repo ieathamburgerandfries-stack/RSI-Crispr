@@ -670,6 +670,35 @@ coding-strand guides deplete more, which is the same direction measured here.
 corroborates the essentiality argument above from a direction it was not built
 on: the strand rule only operates where knockdown has a phenotype at all.
 
+**The whole structure reproduces on Rousset, not just the sign.** Rousset's
+59,246 guides were located and featurised through the same path as Cui's — all of
+them placed uniquely in NC_000913.2, into the same 6,517 columns — so the guides
+differ and nothing else does (`crispri_screens.py --family-a`,
+`results/crispri_screen_family_a.csv`, gene-grouped):
+
+| arm, inside essential genes | Cui | **Rousset** |
+|---|---:|---:|
+| 20-mer base | 0.2718 | 0.2141 |
+| base + family A | 0.5468 | 0.5043 |
+| *family A, apparently* | *+0.2749* | *+0.2902* |
+| base + strand | 0.6462 | 0.5878 |
+| base + strand + family A | 0.6610 | 0.6124 |
+| **family A, given strand** | **+0.0148** | **+0.0246** |
+
+All three steps of the argument hold on the untouched screen: family A looks
+worth about +0.29, a single strand indicator beats the whole 348-column family
+(0.588 against 0.504), and once strand is supplied family A adds +0.025 — against
+**+0.157** on a cutting screen. Screen-wide it is **−0.0206** on Rousset against
+−0.0093 on Cui, so the headline null reproduces too.
+
+*What the replication does and does not extend.* It makes the cross-assay
+control a three-screen result instead of a one-screen one, which is what Finding
+3's localisation needed most. It does **not** widen the project's scope: all
+three screens are *E. coli* K-12 MG1655, so "one organism and two relatives"
+stands untouched, and all three are CRISPRi, so nothing here bears on the 0.22 ρ
+still unexplained on the cutting side. What it buys is robustness for one
+control, not reach.
+
 *What this still is not.* The informative subset is 5,514 guides across 44
 blocks, the control rests on one strand indicator, and nothing here is an
 intervention — so this localises the effect to a step that requires a break
@@ -1550,6 +1579,18 @@ biology paper.
   because the flank-GC regression slope is about **3× steeper** outside Guo's
   1,222-gene panel than inside it (Appendix B2a) — a ratio of slopes, which is a
   legitimate one, unlike the ratio of the Δρ values it produces.
+  **And curating further would not help, which is measured rather than assumed.**
+  Every one of the 33,567 guides has two independent replicate estimates, so a
+  reliability filter can be applied honestly — to training rows only, leaving the
+  evaluation alone. Dropping the noisiest decile of training guides costs
+  **−0.0016**, and dropping a *random* decile costs **−0.0014**: indistinguishable,
+  so the noisiest guides were never hurting the fit. Weighting by inverse variance
+  instead costs **−0.0050**, four fifths of which is reproduced by permuting the
+  weights (Appendix B). The reason is that the label is already a posterior
+  **mean**, so ALDEx2 has spent the reliability information before we see it.
+  What curation legitimately buys is a cleaner label — ceiling 0.946 against
+  0.937 — and +0.004 of fit; what it cannot buy is a better model, and a filter
+  applied before the split buys only an easier test set.
 - **The long-range mechanism is unidentified.** Orientation is a live candidate
   with one ruled-out alternative; the most mechanistically motivated feature built
   to explain it (GC skew and helical periodicity) is a null.
@@ -2914,6 +2955,50 @@ whether a column is a function of the guide: `c_folding` is deterministic in the
 guide and all seven of its columns land in the "not linearly recoverable" group,
 because RNA folding is not a linear sum. Read the groups as *cheap*, *partly
 cheap* and *not cheap*, not as *determined* and *free*.
+
+### Ignore the folders entirely: rank every column by how well the guide predicts it
+
+The taxonomy above uses three coarse bins. Finer bands answer two questions it
+cannot: whether recoverability predicts *marginal* association as well as
+increment, and whether there is a gradient inside the large mass of columns the
+guide cannot predict at all. All 636 usable family columns, banded by out-of-fold
+R² from the guide's own one-hot encoding, with each band's own marginal
+association and its increment as a block (`redescription.py --arm trend`,
+`results/recoverability_trend.csv`, 1 seed × 5 folds):
+
+| band | columns | mean R² | mean \|ρ\| with the label | Δρ as a block | mostly |
+|---|---:|---:|---:|---:|---|
+| R² ≤ 0.01 | 425 | 0.001 | **0.031** | **+0.180** | `a_flank`, `i_shape` |
+| 0.01 – 0.05 | 121 | 0.030 | 0.096 | +0.148 | `a_flank`, `i_shape` |
+| 0.05 – 0.20 | 43 | 0.072 | **0.115** | +0.129 | `a_flank`, `f_methylation` |
+| 0.20 – 0.50 | 13 | 0.340 | 0.083 | **+0.018** | `f_methylation`, `c_folding` |
+| 0.50 – 0.99 | 16 | 0.672 | 0.082 | +0.021 | `d_mechanics`, `b_energy` |
+| R² > 0.99 | 18 | 1.000 | 0.096 | **+0.008** | `d_mechanics`, `b_energy` |
+
+**The two kinds of predictive power run in opposite directions.** Across the 636
+columns, ρ(recoverability, \|ρ\| with the label) is **+0.5574**: the columns the
+guide predicts *best* are the ones most strongly correlated with the label, and
+they are exactly the ones that add least. Anybody ranking external data by its
+own correlation with activity would have ranked family A last.
+
+**And the sharpest form of that, which is the useful sentence:** the 425 columns
+the guide cannot predict at all have a mean marginal association of **0.031** and
+are worth **+0.180** together, while the 18 columns it predicts perfectly average
+**0.096** individually and are worth **+0.008**. Family A's columns are the
+weakest in the matrix one at a time and the strongest in combination. That is why
+the effect was not found by looking at correlations, and it is the concrete
+reason Part 2 insists the family table measures what is *new* rather than what
+*matters*.
+
+**Recoverability acts as a threshold, not as a gradient.** The three low bands
+give +0.180, +0.148 and +0.129 and the three high bands give +0.018, +0.021 and
++0.008; the step sits at about **R² = 0.2**, and within each side there is no
+clear ordering. So once the guide explains more than about a fifth of a column,
+that column has nothing left to contribute — well below the 0.5 the taxonomy used
+as its cut and far below 0.99. *The within-side figures should not be read as a
+trend*: the bands differ in size as well as in recoverability (425 columns
+against 43), and a larger block is worth more for that reason alone. The step is
+robust to that; the slope inside each side is not.
 
 ### Is the folding gain the physics, or only the non-linearity?
 
