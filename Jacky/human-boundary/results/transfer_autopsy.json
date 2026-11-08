@@ -1,0 +1,11 @@
+{
+  "overall_transfer_rho": -0.04682933440712569,
+  "transfer_rho_after_residualising_gc2": -0.04822754662404172,
+  "spearman_error_vs_spacer_gc": -0.3986933877486158,
+  "n_human": 16490,
+  "n_ecoli_train": 13880,
+  "n_shared_cols": 6216,
+  "note": "If residualising GC\u00b2 raises transfer rho toward zero/positive, the E. coli GC rule is a load-bearing failure mode.",
+  "human_base_cv": 0.38187893500200587,
+  "human_base_a_cv": 0.43433286338162846
+}
