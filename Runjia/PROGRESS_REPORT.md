@@ -748,7 +748,9 @@ column" finding was an artefact of split gain**: XGBoost's share on binary
 indicators falls from 57% to 31% under SHAP and lands on LightGBM's 31% exactly.
 The largest between-model gap on any kind of column goes from 31 points to 0.3.
 
-*Consequence:* report SHAP, at block level, and never gain.
+*Consequence:* report SHAP, at block level, and never gain — and note that the
+**pipeline's own column selector uses gain**, which costs no accuracy and does
+bias what the model is shown (Appendix B).
 
 
 **The standard faithfulness probe is uninterpretable on a redundant matrix**
@@ -2431,6 +2433,66 @@ the model as a set of per-column effects rather than inferred from attributions.
 
 **B.3 — What is the representation worth?**
 
+### The selector ranks columns with the one metric this report says never to use
+
+`run_ablation.make_selector` fits a throwaway XGBoost and takes
+`feature_importances_` with `importance_type="gain"` set explicitly; the
+LightGBM alternative sets it too. Finding 5 is that gain is the attribution
+which does not survive a change of model — ρ 0.05 per column against SHAP's
+0.50 — and that **gain credits a column for being binary**, worth 26 percentage
+points of XGBoost's attributed importance. So the pipeline chooses which 300 of
+6,517 columns the champion ever sees using the ranking the report tells its
+readers not to trust.
+
+That matters more here than it would elsewhere, because the curated base is
+**5,957 strictly binary k-mer indicators** out of 6,169 while every feature
+family is dense and continuous. A ranker biased toward binary columns is biased
+against exactly the columns this project builds.
+
+The bias is real and it is measurable (`selector_audit.py`,
+`results/selector_audit.csv`): one selector fit on all 33,567 rows, ranked twice,
+the two top-300 sets compared.
+
+| top 300 ranked by | binary columns | from `a_flank` | dense columns |
+|---|---:|---:|---:|
+| **gain**, as the pipeline does | **144 (48%)** | 78 | 156 |
+| **mean \|SHAP\|**, same fitted model | **102 (34%)** | 97 | 198 |
+
+**Gain puts 42 more binary indicators in and 19 fewer flank columns**, a
+14-percentage-point shift in composition, and the two selections still share 239
+of 300 columns.
+
+**And it costs no accuracy.** Handing each frozen selection to the champion with
+selection switched off, 3 seeds × 5 folds: **0.7096** for the gain set against
+**0.7103** for the SHAP set, a difference of +0.0007 — an order of magnitude
+below the +0.0087 adaptive component and inside a single fold's spread. *Neither
+figure is a performance number:* both selections were fitted on all rows, so both
+arms saw the validation folds during selection, which is why they sit above the
+champion's leakage-safe 0.7084. The comparison between them is fair because the
+leakage is identical; the levels are not quotable.
+
+**So this is an interpretability defect and not a performance one**, which is the
+more awkward of the two outcomes. The redundancy that makes the budget free
+(±0.0005) and the model class nearly free (0.108 ρ across eight classes) also
+makes the *choice* of ranker free — there are many near-equivalent routes to the
+same prediction, so a biased ranker finds one of them. What it does not leave
+untouched is every statement this report makes **about the selected set**: "45 of
+the 300 offered columns carry half its gain", the concentration figures in
+Finding 7, and each family's increment, are all properties of a column set chosen
+by the biased ranker. They are not wrong, but they are conditioned on it, and the
+honest form adds "under gain-based selection".
+
+**What would be done differently starting again.** Not SHAP-based selection — it
+buys +0.0007 and costs a TreeSHAP pass per fold. The change worth making is to
+the *budget* rather than the metric: 300 columns on a matrix where 6,095 columns
+restate about twenty variables means the selector can spend its whole budget on
+one variable spelled three hundred ways, and a redundancy-aware rule — greedy
+selection penalised by correlation with what is already chosen — would spend it
+on distinct quantities instead. The correlation structure needed for that is
+already computed, in `faithfulness.clusters_around`. On this cohort it would most
+likely buy nothing in ρ, for the same reason everything else does; its value
+would be that the resulting 300 columns could be interpreted directly.
+
 ### Is re-description worth anything, or only the *right* re-description?
 
 Finding 1 reports that a deterministic function of the 20-mer adds no
@@ -3595,30 +3657,88 @@ loses one fold rather than an experiment.
 
 ## Appendix C — Feature sets and data sources
 
-### Ours — eleven families, four distinct ideas
+### Ours — what each family captures, and where a "family" is really two
 
-Δρ below is on the **published** 13,880-row matrix, which is what these were
-built against. All eleven have since been re-measured on the curated cohort,
-where the ordering is nearly identical and every figure is about three times
-larger — Appendix B3 has that table and the reason.
+Eleven folders, but a folder is not a kind. Six of them bundle measurements of
+different things, and in four cases the bundling hides the result — so each is
+given here by **what information it carries**, with the internal split where one
+exists. Δρ is the curated-cohort increment over the 6,169-column base
+(Appendix B3); the published-matrix figures are about a third of these and rank
+almost identically (ρ = 0.97).
 
-| set | what it measures | source | Δρ |
-|---|---|---|---:|
-| `a_flank` | composition and quantum averages outside the 20-mer, 50–1,000 nt | reference genome | **+0.080** |
-| `b_energy` | guide–DNA binding energy by component | CRISPRoff, unchanged | +0.007 |
-| `c_folding` | whether the guide RNA folds on itself | ViennaRNA | +0.007 |
-| `d_mechanics` | duplex opening, position by position | SantaLucia & Hicks (2004) | +0.020 |
-| `d_supercoiling` | positive-supercoiling density | GapR-seq, GSE152880 | +0.045 → artefact |
-| `e_nucleoid` | 3D contact structure, NAP dependence | Lioy et al. 2018 Hi-C | +0.016 |
-| `f_methylation` | Dam/Dcm motifs at PAM and seed | reference genome | +0.004 |
-| `g_transcription` | TSS distance, strand, expression | RegulonDB + PRECISE-1K | +0.015 |
-| `h_offtarget` | off-target burden, target copies | reference genome | +0.000 |
-| `i_shape` | flank bendability / deformability | published dinucleotide scales | +0.036 (+0.001 on top of `a_flank`) |
-| `j_periodicity` | GC skew, helical-repeat periodicity | reference genome | −0.001 |
+**The one that carries the effect.**
 
-Groups 1 (`b`,`c`,`d_mechanics`,`f`) are redundant by construction (Appendix B2); group 2 (`a`) is
-the one that worked; group 3 (`d_supercoiling`, `e`, `g`) collapse into one
-positional variable; group 4 (`h`) needs the rest of the genome.
+| set | columns | what information it is | Δρ |
+|---|---:|---|---:|
+| `a_flank` | 348 | DNA outside the protospacer, in three distinct layers | **+0.164** |
+
+Its three layers are separable and they are not equally interesting, because
+only the third is information crisprHAL 2's input cannot reach (Finding 2):
+**near-cut sequence** (±10 nt, one-hot and quantum-table lookups) is worth
++0.074 on its own; extending to **crisprHAL's own ±189/166 nt span** adds
++0.055 more; and the **50/250/500/1,000 nt windowed composition** — GC, purine
+fraction, longest homopolymer run, and quantum-table averages at each scale —
+adds the final **+0.035**. The windows are the novel part; the near-cut columns
+are a better-encoded version of what everyone already reads.
+
+**Guide-derived families — deterministic functions of the 20-mer, so they can
+add performance but not information (Finding 1).**
+
+| set | columns | what information it is | Δρ |
+|---|---:|---|---:|
+| `b_energy` | 10 | the R-loop free-energy budget decomposed — RNA:DNA hybridisation, DNA:DNA opening, guide self-folding, net binding, plus signed distance from the −64.5 to −47.1 kcal/mol window where efficient guides cluster | +0.019 |
+| `c_folding` | 9 | secondary structure of the **transcript that is actually made** — spacer MFE, and spacer-against-scaffold pairing that disrupts the repeat:anti-repeat duplex. Folding the bare 20-mer is the usual way this family gets written off | +0.014 |
+| `f_methylation` | 17 | Dam `GATC` and Dcm `CCWGG` motifs, by position relative to the PAM | +0.008 |
+
+`b_energy` and `c_folding` are **not** two independent witnesses: one column is
+the same quantity computed twice in two folders (Pearson 0.9993), so the
+evidence for the folding effect is two measurements, not three (Appendix B).
+
+**Target-mechanics families, and the one that is two families.**
+
+| set | columns | what information it is | Δρ |
+|---|---:|---|---:|
+| `d_mechanics` | 30 | **two disparate sets.** 22 columns are nearest-neighbour duplex thermodynamics *of the protospacer* — sliding Tm profile, PAM-proximal against PAM-distal, the Doench three-window split — worth **+0.011**. The other 8 are the same thermodynamics computed on the *flanks* at ±25 and ±100 nt, worth **+0.097**: this half is family A under another name, and reporting the family as one number was how the project once called it the cleanest case of representation-beating-information | +0.099 |
+| `i_shape` | 152 | dinucleotide-step deformability of the flanks — roll, twist, propeller, minor-groove width, and their stiffnesses, from published shape scales. Worth **+0.120 alone** and **+0.0007** once `a_flank` is present: a reparameterisation of the same DNA, not a second channel | +0.120 |
+
+**Locus families — these describe *where the target sits*, not the guide, and
+they overlap heavily with each other.**
+
+| set | columns | what information it is | Δρ |
+|---|---:|---|---:|
+| `d_supercoiling` | 26 | GapR-seq ChIP signal for positive supercoiling at the target (GSE152880), at several window widths | +0.139 → artefact |
+| `e_nucleoid` | 20 | **two sets.** Hi-C 3D position — mean distance to the *k* nearest bins, bins within a radius, ported from the human nucleosome study — and NAP dependence, the ratio of contacts a bin makes in wild type against each of six mutants (H-NS, HU, Fis, MatP, MukB, ZapB) | +0.072 |
+| `g_transcription` | 19 | **three sets, and only one of them pays.** Gene geometry — distance to TSS, position within the gene, operon boundaries — is worth **+0.0393**; expression level from PRECISE-1K **+0.0213**; essentiality **+0.00004** | +0.058 |
+
+These three are close to one variable measured three ways: jointly they are
+worth +0.145, and `d_supercoiling`'s signal survives replacing the ChIP track
+with the **untagged control**, which means what it measures is sequencing read
+density (Appendix B3).
+
+**And one that the cohort defined away.**
+
+| set | columns | what information it is | Δρ |
+|---|---:|---|---:|
+| `h_offtarget` | 13 | **7 live, 6 dead.** Copy number of the protospacer in the genome — a guide matching an rRNA operon or an IS element cuts several places at once and is more lethal than its sequence predicts — plus 6 near-cognate-mismatch columns that are **identically zero for every guide**, because the curated cohort keeps only uniquely-targeting guides | +0.001 |
+
+**A naming wart, recorded so nobody reads it as structure.** `d_mechanics` and
+`d_supercoiling` share a letter and have nothing to do with each other: one is
+duplex thermodynamics computed from sequence, the other is a ChIP track. They
+were D1 and D2 of one plan that stopped being one plan.
+
+### Are the nulls worth keeping? Five yes, one no
+
+A null earns its place when it kills a mechanism someone would otherwise have
+to assume, and not when it is an artefact of how the cohort was built.
+
+| null | keep? | why |
+|---|---|---|
+| `d_supercoiling` is read depth | **yes** — the most useful null here | It is the answer to Guo et al.'s "unknown chromosomal factors" for this family, and it was only caught because the experiment shipped an untagged control. A positive result would have been the project's headline |
+| `i_shape` adds +0.0007 over composition | **yes** | Shape and composition are routinely treated as separate channels. Here they are the same channel twice, which is a statement about DNA descriptors rather than about Cas9 |
+| `j_periodicity` is flat | **yes** | GC skew and helical-repeat phasing are the most mechanistically motivated explanations available for a long-range, strand-asymmetric effect, and they are the ones excluded. That makes the effect harder to explain, which is worth more than a weak positive |
+| `f_methylation` is +0.008 | **yes** | A specific published result — ~10× lower SaCas9 activity when a Dam `GATC` overlaps the PAM-proximal positions — does not reproduce for SpCas9 on this screen. A named prediction failing in a new context is a result |
+| `g_transcription`'s essentiality term is +0.00004 | **yes** | It replicates Guo et al.'s published essentiality null to four decimal places on a different cohort, while their **expression** null does not replicate. One of those is a confirmation and the other is a correction |
+| `h_offtarget` is +0.001 | **no — not a null** | Six of its thirteen columns are constant zero because the cohort was filtered to uniquely-targeting guides. This says nothing about whether off-target descriptors are informative; it says the question was removed before the measurement. Quoting it beside the others implies a specificity conclusion the data cannot support (Part 2) |
 
 ### Teammates' — on the published 13,880-row matrix, quoted in R²
 

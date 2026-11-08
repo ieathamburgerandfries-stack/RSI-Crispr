@@ -1,0 +1,3 @@
+metric,n_selected,binary_cols,binary_share,a_flank_cols,dense_cols,spearman,spearman_sd,overlap_cols
+gain,300,144,0.48,78,156,0.7096243916970018,0.0008208439720354603,239
+shap,300,102,0.34,97,198,0.710326831298086,9.292608460698855e-05,239

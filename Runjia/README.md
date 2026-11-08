@@ -120,9 +120,9 @@ model keeps up. Full assessment, written for someone outside the project, in
 
 Everything in `src/` exists to answer one question: *what moves `cut.score`
 that the quantum descriptors do not already capture?* The reasoning and the
-literature behind each family is in
-[`lit_review/beyond_QCT_literature_review.md`](lit_review/beyond_QCT_literature_review.md);
-the first-pass answer is in [`results/RESULTS.md`](results/RESULTS.md).
+literature behind each family is in `lit_review/beyond_QCT_literature_review.md`
+(local only); the first-pass answer is in [`results/RESULTS.md`](results/RESULTS.md),
+and Appendix C of the report describes what each family actually captures.
 
 **Ablation, 5 seeds** (each family alone against a baseline reproduced to four
 decimal places). `arc` holds out one of five contiguous chromosome arcs, which
@@ -262,7 +262,7 @@ LightGBM**; the frozen XGBoost numbers above stay as the historical baseline.
 | [`results/RESULTS_archive_2026-10-10.md`](results/RESULTS_archive_2026-10-10.md) | the long-form commentary as it stood on 10 October 2026, kept verbatim — nulls, tangents and all |
 | `docs/qna_archive.md` | *(local only)* questions asked, answered and closed without moving a number — kept for conference Q&A, deliberately not in the report |
 | `docs/FINDINGS_LOG.md` | *(local only)* the chronological record — every result as it was first believed, every withdrawal where it happened, every bug. Git history is the authority; this is the reading copy |
-| [`lit_review/beyond_QCT_literature_review.md`](lit_review/beyond_QCT_literature_review.md) | why each feature family was tried in the first place |
+| `lit_review/beyond_QCT_literature_review.md` | *(local only)* working notes on other people's papers — why each feature family was tried in the first place. Appendix C of the report carries the part a reader needs |
 | `local/MISCONCEPTIONS.md` | *(local only, gitignored)* every claim we withdrew, why it was wrong and how it was caught |
 
 ---
@@ -278,7 +278,7 @@ RSI09/
 │   │   └── features/   one CSV per feature family
 │   └── processed/      merged model-ready matrices (only if you export them)
 ├── external_data/      downloaded datasets — see its own README
-├── lit_review/         papers + the review that motivates each family
+├── lit_review/         papers + the review that motivates each family (local)
 ├── src/sgrna/          the pipeline (imported by the notebooks)
 ├── results/            335 result files + RESULTS.md (claim → evidence index)
 ├── notebooks/          ← start here
