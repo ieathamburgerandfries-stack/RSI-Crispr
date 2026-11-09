@@ -351,6 +351,80 @@ chk("share: nonlinearity within a column", (float(dc.loc[1, "confirm_rho"]) - li
 chk("share: pairs", (float(dc.loc[2, "confirm_rho"]) - float(dc.loc[1, "confirm_rho"])) / tot, 0.37, 2)
 chk("share: third and fourth order", (top - float(dc.loc[2, "confirm_rho"])) / tot, 0.04, 2)
 
+
+print("Section 15: metric by metric, seeds, data efficiency, clean comparison, speed")
+for sp, vals in (("espcas9", dict(hal=(0.7821, 0.5920, 0.7801, 0.6009, 0.4937, 95.4572), tuned=(0.0286, 0.0301, 0.0234, 0.0435, 0.0034, -1.9247))),
+                 ("wt", dict(hal=(0.6945, 0.5066, 0.7203, 0.5152, 0.2808, 85.3614), tuned=(0.0226, 0.0221, 0.0173, 0.0285, 0.0193, -0.4408)))):
+    pn = pd.read_csv(OUT / f"panel_{sp}.csv").set_index("arm")
+    for m, h, d_ in zip(("spearman", "kendall_tau", "pearson", "r2", "top_decile_prec", "pick_percentile"), vals["hal"], vals["tuned"]):
+        chk(f"{sp} crisprHAL {m}", float(pn.loc["crisprHAL 2", m]), h, 4 if m != "pick_percentile" else 2)
+        chk(f"{sp} tuned - crisprHAL {m}", float(pn.loc["tuned XGBoost", "d_" + m]), d_, 4 if m != "pick_percentile" else 2)
+pn = pd.read_csv(OUT / "panel_espcas9.csv").set_index("arm")
+for m, lo_, hi_ in (("spearman", 0.0241, 0.0331), ("r2", 0.0366, 0.0503), ("top_decile_prec", -0.0151, 0.0286)):
+    chk(f"espcas9 {m} lo", float(pn.loc["tuned XGBoost", "lo_" + m]), lo_, 4); chk(f"espcas9 {m} hi", float(pn.loc["tuned XGBoost", "hi_" + m]), hi_, 4)
+pw = pd.read_csv(OUT / "panel_wt.csv").set_index("arm")
+for m, lo_, hi_ in (("spearman", 0.0139, 0.0313), ("pearson", 0.0094, 0.0254), ("r2", 0.0169, 0.0397), ("pick_percentile", -10.3474, 9.7335)):
+    chk(f"wt {m} lo", float(pw.loc["tuned XGBoost", "lo_" + m]), lo_, 4); chk(f"wt {m} hi", float(pw.loc["tuned XGBoost", "hi_" + m]), hi_, 4)
+tk = pd.read_csv(OUT / "topk_panel.csv")
+tg = lambda sp, arm, col: float(tk[(tk.split == sp) & (tk.arm == arm)][col].iloc[0])
+for sp, col, v in (("espcas9", "d_top5pct_precision", 0.019), ("espcas9", "d_pick50_percentile", -1.702), ("espcas9", "d_pick100_percentile", -0.806),
+                   ("wt", "d_top5pct_precision", 0.048), ("wt", "lo_top5pct_precision", 0.003), ("wt", "d_pick100_percentile", 1.017), ("wt", "d_pick50_percentile", -1.958)):
+    chk(f"topk {sp} {col}", tg(sp, "tuned XGBoost", col), v, 3)
+chk("calibration slope wt tuned", tg("wt", "tuned XGBoost", "calibration_slope"), 1.012, 3); chk("calibration slope wt crisprHAL", tg("wt", "crisprHAL 2", "calibration_slope"), 1.082, 3)
+ss = pd.read_csv(OUT / "seed_stability.csv"); ss["lead"] = ss.rho - ss.crisprhal
+for sp, mn, mx, mean in (("espcas9", 0.0280, 0.0286, 0.0284), ("wt", 0.0208, 0.0228, 0.0221)):
+    x = ss[ss.split == sp].lead
+    chk(f"seed lead {sp} min", float(x.min()), mn, 4); chk(f"seed lead {sp} max", float(x.max()), mx, 4); chk(f"seed lead {sp} mean", float(x.mean()), mean, 4)
+de = pd.read_csv(OUT / "data_efficiency.csv")
+hal_sc = pd.read_csv(OUT.parents[3] / "results" / "sample_complexity.csv"); hal_sc = hal_sc[(hal_sc.model == "crisprHAL 2") & (hal_sc.seed == 41)]
+dm = de.pivot_table(index="n_train", columns="arm", values="rho")
+for nn, ch_, tu_, hh_ in ((4000, 0.6524, 0.6576, 0.5235), (8000, 0.6814, 0.6915, 0.6323), (13880, 0.6988, 0.7106, 0.6733), (20000, 0.7053, 0.7198, 0.6879), (26853, 0.7076, 0.7251, 0.6950)):
+    chk(f"n={nn} champion", float(dm.loc[nn, "champion"]), ch_, 4); chk(f"n={nn} tuned", float(dm.loc[nn, "tuned d099x"]), tu_, 4)
+    chk(f"n={nn} crisprHAL stored", float(hal_sc[hal_sc.n_train == nn].spearman.mean()), hh_, 4)
+cv = pd.read_csv(OUT / "clean_vs_hal.csv")
+cr = lambda vs, arm, col: float(cv[(cv.vs.str.contains(vs)) & (cv.arm == arm)][col].iloc[0])
+for vs, arm, d_, lo_, hi_ in (("default", "tuned XGBoost (d099x)", 0.0324, 0.0248, 0.0403), ("default", "original champion", 0.0181, 0.0098, 0.0265),
+                              ("tuned", "tuned XGBoost (d099x)", 0.0240, 0.0162, 0.0318), ("tuned", "original champion", 0.0097, 0.0018, 0.0179)):
+    chk(f"clean vs {vs} {arm} diff", cr(vs, arm, "diff"), d_, 4); chk("  lo", cr(vs, arm, "lo"), lo_, 4); chk("  hi", cr(vs, arm, "hi"), hi_, 4)
+chk("clean n genes", cr("default", "original champion", "n_genes"), 1204, 0); chk("clean n guides", cr("default", "original champion", "n"), 8943, 0)
+bw = pd.read_csv(OUT / "blend_with_hal.csv")
+bb = lambda sp, w, col: float(bw[(bw.split == sp) & (bw.weight_on_crisprhal == w)][col].iloc[0])
+chk("blend espcas9 equal weights", bb("espcas9", 0.5, "rho"), 0.8099, 4); chk("blend wt equal weights", bb("wt", 0.5, "rho"), 0.7257, 4)
+chk("blend wt vs best single", bb("wt", 0.5, "vs_best_single"), 0.0085, 4); chk("blend wt lo", bb("wt", 0.5, "lo"), 0.0040, 4); chk("blend wt hi", bb("wt", 0.5, "hi"), 0.0127, 4)
+chk("blend espcas9 vs best single", bb("espcas9", 0.5, "vs_best_single"), -0.0008, 4)
+te_ = pd.read_csv(OUT / "topend_confirm.csv").groupby("arm").mean(numeric_only=True)
+for arm, rho_, t10 in (("mse", 0.7215, 0.2912), ("weighted-3", 0.7174, 0.2852), ("weighted-9", 0.7102, 0.2890), ("pairwise", 0.5758, 0.2506), ("ndcg", 0.5119, 0.2289)):
+    chk(f"top-end {arm} rho", float(te_.loc[arm, "spearman"]), rho_, 4); chk(f"top-end {arm} top-10% precision", float(te_.loc[arm, "top10pct_prec"]), t10, 4)
+rc_ = pd.read_csv(OUT / "topend_rank_capacity.csv"); chk("pairwise best rho over lr/depth/trees", float(rc_.spearman.max()), 0.6017, 4)
+e2 = pd.read_csv(OUT / "e2e_slicer.csv"); eh = pd.read_csv(OUT / "e2e_crisprhal.csv")
+ee = lambda m, b: float(e2[(e2.model == m) & (e2.batch == b)].ms_per_guide.iloc[0])
+for m, vals in (("original champion", (0.63, 0.072, 0.079)), ("tuned XGBoost (d099x)", (0.72, 0.089, 0.093)), ("XGBoost average of 5", (1.16, 0.139, 0.141)), ("mixed ensemble", (2.16, 0.218, 0.206))):
+    for b, v in zip((1, 100, 10000), vals):
+        chk(f"e2e {m} batch {b} ms/guide", ee(m, b), v, 2 if v >= 0.6 else 3)
+for b, v in zip((1, 100, 10000), (15.29, 1.365, 1.214)):
+    chk(f"e2e crisprHAL batch {b} ms/guide", float(eh[eh.batch == b].ms_per_guide.iloc[0]), v, 3 if v < 2 else 2)
+for b, v in zip((1, 100, 10000), (21, 15, 13)):
+    chk(f"e2e speed ratio tuned batch {b}", float(eh[eh.batch == b].ms_per_guide.iloc[0]) / ee("tuned XGBoost (d099x)", b), v, 0)
+fe = pd.read_csv(OUT / "featuriser_equivalence.csv").set_index("item").value
+chk("featurisers: guides compared", float(fe["guides compared"]), 33567, 0); chk("featurisers: base max abs difference", float(fe["base columns: max abs difference"]), 0.0, 6)
+chk("featurisers: family A max abs difference", float(fe["family A columns: max abs difference after float32 cast"]), 0.0, 6)
+chk("featurisers: champion prediction difference", float(fe["champion: prediction max abs difference, stored vs fast features"]), 0.0, 6)
+chk("featurisers: d099x prediction difference", float(fe["d099x: prediction max abs difference, stored vs fast features"]), 0.0, 6)
+
+
+em = de[de.arm == "tuned d099x, early-stopped"].groupby("n_train").rho.mean()
+chk("early-stopped at 4,000", float(em.loc[4000]), 0.6550, 4); chk("early-stopped at 26,853", float(em.loc[26853]), 0.7238, 4)
+t8, t13 = float(dm.loc[8000, "tuned d099x"]), float(dm.loc[13880, "tuned d099x"])
+n_match = 8000 + (0.6950 - t8) / (t13 - t8) * (13880 - 8000)
+chk("labels at which the tuned model matches crisprHAL's 26,853-guide figure (rounded to 100)", round(n_match, -2), 9100, 0)
+chk("ratio of labels", 26853 / n_match, 3.0, 0)
+chk("clean crisprHAL default rho", cr("default", "original champion", "crisprhal"), 0.6892, 4); chk("clean crisprHAL tuned-config rho", cr("tuned", "original champion", "crisprhal"), 0.6976, 4)
+chk("clean tuned rho", cr("default", "tuned XGBoost (d099x)", "rho"), 0.7215, 4)
+chk("calibration slope espcas9 tuned", tg("espcas9", "tuned XGBoost", "calibration_slope"), 1.047, 3); chk("calibration slope espcas9 crisprHAL", tg("espcas9", "crisprHAL 2", "calibration_slope"), 1.053, 3)
+chk("residual correlation espcas9", float(bw[(bw.split == "espcas9") & bw.weight_on_crisprhal.isna()].rho.iloc[0]), 0.83, 2)
+chk("residual correlation wt", float(bw[(bw.split == "wt") & bw.weight_on_crisprhal.isna()].rho.iloc[0]), 0.81, 2)
+chk("fast family A ms per guide", float(fe["family A ms per guide (whole cohort, one call)"]), 0.068, 3); chk("fast base ms per guide", float(fe["base ms per guide (whole cohort, one call)"]), 0.019, 3)
+
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:
     print("  MISMATCH", b)

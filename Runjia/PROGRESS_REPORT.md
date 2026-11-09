@@ -1338,7 +1338,8 @@ about the small-data regime; at 47.6k labelled guides it is false.
 #### After retuning: the same three conditions with the tuned model (fork, 9 November; `EXTENSION_LOG.md` §13)
 
 **With the retuned configuration the parity on crisprHAL 2's own splits becomes a lead of about 0.025 ρ.** The settings were
-chosen on a different cohort (the wild-type curated cohort, 70% of its genes), nothing was selected on these splits, and the
+chosen on 70% of the genes of the wild-type curated cohort, which is a different cohort from the eSpCas9 split but *the same guides* as the WT-SpCas9 split and
+our five folds (see "an untouched-genes check" below for the comparison that excludes them); no model's weights were ever fitted on a test row, and the
 SLICER arms train on each split's training rows only, selection inside them, as before. Each row is paired on guides with
 95% bootstrap intervals; crisprHAL 2's side is unchanged (its shipped weights on their splits: 0.7821 eSpCas9, 0.6945 WT-SpCas9,
 which reproduces their published 0.782 and 0.695; its stored out-of-fold predictions on our five folds).
@@ -1382,6 +1383,65 @@ Python: 1.41 ms per guide on one thread (0.08 ms for the 6,169 base columns and 
 SLICER takes 1.46 ms for one guide (**about 10× faster**) and, in batches of 100 or more, 1.41–1.43 ms for the champion and the tuned model (**7–22% slower than
 crisprHAL 2 per guide**) and 1.55–1.58 ms for the nine-model mix (20–32% slower). The tuned model's extra trees add 0.01–0.02 ms to a 1.4 ms guide: the large factor
 was the forward pass, and a user pays for the featurisation. It is a straight Python loop and could be vectorised; as shipped, it dominates.
+
+#### Metric by metric, seeds, data efficiency, an untouched-genes check, and a faster featuriser (fork, 9 November night; `EXTENSION_LOG.md` §15)
+
+**Every metric, both of crisprHAL 2's splits** (tuned XGBoost minus crisprHAL 2, paired bootstrap over guides; crisprHAL 2's own value in brackets).
+Four metrics are now clear on both splits, and the two top-end metrics are tied:
+
+| | eSpCas9 split (11,898 test) | WT-SpCas9 split (6,737 test) |
+|---|---:|---:|
+| Spearman ρ | **+0.0286** [+0.0241, +0.0331] (0.7821) | **+0.0226** [+0.0139, +0.0313] (0.6945) |
+| Kendall τ | **+0.0301** [+0.0257, +0.0346] (0.5920) | **+0.0221** [+0.0147, +0.0297] (0.5066) |
+| Pearson | **+0.0234** [+0.0191, +0.0278] (0.7801) | **+0.0173** [+0.0094, +0.0254] (0.7203) |
+| R² | **+0.0435** [+0.0366, +0.0503] (0.6009) | **+0.0285** [+0.0169, +0.0397] (0.5152) |
+| top-decile precision | +0.0034 [−0.0151, +0.0286] (0.4937) | +0.0193 [−0.0119, +0.0520] (0.2808) |
+| pick percentile of the 10 best-scoring guides | −1.92 [−6.70, +3.93] (95.46) | −0.44 [−10.35, +9.73] (85.36) |
+
+The earlier panel (champion) had crisprHAL 2 ahead on Pearson, R², top-decile precision and pick percentile; with the retuned model it is ahead on none
+significantly. The pick percentile rests on ten guides and its interval is ±10 percentile points, so larger top sets say more: precision of the top 5% is +0.019
+[−0.017, +0.049] on eSpCas9 and **+0.048 [+0.003, +0.074] on WT-SpCas9**; the mean percentile of the 50 and 100 best-scoring guides is −1.7 [−4.1, +1.1] and −0.8 [−3.3, +1.3] on
+eSpCas9 and −2.0 [−7.0, +3.7] and +1.0 [−3.2, +5.0] on WT-SpCas9: **tied**. Calibration slope (1 is ideal): 1.047 against 1.053 (eSpCas9), 1.012 against 1.082 (WT-SpCas9).
+Objectives aimed at the top do not help: on the held-out genes squared error gives ρ 0.7215 and top-decile precision 0.2912, weighting high-activity guides 0.7174 / 0.2852
+(weight 3) and 0.7102 / 0.2890 (weight 9), and pairwise and NDCG ranking objectives 0.5758 and 0.5119 (0.6017 at best over learning rate, depth and tree count) with lower top-end precision.
+**The lead is stable across training seeds** (five seeds, selection and trees refitted): +0.0280 to +0.0286 (mean 0.0284) on eSpCas9, +0.0208 to +0.0228 (mean 0.0221) on WT-SpCas9.
+
+**Data efficiency, same folds and subsets as the stored curve** (mean ρ over the five folds; crisprHAL 2 at seed 41):
+
+| training guides | 4,000 | 8,000 | 13,880 | 20,000 | 26,853 |
+|---|---:|---:|---:|---:|---:|
+| crisprHAL 2 | 0.5235 | 0.6323 | 0.6733 | 0.6879 | 0.6950 |
+| original champion | 0.6524 | 0.6814 | 0.6988 | 0.7053 | 0.7076 |
+| **tuned XGBoost** | **0.6576** | **0.6915** | **0.7106** | **0.7198** | **0.7251** |
+
+The tuned model is ahead on every fold at every size (leads +0.134, +0.059, +0.037, +0.032, +0.030). With 8,000 labelled guides it scores 0.6915, within 0.004 of crisprHAL 2 trained on
+26,853; interpolating, it reaches crisprHAL 2's 26,853-guide figure at about 9,100 guides, **about three times fewer labels**. Choosing the tree count by early stopping instead of the fixed 4,000 changes little
+(0.6550 at 4,000, 0.7238 at 26,853).
+
+**An untouched-genes check.** The tuned settings were chosen on 70% of the curated cohort's genes, and crisprHAL's WT-SpCas9 data are the same 33,567 guides, so the WT-split and five-fold rows
+above (and the "after retuning" table) include guides whose labels fed the *selection of settings* (no model's weights); only the eSpCas9 split is a different cohort. On the 1,204 genes (8,943 guides) held
+out from every search, with SLICER trained on the tuning genes only (21,260 guides) and crisprHAL 2 at its stored out-of-fold predictions (trained on 80% of all guides by random folds, i.e. on guides from the same genes,
+which favours it), paired and bootstrapped over genes: tuned XGBoost 0.7215 against crisprHAL 2 at its published configuration 0.6892 (**+0.0324 [+0.0248, +0.0403]**) and against its best-found configuration 0.6976
+(**+0.0240 [+0.0162, +0.0318]**); the original champion +0.0181 [+0.0098, +0.0265] and +0.0097 [+0.0018, +0.0179]. The lead survives, and is larger than on the contaminated folds.
+
+**crisprHAL 2 is partly complementary.** Averaging the tuned model with crisprHAL 2's shipped predictions at equal weight scores 0.8099 on eSpCas9 (−0.0008 [−0.0030, +0.0015] against the tuned model alone) and
+0.7257 on WT-SpCas9 (**+0.0085 [+0.0040, +0.0127]**); the two models' residuals correlate at 0.83 and 0.81. A network and trees share most of their errors but not all, and the network adds
+something only at the smaller training size. No weight was fitted on test data.
+
+**The featuriser was the bottleneck, and is fixed.** `a_flank_fast.py` and `base_fast.py` compute the same 348 and 6,169 columns on arrays: **identical** to the stored matrices on all 33,567 guides (maximum absolute difference 0.0
+after the float32 cast, same names, same missing-value pattern), and a model trained on the stored matrices gives predictions that differ by 0.0 when fed the fast features; they cost 0.068 ms (family A) and 0.019 ms (base) per guide
+instead of 1.33 and 0.08. End to end per guide on one thread (featurise, select, impute, predict; crisprHAL 2 including its input encoding):
+
+| ms per guide, one thread | 1 guide | 100 guides | 10,000 guides |
+|---|---:|---:|---:|
+| crisprHAL 2 | 15.29 | 1.365 | 1.214 |
+| original champion | 0.63 | 0.072 | 0.079 |
+| **tuned XGBoost** | **0.72** | **0.089** | **0.093** |
+| average of 5 XGBoost | 1.16 | 0.139 | 0.141 |
+| mixed, 9 models | 2.16 | 0.218 | 0.206 |
+
+The tuned model is **21× / 15× / 13× faster than crisprHAL 2 end to end**, where before the fix it was 7–22% slower in large batches; the earlier cost verdict (one tuned model: yes; averaging and mixing: no) is unchanged.
+SLICER now leads or ties on every metric in the comparison: accuracy (four of six clearly, two tied), data efficiency, fit time, and end-to-end scoring time.
 
 #### Each published model on the cohort it was built for
 
@@ -1658,6 +1718,7 @@ opposite of how it is usually presented. Keras' default batch size costs crisprH
 **Correction, 9 November: these ratios are for the forward pass; the end-to-end ratio is far smaller.** Computing the 6,517 columns costs
 1.41 ms per guide on one thread (1.33 ms of it family A's flank windows), so end to end SLICER is about 10× faster than crisprHAL 2 for a
 single guide (1.46 against 15.6 ms) and about as fast per guide in batches (1.41 against 1.17–1.32 ms). See "After retuning" above.
+With array-based featurisers that give identical columns (0.068 ms for family A and 0.019 ms for the base per guide), the end-to-end ratio is 21× / 15× / 13× in favour of the tuned model; see "The featuriser was the bottleneck" below.
 
 *The forward-FLOPs column is also derivable rather than absent.* Scoring one
 guide costs one root-to-leaf walk per tree — 400 trees at depth 4 is **1,600

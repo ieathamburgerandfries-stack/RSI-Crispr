@@ -696,3 +696,28 @@ fourth order); the gain by column kind (indicators 35% -> 51%, quantum 37% -> 27
 300 / 450); the gain by position (eight PAM-proximal positions 63% / 62%; position 18 alone 14%; 3 nt after the PAM 6% / 5%); within-gene against
 between-gene gain (+0.018 each); data scaling (+0.0095, +0.0061, +0.0143 at 25%, 50%, 100% of the tuning genes). Limits: gain shares are model-dependent importances over correlated columns, positions
 are k-mer start positions (positions 19 and 20 have few columns), the data-scaling points use 3 random gene subsets and the 50% point is out of order.
+
+## 15. Overnight: where crisprHAL 2 could still lead, and what was done about it (9 Nov; the user asked for further tests aimed at beating crisprHAL 2 on any earlier metric)
+
+Selection of tests (each argued before it was run): the original panel had crisprHAL 2 ahead on Pearson, R², top-decile precision and pick percentile; speed had just
+turned out to be a tie once featurisation was counted; data efficiency had not been re-run with the tuned model. So: (1) the full six-metric panel for the tuned and mixed
+models on both of crisprHAL 2's splits, with raw predictions kept (`panel_vs_hal.py`; R² and calibration need unscaled predictions, which the earlier z-scored blends did not
+give); (2) smoother top-end metrics and five-seed stability (`topk_panel.py`); (3) top-end objectives (`topend.py`: weighted regression, pairwise, NDCG), with a capacity-fair
+rerun of the ranking objective before calling it a null (`topend_rank_capacity.csv`: best over three learning rates, two depths, four tree counts 0.6017, against 0.7215 for squared error);
+(4) the data-efficiency curve with the tuned model against the stored crisprHAL 2 curve (`data_efficiency.py`); (5) array-based featurisers (`a_flank_fast.py`, `base_fast.py`,
+`e2e_bench.py`, `equiv_check.py`); (6) blending with crisprHAL 2 (`blend_with_hal.py`); (7) a comparison on genes untouched by any search (`clean_vs_hal.py`).
+
+**A correction made on the way.** In §13 and the report I wrote that nothing was selected on crisprHAL's splits. That is true of the eSpCas9 split only. crisprHAL's WT-SpCas9
+data are the same 33,567 guides as the curated cohort whose genes were split into tuning and confirmation parts in §11, so the tuned *settings* (not any model's weights) were selected using
+labels of guides that appear in the WT-SpCas9 test split and in the five-fold comparison. The report now says so, and (7) gives the comparison that excludes them: on the 8,943 CONFIRM guides,
+tuned XGBoost trained on the tuning genes only leads crisprHAL 2's out-of-fold predictions by +0.0324 [+0.0248, +0.0403] (published configuration) and +0.0240 [+0.0162, +0.0318] (best-found
+configuration), a conservative design because crisprHAL 2's models were trained on guides from the same genes.
+
+**Results** are tabulated in the report subsection "Metric by metric, seeds, data efficiency, an untouched-genes check, and a faster featuriser". In short: four of six metrics clearly ahead on both splits
+(ρ, τ, Pearson, R²), top-decile precision and pick percentile tied (intervals include zero; precision of the top 5% +0.048 [+0.003, +0.074] on WT-SpCas9); no objective change improves the top end; the lead is
+stable across five seeds (+0.0284 eSpCas9, +0.0221 WT-SpCas9 on average); the tuned model is ahead on every fold at every training size and matches crisprHAL 2's 26,853-guide accuracy at about 9,100 guides; the array-based
+featurisers reproduce the stored columns exactly (0.0 difference on 33,567 guides; predictions identical) and make end-to-end scoring 21× / 15× / 13× faster than crisprHAL 2 for 1 / 100 / 10,000 guides
+(0.72 / 0.089 / 0.093 ms per guide against 15.29 / 1.365 / 1.214); averaging with crisprHAL 2 adds +0.0085 [+0.0040, +0.0127] on WT-SpCas9 and nothing on eSpCas9.
+
+**Not done / limits.** crisprHAL 2 was not retuned or seed-ensembled on its own splits (GPU time), so the lead is against its shipped model. The panel intervals resample guides of one split. The end-to-end timing
+excludes retrieving the flanking sequence from a genome (the same for both models) and the first timing run shared the machine with a finishing job (rerun on an idle machine gave the figures quoted). GPU timings were not repeated.

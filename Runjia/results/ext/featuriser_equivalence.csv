@@ -1,0 +1,12 @@
+item,value
+base columns: names equal,1.0
+base columns: NaN pattern equal,1.0
+base columns: max abs difference,0.0
+family A columns: names equal,1.0
+family A columns: NaN pattern equal,1.0
+family A columns: max abs difference after float32 cast,0.0
+guides compared,33567.0
+"base ms per guide (whole cohort, one call)",0.01876679602220788
+"family A ms per guide (whole cohort, one call)",0.06765488920934817
+"champion: prediction max abs difference, stored vs fast features",0.0
+"d099x: prediction max abs difference, stored vs fast features",0.0

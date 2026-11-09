@@ -27,6 +27,9 @@ project folder) and `PYTHONPATH=<fork>/Runjia`, `EXT_OUT=<fork>/Runjia/results/e
 | `mix_ecoli.py`, `mlp_worker.py` | LightGBM / CatBoost / extra-trees / neural network / ridge searches on the same DEV genes, blends on the held-out genes (the network runs in its own process: PyTorch next to XGBoost stalled silently) |
 | `vs_crisprhal.py`, `vs_crisprhal_wt_hal.py`, `cost_bench.py` | the tuned and mixed models against crisprHAL 2 on its own splits and on our folds, its WT-SpCas9 weights on its test file, and one-thread cost of every model including featurisation |
 | `interpret.py` | interaction-order curve, gain by column kind and by position, within- versus between-gene gain, data scaling |
+| `panel_vs_hal.py`, `topk_panel.py`, `blend_with_hal.py`, `clean_vs_hal.py` | six-metric panel against crisprHAL 2 on its own splits with raw predictions, smoother top-end metrics and seed stability, blends with its predictions, and the comparison on genes no search touched |
+| `topend.py`, `data_efficiency.py` | top-end objectives (weighted, pairwise, NDCG); the learning curve with the tuned model against the stored crisprHAL 2 curve |
+| `a_flank_fast.py`, `base_fast.py`, `e2e_bench.py`, `equiv_check.py` | array-based featurisers that reproduce the original columns exactly (checked on all 33,567 curated guides), the end-to-end timing against crisprHAL 2, and the recorded equivalence |
 | `human_flank.py`, `human_shape.py`, `human_twin_check.py` | human side result (stopped; see `EXTENSION_LOG.md` section 10): hg38 location of the human guides, the shape ablation on human, and the twin-grouped re-run of the human baseline |
 
 Data downloaded for this work (publisher / RCSB / GitHub text, nothing executed): `external_data/kim2020_cas9_variants/`
