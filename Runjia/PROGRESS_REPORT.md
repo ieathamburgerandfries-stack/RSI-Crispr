@@ -1332,8 +1332,56 @@ sample-complexity curves had already made.** Our folds train on 26,853 guides;
 their eSpCas9 split on 47,591. The curves say our advantage is largest where
 labels are scarce and closes as they stop being (Appendix B), and the paired gap
 goes +0.0133 at 26,853 to +0.0021 at 47,591. **So the data-efficiency claim
-survives and the ranking claim does not.** "SLICER beats crisprHAL 2" is a claim
+survives and the ranking claim does not** (for the champion's settings; the retuned model leads on both splits, see the next subsection). "SLICER beats crisprHAL 2" is a claim
 about the small-data regime; at 47.6k labelled guides it is false.
+
+#### After retuning: the same three conditions with the tuned model (fork, 9 November; `EXTENSION_LOG.md` §13)
+
+**With the retuned configuration the parity on crisprHAL 2's own splits becomes a lead of about 0.025 ρ.** The settings were
+chosen on a different cohort (the wild-type curated cohort, 70% of its genes), nothing was selected on these splits, and the
+SLICER arms train on each split's training rows only, selection inside them, as before. Each row is paired on guides with
+95% bootstrap intervals; crisprHAL 2's side is unchanged (its shipped weights on their splits: 0.7821 eSpCas9, 0.6945 WT-SpCas9,
+which reproduces their published 0.782 and 0.695; its stored out-of-fold predictions on our five folds).
+
+| | crisprHAL 2 | original champion | **tuned XGBoost** | average of 5 XGBoost | mixed, 9 models |
+|---|---:|---:|---:|---:|---:|
+| their eSpCas9 split (47,591 train / 11,898 test) | 0.7821 | 0.7842 (+0.0021 [−0.0031, +0.0072]) | **0.8107 (+0.0286 [+0.0239, +0.0331])** | 0.8104 (+0.0283) | 0.8095 (+0.0273 [+0.0227, +0.0318]) |
+| their WT-SpCas9 split (26,830 / 6,737) | 0.6945 | 0.6985 (+0.0039 [−0.0047, +0.0124]) | **0.7172 (+0.0226 [+0.0139, +0.0314])** | 0.7193 (+0.0248) | 0.7210 (+0.0264 [+0.0180, +0.0348]) |
+| our five folds vs their published configuration (33,567 guides) | 0.6968 | 0.7084 (+0.0115 [+0.0076, +0.0156]) | **0.7256 (+0.0288 [+0.0251, +0.0326])** | 0.7280 (+0.0312) | 0.7293 (+0.0324 [+0.0287, +0.0362]) |
+| our five folds vs the best configuration found for them | 0.7040 | 0.7084 (+0.0044 [+0.0005, +0.0082]) | **0.7256 (+0.0216 [+0.0180, +0.0252])** | 0.7280 (+0.0240) | 0.7293 (+0.0252 [+0.0217, +0.0288]) |
+
+The champion column reproduces the figures above to the digit (0.7842 and +0.0021 on their eSpCas9 split; +0.0115 and +0.0044 on the
+folds), which checks the pipeline. **So the earlier conclusion — that at 47.6k labelled guides "SLICER beats crisprHAL 2" is false — was a
+conclusion about the champion's settings, not about the model class:** at the same data volume the tuned model is 0.029 ahead, with
+an interval whose lower end is more than twice the 0.01 equivalence margin that was declared for the earlier tie. What this does not
+settle: the earlier nested search for crisprHAL 2 found nothing beyond its published configuration on our folds, but no
+equal-effort retuning (or seed ensembling) of their network was tried on their own splits, so the lead is measured against their
+shipped model, not against the best their architecture could do.
+
+**Was the improvement worth the added complexity?** Measured on one thread of the same laptop (`cost_bench.py`):
+
+| | trees | model time per guide, batch 100 | fit time on 47.6k guides | gain over champion (held-out genes) | lead over crisprHAL 2 (their eSpCas9 split) |
+|---|---:|---:|---:|---:|---:|
+| original champion | 400 | 0.002 ms | 2 s | | +0.002 |
+| tuned XGBoost | 4,000 | 0.018 ms | 30 s | **+0.014 [+0.011, +0.017]** | **+0.029** |
+| average of 5 XGBoost | 16,000 | 0.063 ms | 132 s | +0.017 | +0.028 |
+| mixed, 9 models, three libraries | 24,800 | 0.167 ms | 202 s | +0.019 | +0.027 |
+| crisprHAL 2 (for scale) | | 1.32 ms | about 17 CPU-minutes per fit (earlier measurement) | | |
+
+**One tuned model: yes.** It has ten times the trees but is still tens of microseconds per guide and half a minute to fit, and it
+accounts for nearly all of the gain (+0.014 of the +0.017 to +0.019 any ensemble reaches, and the whole of the lead over crisprHAL 2).
+**Averaging five, or mixing three libraries: no.** Averaging adds +0.003 on held-out genes and nothing on the eSpCas9 split (0.8104 against
+0.8107); mixing adds +0.0014 [+0.0005, +0.0025] over the XGBoost average on held-out genes, is lower than the single model on the
+eSpCas9 split (0.8095), and costs three libraries, 24,800 trees and a separate process for the neural network, for a difference inside the
+split-to-split variation of these comparisons.
+
+**What the forward-pass ratios elsewhere in this report leave out.** Every ratio in the inference section (329× to 817× on the laptop) is
+for the forward pass alone. Scoring a guide also needs its 6,517 columns, and family A's flank-window descriptors are computed in
+Python: 1.41 ms per guide on one thread (0.08 ms for the 6,169 base columns and **1.33 ms for the 348 flank columns**), measured warm over
+300 guides. End to end, per guide on one thread, crisprHAL 2 takes 15.6 ms for a single guide and 1.17–1.32 ms in batches of 100 or more;
+SLICER takes 1.46 ms for one guide (**about 10× faster**) and, in batches of 100 or more, 1.41–1.43 ms for the champion and the tuned model (**7–22% slower than
+crisprHAL 2 per guide**) and 1.55–1.58 ms for the nine-model mix (20–32% slower). The tuned model's extra trees add 0.01–0.02 ms to a 1.4 ms guide: the large factor
+was the forward pass, and a user pays for the featurisation. It is a straight Python loop and could be vectorised; as shipped, it dominates.
 
 #### Each published model on the cohort it was built for
 
@@ -1606,6 +1654,10 @@ is stronger at inference than at training (~150× CPU-seconds), which is the
 opposite of how it is usually presented. Keras' default batch size costs crisprHAL
 2 about 10% on the CPU, so it is not what separates the models there.
 
+
+**Correction, 9 November: these ratios are for the forward pass; the end-to-end ratio is far smaller.** Computing the 6,517 columns costs
+1.41 ms per guide on one thread (1.33 ms of it family A's flank windows), so end to end SLICER is about 10× faster than crisprHAL 2 for a
+single guide (1.46 against 15.6 ms) and about as fast per guide in batches (1.41 against 1.17–1.32 ms). See "After retuning" above.
 
 *The forward-FLOPs column is also derivable rather than absent.* Scoring one
 guide costs one root-to-leaf walk per tree — 400 trees at depth 4 is **1,600
@@ -3185,6 +3237,34 @@ partition, so they do not include split-to-split variation; the confirmation is 
 **Scope.** About one and a half hundredths of ρ, on a problem whose open variance is 0.22: the earlier conclusion that tuning is
 a hundredth-scale knob stands, but it is a hundredth that is now collected rather than declined. The champion elsewhere in this
 report keeps its original settings, since every comparison here was made against them.
+
+### Fork update, 9 November: mixing model families, and what the tuned settings say about the signal (`EXTENSION_LOG.md` §12, §14)
+
+**Mixing families adds almost nothing once the model is tuned.** XGBoost, LightGBM (40 draws) and CatBoost (30 draws) were each searched
+on the tuning genes and scored on the held-out genes. As single models they land together (LightGBM 0.7206, CatBoost 0.7207, the tuned XGBoost 0.7215;
+champion 0.7073), and their predictions are close to one another (prediction correlation 0.985 between XGBoost and LightGBM, 0.977 with CatBoost;
+residual correlation 0.973 and 0.959), which is why blending helps so little. Equal-weight blends on the held-out genes, against the XGBoost average of
+five (0.7246): with CatBoost 0.7262 (**+0.0016 [+0.0006, +0.0026]**), with LightGBM and CatBoost 0.7261 (+0.0014 [+0.0005, +0.0025]), weights fitted on
+the tuning genes' out-of-fold predictions 0.7264 (+0.0017 [+0.0005, +0.0030]; weights XGBoost 0.42, CatBoost 0.21, neural network 0.18, LightGBM 0.15).
+Models that err differently help only if they are good enough: extra-trees (0.666), a neural network on the selected columns (0.692) and ridge on all
+columns (0.647) each lower the equal-weight blend (to 0.7224, 0.7234 and 0.7226). The honest size of "other mixes could help" is +0.0015 ρ.
+
+**What the settings say.** Read as statements about the data, with the caveat that they describe the fitted ensemble and not the molecule.
+(i) *The signal is additive plus pairs.* Tree depth is the interaction order. Stumps alone (additive, nonlinear in each column) reach 0.6905 on
+held-out genes against 0.647 for ridge; depth 2 (pairs) 0.7177 (+0.027); depth 3 0.7206 (+0.003); depth 4 0.7210 (+0.0004); depth 5 0.7201,
+depth 6 0.7188, depth 8 0.7158. Of the 0.074 that trees add to the linear model (0.647 to 0.7210), 59% (0.0435) is nonlinearity within a column, 37% (0.0272) is pairs and 4% (0.0033) is third
+and fourth order together, and beyond that it is noise, which is why the search wanted depth 4–5 and ignored every regulariser.
+(ii) *The signal is many small contributions.* The best learning rates are low (0.013–0.04) and the best tree counts large (1,600–4,000); fast learners
+and deep trees were worse across the 200 draws. (iii) *It lives in a few hundred columns.* The selector gives nonzero gain to 878 of 6,517 columns, and
+budgets of 450 to 2,500 score within 0.001. (iv) *The tuned model reads the sequence more directly.* Its share of gain moves from the dense summary descriptors
+to the position-and-k-mer indicators (indicators 35% → 51%, protospacer quantum descriptors 37% → 27%, flank descriptors 27% → 22%), which is what more
+trees and a wider budget can afford. (v) *Where along the guide.* The eight PAM-proximal positions (13–20) hold 63% (original) and 62% (tuned) of the gain,
+position 18 alone 14%, positions 1–7 4% and 8%; the three nucleotides after the PAM carry 6% and 5%, and the upstream flank almost none.
+(vi) *The gain is not in one place.* On held-out genes the tuned model gains +0.018 [+0.008, +0.028] in ranking genes against each other and +0.018
+[+0.014, +0.022] in ranking guides within a gene; the five-model average +0.019 and +0.022. (vii) *More data supports more capacity, only partly shown.* The gain over the
+original is +0.0095 at a quarter of the tuning genes (about 5,400 guides), +0.0061 at half, +0.0143 at all (21,260), and +0.029 on the 47,591-guide eSpCas9 training set;
+the half-way point is out of order and the cohorts differ, so this is consistent with the idea and not a measurement of it. None of this identifies a mechanism:
+trees split on correlated columns, so "interaction order" is order among columns, and one biological factor can appear as several.
 
 ### Does grouped cross-validation still mean the same thing after the cohort moved?
 

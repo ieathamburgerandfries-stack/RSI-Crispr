@@ -637,3 +637,62 @@ the pipeline), depth 6 0.7223 (+0.0072 [+0.0062, +0.0082]), tuned d099x 0.7314 (
 five best 0.7334 (+0.0183 [+0.0175, +0.0191]); every tuned arm ahead on 15 of 15 folds. The tuned settings were chosen on 70%
 of these genes, so this is the number to compare with earlier tables; the unbiased gain is the held-out-gene one above
 (+0.014 single, +0.017 average), and the difference (about +0.002) is the size of what selecting on the same genes adds.
+
+## 12. Mixing model families (9 Nov; `mix_ecoli.py`, `mlp_worker.py`)
+
+*Why.* The five tuned XGBoost models are alike, so averaging them adds only +0.003 over the best; averaging helps in proportion
+to how differently members err. Same DEV / CONFIRM genes as §11; each family gets its own random search on the same DEV folds
+(seed 41) and cached column rankings: LightGBM 40 draws (leaves 7-63, lr 0.01-0.1, up to 3,000 trees), CatBoost 30 draws (depth
+4-8, lr 0.03-0.15, up to 2,000 trees), extra-trees 3, a neural network 8, ridge 1 (all 6,517 columns). Finalists (2 LightGBM, 2 CatBoost, 1 of each other, the 5
+XGBoost from §11) get out-of-fold predictions on DEV (seed-42 partition, for blend weights) and are trained on all of DEV for CONFIRM
+(three seeds). **Process note:** the first smoke test stalled silently at 0% CPU for ten minutes at the neural-network step: PyTorch next
+to XGBoost and LightGBM in one process (each ships an OpenMP runtime) hangs on macOS. The user noticed before I did. The network now runs in its own process
+(`mlp_worker.py`), and later runs were confirmed busy before waiting.
+
+Stage-1 bests on DEV (seed 41; max over the tree grid): LightGBM 0.7233, CatBoost 0.7237, XGBoost 0.7248, neural network 0.6988,
+extra-trees 0.6642, ridge 0.6458. LightGBM and several XGBoost finalists sat at the tree-count cap (3,000), as in §11; not extended.
+
+| CONFIRM genes (rho; difference to the XGBoost average of five, 95% bootstrap over genes) | rho | vs XGBoost average |
+|---|---:|---:|
+| champion | 0.7073 | -0.0174 |
+| XGBoost average of 5 | 0.7246 | |
+| LightGBM best / average of 2 | 0.7206 / 0.7235 | -0.0041 / -0.0011 |
+| CatBoost best / average of 2 | 0.7207 / 0.7242 | -0.0039 / -0.0004 |
+| extra-trees / neural network / ridge | 0.6657 / 0.6920 / 0.6470 | -0.059 / -0.033 / -0.078 |
+| equal blend XGBoost + LightGBM | 0.7250 | +0.0004 [-0.0003, +0.0010] |
+| equal blend XGBoost + CatBoost | 0.7262 | **+0.0016 [+0.0006, +0.0026]** |
+| equal blend XGBoost + LightGBM + CatBoost | 0.7261 | +0.0014 [+0.0005, +0.0025] |
+| ... + extra-trees / + neural network / + ridge (all equal weight) | 0.7224 / 0.7234 / 0.7226 | -0.0022 / -0.0012 / -0.0020 |
+| weights fitted on DEV out-of-fold predictions (XGBoost .42, CatBoost .21, network .18, LightGBM .15, extra-trees .02, ridge .02) | 0.7264 | +0.0017 [+0.0005, +0.0030] |
+
+Prediction correlations with XGBoost (Spearman, DEV out-of-fold): LightGBM 0.985, CatBoost 0.977, neural network 0.934, extra-trees 0.903, ridge 0.860; residual
+correlations 0.973 / 0.959 / 0.882 / 0.836 / 0.767. **Inference:** the gradient-boosted families agree closely, so mixing them adds +0.0015;
+families that do differ are too weak to help at equal weight. **Status: verified on one gene split;** the blend weights come from one OOF partition.
+
+## 13. Against crisprHAL 2 again, and the cost of the extra accuracy (9 Nov; `vs_crisprhal.py`, `vs_crisprhal_wt_hal.py`, `cost_bench.py`)
+
+Three conditions of the original comparison with four SLICER arms (champion, tuned XGBoost d099x, XGBoost average of 5, mixed ensemble =
+the mean of the XGBoost, LightGBM and CatBoost group averages). crisprHAL 2's shipped WT-SpCas9 weights were run on their own WT test file (6,737 guides,
+Spearman 0.6945 against their published 0.695) to get paired predictions; the eSpCas9 and five-fold predictions were the stored ones. Results, rho
+and the paired difference to crisprHAL 2 (95% bootstrap over guides, 4,000 resamples) are tabulated in the report ("After retuning") and in
+`results/ext/vs_crisprhal_{espcas9,wt,folds}.csv`. The champion arm reproduces the earlier figures (0.7842 and +0.0021 [-0.0031, +0.0072] on their eSpCas9
+split; +0.0115 [+0.0076, +0.0156] and +0.0044 [+0.0005, +0.0082] on our folds), which checks the pipeline; on the WT split it gives 0.6985
+against the 0.6997 of the earlier `their_split_slicer` run, a 0.001 difference between two fits of the same configuration. **Result:** tuned XGBoost leads by
++0.0286 [+0.0239, +0.0331] (eSpCas9) and +0.0226 [+0.0139, +0.0314] (WT-SpCas9); the average of five and the mixed ensemble are within 0.003 of it
+(0.8104, 0.8095 on eSpCas9).
+
+*Cost* (one thread, same laptop; fits on 47,591 guides): original champion 400 trees, 0.04 / 0.21 / 16.2 ms for 1 / 100 / 10,000 guides, 2 s to fit; tuned 4,000 trees, 0.13 / 1.81 / 149 ms, 30 s;
+average of 5 (16,000 trees) 0.54 / 6.28 / 535 ms, 132 s; mixed (9 models, 24,800 trees) 1.56 / 16.7 / 1,399 ms, 202 s; crisprHAL 2 (TensorFlow, one thread) 15.6 / 132 / 11,705 ms
+(1.17-1.32 ms per guide in batches). **The model-only ratios of the inference section overstate the end-to-end case:** computing the 6,517 columns costs 1.41 ms
+per guide on one thread (base 0.08, family A 1.33: warm, 300 guides), so end to end SLICER is about 10x faster for one guide and 7-22% slower per guide in
+large batches (champion and tuned model; the mix 20-32% slower). A first, cold measurement gave 1.69 ms because the quantum tables were reloaded on each call; the warm figure is the one used.
+**Verdict:** one tuned model is worth it (ten times the trees, 0.02 ms per guide, 30 s); averaging and mixing are not.
+
+## 14. What the tuned settings say about the signal (9 Nov; `interpret.py`)
+
+Seven readings, each tested rather than assumed (numbers in the report's Appendix B subsection and `results/ext/interpret_*.csv`): the interaction-order curve (stumps 0.6905, depth 2
+0.7177, depth 3 0.7206, depth 4 0.7210 on CONFIRM, ridge 0.647: 59% of what trees add to a linear model is per-column nonlinearity, 37% pairs, 4% third and
+fourth order); the gain by column kind (indicators 35% -> 51%, quantum 37% -> 27%, flank 27% -> 22%; 131 -> 223 indicator columns in the top
+300 / 450); the gain by position (eight PAM-proximal positions 63% / 62%; position 18 alone 14%; 3 nt after the PAM 6% / 5%); within-gene against
+between-gene gain (+0.018 each); data scaling (+0.0095, +0.0061, +0.0143 at 25%, 50%, 100% of the tuning genes). Limits: gain shares are model-dependent importances over correlated columns, positions
+are k-mer start positions (positions 19 and 20 have few columns), the data-scaling points use 3 random gene subsets and the 50% point is out of order.

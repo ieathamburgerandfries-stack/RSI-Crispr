@@ -1,0 +1,4 @@
+part,n_guides,per_guide_ms
+"base (6,169 columns from the 20-mer)",300,0.0799591668571035
+"family A (348 columns from the 1,000-nt flank windows)",300,1.3332493059958022
+total,300,1.4132084728529055

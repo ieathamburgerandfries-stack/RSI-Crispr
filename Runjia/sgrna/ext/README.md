@@ -24,6 +24,9 @@ project folder) and `PYTHONPATH=<fork>/Runjia`, `EXT_OUT=<fork>/Runjia/results/e
 | `pam_predict.py` | the PAM profile of each Kim nuclease predicted from its six PI residues, in the layout of `nuclease_desc.pam_group` (used by `nuclease_model --stage 10`) |
 | `enzyme_contacts.py` | position-resolved contact profiles of each enzyme (substituted residues mapped through 5F9R onto target positions), the exact-permutation pairing test, whole-protein composition distances |
 | `tune_ecoli.py`, `tune_analyze.py` | joint hyperparameter search for the E. coli model judged on held-out genes: 200 random draws on 70% of genes, re-scoring on fresh partitions, confirmation on the other 30%, the eSpCas9 screen as external check, and the whole-cohort standard protocol (`EXTENSION_LOG.md` section 11) |
+| `mix_ecoli.py`, `mlp_worker.py` | LightGBM / CatBoost / extra-trees / neural network / ridge searches on the same DEV genes, blends on the held-out genes (the network runs in its own process: PyTorch next to XGBoost stalled silently) |
+| `vs_crisprhal.py`, `vs_crisprhal_wt_hal.py`, `cost_bench.py` | the tuned and mixed models against crisprHAL 2 on its own splits and on our folds, its WT-SpCas9 weights on its test file, and one-thread cost of every model including featurisation |
+| `interpret.py` | interaction-order curve, gain by column kind and by position, within- versus between-gene gain, data scaling |
 | `human_flank.py`, `human_shape.py`, `human_twin_check.py` | human side result (stopped; see `EXTENSION_LOG.md` section 10): hg38 location of the human guides, the shape ablation on human, and the twin-grouped re-run of the human baseline |
 
 Data downloaded for this work (publisher / RCSB / GitHub text, nothing executed): `external_data/kim2020_cas9_variants/`

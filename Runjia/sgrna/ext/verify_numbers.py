@@ -253,6 +253,104 @@ for arm, v in (("depth6", 0.0072), ("tuned d099x", 0.0162), ("ensemble of 5", 0.
     chk(f"full cohort {arm} - champion", float((tf[arm] - tf["champion"]).mean()), v, 4)
     chk("  folds ahead", float(((tf[arm] - tf["champion"]) > 0).sum()), 15, 0)
 
+
+print("Section 12: mixing model families (held-out genes)")
+mc = pd.read_csv(OUT / "mix_confirm.csv").set_index("arm")
+for arm, v in (("champion", 0.7073), ("xgb ensemble (5)", 0.7246), ("lgb (best)", 0.7206), ("lgb ensemble (2)", 0.7235), ("cat (best)", 0.7207),
+               ("cat ensemble (2)", 0.7242), ("et (best)", 0.6657), ("mlp (best)", 0.6920), ("ridge (best)", 0.6470),
+               ("equal blend: xgb+lgb", 0.7250), ("equal blend: xgb+cat", 0.7262), ("equal blend: xgb+lgb+cat", 0.7261),
+               ("equal blend: xgb+lgb+cat+et", 0.7224), ("equal blend: xgb+lgb+cat+et+mlp", 0.7234),
+               ("equal blend: xgb+lgb+cat+et+mlp+ridge", 0.7226), ("NNLS blend (weights from DEV OOF)", 0.7264)):
+    chk(f"confirm {arm}", float(mc.loc[arm, "rho"]), v, 4)
+for arm, d_, lo_, hi_ in (("equal blend: xgb+cat", 0.0016, 0.0006, 0.0026), ("equal blend: xgb+lgb+cat", 0.0014, 0.0005, 0.0025),
+                          ("NNLS blend (weights from DEV OOF)", 0.0017, 0.0005, 0.0030), ("equal blend: xgb+lgb", 0.0004, -0.0003, 0.0010)):
+    chk(f"{arm} - xgb ensemble", float(mc.loc[arm, "d_vs_xgb_ens"]), d_, 4); chk("  lo", float(mc.loc[arm, "dx_lo"]), lo_, 4)
+    chk("  hi", float(mc.loc[arm, "dx_hi"]), hi_, 4)
+chk("equal blend xgb+cat vs champion", float(mc.loc["equal blend: xgb+cat", "d_vs_champion"]), 0.0190, 4)
+chk("NNLS blend vs champion", float(mc.loc["NNLS blend (weights from DEV OOF)", "d_vs_champion"]), 0.0191, 4)
+mf = pd.read_csv(OUT / "mix_finalists.csv").set_index("name")
+for nm, v in (("lgb011", 0.7233), ("cat015", 0.7237), ("mlp006", 0.6988), ("ridge000", 0.6458), ("et001", 0.6642)):
+    chk(f"stage-1 {nm}", float(mf.loc[nm, "stage1_rho"]), v, 4)
+pc = pd.read_csv(OUT / "mix_pred_corr.csv", index_col=0); rc = pd.read_csv(OUT / "mix_residual_corr.csv", index_col=0)
+chk("prediction corr xgb-lgb", float(pc.loc["xgb", "lgb"]), 0.985, 3); chk("prediction corr xgb-cat", float(pc.loc["xgb", "cat"]), 0.977, 3)
+chk("residual corr xgb-cat", float(rc.loc["xgb", "cat"]), 0.959, 3); chk("residual corr xgb-mlp", float(rc.loc["xgb", "mlp"]), 0.882, 3)
+nw = pd.read_csv(OUT / "mix_nnls_weights.csv").set_index("family").weight
+for fam_, v in (("xgb", 0.416), ("cat", 0.215), ("mlp", 0.180), ("lgb", 0.153)):
+    chk(f"NNLS weight {fam_}", float(nw[fam_]), v, 3)
+
+print("Section 13: against crisprHAL 2 again")
+vs = {c: pd.read_csv(OUT / f"vs_crisprhal_{c}.csv") for c in ("espcas9", "wt", "folds")}
+def vsrow(c, arm, cond=None):
+    d = vs[c]
+    if cond:
+        d = d[d.condition.str.contains(cond)]
+    return d[d.arm == arm].iloc[0]
+for c, arm, cond, rho, hal, diff, lo, hi in (
+        ("espcas9", "champion", None, 0.7842, 0.7821, 0.0021, -0.0031, 0.0072), ("espcas9", "tuned XGBoost (d099x)", None, 0.8107, 0.7821, 0.0286, 0.0239, 0.0331),
+        ("espcas9", "XGBoost average of 5", None, 0.8104, 0.7821, 0.0283, 0.0237, 0.0328), ("espcas9", "mixed ensemble", None, 0.8095, 0.7821, 0.0273, 0.0227, 0.0318),
+        ("wt", "champion", None, 0.6985, 0.6945, 0.0039, -0.0047, 0.0124), ("wt", "tuned XGBoost (d099x)", None, 0.7172, 0.6945, 0.0226, 0.0139, 0.0314),
+        ("wt", "XGBoost average of 5", None, 0.7193, 0.6945, 0.0248, 0.0162, 0.0333), ("wt", "mixed ensemble", None, 0.7210, 0.6945, 0.0264, 0.0180, 0.0348),
+        ("folds", "champion", "default", 0.7084, 0.6968, 0.0115, 0.0076, 0.0156), ("folds", "tuned XGBoost (d099x)", "default", 0.7256, 0.6968, 0.0288, 0.0251, 0.0326),
+        ("folds", "XGBoost average of 5", "default", 0.7280, 0.6968, 0.0312, 0.0275, 0.0349), ("folds", "mixed ensemble", "default", 0.7293, 0.6968, 0.0324, 0.0287, 0.0362),
+        ("folds", "champion", "tuned", 0.7084, 0.7040, 0.0044, 0.0005, 0.0082), ("folds", "tuned XGBoost (d099x)", "tuned", 0.7256, 0.7040, 0.0216, 0.0180, 0.0252),
+        ("folds", "XGBoost average of 5", "tuned", 0.7280, 0.7040, 0.0240, 0.0204, 0.0276), ("folds", "mixed ensemble", "tuned", 0.7293, 0.7040, 0.0252, 0.0217, 0.0288)):
+    r = vsrow(c, arm, cond)
+    tag = f"{c}{'/' + cond if cond else ''} {arm}"
+    chk(f"{tag} rho", float(r.rho), rho, 4); chk(f"  crisprHAL", float(r.crisprhal), hal, 4); chk("  diff", float(r["diff"]), diff, 4)
+    chk("  lo", float(r.lo), lo, 4); chk("  hi", float(r.hi), hi, 4)
+for c, arm, v in (("espcas9", "champion", 1.9), ("espcas9", "tuned XGBoost (d099x)", 30.0), ("espcas9", "XGBoost average of 5", 131.6), ("espcas9", "mixed ensemble", 202.0)):
+    chk(f"fit seconds {c} {arm}", float(vsrow(c, arm).fit_seconds), v, 1 if v < 10 else 0)
+
+print("Cost")
+cs = pd.read_csv(OUT / "cost_slicer.csv"); ch = pd.read_csv(OUT / "cost_crisprhal.csv"); cf = pd.read_csv(OUT / "cost_featurise.csv").set_index("part")
+cl = lambda m, b: float(cs[(cs.model == m) & (cs.batch == b)].latency_ms.iloc[0])
+for m, vals in (("original champion", (0.04, 0.21, 16.21)), ("tuned XGBoost (d099x)", (0.13, 1.81, 149.4)),
+                ("XGBoost average of 5", (0.54, 6.28, 535.0)), ("mixed ensemble", (1.56, 16.74, 1398.7))):
+    for b, v in zip((1, 100, 10000), vals):
+        chk(f"{m} batch {b} ms", cl(m, b), v, 2 if v < 20 else 1)
+for b, v in zip((1, 100, 10000), (15.59, 132.13, 11705.2)):
+    chk(f"crisprHAL 2 batch {b} ms", float(ch[ch.batch == b].latency_ms.iloc[0]), v, 2 if v < 200 else 1)
+chk("featurisation total ms/guide", float(cf.loc["total", "per_guide_ms"]), 1.41, 2)
+chk("featurisation family A ms/guide", float(cf.loc["family A (348 columns from the 1,000-nt flank windows)", "per_guide_ms"]), 1.33, 2)
+chk("mixed ensemble total trees", float(cs[cs.model == "mixed ensemble"].total_trees.iloc[0]), 24800, 0)
+
+print("Section 14: what the settings say")
+dc = pd.read_csv(OUT / "interpret_depth.csv").set_index("max_depth")
+for dep, dv, cv in ((1, 0.6949, 0.6905), (2, 0.7203, 0.7177), (3, 0.7232, 0.7206), (4, 0.7253, 0.7210), (5, 0.7240, 0.7201), (6, 0.7219, 0.7188), (8, 0.7176, 0.7158)):
+    chk(f"depth {dep} DEV", float(dc.loc[dep, "dev_rho"]), dv, 4); chk(f"depth {dep} CONFIRM", float(dc.loc[dep, "confirm_rho"]), cv, 4)
+wb = pd.read_csv(OUT / "interpret_within_between.csv").set_index(["model", "part"])
+for (m, part), rho, dd, lo_, hi_ in ((("champion", "between-gene"), 0.7115, 0, 0, 0), (("champion", "within-gene"), 0.6942, 0, 0, 0),
+                                      (("tuned (d099x)", "between-gene"), 0.7293, 0.0179, 0.0077, 0.0280), (("tuned (d099x)", "within-gene"), 0.7124, 0.0182, 0.0144, 0.0219),
+                                      (("average of five", "between-gene"), 0.7302, 0.0187, 0.0090, 0.0282), (("average of five", "within-gene"), 0.7158, 0.0217, 0.0183, 0.0251)):
+    chk(f"{m} {part} rho", float(wb.loc[(m, part), "rho"]), rho, 4)
+    if dd:
+        chk("  gain", float(wb.loc[(m, part), "d_vs_champion"]), dd, 4); chk("  lo", float(wb.loc[(m, part), "d_lo"]), lo_, 4); chk("  hi", float(wb.loc[(m, part), "d_hi"]), hi_, 4)
+pp = pd.read_csv(OUT / "interpret_position_profile.csv")
+gp = pp[pp.region == "guide"]
+for m, a13, a1, p18 in (("original", 0.627, 0.100, 0.138), ("tuned", 0.618, 0.166, 0.144)):
+    x = gp[gp.model == m].set_index("position").gain_share
+    chk(f"{m} gain share positions 13-20", float(x.loc[13:20].sum()), a13, 3); chk(f"{m} positions 1-12", float(x.loc[1:12].sum()), a1, 3)
+    chk(f"{m} position 18", float(x.loc[18]), p18, 3)
+for m, v in (("original", 0.062), ("tuned", 0.050)):
+    chk(f"{m} 3 nt after the PAM", float(pp[(pp.model == m) & (pp.region == "downstream") & (pp.position <= 3)].gain_share.sum()), v, 3)
+gg = pd.read_csv(OUT / "interpret_gain_groups.csv")
+for m, ind, q, fl in (("original (depth 4, 400 trees, 300 columns)", 0.353, 0.373, 0.273), ("tuned (d099x)", 0.513, 0.271, 0.216)):
+    x = gg[gg.model == m]
+    chk(f"{m[:8]} indicator share", float(x[x.block.str.startswith("protospacer indicators")].gain_share.sum()), ind, 3)
+    chk(f"{m[:8]} quantum share", float(x[x.block.str.startswith("protospacer quantum")].gain_share.sum()), q, 3)
+    chk(f"{m[:8]} flank share", float(x[x.block.str.startswith("flank")].gain_share.sum()), fl, 3)
+ds = pd.read_csv(OUT / "interpret_data_scaling.csv").pivot_table(index=["fraction", "seed"], columns="model", values="rho")
+gain = (ds["d099x"] - ds["champion"]).groupby(level=0).mean()
+for fr, v in ((0.25, 0.0095), (0.5, 0.0061), (1.0, 0.0143)):
+    chk(f"data scaling gain at {fr}", float(gain.loc[fr]), v, 4)
+
+
+lin = float(mc.loc["ridge (best)", "rho"]); top = float(dc.loc[4, "confirm_rho"]); tot = top - lin
+chk("trees add over linear (depth 4 - ridge)", tot, 0.074, 3)
+chk("share: nonlinearity within a column", (float(dc.loc[1, "confirm_rho"]) - lin) / tot, 0.59, 2)
+chk("share: pairs", (float(dc.loc[2, "confirm_rho"]) - float(dc.loc[1, "confirm_rho"])) / tot, 0.37, 2)
+chk("share: third and fourth order", (top - float(dc.loc[2, "confirm_rho"])) / tot, 0.04, 2)
+
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:
     print("  MISMATCH", b)

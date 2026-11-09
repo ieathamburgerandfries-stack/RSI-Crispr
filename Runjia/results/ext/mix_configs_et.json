@@ -1,0 +1,20 @@
+{
+ "et000": {
+  "max_features": 0.4377673667126874,
+  "min_samples_leaf": 1,
+  "nf": 900,
+  "n_estimators": 600
+ },
+ "et001": {
+  "max_features": 0.23924678197357171,
+  "min_samples_leaf": 2,
+  "nf": 300,
+  "n_estimators": 600
+ },
+ "et002": {
+  "max_features": 0.5289222934105577,
+  "min_samples_leaf": 2,
+  "nf": 300,
+  "n_estimators": 600
+ }
+}

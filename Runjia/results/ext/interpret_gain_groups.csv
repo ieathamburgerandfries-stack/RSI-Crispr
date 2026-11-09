@@ -1,0 +1,37 @@
+model,block,n_selected,gain_share
+"original (depth 4, 400 trees, 300 columns)",flank: bases within 10 nt,14,0.0508901298280911
+"original (depth 4, 400 trees, 300 columns)",flank: quantum within 10 nt,25,0.069649332008021
+"original (depth 4, 400 trees, 300 columns)",flank: window composition,9,0.06073251565166334
+"original (depth 4, 400 trees, 300 columns)",flank: window quantum,32,0.09214311917200792
+"original (depth 4, 400 trees, 300 columns)",protospacer indicators: pos 1-5 (PAM-distal),8,0.010620210565173975
+"original (depth 4, 400 trees, 300 columns)",protospacer indicators: pos 16-20 (seed),69,0.2116467093597017
+"original (depth 4, 400 trees, 300 columns)",protospacer indicators: pos 6-15 (middle),54,0.13092986889993527
+"original (depth 4, 400 trees, 300 columns)",protospacer quantum: basepair,7,0.1039305235760064
+"original (depth 4, 400 trees, 300 columns)",protospacer quantum: dimer,25,0.115105793095252
+"original (depth 4, 400 trees, 300 columns)",protospacer quantum: monomer,9,0.04736060374428982
+"original (depth 4, 400 trees, 300 columns)",protospacer quantum: tetramer,24,0.05563805986244172
+"original (depth 4, 400 trees, 300 columns)",protospacer quantum: trimer,24,0.051353134237415755
+tuned (d099x),flank: bases within 10 nt,19,0.04876707226312084
+tuned (d099x),flank: quantum within 10 nt,40,0.06183065068107466
+tuned (d099x),flank: window composition,12,0.037658200244940654
+tuned (d099x),flank: window quantum,41,0.06784605514736876
+tuned (d099x),protospacer indicators: pos 1-5 (PAM-distal),24,0.03449204167714613
+tuned (d099x),protospacer indicators: pos 16-20 (seed),92,0.27820212444397324
+tuned (d099x),protospacer indicators: pos 6-15 (middle),107,0.20010541211039157
+tuned (d099x),protospacer quantum: basepair,8,0.08532931295829556
+tuned (d099x),protospacer quantum: dimer,29,0.06702959406910186
+tuned (d099x),protospacer quantum: monomer,15,0.029290670913153797
+tuned (d099x),protospacer quantum: tetramer,32,0.046403221463903646
+tuned (d099x),protospacer quantum: trimer,31,0.04304564402752928
+selector (all columns),flank: bases within 10 nt,33,0.042634379118680954
+selector (all columns),flank: quantum within 10 nt,96,0.08034798502922058
+selector (all columns),flank: window composition,21,0.05372907593846321
+selector (all columns),flank: window quantum,63,0.10228513181209564
+selector (all columns),protospacer indicators: pos 1-5 (PAM-distal),92,0.04502496123313904
+selector (all columns),protospacer indicators: pos 16-20 (seed),137,0.1961538940668106
+selector (all columns),protospacer indicators: pos 6-15 (middle),217,0.1777922809123993
+selector (all columns),protospacer quantum: basepair,18,0.05291244015097618
+selector (all columns),protospacer quantum: dimer,53,0.0974622294306755
+selector (all columns),protospacer quantum: monomer,22,0.034334056079387665
+selector (all columns),protospacer quantum: tetramer,51,0.0629231184720993
+selector (all columns),protospacer quantum: trimer,54,0.05440046265721321
