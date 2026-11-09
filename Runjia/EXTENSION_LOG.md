@@ -379,3 +379,203 @@ Label-free descriptors minus U, 500 x 6, bootstrap over nuclease: classes with >
 within class +0.006 [-0.011, +0.025]; >= 100 (the threshold used throughout): +0.053 [+0.009, +0.106], -0.002 [-0.038, +0.037]; >= 30: +0.014
 [-0.004, +0.032], -0.011 [-0.036, +0.020]. The ordering gain is real for the well-populated classes and not detectable once rare
 classes with noisy means are included. The report quotes the >= 100 figure and states this dependence.
+
+
+## 7. Giving the model more of the enzyme: composition and structure, learned from many variants (added 9 Nov)
+
+*Why this section exists.* In section 3 the enzyme enters the model as a handful of numbers per nuclease and there are
+only nine nucleases, so nothing richer than a few columns can be learned. A richer description of the enzyme (its residues,
+their chemistry, where they sit in the structure) only makes sense where there are enough enzymes to learn from. The one
+public set found with a few hundred variants is Silverstein et al. 2025 (Nature 643): 770 SpCas9 variants that differ at six
+PI-domain positions (D1135 S1136 G1218 E1219 R1335 T1337), each with the HT-PAMDA log10 rate constant for 64 PAMs (N + 3 nt).
+Data: `training_data/220924_6pos_selected_random_only.csv` of github.com/RachelSilverstein/PAMmla (BSD-3), 729 KB, read as
+text, no code from the repository run. Code: `pam_variants.py` (loader, descriptors, metrics), `pam_learn.py`,
+`pam_analyze.py`. Results: `results/ext/pam_variants/`.
+
+**Column kinds of the sheet** (separated; only the six residues are inputs): identifiers (sample, prep, name); provenance
+(selected/rational, variant source, source library, PAM selected on, shuffled?, extra mutations); a derived flag
+(`Active variant?`, computed from the outcome columns: using it as an input would be leakage; used only to define an
+evaluation subset); the six residues; the 64 outcomes. The `variant source` column is the selection campaign (7 of them:
+five selected on different PAM sets, two unselected random libraries expRAS11/expRAS25); it defines the held-out unit.
+
+**Descriptor groups** (per position, so added and removed independently): `id` one-hot residue identity (what PAMmla uses);
+`comp` composition (hydropathy, side-chain volume, charge, H-bond donors, acceptors, aromatic, Gly and Pro flags: 8 per
+position); `reach` structure x composition (the longest C-alpha to side-chain-atom distance of the residue, taken from the
+structure itself, set against the C-alpha distance to the nearest atom of each of the four PAM base pairs in 5F9R; varies with
+both residue and site); `env` structure only (the site's distances to the PAM base pairs; a constant per site, hence constant
+over variants when the sites are fixed).
+Structure helper checked against the biology: with antiparallel pairing (template residue 31 - r for non-target residue r) the
+C1'-C1' distances are 10.3-10.6 A for the four PAM pairs; R1333 contacts non-target residue 22 (PAM G2) and R1335 residue 23
+(PAM G3), as known for NGG readout. (A first version paired by nearest C1' and mispaired two of the four; caught by the
+distances, replaced.)
+
+**Design.** Leave one selection campaign out (7 folds; the analogue of leave-one-nuclease-out) and, for reference, random
+10-fold. Three model classes (ridge, extra-trees, a 128-64 MLP) because two earlier readings in this project reversed with
+capacity. Metrics are computed *inside* each held-out fold and averaged: pooling predictions across folds makes the
+training-mean baseline score -0.38 (the held-out campaign is missing from its own training mean) and would hand every model
+a spurious +0.4. `rho_pam` = mean over PAMs of the Spearman correlation across held-out variants (does the model order the
+variants correctly for a given PAM); `skill` = 1 - SSE / SSE of the training-mean model. Nulls: identity columns shuffled
+across training variants (`id_perm`), and the structure-only group.
+
+| leave-one-campaign-out, rho_pam | ridge | extra-trees | MLP |
+|---|---:|---:|---:|
+| residue identity (one-hot, 120 cols) | 0.306 | 0.277 | 0.277 |
+| composition only (48 cols) | 0.313 | 0.298 | 0.312 |
+| identity + composition | 0.318 | 0.292 | 0.292 |
+| identity + composition + structure x composition | 0.316 | 0.303 | 0.290 |
+| structure x composition only | 0.213 | 0.288 | 0.243 |
+| structure only (site distances) | 0.000 | 0.000 | 0.000 |
+| identity, shuffled across variants | 0.001 | 0.010 | 0.002 |
+
+Paired differences to identity, with a bootstrap over variants (200 resamples) and the number of the 7 held-out campaigns on
+which the arm is ahead: identity + composition + structure x composition: ridge +0.010 [+0.006, +0.014] (7/7), extra-trees
++0.026 [+0.007, +0.040] (7/7), MLP +0.013 [+0.005, +0.022] (5/7). Composition alone vs identity: ridge +0.007
+[-0.008, +0.021], extra-trees +0.021 [-0.001, +0.036], MLP +0.036 [+0.023, +0.050]. Random 10-fold gives the same ordering
+at slightly higher levels (identity 0.349-0.373, identity + composition + structure x composition 0.366-0.383).
+
+**Inferences, with their status.**
+1. *A description of the residue's chemistry does as well as its identity, with fewer columns* (48 against 120) and better
+   for the nonlinear models. **Verified** for three model classes and both splits; the size of the gain is small (+0.01 to
+   +0.04) and the ridge difference is within noise.
+2. *Adding the structure x composition feature gives a small, consistent further gain* (+0.01 to +0.03, ahead on 7/7 campaigns
+   for ridge and extra-trees, 5/7 for the MLP). **Verified as a small effect**; whether it is the structure or the extra
+   engineered residue-length feature that does it was not separated (`reach` alone is worse than `comp` for ridge and MLP).
+3. *Structure that is fixed per site cannot help when the sites are fixed.* The structure-only group scores exactly the mean
+   model in every model class, by construction (constant columns). This is not a finding about structure; it is the
+   statement that structure can enter a learned model only through (a) the interaction with a variable residue, as `reach`
+   does, or (b) sharing parameters across sites, which this dataset cannot test because the six sites never change.
+4. *Which composition property matters.* Single-property ablations (extra-trees / MLP / ridge, rho_pam; full composition
+   0.298 / 0.312 / 0.313): keeping only side-chain volume 0.284 / 0.193 / 0.154, only charge 0.256 / 0.272 / 0.250, only
+   hydropathy 0.253 / 0.174 / 0.148, only H-bond donors 0.213 / 0.251 / 0.235, acceptors 0.135 / 0.136 / 0.124, aromatic
+   0.103 / 0.103 / 0.120, Gly flag 0.051 / 0.064 / 0.066, Pro flag 0.027 / 0.022 / 0.025; dropping any single property leaves
+   0.292-0.307 / 0.300-0.314 / 0.302-0.314. Size and charge carry most of it and no single property is necessary. The
+   ranking of volume and hydropathy differs between model classes (a linear model cannot use a U-shaped dependence), so only
+   the coarse statement "size, charge and H-bonding, not aromaticity or backbone flags" is supported. **Partly verified.**
+5. *The ceiling is unknown.* The sheet has one measurement per variant, so there is no replicate-based reliability estimate;
+   the three model classes agree with each other (0.28-0.32), which says the learners are saturated, not that the data are.
+
+**What the bootstrap does not cover.** It resamples variants, not campaigns; with 7 campaigns the campaign counts above are
+the more honest unit and they are reported next to the intervals.
+
+**Whole-protein composition is not informative for these enzymes (computed).** Applying the mutation lists to the 1,368-residue
+SEQRES of 5F9R chain B (every wild-type residue matches, which also verifies the lists' numbering) gives 20-amino-acid
+composition vectors that differ from SpCas9's by L1 distance 0.004-0.010 (largest single-amino-acid change 0.003). A
+whole-protein composition or sequence embedding of the nine Kim enzymes is therefore SpCas9's plus a perturbation of at most
+1%; only the environment of the substituted residues distinguishes them.
+
+## 8. A sequence-only PAM descriptor in the guide-efficiency model (stage 10; 9 Nov)
+
+The PAM profile was the descriptor that carried the nuclease effect in section 3.4, but it was measured on each enzyme. Here it
+is predicted from the six PI residues alone by models trained on the 770 Silverstein variants (ridge on identity + composition
+and extra-trees on identity + composition + structure x composition, equal weight; variants with the identical six-residue
+string removed from training; `pam_predict.py`) and handed to the same leave-one-nuclease-out experiment in place of the
+measured profile. The nine Kim enzymes reduce to four six-residue strings (SpCas9, Sniper, eSp, HF1, Hypa, evo are wild type
+at all six; NG V-S-R-F-V-R; VRQR V-S-R-E-Q-R; xCas9 D-S-G-V-R-T), so this descriptor takes four distinct values; it
+cannot tell the high-fidelity enzymes apart from SpCas9, which is right for PAM usage and says nothing about their activity.
+NG also carries L1111R and A1322R, outside the six positions, which this descriptor cannot see.
+
+Check of the descriptor against the measured profile (class shares over the ten NxxN classes): Spearman over the 90
+(nuclease x class) entries 0.886; per nuclease 0.67 (evoCas9) to 0.98 (SpCas9); the top class matches for 8 of 9 (NG: GT
+predicted, GG measured). The predicted shares are sharper (GG share 0.98 for SpCas9 against 0.45 measured: HT-PAMDA rate
+constants span far more orders of magnitude than library indel frequencies); the descriptor is z-scored over the enzymes, so
+only the ordering enters.
+
+Training rows were replayed from the stage-4 random stream, so the new arms are paired with U, D_label-free, D_pam and D_all
+on identical rows; the first fit reproduces the stored stage-4 U prediction exactly (max difference 0.0). Nine nuclease,
+3 replicates, bootstrap over nuclease (4,000):
+
+| arm | rho | vs U | PAM-class ordering | vs U | within PAM class | vs U |
+|---|---:|---:|---:|---:|---:|---:|
+| U (no information) | 0.795 | | 0.855 | | | |
+| measured PAM profile | 0.806 | +0.011 [-0.016, +0.037] | 0.900 | +0.045 [+0.007, +0.085] | 0.435 | +0.024 [-0.023, +0.068] |
+| mutations + structure (no measurement) | 0.809 | +0.014 [-0.001, +0.039] | 0.908 | +0.053 [+0.008, +0.104] | 0.408 | -0.003 [-0.039, +0.036] |
+| **sequence-predicted PAM profile** | **0.820** | **+0.025 [+0.002, +0.057] (7/9)** | **0.899** | **+0.044 [+0.0004, +0.091]** | 0.410 | -0.0005 [-0.056, +0.057] |
+| sequence-predicted PAM + mutations + structure | 0.811 | +0.016 [+0.001, +0.039] (7/9) | 0.908 | +0.053 | 0.418 | +0.008 |
+| same descriptors, shuffled across enzymes (nulls) | 0.752-0.777 | -0.018 to -0.043 | | | | |
+
+Sequence-predicted minus measured PAM profile: rho +0.014 [-0.008, +0.038], PAM-class ordering -0.001 [-0.010, +0.008],
+within class -0.025 [-0.076, +0.018] (4/9). **Inference: for PAM-class ordering, a descriptor computed from the enzyme's six
+PI residues is as good as the measured PAM profile (difference -0.001, interval 0.02 wide), so the PAM screen need not be
+run to get that part of the benefit.** Status: verified on nine enzymes of one protein, four distinct descriptor values;
+what it does not show is that this transfers to enzymes whose changes lie outside the six positions (NG's two extra
+substitutions, xCas9's six others), or to any other protein. Within a PAM class, neither measured nor predicted PAM
+information helps (+0.024 and -0.0005, both intervals include zero), the same answer as sections 3.4 and 3.6. The largest
+single beneficiary is VRQR (0.803 against 0.693 for U), whose six-residue string is not in the training set (nearest
+variant at Hamming distance 2).
+
+## 9. The enzyme as a position-resolved object: where its substitutions sit along the target (9 Nov)
+
+A global enzyme descriptor treats every position of the target alike. Mapping each substituted residue through 5F9R onto the
+target positions it neighbours (weight exp(-d/4 A), d the nearest heavy-atom distance to template-strand residue 10 + i for
+protospacer position i counted from the PAM, and to the four PAM base pairs) gives each enzyme a 24-entry contact profile
+(`enzyme_contacts.py`). The profiles are structurally sensible (HF1: positions 8-12 and 18-20; HypaCas9: 17-20; evoCas9: 7-11
+and 18-19; Sniper: 11-14; NG and VRQR: the PAM and the first protospacer position). Test of whether the profile carries
+enzyme-specific information: each enzyme's sequence dependence at a position (spread of the one-hot ridge coefficients,
+fitted on its own training targets, scaled to sum to one over the positions so a global change in activity spread cannot
+mimic a local one) minus SpCas9's, correlated across positions with the enzyme's contact profile; null by all 8! (or 5!)
+pairings of profiles to enzymes (exact).
+
+| enzymes | statistic (mean Spearman) | null mean (sd) | exact p |
+|---|---:|---:|---:|
+| all eight, protospacer positions | 0.264 | 0.081 (0.107) | 0.056 |
+| all eight, with PAM positions | 0.368 | 0.083 (0.122) | 0.013 |
+| **five high-fidelity only** (protospacer / with PAM) | 0.417 / 0.565 | 0.404 (0.035) / 0.551 (0.025) | 0.34 / 0.28 |
+| three PAM variants only | 0.009 / 0.039 | 0.123 / 0.100 | 1.0 / 1.0 |
+
+Charge, volume and H-bond-capacity weighted profiles: no pairing better than shuffled (p 0.12-0.86).
+
+**Inference: the position-resolved enzyme profile is not supported as an enzyme-specific predictor.** The all-eight p-values
+come from the contrast between the high-fidelity group and the PAM variants (shuffling across the two groups breaks it);
+inside the high-fidelity group the correct pairing is no better than a shuffled one (0.417 against a null mean of 0.404), i.e.
+the profile does not say which positions a *given* enzyme changed, only which kind of enzyme it is. A test run on the raw
+(un-normalised) change gave p = 0.027 / 0.013 and was not used because it mixes in the enzymes' overall activity scale.
+Eight tests were run (four profile types x two site sets, plus the group splits), so even the group-level p values would not
+survive a multiplicity correction. **Verified as a null at this sample size; power is limited to eight enzymes.**
+
+## 10. Human cohort: a side result on the human matrix, stopped on request (9 Nov)
+
+*Scope note.* This was started as a replication of Finding 8 on human (the "human flank sequences" open item). The user then
+said the aim is to improve predictive power on the *bacterial* datasets, so the human runs were stopped; nothing below
+changes any bacterial result. They are recorded because one of them touches the correctness of numbers already in the report.
+
+*What was built.* The 17,421 human protospacers were decoded from the monomer electron-count columns and located on hg38 as
+single-copy NGG-flanked 20-mers (UCSC `hg38.fa.gz`, 983,659,424 bytes, gzip test passed; numpy 2-bit scan; `human_flank.py`):
+16,490 located, 906 with more than one NGG copy dropped, 25 not found. The count equals the teammate's earlier located set,
+which is an independent reproduction. Flanks of 1,000 nt per side in the guide's orientation (`curated_guide_index.csv` layout).
+A first run of the "on top of A" arms had no family A at all, because `a_flank.build` skips rows without a `located` flag and
+returned empty columns; caught because `n_ext` was 0 and the arm equalled the base to 16 digits; those arms were discarded and
+re-run, the one valid result among them (shape without A) relabelled `h_base+mc`.
+
+**Finding that matters: the human matrix has repeated guides, and random folds leak them.** Of 17,421 rows 13,138 are distinct
+20-mers; 4,216 sequences occur more than once (4,149 twice, 67 three times), so 8,499 rows (49%) have a twin. Twins sit at the
+same genomic position and their labels agree at Spearman 0.80 (59% exactly equal). With row-wise random folds a test guide's
+twin is usually in training.
+
+| human, 3 seeds x 5 folds | random folds | twin-grouped folds | locus-grouped (10 kb) |
+|---|---:|---:|---:|
+| base (guide sequence only), 300 cols | 0.3807 | 0.3063 | 0.2987 |
+| + family A | 0.4287 | | 0.3169 |
+| + A + shape/3D (mc) | 0.4470 | | 0.3319 |
+| project's human baseline, champion, 300 cols (17,421 rows) | 0.4036 | **0.3356** | |
+| project's human baseline, "library defaults, 1,000 trees, 400 cols" | 0.5076 | **0.2515** | |
+
+Keeping identical protospacers together removes 0.074 of the 0.082 that locus grouping removes from the base, so the leak
+is the twins, not locus structure. The high-capacity configuration that reached 0.5076 (and that the report reads as "depth
+and learning rate are worth +0.10 on human") falls to 0.2515, *below* the champion's 0.3356: its gain was memorisation of
+repeated sequences. **Status: verified for the two baseline arms; the other human statements in the report that rest on
+row-wise folds (family A +0.052, "a linear model reproduces 64% of boosting on human", the cross-kingdom transfer
+comparisons) were not re-run.**
+
+**Partial and unexplained (not for the report body).** (i) Under locus-grouped folds the shape/3D blocks are +0.015 over A
+(0.3169 -> 0.3319; at a 900-column budget 0.3193 -> 0.3311, +0.012), but plain composition columns added to A are +0.007 and
++0.005 there, and under random folds they were -0.035 and -0.025 (A+comp 0.3942, A+dcomp 0.4039 against A 0.4287). (ii) Adding
+861 columns of pure N(0,1) noise to the base lowers random-fold rho from 0.3807 to 0.3372, and the shuffled-flank shape controls
+(0.378, 0.373) sit at that level, so on the human matrix with random folds extra columns cost rho by displacing useful ones
+in the 300-column selection; the comparison "shape vs composition" there is confounded by that, and I have not found the
+mechanism. The grouped runs were stopped before the shuffled and noise controls could be repeated, so (i) is a hint, not a
+result. (iii) Under random folds shape without A (0.4402) beat A (0.4287) and composition (0.3888-0.3953) by far; this is
+the opposite of the bacterial cohort and may be the same twin effect (shape columns fingerprint a guide's locus).
+
+**The bacterial cohort does not have this problem (checked).** `curated_guide_index.csv`: 33,567 rows, 33,567 distinct
+protospacers; 87 guides have 2-8 genomic copies; 29% of guides have another within 19 bp (overlapping tiling), which the
+gene-grouped folds used throughout keep together.

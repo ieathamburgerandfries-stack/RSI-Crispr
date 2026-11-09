@@ -1725,6 +1725,10 @@ structure) recover **which PAM classes it can use** — ordering of the well-pop
 interval clear of zero at both model capacities tried — and give a smaller, capacity-dependent gain on how its sequence preferences
 rank targets inside a PAM class (−0.002 at 500 trees × depth 6, +0.035 at 1,500 × 8, interval including zero).
 Pooling the enzymes is worth about a fourfold saving in labelled targets for a new one.
+The PAM-class benefit does not need the new enzyme to be measured: a PAM profile predicted from the enzyme's six
+PI-domain residues (by a model trained on 770 public variants) matches the measured profile (difference −0.001 [−0.010, +0.008]).
+Richer descriptions of the enzyme are limited by the number of enzymes, not by the descriptors: see "Describing the enzyme by its
+own residues" below.
 
 **The data are four kinds of column in one sheet.** Kim et al. (2020), Supplementary Table 6: 40,128
 30-mers (4 nt + 20-nt protospacer + 3-nt PAM + 3 nt) × nine nucleases (SpCas9, SpCas9-NG, VRQR, xCas9,
@@ -1802,6 +1806,51 @@ interactions that a smaller one cannot, which would also explain why pooling onl
 its capacity was raised; that is an explanation consistent with both results, not one that was tested directly,
 and nine enzymes are too few to say more. The enzyme's own model remains 0.06 to 0.13 above
 the best conditioned one on every metric, so descriptors do not substitute for a few labelled targets.
+
+**Describing the enzyme by its own residues, not by a few numbers.** Three further tests, because a handful of
+summary columns per enzyme is "another variable", and a model that is to learn something about the enzyme needs more than
+nine of them.
+
+*(a) What distinguishes the nine enzymes at the level of the whole protein is almost nothing.* All nine are SpCas9
+with 3–7 substitutions in 1,368 residues; applying the mutation lists to the 5F9R sequence (every wild-type residue
+matches, which also checks the numbering) gives 20-amino-acid composition vectors within an L1 distance of 0.004–0.010 of
+SpCas9's, and the fold is the same. A whole-protein composition or sequence embedding would be SpCas9's plus a
+perturbation of at most 1%; only the environment of the substituted residues distinguishes the enzymes.
+
+*(b) With enough variants, a residue's chemistry can be learned, and it does about as well as its identity.* The one
+public set with hundreds of enzymes found is Silverstein et al. (2025): 770 SpCas9 variants that differ at six PI-domain
+positions, each with a rate constant for 64 PAMs. Held-out unit: the selection campaign (7). Per-PAM ρ between
+predicted and measured variant ordering, with three model classes (ridge / extra-trees / MLP): residue identity
+0.306 / 0.277 / 0.277; composition alone (hydropathy, volume, charge, H-bond donors and acceptors, aromatic, Gly/Pro; 48
+columns against 120) 0.313 / 0.298 / 0.312; identity + composition + a structure × composition term (how far the residue
+can reach, set against its C-α distance to each PAM base pair in 5F9R) 0.316 / 0.303 / 0.290. The last is ahead of identity
+alone by +0.010 [+0.006, +0.014], +0.026 [+0.007, +0.040] and +0.013 [+0.005, +0.022], and on 7, 7 and 5 of the 7 held-out
+campaigns — small and consistent. Size and charge carry most of it (side-chain volume alone 0.284 in extra-trees, charge alone 0.256 and 0.272 in
+extra-trees and the MLP; volume alone is 0.193 in the MLP and 0.154 in ridge); no single property is needed. The site's structure *alone* scores exactly as an uninformative model, because the six sites
+never change: structure that is fixed per site can reach a learned model only through its interaction with a variable
+residue, or by sharing parameters across sites — which this set cannot test. Metrics are computed inside each held-out
+campaign (pooled, the training-mean baseline scores −0.38 because the held-out campaign is missing from its own mean).
+The intervals resample variants, not campaigns, and the one-measurement-per-variant sheet has no reliability ceiling.
+
+*(c) Predicted from the residues, the PAM profile does the job of the measured one.* Models trained on the 770 variants
+predict a profile for each Kim enzyme from its six PI residues (four distinct strings among the nine; the high-fidelity
+enzymes are wild type there). Predicted against measured class shares: ρ 0.886 over 90 entries, top class right for 8 of
+9. Put into the leave-one-nuclease-out experiment in place of the measured profile (identical training rows): overall ρ
+0.820 against 0.795 for no information (**+0.025 [+0.002, +0.057], 7 of 9 enzymes ahead**; the same descriptor shuffled
+across enzymes −0.018), PAM-class ordering 0.899 against 0.855 (**+0.044 [+0.0004, +0.091]**), and
+**predicted minus measured −0.001 [−0.010, +0.008]**. So the PAM screen of the new enzyme can be replaced, for that part
+of the benefit, by a model of its PI residues. Within PAM classes it adds nothing (−0.0005), as with the measured profile. This
+holds for substitutions at the six positions; NG's two further substitutions and xCas9's six others are invisible to it,
+and nothing here shows it carries to another protein.
+
+*(d) Where an enzyme's substitutions sit along the target does not identify the enzyme's own changes.* Each substituted
+residue was mapped through 5F9R onto the target positions it neighbours, giving every enzyme a 24-position contact
+profile (HF1 near positions 8–12 and 18–20, HypaCas9 17–20, evoCas9 7–11, NG and VRQR at the PAM). Compared with how
+each enzyme's position-wise sequence dependence differs from SpCas9's (exact permutation over pairings of profile to enzyme),
+the correct pairing beats shuffled ones across all eight (p 0.013 with PAM positions, 0.056 without), but only because
+it separates the high-fidelity group from the PAM variants; inside the five high-fidelity enzymes the correct pairing
+scores 0.417 against a shuffled-pairing mean of 0.404 (p 0.34). The profile says which kind of enzyme it is, not which
+positions that enzyme changed; with eight enzymes, power is limited.
 
 **What a new enzyme's first labels are worth.** With *k* labelled targets of the held-out enzyme added to the
 pool (mean ρ over nine enzymes): k = 100: own model 0.713, pooled + one-hot 0.820, pooled + descriptors 0.828;
@@ -3813,6 +3862,17 @@ inability to fit.
 
 **B.4 — Mechanism: what the effect is, and what it is not**
 
+**Correction to the human baseline (9 November, fork; `EXTENSION_LOG.md` §10).** The folds above are row-wise random
+folds, and the human matrix contains repeated guides: 17,421 rows decode to 13,138 distinct 20-mers, 8,499 rows (49%) have a
+twin at the same genomic position, and twin labels agree at Spearman 0.80. Re-running the first and last arms with folds that
+keep identical protospacers together gives **0.3356 ± 0.0215 for the harness default (from 0.4036) and 0.2515 ± 0.0191 for
+the "library defaults, 1,000 trees" configuration (from 0.5076)**: the configuration that looked 0.10 better is 0.08 worse,
+because deep, fast-learning trees can memorise a sequence whose twin is in training. The teammate's "n_estimators kept improving
+with no clear plateau, unlike bacteria" is what memorisation of twins would produce, and the 0.5076 configuration does not hold
+once twins are kept together. Statements that
+rest on row-wise human folds and were *not* re-run: the +0.052 flank gain, the 64% linear-to-boosted ratio, and the
+cross-kingdom transfer figures. The bacterial cohort has no repeated guides (33,567 distinct in 33,567) and is gene-grouped.
+
 ### What other long-range features could be built without new data?
 
 Two of the three most mechanistically motivated candidates have now been built
@@ -4526,6 +4586,16 @@ Yang, L., King, Z. A., & Palsson, B. O. (2019). The *Escherichia coli*
 transcriptome mostly consists of independently regulated modules. *Nature
 Communications*, *10*(1), 5536. https://doi.org/10.1038/s41467-019-13483-w
 — the iModulon decomposition behind the PRECISE expression compendium.
+
+Silverstein, R. A., Kim, N., Kroell, A.-S., Walton, R. T., Delano, J., Butcher, R. M.,
+Pacesa, M., Smith, B. K., Christie, K. A., Ha, L. L., Meis, R. J., Clark, A. B.,
+Spinner, A. D., Lazzarotto, C. R., Li, Y., Matsubara, A., Urbina, E. O., Dahl, G. A.,
+Correia, B. E., Marks, D. S., Tsai, S. Q., Pinello, L., De Ravin, S. S., Liu, Q., &
+Kleinstiver, B. P. (2025). Custom CRISPR–Cas9 PAM variants via scalable engineering
+and machine learning. *Nature*, *643*(8071), 539–550.
+https://doi.org/10.1038/s41586-025-09021-y
+— the 770 six-position SpCas9 variants with 64-PAM rate constants used in
+Finding 9 (training data file from github.com/RachelSilverstein/PAMmla, BSD-3).
 
 Zhou, T., Yang, L., Lu, Y., Dror, I., Dantas Machado, A. C., Ghane, T., Di Felice,
 R., & Rohs, R. (2013). DNAshape: a method for the high-throughput prediction of DNA

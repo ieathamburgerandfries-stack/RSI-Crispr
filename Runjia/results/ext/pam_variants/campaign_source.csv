@@ -1,0 +1,547 @@
+model,arm,campaign,rho_pam
+ridge,id,expRAS11,0.14107071635275664
+ridge,id,expRAS25,0.1385545153168691
+ridge,id,expRAS37,0.30656502505831823
+ridge,id,expRAS54,0.4142726295069032
+ridge,id,expRAS61,0.41207574113847345
+ridge,id,expRAS66,0.3055285175877599
+ridge,id,original BPK selections,0.3525518358006669
+ridge,comp,expRAS11,0.19288298646728277
+ridge,comp,expRAS25,0.12339993221283795
+ridge,comp,expRAS37,0.32024563585679044
+ridge,comp,expRAS54,0.45046312464846094
+ridge,comp,expRAS61,0.3847989534915118
+ridge,comp,expRAS66,0.3117780219369433
+ridge,comp,original BPK selections,0.34605974227811065
+ridge,reach,expRAS11,0.11412373821323757
+ridge,reach,expRAS25,0.09674213204879249
+ridge,reach,expRAS37,0.23922631563730856
+ridge,reach,expRAS54,0.3065731364754469
+ridge,reach,expRAS61,0.2973595079743486
+ridge,reach,expRAS66,0.2119815033303306
+ridge,reach,original BPK selections,0.18252179781378466
+ridge,env,expRAS11,0.0
+ridge,env,expRAS25,0.0
+ridge,env,expRAS37,0.0
+ridge,env,expRAS54,0.0
+ridge,env,expRAS61,0.0
+ridge,env,expRAS66,0.0
+ridge,env,original BPK selections,0.0
+ridge,id+comp,expRAS11,0.15090194610125718
+ridge,id+comp,expRAS25,0.1416550961781285
+ridge,id+comp,expRAS37,0.31373091362030525
+ridge,id+comp,expRAS54,0.43973845484922086
+ridge,id+comp,expRAS61,0.42159353959313095
+ridge,id+comp,expRAS66,0.3157807449221275
+ridge,id+comp,original BPK selections,0.3719304760706417
+ridge,id+reach,expRAS11,0.14095411158630589
+ridge,id+reach,expRAS25,0.14055326130784265
+ridge,id+reach,expRAS37,0.3053909079414099
+ridge,id+reach,expRAS54,0.4226379439779759
+ridge,id+reach,expRAS61,0.42283270557358993
+ridge,id+reach,expRAS66,0.3076197233212492
+ridge,id+reach,original BPK selections,0.3516026270796686
+ridge,comp+reach,expRAS11,0.18852554715095662
+ridge,comp+reach,expRAS25,0.12368347378065976
+ridge,comp+reach,expRAS37,0.31638195304671746
+ridge,comp+reach,expRAS54,0.4556865387200976
+ridge,comp+reach,expRAS61,0.39002891562674646
+ridge,comp+reach,expRAS66,0.3111156847607484
+ridge,comp+reach,original BPK selections,0.34438633609198105
+ridge,id+comp+reach,expRAS11,0.1504760282962816
+ridge,id+comp+reach,expRAS25,0.14194009891529985
+ridge,id+comp+reach,expRAS37,0.31126021213995037
+ridge,id+comp+reach,expRAS54,0.44053141917109734
+ridge,id+comp+reach,expRAS61,0.42409659087919227
+ridge,id+comp+reach,expRAS66,0.3149208900048319
+ridge,id+comp+reach,original BPK selections,0.3647617520130029
+ridge,id+comp+reach+env,expRAS11,0.1504760282962816
+ridge,id+comp+reach+env,expRAS25,0.14194009891529985
+ridge,id+comp+reach+env,expRAS37,0.31126021213995037
+ridge,id+comp+reach+env,expRAS54,0.44053141917109734
+ridge,id+comp+reach+env,expRAS61,0.42409659087919227
+ridge,id+comp+reach+env,expRAS66,0.3149208900048319
+ridge,id+comp+reach+env,original BPK selections,0.3647617520130029
+ridge,id_perm,expRAS11,-0.026834029753985567
+ridge,id_perm,expRAS25,0.004582689623110872
+ridge,id_perm,expRAS37,0.02643324743066977
+ridge,id_perm,expRAS54,-0.010561607451115977
+ridge,id_perm,expRAS61,-0.01780160030253496
+ridge,id_perm,expRAS66,0.014624610661363136
+ridge,id_perm,original BPK selections,-0.02510293072160309
+ridge,comp_drop_kd,expRAS11,0.18960386161985263
+ridge,comp_drop_kd,expRAS25,0.122162550596706
+ridge,comp_drop_kd,expRAS37,0.3083376838740632
+ridge,comp_drop_kd,expRAS54,0.44449910712515034
+ridge,comp_drop_kd,expRAS61,0.37979858232035313
+ridge,comp_drop_kd,expRAS66,0.30559559736890873
+ridge,comp_drop_kd,original BPK selections,0.33396139638732075
+ridge,comp_only_kd,expRAS11,0.04486866693991435
+ridge,comp_only_kd,expRAS25,0.07415953767387731
+ridge,comp_only_kd,expRAS37,0.12628035702291973
+ridge,comp_only_kd,expRAS54,0.20225422119744282
+ridge,comp_only_kd,expRAS61,0.19578058509012944
+ridge,comp_only_kd,expRAS66,0.19325000707002302
+ridge,comp_only_kd,original BPK selections,0.14332598171991884
+ridge,comp_drop_vol,expRAS11,0.1874169799433695
+ridge,comp_drop_vol,expRAS25,0.12310608903961322
+ridge,comp_drop_vol,expRAS37,0.32167710293127794
+ridge,comp_drop_vol,expRAS54,0.4422412597853936
+ridge,comp_drop_vol,expRAS61,0.3807187018034844
+ridge,comp_drop_vol,expRAS66,0.3077211949508971
+ridge,comp_drop_vol,original BPK selections,0.33954698329519806
+ridge,comp_only_vol,expRAS11,0.10882448277566514
+ridge,comp_only_vol,expRAS25,0.029227812206998178
+ridge,comp_only_vol,expRAS37,0.20492211555091044
+ridge,comp_only_vol,expRAS54,0.20404994266163148
+ridge,comp_only_vol,expRAS61,0.24266926251648482
+ridge,comp_only_vol,expRAS66,0.12729389319419226
+ridge,comp_only_vol,original BPK selections,0.13641603437620914
+ridge,comp_drop_chg,expRAS11,0.189530341465273
+ridge,comp_drop_chg,expRAS25,0.11903176655886771
+ridge,comp_drop_chg,expRAS37,0.3209027776316964
+ridge,comp_drop_chg,expRAS54,0.4370903946033636
+ridge,comp_drop_chg,expRAS61,0.36841328809994517
+ridge,comp_drop_chg,expRAS66,0.3037402204766712
+ridge,comp_drop_chg,original BPK selections,0.3343660554018626
+ridge,comp_only_chg,expRAS11,0.09536212473493903
+ridge,comp_only_chg,expRAS25,0.1341843276189714
+ridge,comp_only_chg,expRAS37,0.1660094100958006
+ridge,comp_only_chg,expRAS54,0.42198627533435823
+ridge,comp_only_chg,expRAS61,0.32600396564382383
+ridge,comp_only_chg,expRAS66,0.30463555562123
+ridge,comp_only_chg,original BPK selections,0.27254839951118415
+ridge,comp_drop_hbd,expRAS11,0.1892148321347028
+ridge,comp_drop_hbd,expRAS25,0.11899119391603408
+ridge,comp_drop_hbd,expRAS37,0.2953450664001501
+ridge,comp_drop_hbd,expRAS54,0.4416653609467336
+ridge,comp_drop_hbd,expRAS61,0.38423028692468675
+ridge,comp_drop_hbd,expRAS66,0.30055395359604364
+ridge,comp_drop_hbd,original BPK selections,0.3370858899385971
+ridge,comp_only_hbd,expRAS11,0.07886728896217655
+ridge,comp_only_hbd,expRAS25,0.15038408341775644
+ridge,comp_only_hbd,expRAS37,0.20476600773212983
+ridge,comp_only_hbd,expRAS54,0.35424979630425574
+ridge,comp_only_hbd,expRAS61,0.2642491719876306
+ridge,comp_only_hbd,expRAS66,0.290420558833796
+ridge,comp_only_hbd,original BPK selections,0.220998153568828
+ridge,comp_drop_hba,expRAS11,0.1886793586540708
+ridge,comp_drop_hba,expRAS25,0.12430537003000904
+ridge,comp_drop_hba,expRAS37,0.31429998717823904
+ridge,comp_drop_hba,expRAS54,0.4379740198735654
+ridge,comp_drop_hba,expRAS61,0.3667140427806979
+ridge,comp_drop_hba,expRAS66,0.31640088319172255
+ridge,comp_drop_hba,original BPK selections,0.34333970743039943
+ridge,comp_only_hba,expRAS11,0.0762898840402638
+ridge,comp_only_hba,expRAS25,0.026402556330897928
+ridge,comp_only_hba,expRAS37,0.1313263037050586
+ridge,comp_only_hba,expRAS54,0.26234754596959425
+ridge,comp_only_hba,expRAS61,0.18399137554001413
+ridge,comp_only_hba,expRAS66,0.0732670667321322
+ridge,comp_only_hba,original BPK selections,0.13720198563401256
+ridge,comp_drop_arom,expRAS11,0.1721658178008062
+ridge,comp_drop_arom,expRAS25,0.11067563243057214
+ridge,comp_drop_arom,expRAS37,0.3223140280062534
+ridge,comp_drop_arom,expRAS54,0.44412388957978083
+ridge,comp_drop_arom,expRAS61,0.39694192662436695
+ridge,comp_drop_arom,expRAS66,0.30440847413387506
+ridge,comp_drop_arom,original BPK selections,0.3436398249102901
+ridge,comp_only_arom,expRAS11,0.08200567040483983
+ridge,comp_only_arom,expRAS25,0.04326850036843847
+ridge,comp_only_arom,expRAS37,0.18234751725791976
+ridge,comp_only_arom,expRAS54,0.14199247483243782
+ridge,comp_only_arom,expRAS61,0.15196837297000693
+ridge,comp_only_arom,expRAS66,0.07886013292846858
+ridge,comp_only_arom,original BPK selections,0.12254835549107439
+ridge,comp_drop_gly,expRAS11,0.19452777888868047
+ridge,comp_drop_gly,expRAS25,0.1293662963667618
+ridge,comp_drop_gly,expRAS37,0.31305525556995095
+ridge,comp_drop_gly,expRAS54,0.45468347253967223
+ridge,comp_drop_gly,expRAS61,0.37084568790388794
+ridge,comp_drop_gly,expRAS66,0.30495260588577383
+ridge,comp_drop_gly,original BPK selections,0.3405701423558452
+ridge,comp_only_gly,expRAS11,0.03299986828762397
+ridge,comp_only_gly,expRAS25,0.008077898286359565
+ridge,comp_only_gly,expRAS37,0.11762306136802536
+ridge,comp_only_gly,expRAS54,0.017259014813251344
+ridge,comp_only_gly,expRAS61,0.06729353110845981
+ridge,comp_only_gly,expRAS66,0.10839542866907743
+ridge,comp_only_gly,original BPK selections,0.022289340705372807
+ridge,comp_drop_pro,expRAS11,0.19099490069214045
+ridge,comp_drop_pro,expRAS25,0.1279651884326117
+ridge,comp_drop_pro,expRAS37,0.3232105977456484
+ridge,comp_drop_pro,expRAS54,0.4499420603674684
+ridge,comp_drop_pro,expRAS61,0.38969491338651935
+ridge,comp_drop_pro,expRAS66,0.31259029267712923
+ridge,comp_drop_pro,original BPK selections,0.3438035991168304
+ridge,comp_only_pro,expRAS11,0.07273571129079853
+ridge,comp_only_pro,expRAS25,0.015533792598813696
+ridge,comp_only_pro,expRAS37,0.010984551637480097
+ridge,comp_only_pro,expRAS54,0.020322150921405734
+ridge,comp_only_pro,expRAS61,-0.01715965984132705
+ridge,comp_only_pro,expRAS66,0.029748804729934273
+ridge,comp_only_pro,original BPK selections,0.05120534134287418
+et,id,expRAS11,0.1260796493413204
+et,id,expRAS25,0.1270102239782049
+et,id,expRAS37,0.27071743557879774
+et,id,expRAS54,0.4269100083494051
+et,id,expRAS61,0.3642204054934825
+et,id,expRAS66,0.27572797161886026
+et,id,original BPK selections,0.29651005755498994
+et,comp,expRAS11,0.16847904212008116
+et,comp,expRAS25,0.12425157673337628
+et,comp,expRAS37,0.29135562009793253
+et,comp,expRAS54,0.4336929357681652
+et,comp,expRAS61,0.39330475621303157
+et,comp,expRAS66,0.3156862873115585
+et,comp,original BPK selections,0.3028929970314387
+et,reach,expRAS11,0.14613055108048453
+et,reach,expRAS25,0.13574743231113218
+et,reach,expRAS37,0.2748971470830952
+et,reach,expRAS54,0.40200945501401114
+et,reach,expRAS61,0.3863428671302123
+et,reach,expRAS66,0.32246243299537
+et,reach,original BPK selections,0.2844376808802032
+et,env,expRAS11,0.0
+et,env,expRAS25,0.0
+et,env,expRAS37,0.0
+et,env,expRAS54,0.0
+et,env,expRAS61,0.0
+et,env,expRAS66,0.0
+et,env,original BPK selections,0.0
+et,id+comp,expRAS11,0.15019422282931036
+et,id+comp,expRAS25,0.11993544945889913
+et,id+comp,expRAS37,0.29461921266296454
+et,id+comp,expRAS54,0.4394855728683851
+et,id+comp,expRAS61,0.3822491006018027
+et,id+comp,expRAS66,0.29469357989235695
+et,id+comp,original BPK selections,0.30584251485156705
+et,id+reach,expRAS11,0.17067317794606804
+et,id+reach,expRAS25,0.1434698367791653
+et,id+reach,expRAS37,0.29430175943103726
+et,id+reach,expRAS54,0.43535490184843395
+et,id+reach,expRAS61,0.379916370280364
+et,id+reach,expRAS66,0.31332075445682755
+et,id+reach,original BPK selections,0.2997279896459625
+et,comp+reach,expRAS11,0.1931799084217883
+et,comp+reach,expRAS25,0.1343996660691644
+et,comp+reach,expRAS37,0.29734086442854074
+et,comp+reach,expRAS54,0.44675015772141796
+et,comp+reach,expRAS61,0.38687782770962165
+et,comp+reach,expRAS66,0.3037089505701388
+et,comp+reach,original BPK selections,0.3085785190798916
+et,id+comp+reach,expRAS11,0.17776295191040195
+et,id+comp+reach,expRAS25,0.13172751058356758
+et,id+comp+reach,expRAS37,0.3103078022630531
+et,id+comp+reach,expRAS54,0.4552704027224241
+et,id+comp+reach,expRAS61,0.39283622213972574
+et,id+comp+reach,expRAS66,0.2955867189449843
+et,id+comp+reach,original BPK selections,0.3106767516815582
+et,id+comp+reach+env,expRAS11,0.17722007491894862
+et,id+comp+reach+env,expRAS25,0.13383743205076448
+et,id+comp+reach+env,expRAS37,0.3109969557567873
+et,id+comp+reach+env,expRAS54,0.45736886129223203
+et,id+comp+reach+env,expRAS61,0.3900369698616675
+et,id+comp+reach+env,expRAS66,0.2937606421306462
+et,id+comp+reach+env,original BPK selections,0.31167042977264797
+et,id_perm,expRAS11,0.0037674885752194917
+et,id_perm,expRAS25,0.020159287825783995
+et,id_perm,expRAS37,0.00926872451108906
+et,id_perm,expRAS54,0.008853011101364522
+et,id_perm,expRAS61,0.00462296793571372
+et,id_perm,expRAS66,0.01906569124698029
+et,id_perm,original BPK selections,-0.0016784062463957305
+et,comp_drop_kd,expRAS11,0.16918088860835226
+et,comp_drop_kd,expRAS25,0.12298930361222975
+et,comp_drop_kd,expRAS37,0.27943121404958005
+et,comp_drop_kd,expRAS54,0.43919135426857886
+et,comp_drop_kd,expRAS61,0.3873487763201604
+et,comp_drop_kd,expRAS66,0.31265600653133935
+et,comp_drop_kd,original BPK selections,0.2942093371487874
+et,comp_only_kd,expRAS11,0.10107814416761472
+et,comp_only_kd,expRAS25,0.14539235893712038
+et,comp_only_kd,expRAS37,0.2510970091115674
+et,comp_only_kd,expRAS54,0.39264912775355
+et,comp_only_kd,expRAS61,0.30541934074980787
+et,comp_only_kd,expRAS66,0.2674848978128008
+et,comp_only_kd,original BPK selections,0.24286255316483152
+et,comp_drop_vol,expRAS11,0.15335238501096024
+et,comp_drop_vol,expRAS25,0.1212172759055598
+et,comp_drop_vol,expRAS37,0.28302677836332596
+et,comp_drop_vol,expRAS54,0.4152065793490605
+et,comp_drop_vol,expRAS61,0.40061164086615547
+et,comp_drop_vol,expRAS66,0.31843531693956084
+et,comp_drop_vol,original BPK selections,0.2960926640596044
+et,comp_only_vol,expRAS11,0.1668890747852022
+et,comp_only_vol,expRAS25,0.10326087037426208
+et,comp_only_vol,expRAS37,0.31613024033059867
+et,comp_only_vol,expRAS54,0.4163646861417498
+et,comp_only_vol,expRAS61,0.3506195795932612
+et,comp_only_vol,expRAS66,0.28413975871013747
+et,comp_only_vol,original BPK selections,0.2791893115105372
+et,comp_drop_chg,expRAS11,0.1571008694320871
+et,comp_drop_chg,expRAS25,0.13754198721778102
+et,comp_drop_chg,expRAS37,0.3077236814073576
+et,comp_drop_chg,expRAS54,0.4185089230189312
+et,comp_drop_chg,expRAS61,0.39729509164177834
+et,comp_drop_chg,expRAS66,0.31673354358067035
+et,comp_drop_chg,original BPK selections,0.29564143213033117
+et,comp_only_chg,expRAS11,0.06971317092382227
+et,comp_only_chg,expRAS25,0.1393586588006899
+et,comp_only_chg,expRAS37,0.17050915159687907
+et,comp_only_chg,expRAS54,0.4631822848896223
+et,comp_only_chg,expRAS61,0.3324882904060325
+et,comp_only_chg,expRAS66,0.2929026992622405
+et,comp_only_chg,original BPK selections,0.29314711599829857
+et,comp_drop_hbd,expRAS11,0.16122219622635703
+et,comp_drop_hbd,expRAS25,0.12592013254754703
+et,comp_drop_hbd,expRAS37,0.28365140813349904
+et,comp_drop_hbd,expRAS54,0.43643708818213844
+et,comp_drop_hbd,expRAS61,0.38828541183049675
+et,comp_drop_hbd,expRAS66,0.31154761085618166
+et,comp_drop_hbd,original BPK selections,0.33126682891689413
+et,comp_only_hbd,expRAS11,0.049265335878726085
+et,comp_only_hbd,expRAS25,0.11974533750670242
+et,comp_only_hbd,expRAS37,0.22234582022343033
+et,comp_only_hbd,expRAS54,0.3158949619983205
+et,comp_only_hbd,expRAS61,0.204762884670452
+et,comp_only_hbd,expRAS66,0.2757823276495981
+et,comp_only_hbd,original BPK selections,0.1715759624119526
+et,comp_drop_hba,expRAS11,0.16676374218463216
+et,comp_drop_hba,expRAS25,0.1270929604174644
+et,comp_drop_hba,expRAS37,0.2866364623490523
+et,comp_drop_hba,expRAS54,0.43766729004307486
+et,comp_drop_hba,expRAS61,0.38862629866640613
+et,comp_drop_hba,expRAS66,0.3098987217090441
+et,comp_drop_hba,original BPK selections,0.30747842886081317
+et,comp_only_hba,expRAS11,0.0666833398683863
+et,comp_only_hba,expRAS25,0.023305188718853287
+et,comp_only_hba,expRAS37,0.15389127048562692
+et,comp_only_hba,expRAS54,0.23628330859780622
+et,comp_only_hba,expRAS61,0.2413600047463497
+et,comp_only_hba,expRAS66,0.10385705002466056
+et,comp_only_hba,original BPK selections,0.12302468236587992
+et,comp_drop_arom,expRAS11,0.16432773079574847
+et,comp_drop_arom,expRAS25,0.14041433460672428
+et,comp_drop_arom,expRAS37,0.302913198242521
+et,comp_drop_arom,expRAS54,0.44510772279024663
+et,comp_drop_arom,expRAS61,0.4131139816950833
+et,comp_drop_arom,expRAS66,0.32059628045293215
+et,comp_drop_arom,original BPK selections,0.3086383323144086
+et,comp_only_arom,expRAS11,0.07496024552763791
+et,comp_only_arom,expRAS25,0.05942409169273233
+et,comp_only_arom,expRAS37,0.1051038980089191
+et,comp_only_arom,expRAS54,0.16437983606961068
+et,comp_only_arom,expRAS61,0.16015864514296566
+et,comp_only_arom,expRAS66,0.07129302206219927
+et,comp_only_arom,original BPK selections,0.1091855014865601
+et,comp_drop_gly,expRAS11,0.17034661827807676
+et,comp_drop_gly,expRAS25,0.13164846989353027
+et,comp_drop_gly,expRAS37,0.2892260505684941
+et,comp_drop_gly,expRAS54,0.4373366660428448
+et,comp_drop_gly,expRAS61,0.39230080600999856
+et,comp_drop_gly,expRAS66,0.32484194240924963
+et,comp_drop_gly,original BPK selections,0.30324595899734397
+et,comp_only_gly,expRAS11,0.008326014277825242
+et,comp_only_gly,expRAS25,-0.004554875336540771
+et,comp_only_gly,expRAS37,0.09081984866169664
+et,comp_only_gly,expRAS54,0.0034309789183804905
+et,comp_only_gly,expRAS61,0.08435757609760942
+et,comp_only_gly,expRAS66,0.08033042726358362
+et,comp_only_gly,original BPK selections,0.021096740701613954
+et,comp_drop_pro,expRAS11,0.1714641510840154
+et,comp_drop_pro,expRAS25,0.12637364627234413
+et,comp_drop_pro,expRAS37,0.3012691238120064
+et,comp_drop_pro,expRAS54,0.4367709902905408
+et,comp_drop_pro,expRAS61,0.397469163971297
+et,comp_drop_pro,expRAS66,0.31588149506303526
+et,comp_drop_pro,original BPK selections,0.30290741186312187
+et,comp_only_pro,expRAS11,0.08449201596654043
+et,comp_only_pro,expRAS25,0.01843727515976511
+et,comp_only_pro,expRAS37,0.013397064072690123
+et,comp_only_pro,expRAS54,0.026680404592639078
+et,comp_only_pro,expRAS61,-0.008333799856949136
+et,comp_only_pro,expRAS66,0.03507555482909731
+et,comp_only_pro,original BPK selections,0.0383997141052431
+mlp,id,expRAS11,0.1376606562084933
+mlp,id,expRAS25,0.12821689630896704
+mlp,id,expRAS37,0.28770458797835036
+mlp,id,expRAS54,0.38613605891189423
+mlp,id,expRAS61,0.3971628419174554
+mlp,id,expRAS66,0.2594803421746758
+mlp,id,original BPK selections,0.29700555660652034
+mlp,comp,expRAS11,0.1619225888186339
+mlp,comp,expRAS25,0.120093803222815
+mlp,comp,expRAS37,0.3074599073680502
+mlp,comp,expRAS54,0.46464717895837393
+mlp,comp,expRAS61,0.39618367958336537
+mlp,comp,expRAS66,0.3224865050350174
+mlp,comp,original BPK selections,0.34329119908617295
+mlp,reach,expRAS11,0.11725611124288526
+mlp,reach,expRAS25,0.12349060752253534
+mlp,reach,expRAS37,0.2708257379652272
+mlp,reach,expRAS54,0.3568290676915887
+mlp,reach,expRAS61,0.2934493405615883
+mlp,reach,expRAS66,0.2520055303474919
+mlp,reach,original BPK selections,0.21136072358495753
+mlp,env,expRAS11,0.0
+mlp,env,expRAS25,0.0
+mlp,env,expRAS37,0.0
+mlp,env,expRAS54,0.0
+mlp,env,expRAS61,0.0
+mlp,env,expRAS66,0.0
+mlp,env,original BPK selections,0.0
+mlp,id+comp,expRAS11,0.14062836748201266
+mlp,id+comp,expRAS25,0.13020956787378993
+mlp,id+comp,expRAS37,0.2963755431688666
+mlp,id+comp,expRAS54,0.416383096508979
+mlp,id+comp,expRAS61,0.39758197793252653
+mlp,id+comp,expRAS66,0.28208924101607324
+mlp,id+comp,original BPK selections,0.32424139502626237
+mlp,id+reach,expRAS11,0.13067004058287704
+mlp,id+reach,expRAS25,0.13435420570771106
+mlp,id+reach,expRAS37,0.28116847640128323
+mlp,id+reach,expRAS54,0.3932090843871207
+mlp,id+reach,expRAS61,0.3968804976059344
+mlp,id+reach,expRAS66,0.28818111891807213
+mlp,id+reach,original BPK selections,0.2965592634809382
+mlp,comp+reach,expRAS11,0.16547984065760976
+mlp,comp+reach,expRAS25,0.13083460456014415
+mlp,comp+reach,expRAS37,0.3053501304808097
+mlp,comp+reach,expRAS54,0.4594588081511221
+mlp,comp+reach,expRAS61,0.41303898258410765
+mlp,comp+reach,expRAS66,0.31854517124734677
+mlp,comp+reach,original BPK selections,0.3265445101143521
+mlp,id+comp+reach,expRAS11,0.16172482928839374
+mlp,id+comp+reach,expRAS25,0.1346226993935489
+mlp,id+comp+reach,expRAS37,0.2843359369781466
+mlp,id+comp+reach,expRAS54,0.40750986206198897
+mlp,id+comp+reach,expRAS61,0.3926799639402436
+mlp,id+comp+reach,expRAS66,0.2945903432506204
+mlp,id+comp+reach,original BPK selections,0.30854873819657447
+mlp,id+comp+reach+env,expRAS11,0.14365287821541622
+mlp,id+comp+reach+env,expRAS25,0.14167409122788505
+mlp,id+comp+reach+env,expRAS37,0.286147551975565
+mlp,id+comp+reach+env,expRAS54,0.42214040103729644
+mlp,id+comp+reach+env,expRAS61,0.4028411859612464
+mlp,id+comp+reach+env,expRAS66,0.2923200439805601
+mlp,id+comp+reach+env,original BPK selections,0.31130048662557386
+mlp,id_perm,expRAS11,-0.006583581584888678
+mlp,id_perm,expRAS25,0.011328564825582801
+mlp,id_perm,expRAS37,0.001349665339886479
+mlp,id_perm,expRAS54,-0.001877478206034472
+mlp,id_perm,expRAS61,0.017882251994819978
+mlp,id_perm,expRAS66,0.004286115994575873
+mlp,id_perm,original BPK selections,-0.010767159434841753
+mlp,comp_drop_kd,expRAS11,0.17195733411008843
+mlp,comp_drop_kd,expRAS25,0.1143367627093178
+mlp,comp_drop_kd,expRAS37,0.32383773585061476
+mlp,comp_drop_kd,expRAS54,0.45212406747915357
+mlp,comp_drop_kd,expRAS61,0.38866553982409374
+mlp,comp_drop_kd,expRAS66,0.3239800891202455
+mlp,comp_drop_kd,original BPK selections,0.3404072890702521
+mlp,comp_only_kd,expRAS11,0.07696131321197207
+mlp,comp_only_kd,expRAS25,0.09085451324134168
+mlp,comp_only_kd,expRAS37,0.1322509144697277
+mlp,comp_only_kd,expRAS54,0.30442997672782446
+mlp,comp_only_kd,expRAS61,0.23201349101218818
+mlp,comp_only_kd,expRAS66,0.19209481772224254
+mlp,comp_only_kd,original BPK selections,0.18251371632911942
+mlp,comp_drop_vol,expRAS11,0.16177114528259676
+mlp,comp_drop_vol,expRAS25,0.1206468896040664
+mlp,comp_drop_vol,expRAS37,0.32075604063294944
+mlp,comp_drop_vol,expRAS54,0.45052285479908066
+mlp,comp_drop_vol,expRAS61,0.3991936944774987
+mlp,comp_drop_vol,expRAS66,0.32372867173713743
+mlp,comp_drop_vol,original BPK selections,0.32853893123210515
+mlp,comp_only_vol,expRAS11,0.14339397645968902
+mlp,comp_only_vol,expRAS25,0.06129349023088967
+mlp,comp_only_vol,expRAS37,0.24903751532234383
+mlp,comp_only_vol,expRAS54,0.2694916012740521
+mlp,comp_only_vol,expRAS61,0.22743438144721648
+mlp,comp_only_vol,expRAS66,0.1936122838720196
+mlp,comp_only_vol,original BPK selections,0.14509850011868855
+mlp,comp_drop_chg,expRAS11,0.16687805244952003
+mlp,comp_drop_chg,expRAS25,0.12955746499952583
+mlp,comp_drop_chg,expRAS37,0.2945303851338247
+mlp,comp_drop_chg,expRAS54,0.43256196836364386
+mlp,comp_drop_chg,expRAS61,0.39571668213423505
+mlp,comp_drop_chg,expRAS66,0.30380225477399864
+mlp,comp_drop_chg,original BPK selections,0.3240516153227236
+mlp,comp_only_chg,expRAS11,0.08025836309151822
+mlp,comp_only_chg,expRAS25,0.13570955488192338
+mlp,comp_only_chg,expRAS37,0.2174463364805258
+mlp,comp_only_chg,expRAS54,0.4525833626133427
+mlp,comp_only_chg,expRAS61,0.35183261450341513
+mlp,comp_only_chg,expRAS66,0.3035869872221397
+mlp,comp_only_chg,original BPK selections,0.3070303667748028
+mlp,comp_drop_hbd,expRAS11,0.16973830838234263
+mlp,comp_drop_hbd,expRAS25,0.13337892441945068
+mlp,comp_drop_hbd,expRAS37,0.29307237176584633
+mlp,comp_drop_hbd,expRAS54,0.44377787908317473
+mlp,comp_drop_hbd,expRAS61,0.4138950178333709
+mlp,comp_drop_hbd,expRAS66,0.30209821472193643
+mlp,comp_drop_hbd,original BPK selections,0.33101654329172037
+mlp,comp_only_hbd,expRAS11,0.0724515966550053
+mlp,comp_only_hbd,expRAS25,0.15389751969994928
+mlp,comp_only_hbd,expRAS37,0.25921891054955704
+mlp,comp_only_hbd,expRAS54,0.38036191198434105
+mlp,comp_only_hbd,expRAS61,0.2614602899333822
+mlp,comp_only_hbd,expRAS66,0.27883743679787276
+mlp,comp_only_hbd,original BPK selections,0.23981811817254703
+mlp,comp_drop_hba,expRAS11,0.16077320863216402
+mlp,comp_drop_hba,expRAS25,0.12782488844372913
+mlp,comp_drop_hba,expRAS37,0.30439448509534284
+mlp,comp_drop_hba,expRAS54,0.44527350871127247
+mlp,comp_drop_hba,expRAS61,0.3813483606435127
+mlp,comp_drop_hba,expRAS66,0.31502007238919966
+mlp,comp_drop_hba,original BPK selections,0.3172254637687652
+mlp,comp_only_hba,expRAS11,0.05534354301746866
+mlp,comp_only_hba,expRAS25,0.030064987365185408
+mlp,comp_only_hba,expRAS37,0.1457048426169166
+mlp,comp_only_hba,expRAS54,0.2557264317939599
+mlp,comp_only_hba,expRAS61,0.247837972534388
+mlp,comp_only_hba,expRAS66,0.08425916813043999
+mlp,comp_only_hba,original BPK selections,0.1520021938037098
+mlp,comp_drop_arom,expRAS11,0.14746503035092878
+mlp,comp_drop_arom,expRAS25,0.11950678487497852
+mlp,comp_drop_arom,expRAS37,0.33552602793361613
+mlp,comp_drop_arom,expRAS54,0.43981989579499353
+mlp,comp_drop_arom,expRAS61,0.413322043604014
+mlp,comp_drop_arom,expRAS66,0.3120437098634034
+mlp,comp_drop_arom,original BPK selections,0.3381653259727324
+mlp,comp_only_arom,expRAS11,0.08236972858072573
+mlp,comp_only_arom,expRAS25,0.04008060971468493
+mlp,comp_only_arom,expRAS37,0.13301600915378878
+mlp,comp_only_arom,expRAS54,0.16960806889620847
+mlp,comp_only_arom,expRAS61,0.12498876225181471
+mlp,comp_only_arom,expRAS66,0.07092730843007183
+mlp,comp_only_arom,original BPK selections,0.09671503641472269
+mlp,comp_drop_gly,expRAS11,0.18245921422325573
+mlp,comp_drop_gly,expRAS25,0.12902988597987822
+mlp,comp_drop_gly,expRAS37,0.3060252689519849
+mlp,comp_drop_gly,expRAS54,0.46030742436553673
+mlp,comp_drop_gly,expRAS61,0.401873627961525
+mlp,comp_drop_gly,expRAS66,0.312718618056649
+mlp,comp_drop_gly,original BPK selections,0.3213994171197451
+mlp,comp_only_gly,expRAS11,0.01895018243099244
+mlp,comp_only_gly,expRAS25,0.0010866521640282851
+mlp,comp_only_gly,expRAS37,0.11079681438900907
+mlp,comp_only_gly,expRAS54,0.03304815469086442
+mlp,comp_only_gly,expRAS61,0.10640127826993205
+mlp,comp_only_gly,expRAS66,0.08876055086482959
+mlp,comp_only_gly,original BPK selections,0.020077823866945423
+mlp,comp_drop_pro,expRAS11,0.16657436795073874
+mlp,comp_drop_pro,expRAS25,0.1377401386391593
+mlp,comp_drop_pro,expRAS37,0.31842035894443205
+mlp,comp_drop_pro,expRAS54,0.4601015836720081
+mlp,comp_drop_pro,expRAS61,0.41954941349116615
+mlp,comp_drop_pro,expRAS66,0.3122304048936078
+mlp,comp_drop_pro,original BPK selections,0.3223176576313049
+mlp,comp_only_pro,expRAS11,0.05925997318039591
+mlp,comp_only_pro,expRAS25,0.01938980056152108
+mlp,comp_only_pro,expRAS37,0.010620720421089714
+mlp,comp_only_pro,expRAS54,0.03701851436424337
+mlp,comp_only_pro,expRAS61,-0.007529328729932096
+mlp,comp_only_pro,expRAS66,0.02286658473760078
+mlp,comp_only_pro,original BPK selections,0.030304989012597903

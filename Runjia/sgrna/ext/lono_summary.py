@@ -66,7 +66,10 @@ def by_pam_class(min_n=100):
         y = d[hk].to_numpy()[te]; pm = pam[te]
         ngg = pm == "GG"
         classes = [c for c in np.unique(pm) if (pm == c).sum() >= min_n]
-        for arm in ("U", "D_mutations", "D_structure", "D_label-free", "D_pam", "D_scale", "D_all", "ensemble-of-sources", "own"):
+        for arm in ("U", "D_mutations", "D_structure", "D_label-free", "D_pam", "D_scale", "D_all", "ensemble-of-sources",
+                    "own", "D_pam_pred", "D_lf_pam_pred"):
+            if not (pred_dir / f"{arm}__{hn}__r0.npy").exists():
+                continue
             r = []
             for rep in range(3):
                 p = np.load(pred_dir / f"{arm}__{hn}__r{rep}.npy")

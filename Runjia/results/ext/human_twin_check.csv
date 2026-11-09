@@ -1,0 +1,3 @@
+arm,folds,spearman,spearman_sd,n_fits
+harness_default,twin-grouped,0.3355575095686412,0.02154520942539837,15
+jacky_400_1000,twin-grouped,0.25146863283870313,0.019129216354135593,15

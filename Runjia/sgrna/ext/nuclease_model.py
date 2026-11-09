@@ -263,6 +263,69 @@ def main(argv=None):
                 append(out, rows)
                 print(f"  rep {rep} held out {hn:13s} " + " ".join(
                     f"{r['arm']}={r['rho']:.3f}" for r in rows if "perm" not in r["arm"]), flush=True)
+    elif a.stage == 10:
+        # sequence-only PAM descriptor: the PAM-profile group predicted from the six PI-domain residues (models trained
+        # on Silverstein 2025, nothing from Kim) replaces the measured profile. The training rows of every
+        # (replicate, held-out nuclease) are replayed from stage 4's random stream so the new arms are paired with
+        # U / D_label-free / D_pam / D_all, and the first fit is checked against the stored stage-4 prediction.
+        from . import pam_predict as pp
+        out = OUT / "nuclease_lono_rep.csv"
+        pred_dir = OUT / "lono_preds"
+        done = set(zip(*[pd.read_csv(out)[c] for c in ("arm", "nuclease", "rep")])) if out.exists() else set()
+        X = stack(G, base_use)
+        idx_tr = {k: rows_for(d, k, "Training") for k in nd.SHORT}
+        idx_te = {k: rows_for(d, k, "Test") for k in nd.SHORT}
+        gp = nd.all_groups(); gp["pam_pred"] = pp.pam_group_pred()
+        def dmat(spec):
+            df = pd.concat([gp[k] for k in spec], axis=1)
+            return ((df - df.mean()) / df.std().replace(0, 1)).to_numpy().astype(np.float32)
+        specs = {"D_pam_pred": ["pam_pred"], "D_lf_pam_pred": ["mutations", "structure", "pam_pred"]}
+        checked = False
+        for rep in range(a.reps):
+            rng = np.random.default_rng(100 + rep)               # stage 4's stream
+            rng2 = np.random.default_rng(900 + rep)              # permutations for the new arms
+            params = dict(XGB, random_state=41 + rep)
+            for hi, (hk, hn) in enumerate(zip(nd.SHORT, nd.NUCLEASES)):
+                others = [j for j in range(9) if j != hi]
+                te = idx_te[hk]; y_te = d[hk].to_numpy()[te]
+                sub = {j: rng.choice(idx_tr[nd.SHORT[j]], size=min(len(idx_tr[nd.SHORT[j]]), 15000), replace=False)
+                       for j in others}
+                for _ in range(2 * 4):                           # burn stage 4's permutation draws (--perms 4)
+                    perm = rng.permutation(9)
+                    while perm[hi] == hi:
+                        perm = rng.permutation(9)
+                ytr = np.concatenate([d[nd.SHORT[j]].to_numpy()[sub[j]] for j in others])
+                rows = []
+                def fit_with(D, perm=None):
+                    Dm = D if perm is None else D[perm]
+                    Xtr = np.vstack([np.hstack([X[sub[j]], np.tile(Dm[j], (len(sub[j]), 1))]) for j in others])
+                    return xgb.XGBRegressor(**params).fit(Xtr, ytr).predict(
+                        np.hstack([X[te], np.tile(Dm[hi], (len(te), 1))]))
+                def rec(arm, p):
+                    np.save(pred_dir / f"{arm}__{hn}__r{rep}.npy", p.astype(np.float32))
+                    rows.append(dict(arm=arm, nuclease=hn, rep=rep, rho=rho(y_te, p),
+                                     rho_ngg=rho(y_te[ngg[te]], p[ngg[te]])))
+                if not checked:                                  # replay check against the stored stage-4 U fit
+                    pu = fit_with(np.zeros((9, 0), np.float32))
+                    ref = np.load(pred_dir / f"U__{hn}__r{rep}.npy")
+                    err = float(np.max(np.abs(pu - ref)))
+                    print(f"  replay check ({hn}, rep {rep}): max |U - stored U| = {err:.2e}", flush=True)
+                    assert err < 5e-3, "training rows are not the stage-4 rows"
+                    checked = True
+                for arm, spec in specs.items():
+                    D = dmat(spec)
+                    if (arm, hn, rep) not in done:
+                        rec(arm, fit_with(D))
+                    for pi in range(a.perms):
+                        pa = f"{arm}_perm{pi}"
+                        perm = rng2.permutation(9)
+                        while perm[hi] == hi:
+                            perm = rng2.permutation(9)
+                        if (pa, hn, rep) not in done:
+                            rec(pa, fit_with(D, perm))
+                append(out, rows)
+                print(f"  rep {rep} held out {hn:13s} " + " ".join(
+                    f"{r['arm']}={r['rho']:.3f}" for r in rows if "perm" not in r["arm"]), flush=True)
     elif a.stage == 6:
         # few-shot: k labelled targets of the "new" nuclease are added to the pooled training set
         out = OUT / "nuclease_fewshot.csv"

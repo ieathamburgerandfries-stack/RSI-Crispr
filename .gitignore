@@ -30,3 +30,4 @@ __pycache__/
 .venv*
 __pycache__/
 *.pyc
+Runjia/results/ext/pam_variants/oof_*.npy
