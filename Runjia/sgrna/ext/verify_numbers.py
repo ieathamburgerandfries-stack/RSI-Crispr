@@ -208,6 +208,51 @@ chk("sequences occurring more than once", int((vc > 1).sum()), 4216, 0); chk("ro
 ci = pd.read_csv(OUT.parent.parent.parent / "data" / "interim" / "curated_guide_index.csv")
 chk("bacterial rows", len(ci), 33567, 0); chk("bacterial distinct protospacers", ci.protospacer.nunique(), 33567, 0)
 
+
+print("Kim 2020 published vs ours")
+kp = pd.read_csv(OUT / "kim2020_published_vs_ours.csv").set_index("nuclease")
+chk("paper mean Spearman", float(kp.paper_spearman_R.mean()), 0.896, 3)
+chk("ours mean Spearman", float(kp.ours_spearman.mean()), 0.881, 3)
+chk("mean difference", float(kp.diff_spearman.mean()), -0.014, 3)
+chk("evoCas9 ours", float(kp.loc["evoCas9", "ours_spearman"]), 0.683, 3)
+chk("variants where ours is ahead", float((kp.diff_spearman > 0).sum()), 5, 0)
+chk("ahead range min", float(kp[kp.diff_spearman > 0].diff_spearman.min()), 0.014, 3)
+chk("ahead range max", float(kp[kp.diff_spearman > 0].diff_spearman.max()), 0.037, 3)
+
+
+print("Section 11: tuning")
+tc = pd.read_csv(OUT / "tune_confirm.csv").set_index("arm")
+for arm, rho, dd, lo, hi in (("champion", 0.7073, None, None, None), ("depth6", 0.7126, 0.0053, 0.0027, 0.0083),
+                             ("d099x", 0.7215, 0.0143, 0.0111, 0.0174), ("ensemble of top 5", 0.7246, 0.0174, 0.0144, 0.0204)):
+    chk(f"confirm {arm} rho", float(tc.loc[arm, "rho"]), rho, 4)
+    if dd is not None:
+        chk(f"  vs champion", float(tc.loc[arm, "d_vs_champion"]), dd, 4); chk("  lo", float(tc.loc[arm, "d_lo"]), lo, 4)
+        chk("  hi", float(tc.loc[arm, "d_hi"]), hi, 4)
+te = pd.read_csv(OUT / "tune_external.csv").pivot_table(index=["seed", "fold"], columns="arm", values="rho")
+chk("eSpCas9 champion mean", float(te["champion"].mean()), 0.7840, 4)
+for arm, v in (("d021x", 0.0227), ("d077x", 0.0257), ("d099x", 0.0255), ("depth6", 0.0174)):
+    chk(f"eSpCas9 {arm} - champion", float((te[arm] - te["champion"]).mean()), v, 4)
+    chk(f"  folds ahead", float(((te[arm] - te["champion"]) > 0).sum()), 10, 0)
+tb = pd.read_csv(OUT / "tune_budget_check.csv")
+chk("selector columns with nonzero gain", float(tb.n_nonzero_gain.dropna().iloc[0]), 878, 0)
+for nf, v in ((450, 0.7208), (900, 0.7205), (1500, 0.7202), (2500, 0.7199)):
+    chk(f"budget {nf}: best-tree rho", float(tb[tb.nf == nf].rho.max()), v, 4)
+from .tune_analyze import table as _tt
+tt = _tt(); dr = tt.drop(index=["champion", "depth6"])
+chk("stage-1 champion rho", float(tt.loc["champion", "rho"]), 0.7107, 4)
+for dep, v in ((3, 0.712), (4, 0.714), (5, 0.713), (6, 0.707), (7, 0.706), (8, 0.704), (9, 0.700), (10, 0.698)):
+    chk(f"mean rho at depth {dep}", float(dr[dr.max_depth == dep].rho.mean()), v, 3)
+for nf, v in ((150, 0.698), (300, 0.709), (450, 0.711), (600, 0.711), (900, 0.708)):
+    chk(f"mean rho at budget {nf}", float(dr[dr.nf == nf].rho.mean()), v, 3)
+
+
+tf = pd.read_csv(OUT / "tune_fullcv.csv").pivot_table(index=["seed", "fold"], columns="arm", values="rho")
+for arm, v in (("champion", 0.7151), ("depth6", 0.7223), ("tuned d099x", 0.7314), ("ensemble of 5", 0.7334)):
+    chk(f"full cohort {arm}", float(tf[arm].mean()), v, 4)
+for arm, v in (("depth6", 0.0072), ("tuned d099x", 0.0162), ("ensemble of 5", 0.0183)):
+    chk(f"full cohort {arm} - champion", float((tf[arm] - tf["champion"]).mean()), v, 4)
+    chk("  folds ahead", float(((tf[arm] - tf["champion"]) > 0).sum()), 15, 0)
+
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:
     print("  MISMATCH", b)

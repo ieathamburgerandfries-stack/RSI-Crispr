@@ -1,0 +1,105 @@
+200 draws; champion 0.7107, depth6 0.7121; best draw 0.7226; median draw 0.7088; draws above champion: 87
+
+by max_depth:
+             mean     max  count
+max_depth                       
+3          0.7122  0.7218     18
+4          0.7136  0.7226     33
+5          0.7130  0.7219     27
+6          0.7071  0.7211     22
+7          0.7064  0.7178     29
+8          0.7041  0.7195     25
+9          0.7005  0.7163     30
+10         0.6982  0.7142     16
+
+by nf:
+       mean     max  count
+nf                        
+150  0.6976  0.7121     41
+300  0.7091  0.7203     43
+450  0.7107  0.7219     47
+600  0.7107  0.7223     34
+900  0.7083  0.7226     35
+
+by target:
+             mean     max  count
+target                          
+rankgauss  0.7069  0.7211     95
+raw        0.7076  0.7226    105
+
+by max_bin:
+           mean     max  count
+max_bin                       
+64       0.7075  0.7223    106
+256      0.7069  0.7226     94
+
+by gamma:
+         mean     max  count
+gamma                       
+0.0    0.7051  0.7226     81
+0.1    0.7082  0.7223     41
+0.5    0.7096  0.7223     38
+2.0    0.7083  0.7212     40
+
+by reg_alpha:
+             mean     max  count
+reg_alpha                       
+0.00       0.7062  0.7223     33
+0.01       0.7084  0.7220     54
+0.10       0.7072  0.7226     45
+1.00       0.7062  0.7220     36
+5.00       0.7074  0.7223     32
+
+by learning_rate (quartiles):
+                                  mean     max  count
+learning_rate                                        
+(0.009000000000000001, 0.0225]  0.7128  0.7219     50
+(0.0225, 0.0475]                0.7133  0.7226     50
+(0.0475, 0.0914]                0.7073  0.7212     50
+(0.0914, 0.197]                 0.6955  0.7181     50
+
+by subsample (quartiles):
+                  mean     max  count
+subsample                            
+(0.5, 0.643]    0.7049  0.7220     50
+(0.643, 0.748]  0.7080  0.7219     50
+(0.748, 0.877]  0.7065  0.7226     50
+(0.877, 0.999]  0.7096  0.7223     50
+
+by colsample_bytree (quartiles):
+                    mean     max  count
+colsample_bytree                       
+(0.305, 0.49]     0.7046  0.7226     50
+(0.49, 0.671]     0.7089  0.7223     50
+(0.671, 0.818]    0.7064  0.7211     50
+(0.818, 0.998]    0.7091  0.7220     50
+
+by min_child_weight (quartiles):
+                               mean     max  count
+min_child_weight                                  
+(1.0010000000000001, 2.971]  0.7060  0.7226     50
+(2.971, 6.39]                0.7082  0.7218     50
+(6.39, 19.333]               0.7086  0.7223     50
+(19.333, 59.401]             0.7062  0.7206     50
+
+by reg_lambda (quartiles):
+                   mean     max  count
+reg_lambda                            
+(0.099, 0.447]   0.7077  0.7220     50
+(0.447, 2.147]   0.7094  0.7220     50
+(2.147, 8.908]   0.7048  0.7223     50
+(8.908, 49.842]  0.7072  0.7226     50
+
+ridge effect of +1 sd of each hyperparameter on rho (others held fixed):
+best_k              0.0060
+max_depth          -0.0033
+nf                  0.0021
+learning_rate      -0.0018
+rankgauss          -0.0015
+subsample           0.0009
+reg_lambda          0.0008
+min_child_weight    0.0005
+gamma              -0.0003
+colsample_bytree    0.0003
+reg_alpha           0.0001
+bin64              -0.0000

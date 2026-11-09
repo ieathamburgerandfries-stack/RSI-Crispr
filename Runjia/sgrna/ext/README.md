@@ -23,6 +23,7 @@ project folder) and `PYTHONPATH=<fork>/Runjia`, `EXT_OUT=<fork>/Runjia/results/e
 | `pam_variants.py`, `pam_learn.py`, `pam_analyze.py` | 770 SpCas9 PI-domain variants (Silverstein 2025): descriptor groups (identity, composition, structure x composition, structure alone), leave-one-campaign-out and random folds, three model classes, within-fold metrics, bootstrap summaries |
 | `pam_predict.py` | the PAM profile of each Kim nuclease predicted from its six PI residues, in the layout of `nuclease_desc.pam_group` (used by `nuclease_model --stage 10`) |
 | `enzyme_contacts.py` | position-resolved contact profiles of each enzyme (substituted residues mapped through 5F9R onto target positions), the exact-permutation pairing test, whole-protein composition distances |
+| `tune_ecoli.py`, `tune_analyze.py` | joint hyperparameter search for the E. coli model judged on held-out genes: 200 random draws on 70% of genes, re-scoring on fresh partitions, confirmation on the other 30%, the eSpCas9 screen as external check, and the whole-cohort standard protocol (`EXTENSION_LOG.md` section 11) |
 | `human_flank.py`, `human_shape.py`, `human_twin_check.py` | human side result (stopped; see `EXTENSION_LOG.md` section 10): hg38 location of the human guides, the shape ablation on human, and the twin-grouped re-run of the human baseline |
 
 Data downloaded for this work (publisher / RCSB / GitHub text, nothing executed): `external_data/kim2020_cas9_variants/`

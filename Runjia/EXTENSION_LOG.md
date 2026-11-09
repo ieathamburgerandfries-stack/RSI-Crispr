@@ -32,7 +32,7 @@ the sandbox refused to execute third-party model code. The pentamer table is the
 | ABC / muABC tetranucleotide MD stiffness (Pasi et al. 2014) | 6x6 stiffness per tetranucleotide | **not obtained**: no direct download page found; this is the data that a true stiffness-tensor encoding would need, and its absence is the main limit of Finding 8 |
 | E. coli Hi-C / 3D chromosome (Lioy et al. 2018, GSE107301) | contact maps, 3D coordinates | already family E (`eng.nuc`), a null; not repeated |
 | E. coli NAP ChIP-seq (GSE24991 H-NS/Fis; SRP008538 IHF/HU) and IPOD-HR protein occupancy (GSE164796) | protein-bound DNA tracks | **not used**: no processed track was fetched; these describe the nucleoid, and Hi-C-derived family E was already null. An open item |
-| DeepSpCas9variants (GitHub NahyeKim) | trained models only, no training data; published accuracies are in the paywalled article | **not used**; no state-of-the-art comparison for human nuclease variants is made |
+| DeepSpCas9variants (GitHub NahyeKim) | trained models only, no training data; published accuracies are in the paywalled article | weights **not run**; published per-variant Spearman (Fig. 4b of the article, supplied by the user on 9 Nov, `lit_review/`) compared with ours in `results/ext/kim2020_published_vs_ours.csv`: mean 0.896 against 0.881, ahead on 5 of 9 variants, evoCas9 0.683 against 0.81 |
 | Schmid-Burgk et al. 2020 (Mol Cell), others | specificity profiling with 59 guides | too small to condition a model on |
 | human flank sequences for the project's human matrix | would let Finding 8 be run on human | not available locally (the matrix carries computed columns, not sequence); needs hg38 coordinates |
 
@@ -579,3 +579,61 @@ the opposite of the bacterial cohort and may be the same twin effect (shape colu
 **The bacterial cohort does not have this problem (checked).** `curated_guide_index.csv`: 33,567 rows, 33,567 distinct
 protospacers; 87 guides have 2-8 genomic copies; 29% of guides have another within 19 bp (overlapping tiling), which the
 gene-grouped folds used throughout keep together.
+
+## 11. Tuning the E. coli model, outside the freeze (9 Nov)
+
+*Aim (from the user): improve the E. coli model's rho; improvements may later carry to human data.* A joint search replaces the
+earlier one-knob-at-a-time sweep, judged on genes it never saw. Code: `tune_ecoli.py`, `tune_analyze.py`; results
+`results/ext/tune_*.csv`, `tune_configs.json`.
+
+**Design.** Curated cutting cohort, base + family A (6,517 columns), 30,203 guides with a gene label. Genes split once into DEV
+(70%: 2,809 genes, 21,260 guides) and CONFIRM (30%: 1,204 genes, 8,943 guides); the split was asserted to share no gene.
+Stage 1: 200 random draws + the champion + the old depth-6 setting, 5 gene-grouped folds of DEV (seed 41). Stage 2: the best 12
+re-scored on three further gene-grouped partitions of DEV (seeds 42-44). Confirmation: train on all of DEV, score CONFIRM genes,
+three seeds, paired bootstrap over genes. External: the same configurations on crisprHAL's eSpCas9 screen (59,489 guides, a
+different nuclease, 5 folds grouped by 100-kb block, two seeds), nothing tuned on it. Search space: max_depth 3-10, learning rate
+0.01-0.2 (log), subsample 0.5-1, colsample_bytree 0.3-1, min_child_weight 1-60, lambda 0.1-50, alpha {0..5}, gamma {0..2},
+max_bin {64, 256}, column budget {150, 300, 450, 600, 900} (top of the fixed selector's ranking, computed once per fold), target
+raw or rank-normalised, and the number of trees as a free dimension (each model fitted with up to 2,000 trees, scored at a grid
+through `iteration_range`; finalists whose best count sat at the cap were re-run with up to 4,000, kept under a new name `...x`).
+Column selection stays the project's fixed selector (XGBoost, 300 trees, depth 4); the champion is depth 4, lr 0.05, 400 trees,
+subsample 0.8, colsample 0.8, 300 columns.
+
+**What 200 draws say about each knob** (marginal means; `results/ext/tune_stage1_effects.txt`). Shallower and slower is better:
+mean rho by depth 3/4/5/6/7/8/9/10 = 0.712/0.714/0.713/0.707/0.706/0.704/0.700/0.698; by learning-rate quartile (low to high)
+0.713/0.713/0.707/0.696; by column budget 150/300/450/600/900 = 0.698/0.709/0.711/0.711/0.708. Holding the others fixed (ridge on
+the standardised settings), +1 sd of tree count is +0.006, of depth -0.003, of budget +0.002, of learning rate -0.002, rank-normalised
+target -0.0015; subsample, colsample, min_child_weight, lambda, alpha, gamma and max_bin are within +-0.001. The optimum is a broad
+plateau (depth 4-5, learning rate 0.013-0.04, 1,600-4,000 trees, 450-900 columns, raw target), not a point: the ten best draws
+differ widely in every other knob and score within 0.003 of each other.
+
+**Result on genes the search never saw** (CONFIRM, trained on DEV only, rho; difference to the champion with a 95% bootstrap
+over genes; three seeds):
+
+| model | rho | vs champion |
+|---|---:|---:|
+| champion (depth 4, 400 trees, lr 0.05) | 0.7073 | |
+| depth 6 (the earlier finding) | 0.7126 | +0.0053 [+0.0027, +0.0083] |
+| best tuned draw d099x (depth 5, lr 0.013, 4,000 trees, 450 columns, subsample 0.51) | 0.7215 | **+0.0143 [+0.0111, +0.0174]** |
+| d077x / d021x / d000x | 0.7215 / 0.7216 / 0.7210 | +0.0143 / +0.0143 / +0.0138 |
+| average of the five best (z-scored predictions) | **0.7246** | **+0.0174 [+0.0144, +0.0204]** |
+
+The gain on unseen genes (+0.014) is as large as on the tuning folds (+0.012 at stage 1, +0.011-0.013 at stage 2), so the winner's
+curse that inflated the earlier sweep is not what produces it; the interval resamples genes of one split and does not include
+split-to-split variation.
+
+**Carry-over to a different nuclease** (eSpCas9 screen, 10 paired folds; champion 0.7840): d021x +0.0227 [+0.0221, +0.0233],
+d077x +0.0257 [+0.0247, +0.0266], d099x +0.0255 [+0.0246, +0.0262], depth 6 +0.0174 [+0.0165, +0.0183]; ahead on 10 of 10 folds
+for every configuration. The intervals are over folds of one partition. The cohort is larger (59,489 guides), which is the
+likeliest reason the gain is bigger there; it is not the screen the earlier final evaluation used as untouched, and nothing was
+selected on it.
+
+**The column budget is not a lever at the tuned setting** (one fold, config d077x): the selector gives nonzero gain to only 878
+of 6,517 columns, and rho at 450 / 900 / 1,500 / 2,500 columns is 0.7208 / 0.7205 / 0.7202 / 0.7199 (best tree count each).
+
+**The project's standard protocol on the whole cohort** (gene-grouped 5 folds x 3 seeds, selection inside folds, 15 paired
+folds; `tune_fullcv.csv`): champion 0.7151 (identical to the earlier family-A figure, which checks that this code reproduces
+the pipeline), depth 6 0.7223 (+0.0072 [+0.0062, +0.0082]), tuned d099x 0.7314 (+0.0162 [+0.0152, +0.0173]), average of the
+five best 0.7334 (+0.0183 [+0.0175, +0.0191]); every tuned arm ahead on 15 of 15 folds. The tuned settings were chosen on 70%
+of these genes, so this is the number to compare with earlier tables; the unbiased gain is the held-out-gene one above
+(+0.014 single, +0.017 average), and the difference (about +0.002) is the size of what selecting on the same genes adds.

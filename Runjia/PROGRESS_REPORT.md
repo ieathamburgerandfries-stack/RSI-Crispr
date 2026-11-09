@@ -1484,9 +1484,9 @@ model the nuclease reopen the gap on enzymes other than SpCas9?* Both models her
 on a nine-enzyme human sheet a nuclease-conditioned pooled model ties per-nuclease fits in
 distribution at matched capacity (ρ 0.886 against 0.883), so conditioning does not change the
 architecture comparison, and its value is in labelled data for a new enzyme, not in accuracy for a
-known one. No comparison against the published human-variant predictor (DeepSpCas9variants) is made:
-its per-variant accuracies were not retrievable and its weights were not run, so the nine-enzyme
-numbers are baselines under this project's featurisation and not a state-of-the-art claim.
+known one. Against the published human-variant predictor (DeepSpCas9variants, Kim et al. 2020) the
+per-nuclease boosted baselines here average Spearman 0.881 against the paper's 0.896 on its own held-out
+test sets (a bounded comparison: the test subsets differ in size and composition; see Finding 9, limit iv).
 
 #### The sentence that survives every condition
 
@@ -1867,10 +1867,15 @@ conclusion about *what* descriptors carry (PAM usage) is biochemically what a PI
 do, which is consistent but also what makes it unsurprising. (iii) The 10%-of-weight scheme for the k labelled targets is a choice, and the pooled arms in the k table used 500 × 6
 trees (the lower-capacity setting, so conservative for them). The k-only baseline is not a tuning artefact: choosing its
 hyperparameters by 4-fold CV on the k targets gives 0.712 / 0.804 / 0.847 at k = 100 / 500 / 2,000 against 0.713 / 0.807 /
-0.843 untuned. (iv) No published-accuracy comparison: the
-per-variant Spearman values of the paper's DeepSpCas9variants were not retrievable (the article is paywalled)
-and its trained weights were not run (external model code), so the figures above are baselines under this
-project's featurisation, not a state-of-the-art claim. (v) All of it is the 30-mer; flanking DNA beyond 3 nt is
+0.843 untuned. (iv) The published predictor is a stronger model on the hard variants and no better on the easy ones. The paper's
+Fig. 4b gives per-variant Spearman values for DeepSpCas9variants on target sequences never used for training (random split of
+its Supplementary Table 8; 2,545–3,415 targets per variant): SpCas9 0.90, Sniper-Cas9 0.90, xCas9 0.91, eSpCas9(1.1) 0.92,
+SpCas9-HF1 0.91, HypaCas9 0.91, evoCas9 0.81, VRQR 0.91, SpCas9-NG 0.89 (mean 0.896). The per-nuclease XGBoost models here, on the
+sheet's own test flag (4.0–5.2 thousand targets per variant, both library types, 30-mer one-hot and dinucleotide
+columns only), score 0.935, 0.937, 0.924, 0.890, 0.857, 0.862, 0.683, 0.930 and 0.914 (mean 0.881): ahead on five variants
+by 0.014–0.037, behind on HF1, HypaCas9 and eSpCas9(1.1) by 0.03–0.05 and on evoCas9 by 0.127. So the boosted baseline is within
+0.014 of the CNN on average and loses where activity is low and sparse. The two test sets are not the same targets, so
+this is a bounded comparison, not a head-to-head; the paper's weights were not run (external model code). (v) All of it is the 30-mer; flanking DNA beyond 3 nt is
 not in this sheet, so nothing here bears on Findings 2 and 8.
 
 
@@ -3150,6 +3155,36 @@ variance is 0.22 ρ. The one place they are not is a *different dataset*: on the
 human matrix depth and learning rate are worth **+0.10**, and `max_depth` 4 → 6
 alone is **+0.0585** against +0.0063 here. Tuning buys insurance against a change
 of signal shape, not a better number on a signal already fitted.
+
+### Fork update, 9 November: a joint search, judged on genes it never saw (`EXTENSION_LOG.md` §11)
+
+The freeze does not apply in the fork, so the question the sweep above left open — how much a *joint* search is worth — was
+asked, with the two things that inflated the earlier sweep removed. Genes were split once into a tuning part (70%) and a
+confirmation part (30%, 1,204 genes, never used to choose anything). Two hundred random configurations were scored on
+gene-grouped folds of the tuning genes; the best twelve were re-scored on three fresh partitions of them; the survivors
+were trained on all the tuning genes and scored on the confirmation genes, and then on crisprHAL's eSpCas9 screen.
+
+| | tuning folds (stage 2) | confirmation genes | eSpCas9 screen (10 folds) | whole cohort, standard protocol |
+|---|---:|---:|---:|---:|
+| champion (depth 4, 400 trees, lr 0.05, 300 columns) | 0.7121 | 0.7073 | 0.7840 | 0.7151 |
+| depth 6 | 0.7148 | +0.0053 [+0.0027, +0.0083] | +0.0174 [+0.0165, +0.0183] | +0.0072 [+0.0062, +0.0082] |
+| best tuned (depth 5, lr 0.013, 4,000 trees, 450 columns, subsample 0.51) | 0.7248 | **+0.0143 [+0.0111, +0.0174]** | **+0.0255 [+0.0246, +0.0262]** | **+0.0162 [+0.0152, +0.0173]** |
+| average of the five best configurations | | **+0.0174 [+0.0144, +0.0204]** | | **+0.0183 [+0.0175, +0.0191]** |
+
+**The earlier reading — "depth 4 is too shallow by six thousandths" — was half right.** Depth 6 is better than depth 4 at the
+champion's learning rate, but the joint search shows the better direction is *slower*, not deeper: mean ρ over the 200 draws
+falls with depth (depth 3–5 about 0.713, depth 8–10 about 0.70) and with learning rate, and rises with the number of trees; the
+optimum is a broad plateau at depth 4–5, learning rate 0.013–0.04, 1,600–4,000 trees. The champion's 400 trees at 0.05 stop
+well short of it. The other knobs (subsample, column subsampling, min_child_weight, both penalties, gamma, histogram bins,
+rank-normalising the target) are each within ±0.001 once the others are held fixed, and the column budget stops mattering above about 450
+(the selector gives non-zero gain to only 878 of 6,517 columns; 450 to 2,500 columns score 0.7208 to 0.7199).
+**The gain survives the check that sank the sweep's winner:** on never-seen genes it is +0.014 for one configuration and +0.017
+for the average of five, the same size as on the tuning folds, and it carries to a different nuclease on a different cohort
+(+0.023 to +0.026, ahead on 10 of 10 folds; larger there, where the cohort is 59,489 guides). Intervals resample genes or folds of one
+partition, so they do not include split-to-split variation; the confirmation is one gene split.
+**Scope.** About one and a half hundredths of ρ, on a problem whose open variance is 0.22: the earlier conclusion that tuning is
+a hundredth-scale knob stands, but it is a hundredth that is now collected rather than declined. The champion elsewhere in this
+report keeps its original settings, since every comparison here was made against them.
 
 ### Does grouped cross-validation still mean the same thing after the cohort moved?
 
