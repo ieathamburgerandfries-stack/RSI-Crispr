@@ -366,6 +366,10 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
+*Current state of the audit (19 Nov):* it has grown with each section and now stands at **663 checks, 0 mismatches**,
+covering sections 7-16. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
+modules need and exits non-zero if any quoted number no longer matches its file.
+
 Errors made and caught on the way, because they bear on how much to trust the rest:
 * a splice that duplicated 350 lines of the report (the end marker preceded the start marker after an earlier
   reordering); caught by a line count, restored from the saved copy and redone with order assertions;
@@ -783,11 +787,49 @@ do, so the "second, independent instrument" is the first artefact's signature ra
 same columns and seeds, so the only thing that differs is the folds and the row-wise arms act as a positive control for
 the harness. Twin-grouped folds are asserted to share no protospacer across the split.
 
-**Status: queued behind 16.1 on the same machine; results and the resolution of the claim to follow.** Expectation
-recorded in advance: the ratio should *rise* under grouped folds, because ridge has no mechanism for memorising a twin
-and boosting does. If it rises past the *E. coli* figure the claim inverts and should be withdrawn rather than rescoped.
-Pending that, the three statements are flagged in Part 2 and Part 3 and a note for Jacky, whose number this is, is in
-`NOTE_human_twin_leak.md`.
+*Expectation recorded before the run:* the ratio should *rise* under grouped folds, because ridge has no mechanism for
+memorising a twin and boosting does; if it rises far enough the claim inverts and should be withdrawn rather than
+rescoped.
+
+| 400 columns, 3 seeds x 5 folds | row-wise rho | twin-grouped rho |
+|---|---:|---:|
+| champion (depth 4, lr 0.05, 400 trees) | 0.4074 | **0.3377** <- now the best boosting arm |
+| `max_depth` 4 -> 6 | 0.4659 | 0.3315 |
+| `learning_rate` 0.05 -> 0.3 | 0.4490 | 0.2560 |
+| `n_estimators` 400 -> 1,000 | 0.4435 | 0.3226 |
+| no row/column subsampling | 0.3999 | 0.3333 |
+| all three ("library defaults"; the 0.5076 configuration) | 0.5076 | **0.2515** |
+| ridge | 0.3232 | 0.3001 |
+| **ridge / best boosting** | **63.7%** | **88.8%** |
+| **`max_depth` 4 -> 6** | **+0.0585** | **-0.0062** [-0.0093, -0.0034] |
+
+**The positive control is exact.** Every row-wise figure reproduces the published one to four decimals (0.40741 against
+0.4074, 0.50761 against 0.5076, 0.46588 against 0.4659, 0.44896 against 0.4490, 0.44354 against 0.4435, 0.39990 against
+0.3999, 0.32315 against 0.3232; ratio 63.66% against 63.7%; depth +0.05847 against +0.0585). So the difference between
+the columns is the folds and nothing else.
+
+**Result: the claim is withdrawn, and the expectation was right about the direction and wrong about how far.**
+(i) Every knob that helped now hurts, and the **champion is the best of the six arms** -- so "the champion is
+mis-specified by 0.10 rho on the human matrix" is withdrawn too; that was the leak, not a shape mismatch.
+(ii) The ridge/boosting gap between kingdoms falls from 31.9 points to **6.8** (95.6% against 88.8%), on column sets
+that were never comparable (427 decorrelated for *E. coli*, 400 selected for human) -- not enough to carry a biology
+claim. (iii) The second instrument **changes sign**: depth is +0.0063 in *E. coli* and -0.0062 in human, interval clear
+of zero. The claim's whole force was that two independent instruments agreed; they now disagree, and the one that looked
+decisive was measuring memorisation.
+
+*Withdrawn, not rescoped:* Part 2 biology claim 4, the additivity half of the two cross-kingdom observations, the
+champion-mis-specification reading in Part 3, and Part 4's item 4 as it stood. Nothing replaces them; establishing a
+kingdom-level interaction-order difference would need a deduplicated human matrix and a search run under grouped folds.
+*Still standing:* the GC inversion (a marginal association, no model to fit), the *E. coli* additivity result on its own,
+and the plain observation that the human matrix is much harder (0.3377 against 0.7314).
+*Not re-run and still on row-wise folds:* the +0.052 human flank gain and the cross-kingdom transfer figures, including
+the family-A-on-both-sides result that reverses the sign. Those are flagged in Part 2 and Part 3.
+
+*An uncomfortable corollary worth stating.* Appendix B argued that hyperparameters are a hundredth-scale knob on this
+problem, with the human matrix as the one exception where they were worth +0.10. The exception is gone, so the
+generalisation is **stronger** than it was: tuning is a hundredth-scale knob on both matrices. That, together with 16.1
+(the tuning gain collapsing to +0.003 without family A), is two independent routes to the same conclusion -- the
+learner was never the binding constraint.
 
 ### 16.3 A second gene split, with its own search
 
@@ -870,6 +912,15 @@ routes outside the protospacer are an *experimental* track (CRISPRon's chromatin
 windows of hundreds to a thousand nucleotides and measures their increment.** Caveat stated rather than buried: a
 literature search failing to find something is weak evidence that it does not exist, and this was a handful of searches
 plus citation chasing, not a systematic review.
+
+**The claim we should stop making, found by looking.** "A boosted tree over engineered features matches a tuned deep
+model" has a published precedent on human data: **BoostMEC** (Zarate et al. 2022, *BMC Bioinformatics*,
+[10.1186/s12859-022-04998-z](https://doi.org/10.1186/s12859-022-04998-z)) is LightGBM over direct and derived sgRNA
+sequence features, benchmarked against **10 models on 13 external datasets**, and its authors argue for it on exactly
+our grounds (competitive accuracy, better interpretability). They have far more external validation than we do. So the
+architecture is not the contribution; the *reach* of the representation is, and section 16.1's result -- the tuning gain
+falling from +0.016 to +0.003 without the flank columns -- is the sharpest internal evidence that the features and not
+the learner are doing the work.
 
 **A calibration against our own headline.** Recent independent benchmarks of the human predictors put CRISPRon first
 with Rule Set 3 (DeWeirdt et al. 2022) and DeepSpCas9 close behind, and the ordering **changes between datasets and

@@ -2231,19 +2231,17 @@ candidate.**
     Finding 4: on the base representation alone the same hyperparameter change is
     worth +0.003, so capacity is not what the gap is made of.
 
-**Two cross-kingdom observations**, both biology rather than bookkeeping. The
-association between GC content and cutting efficiency **inverts** between
-*E. coli* and human (−0.20 against +0.02), and the human phenotype is far less
-additive — a linear model reproduces 96% of a boosted tree's ρ in *E. coli* and
-only 64% in human. Bacterial cutting efficiency is close to a sum of small
-independent effects; human cutting efficiency is not.
+**One cross-kingdom observation, and it is a marginal association rather than a fitted
+model — which is why it survives.** The association between GC content and cutting
+efficiency **inverts** between *E. coli* and human (−0.20 against +0.02).
 
-> ⚠ **The additivity half of that paragraph is suspended, not established** (9–19 November;
-> Appendix B.4, `EXTENSION_LOG.md` §10, §16). The 64% uses a human boosting figure measured on
-> **row-wise folds of a matrix in which 49% of rows are a repeat measurement of a guide that also
-> appears elsewhere**, and under twin-grouped folds that figure falls from 0.5076 to 0.2515. The GC
-> inversion is unaffected — it is a marginal association, not a fitted model. See §16 for the re-run
-> under grouped folds and for whether the claim survives, inverts, or has to be withdrawn.
+> **There was a second one, and it is withdrawn** (19 November; biology claim 4 above,
+> Appendix B.4, `EXTENSION_LOG.md` §16.2). It read: "the human phenotype is far less additive —
+> a linear model reproduces 96% of a boosted tree's ρ in *E. coli* and only 64% in human."
+> The 64% used a human boosting figure measured on **row-wise folds of a matrix in which 49% of
+> rows are a repeat measurement of a guide that appears elsewhere**. Under twin-grouped folds the
+> ratio is **88.8%** against *E. coli*'s 95.6%, and the depth result that corroborated it changes
+> sign. The GC inversion is untouched, because it needs no model to fit.
 
 And **flanking context is the part of the representation that does cross**:
 built on both sides it is worth +0.052 ρ on the human matrix on its own ground,
@@ -2362,29 +2360,36 @@ this cohort at a marginal strength comparable to flank GC.
 the other direction — it preserves composition, so if composition carried the
 effect the control would have shown it. It did not, which is the result.
 
-**4. The two kingdoms differ in interaction order, and two unrelated instruments
-agree on it.** ⚠ **Suspended pending a re-run — see the warning below. Do not use this
-claim in the draft until §16 resolves it.**
+**4. ~~The two kingdoms differ in interaction order, and two unrelated instruments
+agree on it.~~ WITHDRAWN, 19 November.** The claim read: a ridge model recovers
+**95.6%** of a boosted tree's ρ in *E. coli* and only **63.7%** in human, and
+independently, raising `max_depth` from 4 to 6 — which raises the maximum interaction
+order the trees can express — is worth **+0.0063** here and **+0.0585** on the human
+matrix, so bacterial cutting efficiency is close to a sum of small independent
+contributions and human cutting efficiency is not.
 
-A ridge model recovers **95.6%** of a boosted tree's ρ in *E. coli* and **63.7%**
-in human. Independently, raising `max_depth` from 4 to 6 — which raises the
-maximum interaction order the trees can express — is worth **+0.0063** here and
-**+0.0585** on the human matrix. Model class and model capacity are different
-instruments and give the same answer: **bacterial cutting efficiency is close to
-a sum of small independent contributions, and human cutting efficiency is not.**
-
-> ⚠ **Why this is suspended, and why the corroboration is worth less than it looks**
-> (9–19 November; Appendix B.4, `EXTENSION_LOG.md` §10, §16). Both numbers come from
-> **row-wise folds** of the human matrix, and 49% of its rows are a repeat measurement of
-> a guide that appears elsewhere, with twin labels agreeing at ρ 0.80. Under twin-grouped
-> folds the human boosting figure in the 63.7% denominator falls from 0.5076 to 0.2515.
-> The second instrument makes it worse rather than better: **`max_depth` is one of the
-> knobs by which a tree memorises a twin**, so the +0.0585 is the leak's signature, not an
-> independent line of evidence — and the same holds for the learning rate (+0.0416) and the
-> tree count (+0.0361), while turning subsampling *off* cost −0.0075. The *E. coli* side is
-> clean (33,567 distinct guides in 33,567 rows, gene-grouped), so if the ratio rises under
-> grouped folds — as it should, ridge having no mechanism for memorising a twin — this claim
-> **inverts** rather than weakens. §16 reports the re-run under both fold schemes.
+> **Why it is withdrawn** (`human_additivity_twin.py`, `EXTENSION_LOG.md` §10 and §16.2;
+> Appendix B.4). Both human figures came from **row-wise folds** of a matrix in which 8,499
+> of 17,421 rows (49%) are a repeat measurement of a guide that appears elsewhere, twin
+> labels agreeing at ρ 0.80. Re-run with folds that keep identical protospacers together —
+> same columns, same seeds, same code, and the row-wise arms reproduce every published
+> figure to four decimals as a positive control:
+>
+> - the ridge/boosting ratio goes **63.7% → 88.8%**, against *E. coli*'s 95.6%, so the
+>   between-kingdom gap falls from 31.9 points to **6.8** — on column sets that are not
+>   comparable anyway (427 decorrelated against 400 selected);
+> - `max_depth` 4 → 6 goes **+0.0585 → −0.0062** [−0.0093, −0.0034]. The second instrument
+>   now points the **opposite way** from the first, where the claim's whole force was that
+>   two independent instruments agreed.
+>
+> The mechanism is specific and was predictable: depth, learning rate and tree count are
+> exactly how a tree memorises a sequence whose twin is in the training fold, which is why
+> every knob that "helped" under row-wise folds hurts under grouped ones and the champion
+> turns out to be the best of the six. The *E. coli* side is clean (33,567 distinct guides in
+> 33,567 rows, gene-grouped), so the *E. coli* additivity result stands on its own; what
+> cannot be supported is the contrast. **Nothing replaces this claim** — a 6.8-point
+> difference on an incomparable basis is not a finding, and establishing one would need a
+> deduplicated human matrix and a search run under grouped folds.
 
 That fits the rest of the picture. The *E. coli* flank effect is a smooth
 gradient with no motif and no window-edge dependence — the signature of a bulk,
@@ -2540,12 +2545,19 @@ biology paper.
   protospacers together, the 0.5076 configuration gives **0.2515 ± 0.0191** and the harness
   default **0.3356 ± 0.0215** — so the configuration that looked 0.10 better is 0.08 worse,
   and the ordering this bullet drew its conclusion from reverses.
+  **Re-run under twin-grouped folds** (§16.2; the row-wise arms reproduce every published
+  figure to four decimals in the same run, as a positive control): the champion reaches
+  **0.3377** and is now the **best** of six boosting arms; every knob that helped under
+  row-wise folds hurts; ridge/boosting is **88.8%** against 63.7%; and `max_depth` 4 → 6 is
+  **−0.0062** [−0.0093, −0.0034] against +0.0585.
   **What survives:** the champion hyperparameters are inherited from the *E. coli* baseline
-  and every external arm in this report is fitted with them, which is still worth knowing.
-  **What does not, pending §16:** that the human gap is hyperparameters rather than features,
-  that the human signal is less additive, and the 63.7% ratio — because the knobs that
-  produced the +0.1002 (depth, learning rate, tree count) are precisely the ones that
-  memorise a twin. A note for Jacky, whose number this is, is in
+  and every external arm in this report is fitted with them — but the claim that this costs
+  0.10 ρ on the human matrix is **withdrawn**; the champion was the right shape all along.
+  **What is withdrawn:** that the human gap is hyperparameters rather than features, that the
+  human signal is less additive (biology claim 4, Part 2), and the 63.7% ratio.
+  **What the human matrix is actually like:** noisier and harder than the bacterial one, best
+  honest figure **0.3377** against 0.7314 here, and in need of deduplication before any
+  model-based claim is made on it. A note for Jacky, whose number this is, is in
   `NOTE_human_twin_leak.md`.
 - **One organism and two relatives.** No genome-wide Cas9-cutting screen exists
   outside *Enterobacteriaceae*; what exists elsewhere is CRISPRi, a different
@@ -2706,7 +2718,7 @@ Remaining before submission:
 | 1 | ~~eSpCas9 final evaluation~~ | **done, and it is a tie** — ρ 0.7842 against 0.7821 on crisprHAL's own eSpCas9 split with their published weights, at 47,591 training guides. Also corrected: eSpCas9 was never an untouched holdout (above) |
 | 2 | ~~crisprHAL 2 given a search of its own~~ | **run 16 October, and it found nothing**: 0.6987 against the 0.6971 their published *configuration* reaches on these same folds, with that configuration winning the inner search in 4 of 5 folds. **Independently repeated on a second Colab session, 26 October: mean 0.6989** (0.6895, 0.7012, 0.7063, 0.6983, 0.6994), again with their published configuration winning four of the five inner searches — a GPU result reproducing to 0.0002. The margin against their *best known* configuration is **+0.0161**. Still not a fully matched search — ours used 97–157 draws per fold, theirs 5–8, so ~40 GPU-h would be needed to equalise (Appendix B) |
 | 3 | ~~orientation controls~~ | **done** — Jacky's, and reported in his own write-up rather than here |
-| 4 | ~~human baseline re-tuned at the teammate's settings~~ | **done, and it reproduces: ρ 0.5076 against the 0.472 quoted.** The settings arrived 16 October; the gain is hyperparameters, not columns (+0.1002 against +0.0038), and the reason is that the human signal is far less additive than *E. coli*'s (ridge/boosting 63.7% against 95.6%), so the champion is the wrong shape for it by 0.10 ρ. **This cost a claim**: refitting the human side moved one cross-kingdom transfer direction from −0.016 to −0.006 [−0.023, +0.011], i.e. to zero, so "negative in both directions with intervals excluding zero" became "no transfer in either direction **on the shared columns**" — and that scoping is load-bearing, because with family A built on both sides transfer is positive in both directions (Part 3) |
+| 4 | ~~human baseline re-tuned at the teammate's settings~~ — **done, then overturned, and the item is now "deduplicate the human matrix"** | It reproduced: ρ 0.5076 against the 0.472 quoted, the gain being hyperparameters rather than columns (+0.1002 against +0.0038), read as the human signal being far less additive (ridge/boosting 63.7% against 95.6%) and the champion being the wrong shape by 0.10 ρ. **All of that was duplicate guides.** 49% of the matrix's rows repeat a guide that appears elsewhere; under twin-grouped folds the 0.5076 configuration gives **0.2515**, the champion gives **0.3377** and is the best of six arms, ridge/boosting is **88.8%**, and `max_depth` 4 → 6 is **−0.0062** (§16.2). Withdrawn: the mis-specification, the additivity contrast, and Part 2's biology claim 4. **Still standing from this item:** refitting the human side moved one cross-kingdom transfer direction to zero [−0.023, +0.011], so the shared-column transfer claim is "no transfer in either direction" — though that figure, and the family-A-on-both-sides transfer that reverses it, are themselves on row-wise folds and **have not been re-run**. The real remaining task is a deduplicated human matrix with a search run under grouped folds |
 | 5 | ~~conditional test of the GC hypothesis within matched GC strata~~ | **done** — Finding 3 |
 | 6 | ~~sample-complexity curve repeated across folds and seeds~~ | **done** — Appendix B |
 | 7 | re-tune crisprHAL 2 at **each input width** — **partly supplied by their own paper.** Browne et al. searched input length *per dataset* and stopped at 378 nt (*E. coli* SpCas9) and 406 nt (eSpCas9), reporting that gains level off: +0.00034 ρ per upstream nucleotide and +0.00074 per downstream one, from 0.554 on the sgRNA alone to 0.697 at 378 nt. So the width is their optimum, found by their own search, and our 1,023/2,023 nt degradation is the continuation of a curve they had already flattened. What is still unrun is re-tuning the *other* hyperparameters at each width. The script is written and anchored on the 378 nt positive control (`colab/crisprhal_tune_by_width.py`); only the GPU time is outstanding | 4–6 GPU-h, now optional |
@@ -2958,6 +2970,17 @@ arithmetic argument that a published feature matrix is a lossless re-encoding of
 therefore that no deterministic function of the guide can add information to it. It is the kind of
 result that is obvious in hindsight and was not obvious to the people who built on the matrix,
 including us for several weeks.
+
+**Explicitly *not* novel: "boosted trees over engineered features can match a deep model".** This is
+worth stating plainly because it is the sentence this project is most tempted to lead with.
+**BoostMEC** (Zarate et al. 2022) is LightGBM over direct and derived sgRNA sequence features,
+benchmarked against **10 models on 13 external datasets**, and its authors make our argument for it —
+competitive accuracy with deep learning, chosen for interpretability. So the architectural claim has a
+published precedent on human data, with far more external validation than we have. What remains ours
+is *why* the tree wins here: not that trees are better, but that the representation reaches DNA the
+network's input does not, which is a claim about the **features and their range** and not about the
+learner. Finding 4's result that the tuning gain collapses from +0.016 to +0.003 without the flank
+columns is the sharpest internal evidence for that reading.
 
 **Not novel, and independently corroborated — which is good news for the method.** Two of this
 project's load-bearing methodological choices turn out to be best practice elsewhere, arrived at
@@ -3516,13 +3539,14 @@ variance is ~0.21 ρ. **This subsection was written before the fork's joint sear
 found +0.016 rather than +0.0131 — so the scale conclusion holds but the span is about a
 fifth larger (Appendix B, "Fork update"); and Finding 4 shows that +0.016 collapses to
 +0.003 without family A, so even the larger figure is a statement about the flank columns
-rather than about the learner.** The one place hyperparameters are not a hundredth-scale knob
-looked like a *different dataset*: on the
-human matrix depth and learning rate are worth **+0.10**, and `max_depth` 4 → 6
-alone is **+0.0585** against +0.0063 here — **but those two human figures are now
-suspended**, because they come from row-wise folds of a matrix in which 49% of rows have a
-duplicate guide and depth is one of the knobs that memorises a duplicate (Part 3,
-`EXTENSION_LOG.md` §10, §16). Tuning buys insurance against a change
+rather than about the learner.** There appeared to be one exception — a *different dataset*,
+where on the human matrix depth and learning rate were worth **+0.10** and `max_depth` 4 → 6
+alone **+0.0585** against +0.0063 here. **That exception is withdrawn** (§16.2): both figures
+came from row-wise folds of a matrix in which 49% of rows carry a duplicate guide, and depth
+is one of the knobs that memorises a duplicate. Under twin-grouped folds depth is worth
+**−0.0062** on the human matrix and the champion is the best of six arms, so hyperparameters
+are a hundredth-scale knob **there too**, and the generalisation is stronger than it was
+rather than weaker. Tuning buys insurance against a change
 of signal shape, not a better number on a signal already fitted.
 
 ### Fork update, 9 November: a joint search, judged on genes it never saw (`EXTENSION_LOG.md` §11)
@@ -4229,7 +4253,44 @@ nulls.
 +0.0113 in `c_folding`, on one cohort, with the usual 300-column budget competing
 underneath. It is a mechanism with a measurement attached, not a law.
 
-### The human baseline: ρ 0.5076 once the champion is re-tuned, and why it needed re-tuning
+### ~~The human baseline: ρ 0.5076 once the champion is re-tuned~~ — the whole subsection was measuring duplicate guides, and the claim it supported is withdrawn
+
+> **Read this box before the subsection.** Everything below reproduces exactly, and all of it is
+> an artefact of **row-wise** folds on a matrix where 8,499 of 17,421 rows (49%) are a repeat
+> measurement of a guide that also appears elsewhere (twin labels agree at ρ 0.80;
+> `EXTENSION_LOG.md` §10). Re-run with folds that keep identical protospacers together — same
+> columns, same seeds, same code, with the row-wise arms retained as a positive control that
+> reproduces every published figure to four decimals (`human_additivity_twin.py`,
+> `results/ext/human_additivity_twin*.csv`, §16.2):
+>
+> | 400 columns, 3 seeds × 5 folds | row-wise ρ | **twin-grouped ρ** |
+> |---|---:|---:|
+> | champion (depth 4, lr 0.05, 400 trees) | 0.4074 | **0.3377** ← now the *best* boosting arm |
+> | `max_depth` 4 → 6 | 0.4659 | 0.3315 |
+> | `learning_rate` 0.05 → 0.3 | 0.4490 | 0.2560 |
+> | `n_estimators` 400 → 1,000 | 0.4435 | 0.3226 |
+> | no row/column subsampling | 0.3999 | 0.3333 |
+> | all three ("library defaults", the 0.5076 configuration) | 0.5076 | **0.2515** |
+> | ridge | 0.3232 | 0.3001 |
+> | **ridge / best boosting** | **63.7%** | **88.8%** |
+> | **`max_depth` 4 → 6** | **+0.0585** | **−0.0062** [−0.0093, −0.0034] |
+>
+> **Three things reverse.** (i) Every knob that helped now hurts, and the champion is the best of
+> the six — so "the champion is mis-specified by 0.10 ρ on the human matrix" is withdrawn; it was
+> the leak. (ii) The ridge/boosting gap between kingdoms shrinks from 31.9 points to **6.8**
+> (95.6% against 88.8%), on column sets that are not even comparable (427 decorrelated for
+> *E. coli*, 400 selected for human), which is not enough to carry a biology claim. (iii) The
+> "second, independent instrument" now points the **opposite way**: depth is worth +0.0063 in
+> *E. coli* and **−0.0062** in human, interval clear of zero. So "the two kingdoms differ in
+> interaction order, and two unrelated instruments agree on it" is **withdrawn, not rescoped** —
+> the instruments disagree, and the one that looked decisive was measuring memorisation of twins.
+>
+> What survives: the human matrix is noisier and harder than the bacterial one (best honest
+> figure 0.3377 against 0.7314), and the GC inversion, which is a marginal association and needs
+> no model. A note for the teammate whose number this was is in `NOTE_human_twin_leak.md`.
+
+*The original subsection is kept below because the reasoning is instructive and because the
+row-wise figures are still the correct description of what row-wise folds give.*
 
 A teammate's grid search reached ρ 0.472 on the human iRF matrix against the 0.404
 this harness measured. The settings (`Jacky/human-boundary/HUMAN_BASELINE_SETTINGS.md`)
@@ -4267,6 +4328,10 @@ selected columns, standardised; `results/human_additivity.csv`):
 | boosting | 0.608 | **0.5076** |
 | ridge | 0.577 | **0.3232** |
 | **ridge / boosting** | **95.6%** | **63.7%** |
+
+⚠ **The human column of this table is the artefact.** Under twin-grouped folds it reads
+boosting 0.3377, ridge 0.3001, ratio **88.8%** — see the box at the top of this subsection.
+The paragraph that follows is what we concluded from the row-wise version, and it is withdrawn.
 
 **Human guide efficiency carries interaction structure that *E. coli*'s does not.**
 The champion was tuned on one nearly additive *E. coli* screen and is mis-specified
@@ -5071,6 +5136,14 @@ https://doi.org/10.1186/s13059-023-03153-y
 model separating guide efficiency from the targeted gene, on bacterial CRISPRi. Their
 guide-only model reaches ρ ≈ 0.21 and gene-level features take it to ≈ 0.66, which is
 the same guide/gene decomposition this project makes (Part 6).
+
+Zarate, O. A., Yang, Y., Wang, X., & Wang, J.-P. (2022). BoostMEC: predicting
+CRISPR-Cas9 cleavage efficiency through boosting models. *BMC Bioinformatics*,
+*23*(1), 446. https://doi.org/10.1186/s12859-022-04998-z
+— the published precedent for this project's *architectural* choice: LightGBM over
+engineered sgRNA features, benchmarked against 10 models on 13 external datasets and
+argued for on interpretability. Cited in Part 6 to show that "boosted trees can match a
+deep model" is not what is new here.
 
 Zhou, T., Yang, L., Lu, Y., Dror, I., Dantas Machado, A. C., Ghane, T., Di Felice,
 R., & Rohs, R. (2013). DNAshape: a method for the high-throughput prediction of DNA

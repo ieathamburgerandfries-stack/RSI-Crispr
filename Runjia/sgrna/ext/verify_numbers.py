@@ -459,6 +459,31 @@ chk("16.1 champion base+A reproduces tune_fullcv", float(fa.loc["family A increm
 chk("16.1 d099x base+A reproduces tune_fullcv", float(fa.loc["family A increment, d099x"].with_a), float(fc.loc["tuned d099x"]), 3)
 chk("16.1 ceiling gap at the tuned model", 0.946 - float(fa.loc["family A increment, d099x"].with_a), 0.21, 2)
 
+print("16.2 the human additivity claim under twin-grouped folds")
+ht = pd.read_csv(OUT / "human_additivity_twin_summary.csv").set_index(["folds", "arm"])["mean"]
+hc = pd.read_csv(OUT / "human_additivity_twin_claim.csv").set_index("folds")
+# the positive control: every row-wise arm must reproduce the published figure
+for arm, v in (("champion", 0.4074), ("plus_depth", 0.4659), ("plus_lr", 0.4490), ("plus_trees", 0.4435),
+               ("plus_nosubsample", 0.3999), ("boosting_defaults", 0.5076), ("ridge", 0.3232)):
+    chk(f"16.2 row-wise {arm} reproduces published", float(ht[("row-wise", arm)]), v, 4)
+for arm, v in (("champion", 0.3377), ("plus_depth", 0.3315), ("plus_lr", 0.2560), ("plus_trees", 0.3226),
+               ("plus_nosubsample", 0.3333), ("boosting_defaults", 0.2515), ("ridge", 0.3001)):
+    chk(f"16.2 twin-grouped {arm}", float(ht[("twin-grouped", arm)]), v, 4)
+chk("16.2 row-wise ridge/boosting", float(hc.loc["row-wise", "ridge_over_boosting"]) * 100, 63.7, 1)
+chk("16.2 twin-grouped ridge/boosting", float(hc.loc["twin-grouped", "ridge_over_boosting"]) * 100, 88.8, 1)
+chk("16.2 row-wise depth 4->6", float(hc.loc["row-wise", "depth_4_to_6"]), 0.0585, 4)
+chk("16.2 twin-grouped depth 4->6", float(hc.loc["twin-grouped", "depth_4_to_6"]), -0.0062, 4)
+chk("16.2 twin-grouped depth lo", float(hc.loc["twin-grouped", "depth_lo"]), -0.0093, 4)
+chk("16.2 twin-grouped depth hi", float(hc.loc["twin-grouped", "depth_hi"]), -0.0034, 4)
+chk("16.2 twin-grouped best arm is the champion", 1.0 if hc.loc["twin-grouped", "best_boosting_arm"] == "champion" else 0.0, 1, 0)
+chk("16.2 row-wise best arm is boosting_defaults", 1.0 if hc.loc["row-wise", "best_boosting_arm"] == "boosting_defaults" else 0.0, 1, 0)
+chk("16.2 kingdom gap in the ratio, row-wise (points)", 95.6 - float(hc.loc["row-wise", "ridge_over_boosting"]) * 100, 31.9, 1)
+chk("16.2 kingdom gap in the ratio, twin-grouped (points)", 95.6 - float(hc.loc["twin-grouped", "ridge_over_boosting"]) * 100, 6.8, 1)
+hw = pd.read_csv(OUT / "human_additivity_twin.csv")
+chk("16.2 twin-grouped folds share no protospacer",
+    float(hw[hw.folds == "twin-grouped"].shared_protospacers.abs().max()), 0, 0)
+chk("16.2 folds per arm per scheme", len(hw) / (7 * 2), 15, 0)
+
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:
     print("  MISMATCH", b)

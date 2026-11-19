@@ -58,14 +58,44 @@ than only in Appendix B.4:
 
 The additivity claim had a second supposedly independent instrument — `max_depth` 4→6 being worth +0.0585 on human
 against +0.0063 in *E. coli* — but depth is a memorisation knob, so that corroboration is not independent of the
-leak; it is the leak's signature. I am re-running the ridge-versus-boosting comparison and the whole knob sweep under
-both fold schemes in one job (`sgrna/ext/human_additivity_twin.py`), with the row-wise arms kept as a positive control
-so we can see that only the folds changed. Results will be in `results/ext/human_additivity_twin*.csv` and in
-`EXTENSION_LOG.md` §16.
+leak; it is the leak's signature.
 
-My guess, which the run will confirm or kill: the ratio rises under grouped folds, because ridge has no mechanism for
-memorising a twin and boosting does. If it rises past the *E. coli* figure, the "two kingdoms differ in interaction
-order" claim inverts and should be withdrawn rather than rescoped.
+**I have now re-run it** (`sgrna/ext/human_additivity_twin.py`), both fold schemes in one job with the same columns and
+seeds, keeping the row-wise arms as a positive control. **The control is exact — every row-wise number reproduces the
+published figure to four decimals** — so the only thing that differs between the columns is the folds:
+
+| 400 columns, 3 seeds × 5 folds | row-wise ρ | twin-grouped ρ |
+|---|---:|---:|
+| champion (depth 4, lr 0.05, 400 trees) | 0.4074 | **0.3377** ← now the best arm |
+| `max_depth` 4 → 6 | 0.4659 | 0.3315 |
+| `learning_rate` 0.05 → 0.3 | 0.4490 | 0.2560 |
+| `n_estimators` 400 → 1,000 | 0.4435 | 0.3226 |
+| no subsampling | 0.3999 | 0.3333 |
+| all three (your configuration) | 0.5076 | **0.2515** |
+| ridge | 0.3232 | 0.3001 |
+| **ridge / best boosting** | 63.7% | **88.8%** |
+| **`max_depth` 4 → 6** | **+0.0585** | **−0.0062** [−0.0093, −0.0034] |
+
+**Three conclusions, and the first one is good news for you.**
+
+1. **The champion is the best of the six arms once twins are grouped**, so there was never a shape mismatch to fix. Our
+   report claimed the champion was "mis-specified by 0.10 ρ on the human matrix" — that is withdrawn. Your
+   configuration was not a mistake; it was the configuration that best exploited a property of the data nobody had
+   noticed, which is a different thing.
+2. **Every capacity knob reverses sign.** Depth, learning rate and tree count all help under row-wise folds and all
+   hurt under grouped ones. That is as clean a memorisation signature as this kind of data produces, and it is why your
+   "no clear plateau" observation was the most informative thing either of us had.
+3. **Our cross-kingdom additivity claim is withdrawn, not rescoped.** It said the human phenotype is far less additive
+   than *E. coli*'s, on a 63.7%-against-95.6% ratio, corroborated by the depth result. The ratio is 88.8% and the depth
+   result changes sign, so the two instruments now disagree. A 6.8-point gap on column sets that were never comparable
+   (427 decorrelated against 400 selected) is not a finding.
+
+**What this does not touch:** the GC inversion between kingdoms, which is a marginal association and needs no model.
+**What is still outstanding:** the +0.052 human flank gain and the cross-kingdom transfer figures — including the
+family-A-on-both-sides result that turns transfer positive — are all on row-wise folds and have **not** been re-run.
+Those are yours, and they are the ones I would do next.
+
+Full write-up: `EXTENSION_LOG.md` §16.2; results in `results/ext/human_additivity_twin*.csv`.
 
 ## To reproduce
 
