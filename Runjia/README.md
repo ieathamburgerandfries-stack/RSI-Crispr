@@ -19,15 +19,22 @@ folds → R² 0.2937 ± 0.0015, Spearman 0.5278, Pearson 0.5424 on Noshay's 13,8
 guides — kept because reproducing it to four decimal places is how this pipeline
 is checked, not because it is the current baseline.
 
-**Extension (this fork only).** Two representation ideas the freeze deferred were run outside the
-frozen pipeline (`sgrna/ext/`, `EXTENSION_LOG.md`, Findings 8–9): the flank's shape and 3D structure add nothing to
-its composition, and nuclease descriptors carry an unseen enzyme's PAM usage and little else.
+**Extension (this fork only).** Work outside the frozen pipeline (`sgrna/ext/`, `EXTENSION_LOG.md`).
+Two representation ideas the freeze deferred, as Findings 8–9: the flank's shape and 3D structure add nothing to
+its composition, and nuclease descriptors carry an unseen enzyme's PAM usage and little else. Then, from 9 November,
+**a joint hyperparameter search that changes the headline** (`EXTENSION_LOG.md` §11–15): +0.014 ρ on genes it never
+saw, which turns the parity below into a **lead of +0.023 to +0.029 ρ** on both of crisprHAL 2's own splits, with
+about **three times fewer labels** to match it and **13–21× faster** end-to-end scoring once the flank featuriser is
+computed on arrays. Four of six metrics are clear; the two top-end metrics are tied. crisprHAL 2 was **not** retuned
+on its own splits, so the lead is against their released model. Everything quoted for the extension is recomputed from
+its result files by `./run_audit.sh`.
 
-**Working figure (curated frame):** base + family A, ρ **0.7218** on the curated
+**Working figures (curated frame).** Frozen champion: base + family A, ρ **0.7218** on the curated
 five folds; **0.6985** on crisprHAL 2's own held-out partition against the
-**0.695** Browne et al. report for it.
+**0.695** Browne et al. report for it. Tuned (fork): **0.7314** on the whole cohort under the standard
+gene-grouped protocol, **0.7215** on held-out genes, **0.8107** and **0.7172** on crisprHAL 2's two splits.
 
-**Against the state of the art: parity at a fraction of the cost.** On
+**Against the state of the art, before retuning: parity at a fraction of the cost.** On
 crisprHAL 2's **own two published splits**, evaluated against their own published
 weights, SLICER is statistically equivalent to it — Δρ **+0.0021**, 95% CI
 [−0.0031, +0.0072] on eSpCas9 — equivalence at any margin from 0.0072 up, with no
@@ -46,7 +53,7 @@ guides (reproducing their published Pearson 0.502 / R² 0.249 at 0.488 / 0.235);
 SLICER on the identical rows and label reaches **0.6060** — **+0.128**, of which
 +0.049 is the model class and **+0.078 is the flank features**. So the two
 comparisons say different things and both are real: Noshay's model is beaten
-decisively, crisprHAL 2 is matched.
+decisively, crisprHAL 2 is matched by the frozen champion and led by the tuned one.
 
 **On size**, crisprHAL 2 holds **790,533** trainable parameters across 37 layers;
 SLICER stores **6,348 leaf values** over 400 trees, or 18,244 numbers counting

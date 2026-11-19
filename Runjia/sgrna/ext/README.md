@@ -3,8 +3,14 @@
 Code for Findings 8 and 9 of `PROGRESS_REPORT.md` and the record in `EXTENSION_LOG.md`. Nothing in the
 frozen pipeline is edited; these modules import it. Results go to `results/ext/`.
 
-Run with the project's data visible (the fork root needs `data/` and `external_data/`, e.g. as symlinks to the
-project folder) and `PYTHONPATH=<fork>/Runjia`, `EXT_OUT=<fork>/Runjia/results/ext`.
+**Use `../run_ext.sh`, which sets all of this for you** — `./run_ext.sh sgrna.ext.verify_numbers`, or `./run_audit.sh`
+for the audit. Three variables have to be right together and getting one wrong fails with a `FileNotFoundError` that
+does not say which: `sgrna/config.py` finds the root by walking up from `src/sgrna/`, which guesses wrong from this
+fork's `Runjia/sgrna/` layout, so `RSI09_ROOT` must name the folder that actually holds `data/` and `external_data/`;
+`EXT_OUT` must name `<fork>/Runjia/results/ext`; and `PYTHONPATH` must include `<fork>/Runjia`. The interpreter also
+lives outside both repositories (override with `PY=...`). Done by hand:
+
+    RSI09_ROOT=<project with data/> EXT_OUT=<fork>/Runjia/results/ext PYTHONPATH=<fork>/Runjia python -m sgrna.ext.<module>
 
 | module | what it does |
 |---|---|
@@ -31,6 +37,9 @@ project folder) and `PYTHONPATH=<fork>/Runjia`, `EXT_OUT=<fork>/Runjia/results/e
 | `topend.py`, `data_efficiency.py` | top-end objectives (weighted, pairwise, NDCG); the learning curve with the tuned model against the stored crisprHAL 2 curve |
 | `a_flank_fast.py`, `base_fast.py`, `e2e_bench.py`, `equiv_check.py` | array-based featurisers that reproduce the original columns exactly (checked on all 33,567 curated guides), the end-to-end timing against crisprHAL 2, and the recorded equivalence |
 | `human_flank.py`, `human_shape.py`, `human_twin_check.py` | human side result (stopped; see `EXTENSION_LOG.md` section 10): hg38 location of the human guides, the shape ablation on human, and the twin-grouped re-run of the human baseline |
+| `family_a_at_tuned.py` | family A's increment measured at the *tuned* settings as well as the champion's, base-only against base+A under the standard gene-grouped protocol — the project's headline biology number against its headline model (`EXTENSION_LOG.md` section 16) |
+| `human_additivity_twin.py` | the ridge-versus-boosting ratio and the whole knob sweep behind "the human signal is less additive", re-run under twin-grouped folds with row-wise folds kept in the same run as a positive control (section 16) |
+| `tune_split2.py` | a fresh random search on a *second* 70/30 gene split, confirmed on its own held-out genes, so the tuning payoff is replicated rather than resting on one partition (section 16) |
 
 Data downloaded for this work (publisher / RCSB / GitHub text, nothing executed): `external_data/kim2020_cas9_variants/`
 (Supplementary Tables of Kim et al. 2020), `external_data/pdb_cas9/5F9R.pdb`, `external_data/dnashaper_tables/`,

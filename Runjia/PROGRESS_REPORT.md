@@ -18,13 +18,22 @@ cuts as when it only binds (Findings 2–3). The part that decides the
 comparison with the state of the art is its **range**: inside the ±189/166 nt
 span crisprHAL 2 already reads, its convolutions beat our windowed composition,
 and our advantage comes entirely from the 250–1,000 nt its input never reaches —
-handed that reach, it gets worse rather than better (Finding 2). The resulting
-model is **statistically equivalent to crisprHAL 2 on both of its authors' own
+handed that reach, it gets worse rather than better (Finding 2). **The frozen
+model is statistically equivalent to crisprHAL 2 on both of its authors' own
 published splits** — Δρ +0.0021, 95% CI [−0.0031, +0.0072] — at **~150× less CPU
-time**, reaching a given accuracy on about **half the labelled guides**. On our
+time to fit**, reaching a given accuracy on about **half the labelled guides**. On our
 own folds we lead by +0.017; on a different assay their model transfers better.
-**The claim that survives every condition is parity at a fraction of the cost,
-plus better data efficiency** — not a better model (Finding 7). Two representation ideas the freeze had deferred were later run in a fork: the flank's shape and 3D structure add nothing to its composition (Finding 8), and nuclease descriptors carry an unseen enzyme's PAM usage and, at most, a little of its sequence rules (Finding 9).
+**For the frozen champion, the claim that survives every condition is parity at a
+fraction of the cost, plus better data efficiency** — not a better model (Finding 7).
+**Work done after the freeze, in a fork, changes that conclusion and is the current
+state.** A joint hyperparameter search worth **+0.014 ρ on genes it never saw** turns
+the parity into a lead of **+0.023 to +0.029 ρ** on both of crisprHAL 2's own splits —
+clear on Spearman, Kendall τ, Pearson and R², tied on the two top-end metrics that a
+guide picker actually uses — and an exact array rewrite of the flank featuriser makes
+end-to-end scoring **13–21× faster** rather than slightly slower. The lead is measured
+against crisprHAL 2 **as shipped**: it was never retuned on its own splits, so the
+honest form is that a tuned boosted tree beats their released model, not their
+architecture (Finding 7, last two subsections). Two representation ideas the freeze had deferred were also run in the fork: the flank's shape and 3D structure add nothing to its composition (Finding 8), and nuclease descriptors carry an unseen enzyme's PAM usage and, at most, a little of its sequence rules (Finding 9).
 
 **How this document is organised.** **Part 1** is nine findings, each stated as
 a claim, followed by the evidence it rests on and the limit of what it supports.
@@ -37,7 +46,14 @@ with the state of the art, and **8–9** are two representation ideas that the f
 deferred, run in a fork: the flank's 3D structure and the nuclease's identity. **Part 2** states the three contributions and the
 biology separately from the modelling, **Part 3** where the work stops,
 **Part 4** the freeze and the remaining items, **Part 5** what the adversarial
-phase changed.
+phase changed, and **Part 6** how the work compares with other published predictors —
+what they read, how they validate, and where this project is and is not novel.
+
+**Reading order if you only want the current state of the model:** Finding 7's last three
+subsections, then Part 6. Findings 1–6 and most of Part 2 are measured with the *frozen
+champion*; the tuned configuration from the fork is ahead of it by about +0.016 ρ and is
+what the headline comparisons now use. Where a number belongs to one model and not the
+other, the text says which.
 
 Everything that supports a finding without being one lives in the appendices:
 **A** every control, each with what it rules out and what would be believed
@@ -337,6 +353,15 @@ larger than every other idea tested here combined, and it survives holding out
 whole genes, losing nothing beyond the 6% that grouping costs a feature which
 *cannot* be memorising a locus (Appendix B3). **Cas9 does not read this DNA**,
 which is what makes the effect interesting rather than merely useful.
+
+**And it does not shrink when the model gets better — it grows.** Re-measured after the
+post-freeze tuning, under one protocol with the base-only arm's selector never offered a
+flank column, the increment is **+0.1563** [+0.1515, +0.1616] at the champion's settings
+and **+0.1697** [+0.1659, +0.1738] at the tuned ones, 15 of 15 folds either way. The
+mirror image of that is the sharper result: the tuning is worth **+0.0162** with these
+columns present and **+0.0028** without them, so almost all of what a full
+hyperparameter search bought is the ability to use the flanking DNA (Finding 4,
+`EXTENSION_LOG.md` §16).
 
 **The effect is spatially local, shown with a control that preserves genomic
 texture.** Re-assigning each guide the flank track read from a position offset by
@@ -1038,7 +1063,7 @@ screen about half again as well as ours (\|ρ\| 0.087 against 0.061), because wh
 survives that change of assay is guide-sequence effects and not flanking DNA.
 
 
-### 4. The model is at its material limit
+### 4. The model is out of *material* — and the post-freeze tuning gain is the sharpest evidence for it
 
 Measured through the top-300 selector, adding trimers *hurt*. Without selection it
 helps, paired over 3 seeds × 5 folds:
@@ -1070,6 +1095,50 @@ Rows one and two are the point: **dropping 5,805 columns did not change what the
 model is missing.** The test is trustworthy because it has a positive control — it
 flagged family A at 0.147 *before* family A existed, and family A was then worth
 +0.080.
+
+**The heading used to read "at its material limit", and the post-freeze tuning looked
+like a refutation of it. Measured, it is the opposite — and this is the cleanest result
+of the fork** (19 November; `family_a_at_tuned.py`, `results/ext/family_a_at_tuned*.csv`,
+`EXTENSION_LOG.md` §16). The tuned configuration is worth +0.016 ρ, so the obvious
+objection is that a model one hyperparameter search away from +0.016 was not at any kind
+of limit. The test is to ask *where* that +0.016 comes from, by running the same four
+configurations on a matrix with family A and on one without it, under the project's
+standard protocol — gene-grouped 5 folds × 3 seeds, selection fitted inside each training
+fold, and the base-only arm's selector never offered a flank column:
+
+| (`family_a_at_tuned_summary.csv`; 15 folds, paired, bootstrap over folds) | base only | base + family A | family A's increment |
+|---|---:|---:|---:|
+| champion (depth 4, lr 0.05, 400 trees, 300 columns) | 0.5588 | 0.7151 | **+0.1563** [+0.1515, +0.1616] |
+| depth 6 | 0.5569 | 0.7223 | +0.1655 |
+| **tuned d099x** (depth 5, lr 0.013, 4,000 trees, 450 columns) | 0.5617 | **0.7314** | **+0.1697** [+0.1659, +0.1738] |
+| tuned d077x | 0.5631 | 0.7310 | +0.1680 |
+| **the tuning gain itself (d099x − champion)** | **+0.0028** [+0.0009, +0.0050], 9/15 folds | **+0.0162** [+0.0152, +0.0173], 15/15 folds | |
+
+**Read the last row first. On the base representation alone, ten times the trees and a
+quarter of the learning rate buy +0.003 — barely clear of zero, and positive in only
+nine folds of fifteen. The same change on top of family A buys +0.016 in all fifteen.**
+So the tuned settings are not buying generic capacity that the champion was leaving on
+the table; they are buying the ability to *use the flanking columns*, and without those
+columns there is almost nothing for the extra capacity to do. That is what "out of
+material" means, stated more sharply than the residual-correlation test above states it:
+the limit was never the learner.
+
+Two consequences. First, **family A's increment does not shrink when the model improves —
+it grows**, from +0.156 to +0.170, with the best-of-four bound (the tuned arm over the
+best base-only arm, which guards against the tuned settings having been chosen with
+family A present) at +0.168 [+0.164, +0.173]. The headline biology number and the
+headline model are now measured on the same model, and the number went the favourable
+way. Second, the champion's base+A figure here is **0.7151**, identical to `tune_fullcv.csv`,
+and d099x's is **0.7314**, also identical — so this run reproduces the established
+protocol rather than introducing a third one.
+
+*The honest caveat.* The tuned configurations were selected on DEV genes **with family A
+present**, so applying them to a base-only matrix is not a matched tuning effort and the
+base-only column could be slightly pessimistic. Four configurations were run on each side
+and the best-of-four reported for that reason, but a genuinely matched answer needs a
+search of its own over base-only columns, which has not been run. It would have to find
+about +0.013 on base-only — four times the largest tuning gain seen there — to overturn
+the reading.
 
 
 ### 5. On a redundant matrix, importance and faithfulness are both uninterpretable
@@ -1598,17 +1667,33 @@ test sets (a bounded comparison: the test subsets differ in size and composition
 
 #### The sentence that survives every condition
 
-*The claim that survives all four conditions*, and the sentence the paper should
-use:
+*The claim that survives all four conditions*, for **the frozen champion**:
 
 > Given each model its own best input and its own tuning, SLICER is statistically
 > equivalent to crisprHAL 2 on both of crisprHAL 2's own published splits — Δρ
 > +0.0021, 95% CI [−0.0031, +0.0072] on eSpCas9, +0.005 on SpCas9 — at roughly
-> 150× less compute, and reaches a given accuracy on about half the labelled
+> 150× less compute to fit, and reaches a given accuracy on about half the labelled
 > guides, while fitting 125× fewer numbers (6,348 leaf values against 790,533
 > parameters). Under equal input DNA the ranking depends on the window: crisprHAL 2 is
 > better inside its own 378 nt span, and SLICER is better once the window reaches
 > the 250–1,000 nt its input cannot see.
+
+**After the post-freeze retuning this is no longer the strongest true sentence, and
+the one the paper should use is the following** (every number from the two
+subsections above, audited in `sgrna/ext/verify_numbers.py`):
+
+> With its hyperparameters chosen on 70% of the genes and confirmed on the other 30%,
+> SLICER leads crisprHAL 2 by +0.0286 ρ [+0.0239, +0.0331] on its authors' eSpCas9
+> split and +0.0226 [+0.0139, +0.0314] on their SpCas9 split, with Kendall τ, Pearson
+> and R² clear in the same direction and the two top-end metrics tied; it reaches
+> crisprHAL 2's 26,853-guide accuracy on about 9,100 labelled guides, roughly three
+> times fewer, and scores guides 13–21× faster end to end. The lead holds on 1,204
+> genes untouched by any search (+0.0324 [+0.0248, +0.0403] against their published
+> configuration), and is measured against crisprHAL 2 as released: it was not retuned
+> or seed-ensembled on its own splits. Under equal input DNA the ranking still depends
+> on the window, and the architectural claim is unchanged — a boosted tree over a few
+> hundred engineered columns, because the signal is long-range and the network's input
+> does not reach it.
 
 #### How to read these numbers: cost, and what ρ buys
 
@@ -2009,7 +2094,9 @@ helped (Finding 1; Appendices B2, B3).
 
 **2. Genomic flanking context identified and validated as the main new signal.**
 **+0.164 ρ** on the curated cohort, **+0.156 on sealed genes** (+0.080 on the
-published matrix) — the largest
+published matrix) — and **+0.170 once the model itself is tuned**, so the effect is not
+an artefact of an under-tuned learner and the increment moves the favourable way when the
+model improves (Finding 4). The largest
 effect here; a spatially local compositional gradient rather than a motif, shown
 with a texture-preserving null that also measures its autocorrelation length;
 not mappability, not gene ranking, and it survives holding out whole genes. It
@@ -2021,17 +2108,23 @@ essential genes where the phenotype is measurable, once that assay's own strand
 rule is controlled for, across two independent screens — which localises it to a step requiring a break rather than to
 binding or accessibility (Findings 2–3).
 
-**3. Parity with the state of the art, from a representation of long-range
-context that a tuned convolutional network does not extract at this sample
-size.** Statistically equivalent to crisprHAL 2 on both of its authors' own
+**3. Matching, and after retuning beating, the state of the art from a
+representation of long-range context that a tuned convolutional network does not
+extract at this sample size.** The frozen champion is statistically equivalent to
+crisprHAL 2 on both of its authors' own
 published splits — Δρ +0.0021, 95% CI [−0.0031, +0.0072] on eSpCas9 and +0.005 on
-SpCas9 — at **~150× less CPU time** and reaching a given accuracy on about **half
+SpCas9 — at **~150× less CPU time to fit** and reaching a given accuracy on about **half
 the labelled guides**. On our own five folds we are ahead by +0.0172
 [+0.0136, +0.0209], under a search that was not matched; on a different assay
-their model transfers better. **The contribution is not a faster or better
-model** — it is that a boosted tree over 300 engineered columns matches a tuned
-deep network at a fraction of the cost, because the signal it encodes is
-long-range and the network's input does not reach it (Findings 2 and 7).
+their model transfers better. **Retuning in the fork turns the parity into a lead
+of +0.023 to +0.029 ρ on both of their splits** (four of six metrics clear, two tied),
+with **about three times fewer labels** to match their accuracy and **13–21× faster**
+end-to-end scoring (Finding 7). **The contribution is still not the architecture** — it
+is that a boosted tree over a few hundred engineered columns matches, and once tuned
+exceeds, a tuned deep network at a fraction of the cost, because the signal it encodes is
+long-range and the network's input does not reach it (Findings 2 and 7). The lead is
+against crisprHAL 2 as shipped; no equal-effort retuning of their network on their own
+splits has been run, and that asymmetry grew when ours was retuned.
 
 The qualifier is load-bearing, and the evidence runs both ways: given the *same*
 input the two architectures are indistinguishable on the guide alone (0.5473
@@ -2130,10 +2223,13 @@ candidate.**
    GC's association, **+0.176 marginal to +0.221 partial**, and the flank effect
    is positive inside all five target-GC strata.
 10. **And the phenotype is mostly still unexplained.** The label's reliability
-    ceiling is **0.946** and the best model here reaches 0.7218, so about **0.22 ρ
+    ceiling is **0.946** and the best model reaches **0.7314** after the
+    post-freeze tuning (0.7218 before it), so about **0.21 ρ
     of real, repeatable biology is unaccounted for** by every feature family
     tried. That number is the most useful thing in this list for anyone deciding
-    what to work on next.
+    what to work on next — and the tuning barely dented it, which is the point of
+    Finding 4: on the base representation alone the same hyperparameter change is
+    worth +0.003, so capacity is not what the gap is made of.
 
 **Two cross-kingdom observations**, both biology rather than bookkeeping. The
 association between GC content and cutting efficiency **inverts** between
@@ -2142,13 +2238,23 @@ additive — a linear model reproduces 96% of a boosted tree's ρ in *E. coli* a
 only 64% in human. Bacterial cutting efficiency is close to a sum of small
 independent effects; human cutting efficiency is not.
 
+> ⚠ **The additivity half of that paragraph is suspended, not established** (9–19 November;
+> Appendix B.4, `EXTENSION_LOG.md` §10, §16). The 64% uses a human boosting figure measured on
+> **row-wise folds of a matrix in which 49% of rows are a repeat measurement of a guide that also
+> appears elsewhere**, and under twin-grouped folds that figure falls from 0.5076 to 0.2515. The GC
+> inversion is unaffected — it is a marginal association, not a fitted model. See §16 for the re-run
+> under grouped folds and for whether the claim survives, inverts, or has to be withdrawn.
+
 And **flanking context is the part of the representation that does cross**:
 built on both sides it is worth +0.052 ρ on the human matrix on its own ground,
 and it turns cross-kingdom transfer from ≈0.049 against to +0.022 for, in both
-directions (Jacky's result, Part 3). The GC inversion and the transfer failure
+directions (Jacky's result, Part 3) — **both figures on the row-wise human folds just
+flagged, so both inherit the duplicate-guide problem and neither has been re-run.** The
+GC inversion and the transfer failure
 therefore belong to the *guide* half of the representation. Whatever the flanking
 DNA is doing, it is doing something a human genome and a bacterial one share, and
-that is a stronger statement than anything the *E. coli* arms alone can make.
+that is a stronger statement than anything the *E. coli* arms alone can make —
+conditional, now, on the human side being re-measured.
 
 ### Further inferences about the process, from results not collected to make them
 
@@ -2257,7 +2363,8 @@ the other direction — it preserves composition, so if composition carried the
 effect the control would have shown it. It did not, which is the result.
 
 **4. The two kingdoms differ in interaction order, and two unrelated instruments
-agree on it.**
+agree on it.** ⚠ **Suspended pending a re-run — see the warning below. Do not use this
+claim in the draft until §16 resolves it.**
 
 A ridge model recovers **95.6%** of a boosted tree's ρ in *E. coli* and **63.7%**
 in human. Independently, raising `max_depth` from 4 to 6 — which raises the
@@ -2265,6 +2372,19 @@ maximum interaction order the trees can express — is worth **+0.0063** here an
 **+0.0585** on the human matrix. Model class and model capacity are different
 instruments and give the same answer: **bacterial cutting efficiency is close to
 a sum of small independent contributions, and human cutting efficiency is not.**
+
+> ⚠ **Why this is suspended, and why the corroboration is worth less than it looks**
+> (9–19 November; Appendix B.4, `EXTENSION_LOG.md` §10, §16). Both numbers come from
+> **row-wise folds** of the human matrix, and 49% of its rows are a repeat measurement of
+> a guide that appears elsewhere, with twin labels agreeing at ρ 0.80. Under twin-grouped
+> folds the human boosting figure in the 63.7% denominator falls from 0.5076 to 0.2515.
+> The second instrument makes it worse rather than better: **`max_depth` is one of the
+> knobs by which a tree memorises a twin**, so the +0.0585 is the leak's signature, not an
+> independent line of evidence — and the same holds for the learning rate (+0.0416) and the
+> tree count (+0.0361), while turning subsampling *off* cost −0.0075. The *E. coli* side is
+> clean (33,567 distinct guides in 33,567 rows, gene-grouped), so if the ratio rises under
+> grouped folds — as it should, ridge having no mechanism for memorising a twin — this claim
+> **inverts** rather than weakens. §16 reports the re-run under both fold schemes.
 
 That fits the rest of the picture. The *E. coli* flank effect is a smooth
 gradient with no motif and no window-edge dependence — the signature of a bulk,
@@ -2309,11 +2429,13 @@ off-target descriptors are uninformative; the cohort defined them away. Any
 reader taking a specificity conclusion from this work is reading a filter.
 
 **7. And the single most useful number for a biologist is still the gap.** The
-label's reliability ceiling is **0.946**, the best model reaches **0.7218**, and
+label's reliability ceiling is **0.946**, the best model reaches **0.7314**, and
 eleven feature families built from the genome, from thermodynamics, from
-ChIP-seq and from quantum chemistry have not closed **0.22 ρ of real, repeatable
+ChIP-seq and from quantum chemistry have not closed **~0.21 ρ of real, repeatable
 biology**. Items 1 to 6 are refinements inside the quarter of the variance that
-is already explained.
+is already explained. A full hyperparameter search moved the gap by 0.016 and, on
+the guide-derived representation alone, by 0.003 (Finding 4) — so it is not a
+modelling gap.
 
 ### What else distinguishes this model, and what does not
 
@@ -2404,22 +2526,27 @@ biology paper.
   What survives is narrower and more interesting: **the guide-derived half of the
   representation does not cross kingdoms and the genomic-context half does**,
   which is the same asymmetry Findings 1–2 find inside *E. coli*.
-- **Our human baseline was undertuned, and by more than was thought.** At the
-  teammate's settings the human matrix reaches **ρ 0.5076 ± 0.0149** against the
-  0.404 this harness had been quoting — so the ρ 0.472 attributed to an early
-  personal script not only reproduces, it is exceeded. **The gap is
-  hyperparameters, not features**: 400 selected columns at our champion settings
-  score 0.4074, within noise of 300 (Appendix B). This widens the cross-kingdom
-  gap rather than narrowing it, but it carries a caution that reaches further
-  than the human arm — **the champion hyperparameters are inherited from the
-  *E. coli* baseline and lose 0.10 ρ on a matrix of a different shape.** Every
-  external arm in this report is fitted with them. The reason is identified, and
-  it is the more interesting half: **the human signal is much less additive.**
-  Ridge reaches 95.6% of boosting's ρ in *E. coli* and only **63.7%** in human,
-  and the largest single hyperparameter term is tree depth (+0.0585 of the
-  +0.1002). A champion tuned where the signal is nearly linear is the wrong model
-  where it is not — which also explains why it travels across the bacterial sets
-  without incident (Appendix B).
+- **~~Our human baseline was undertuned, and by more than was thought.~~ The human
+  matrix has repeated guides, and this bullet was measuring them.** As written, it said:
+  at the teammate's settings the human matrix reaches ρ 0.5076 ± 0.0149 against the 0.404
+  this harness had been quoting, so the 0.472 attributed to an early personal script not
+  only reproduces but is exceeded; the gap is hyperparameters, not features (400 columns
+  at champion settings score 0.4074); and the reason is that the human signal is much less
+  additive, ridge reaching 95.6% of boosting in *E. coli* against 63.7% in human with tree
+  depth the largest single term (+0.0585 of +0.1002).
+  **All of those figures are on row-wise folds of a matrix in which 8,499 of 17,421 rows
+  (49%) are a repeat measurement of a guide that also appears elsewhere**, twin labels
+  agreeing at ρ 0.80 (`EXTENSION_LOG.md` §10, Appendix B.4). With folds that keep identical
+  protospacers together, the 0.5076 configuration gives **0.2515 ± 0.0191** and the harness
+  default **0.3356 ± 0.0215** — so the configuration that looked 0.10 better is 0.08 worse,
+  and the ordering this bullet drew its conclusion from reverses.
+  **What survives:** the champion hyperparameters are inherited from the *E. coli* baseline
+  and every external arm in this report is fitted with them, which is still worth knowing.
+  **What does not, pending §16:** that the human gap is hyperparameters rather than features,
+  that the human signal is less additive, and the 63.7% ratio — because the knobs that
+  produced the +0.1002 (depth, learning rate, tree count) are precisely the ones that
+  memorise a twin. A note for Jacky, whose number this is, is in
+  `NOTE_human_twin_leak.md`.
 - **One organism and two relatives.** No genome-wide Cas9-cutting screen exists
   outside *Enterobacteriaceae*; what exists elsewhere is CRISPRi, a different
   measured quantity. Closing this needs wet-lab work.
@@ -2500,12 +2627,14 @@ three kinds, and only one kind is worth more compute.
 |---|---|---|
 | The margin on our own folds is formally an upper bound | our search used 97–157 draws per fold against crisprHAL's 5–8, a residual ~20× | ~40 GPU-hours for a matched search. Declined on 16 October with the reason recorded: the cheap version already reverts to their published configuration in four folds of five |
 | "Degraded by wider input" is a claim about their *published configuration* | their epochs, dropout, filters and GRU width were all chosen at 378 nt | 4–6 GPU-hours. `colab/crisprhal_tune_by_width.py` is written, anchored on the 378 nt positive control, with the interpretation pre-registered both ways |
+| **The post-freeze lead is against crisprHAL 2 *as shipped*, and the search asymmetry grew when we retuned** | the fork spent 200 draws plus a five-family mix on our side; their side is still its released weights. The existing defence — their published configuration won four of five inner searches, and an equal small search buys them nothing while buying us +0.0103 — was measured **on our folds with 5–8 draws**, not on their splits at the scale we have now searched | ~40 GPU-hours, the same order as the row above and now the **highest-value** declined item, because it is the one a reviewer will reach for first. Until it is run, the claim is "a tuned boosted tree beats their released model", not "beats their architecture" (Finding 7) |
+| **The gene effect is removed by design rather than modelled** | we group folds by gene and decompose within/between afterwards; Yu et al. (2024) instead fit a **mixed-effect** model with the gene as a random term and report it as their main methodological contribution on a bacterial CRISPRi screen (Part 6) | a mixed-effect random forest or boosted equivalent on the curated cohort. Untried. On a survival label it might sharpen the within-gene signal that Finding 3's revised conclusion now rests on, and it is the one place where the closest published neighbour is ahead of us |
 
 **Not addressable without new experiments — and these are the ones that matter.**
 
 | limit | why it binds | what it would take |
 |---|---|---|
-| **0.22 ρ of real, repeatable variance is unexplained** | the ceiling is 0.946 and the best model reaches 0.7218. Eleven feature families from the genome, thermodynamics, ChIP-seq and quantum chemistry have not closed it | not more features of the kinds tried. The sequence-derived candidates with a mechanism attached are now *excluded* rather than unexamined — shape and 3D path (Finding 8), periodicity, Chi, supercoiling — which makes this a measurement problem rather than a modelling one |
+| **~0.21 ρ of real, repeatable variance is unexplained** | the ceiling is 0.946 and the best model reaches 0.7314 after the post-freeze tuning (0.7218 before). Eleven feature families from the genome, thermodynamics, ChIP-seq and quantum chemistry have not closed it | not more features of the kinds tried, **and not a better learner either** — which is now measured rather than assumed: the tuning worth +0.016 with family A present is worth **+0.003** on the base representation alone (Finding 4), so the gap is not capacity. The sequence-derived candidates with a mechanism attached are *excluded* rather than unexamined — shape and 3D path (Finding 8), periodicity, Chi, supercoiling — which makes this a measurement problem rather than a modelling one |
 | The long-range mechanism is unidentified | between a third and a half of the effect survives without a break (dCas9, Finding 3) and the rest needs one; the candidate routes that read 500 nt are excluded | an intervention rather than an observation: a designed library that varies flank composition at a **fixed guide**. Nothing in a pooled screen can do this, because guide and locus are confounded by construction in every existing dataset |
 | One organism and two relatives | no genome-wide Cas9 *cutting* screen exists outside *Enterobacteriaceae*; what exists elsewhere is CRISPRi, a different measured quantity | wet lab. This is the single largest external-validity gap |
 | No untouched external set remains **for the cutting claims** | eSpCas9 turned out to be confirmatory rather than untouched, and Cui's screen has been spent | permanent on the cutting side. **Partly lifted on the dCas9 side**: Rousset and Wang are untouched by this project and now carry Finding 3's replication (Appendix B). The automatable adaptive component is still bounded at **+0.0087**; the human part is unquantified above it and the cohort choice is unquantifiable by design |
@@ -2527,7 +2656,7 @@ Finding 3's dCas9 conclusion comes from the within-gene analysis, not from these
 
 **The one-sentence version.** Everything cheap has been done, two things are
 declined on cost with the reason written down, and what is left is a measurement
-problem: the model is within 0.22 ρ of its label's ceiling, the sequence-derived
+problem: the model is within ~0.21 ρ of its label's ceiling, the sequence-derived
 explanations for the gap are exhausted rather than untried, and closing it needs
 an experiment in which guide and locus are not confounded.
 
@@ -2604,9 +2733,15 @@ adaptive-overfitting caveat below is permanent rather than pending, and further
 external validation needs new data.
 
 
-* the headline comparison is **parity, not a win** — +0.005 and +0.002 on
-  crisprHAL's own two splits — and the data-efficiency result is the claim that
-  survives a larger screen;
+* for the frozen champion the headline comparison is **parity, not a win** — +0.005
+  and +0.002 on crisprHAL's own two splits — and the data-efficiency result is the
+  claim that survives a larger screen. **Post-freeze retuning in the fork makes it a
+  lead** of +0.023 to +0.029 ρ on those same two splits, and the draft must carry both
+  the lead and the asymmetry behind it: crisprHAL 2 was never retuned on its own
+  splits, so the comparison is against their released model (Finding 7). The two
+  top-end metrics — top-decile precision and the pick percentile of the ten
+  best-scoring guides — remain **tied**, which is the metric a guide picker actually
+  uses, and no objective aimed at the top end improved it;
 * the curated five-fold figures carry an **unknown adaptive-overfitting
   component**, because eSpCas9 turned out to be confirmatory rather than
   untouched and nothing fully clean is left;
@@ -2778,6 +2913,119 @@ re-reading the text, and in every case the data needed was already on disk: the
 bottleneck was that nobody had asked the number to defend itself.
 `docs/FINDINGS_LOG.md`, which is local, records each one where it happened,
 with what replaced it.
+
+---
+
+## Part 6 — Where this sits in the field
+
+Added 19 November 2026, after a literature pass. This is the comparison a paper's discussion
+has to make, and it is kept in the main text rather than an appendix for that reason. Two things
+it is careful about: performance numbers from different cohorts, labels and metrics are **not
+commensurable**, so the table reports what each paper measured rather than ranking them; and a
+literature search failing to find something is weak evidence that it does not exist.
+
+### What other predictors read, and how they are validated
+
+| predictor | organism / assay | input beyond the 20-mer | model | split | reported performance |
+|---|---|---|---|---|---|
+| Noshay et al. 2023 (QCT + iRF) | *E. coli* and human, cutting | none — all columns are functions of the guide (Finding 1) | iterative random forest | random rows | Pearson 0.502, R² 0.249 (13,880 guides) |
+| crisprHAL (Browne et al. 2023) | *E. coli*, SpCas9 / TevSpCas9 | **37 nt**: 3 upstream, 20 guide, 14 downstream | CNN–BiGRU, transfer learning | held-out split | — |
+| crisprHAL 2 (Browne et al. 2026) | *E. coli*, SpCas9 and eSpCas9 | **378 nt** (SpCas9), 406 nt (eSpCas9), chosen by their own length search | CNN–BiGRU | their own two splits | ρ 0.695 (SpCas9), 0.782 (eSpCas9) |
+| **SLICER, frozen champion** | *E. coli*, cutting | **±1,000 nt** windowed composition | XGBoost, 300 columns | **gene-grouped** 5×5 | ρ 0.7218 CV; 0.6997 / 0.7842 on their splits |
+| **SLICER, tuned (fork)** | same | same | XGBoost, 450 columns, 4,000 trees | gene-grouped; DEV/CONFIRM genes | ρ 0.7314 CV; 0.7172 / 0.8107 on their splits |
+| Yu et al. 2024 (*Genome Biology*) | bacteria, **CRISPRi** depletion | gene-level covariates: expression, transcription-unit structure, gene GC, gene length, distance to operon start | **mixed-effect random forest** (129 guide features as fixed effects, 9 gene features as random effects, 301 genes as clusters), autoML | **gene-wise** CV, with train/test Hamming distances reported | ρ ≈ 0.21 guide-only → 0.25 with thermodynamics → **0.66** with gene features |
+| Orro et al. 2026 (*Scientific Reports*) | human, **base-editing** fitness screen | gene essentiality, predicted variant effect | decision-tree ensembles | **gene-held-out** | AUC-ROC 0.87–0.94, AU-PR 0.53–0.75 (classification) |
+| CRISPRon (Xiang et al. 2021) | human, Cas9 knockout | **experimental chromatin accessibility** | CNN | internal + external test sets | ρ 0.80 internal, ≈0.46–0.68 external |
+| Rule Set 2 / 3 (Doench 2016; DeWeirdt 2022) | human | target context, (RS3) tracr and context | gradient boosting / linear | varies | second to CRISPRon in recent benchmarks |
+
+### Where this work is actually novel, and where it is not
+
+**Novel: the reach, and the claim that the reach is compositional.** Of everything above, the
+longest input any predictor reads is crisprHAL 2's 378–406 nt, and its authors arrived at that by
+their own length search, reporting that the gains level off. The only other ways the field looks
+outside the protospacer are an **experimental** track (CRISPRon's chromatin accessibility) or
+**gene-level** covariates (Yu et al.; Orro et al.'s essentiality). Nothing found in this pass builds
+*compositional descriptors of the flanking DNA in windows of hundreds to a thousand nucleotides and
+measures their increment*. That is this project's Finding 2, and the three properties that make it a
+finding rather than a feature — it is a smooth gradient with no motif, it has a measured
+autocorrelation length (8% survives a 1 kb shift, none survives 10 kb), and it does not depend on
+where the window edges are put (+0.1634 against +0.1638 at four widths sharing no value with the
+originals) — have no counterpart in the literature read here. It also needs no experiment: a
+reference genome is enough, which is what distinguishes it from the chromatin route.
+
+**Novel, and uncomfortable for the resource it extends: Finding 1.** No paper found here makes the
+arithmetic argument that a published feature matrix is a lossless re-encoding of the guide, and
+therefore that no deterministic function of the guide can add information to it. It is the kind of
+result that is obvious in hindsight and was not obvious to the people who built on the matrix,
+including us for several weeks.
+
+**Not novel, and independently corroborated — which is good news for the method.** Two of this
+project's load-bearing methodological choices turn out to be best practice elsewhere, arrived at
+independently:
+
+- **Gene-grouped evaluation.** Yu et al. abandon guide-wise cross-validation for a *gene-wise*
+  scheme for exactly our reason, and additionally report train/test Hamming distances. Orro et al.
+  use gene-held-out validation. A reviewer will therefore expect gene-grouped numbers, which is what
+  this report quotes.
+- **Separating guide effects from gene effects.** Yu et al.'s headline is "the surprising discovery
+  that gene-specific features substantially impact prediction", and their answer is a mixed-effect
+  model that splits the two. That is the same decomposition as this project's within-gene/
+  between-gene analysis and as Finding 2's "+0.061 asked entirely inside genes". Two groups reaching
+  the same decomposition from different directions is worth more to the argument than either alone.
+
+**Where the field is ahead of us, and these are real gaps.**
+
+1. **Yu et al. *model* the gene effect; we only group folds and decompose afterwards.** A
+   mixed-effect formulation would estimate guide efficiency with the gene effect as a random term
+   rather than removing it by design. We have not tried it, and on a screen whose label is survival
+   it might sharpen the within-gene signal that Finding 3 now leans on.
+2. **External breadth.** BoostMEC benchmarks on 13 external datasets; a 2025 comparison uses nine.
+   This project has one cohort, two relatives, and — for the cutting claims — **no untouched external
+   set left**. That is the single dimension on which we are furthest behind the field, and Part 3
+   already says it cannot be fixed without new data.
+3. **Richer biology where it exists.** CRISPRon's chromatin accessibility and Orro et al.'s variant-
+   effect predictions have no *E. coli* analogue we can build. Our own supercoiling result is the
+   caution to carry across: a ChIP track that paid +0.139 turned out to be read density, and read
+   density turned out to be gene dosage, recoverable from distance to *oriC* with no experiment at
+   all. Experimental tracks are not automatically mechanism.
+
+### The paper that prompted this pass, and what it says about our scope
+
+Orro et al. (2026), *Machine learning-based prediction of base editor sgRNA fitness score*,
+lands precisely in a gap Part 3 names: *"Nothing here speaks to nickase editors; base and prime
+editors bind and nick rather than cut, which puts them between the two assays this project
+compares."* Three points of contact:
+
+- **It agrees with us about where the sequence signal is.** They report sgRNA sequence, and
+  specifically **PAM-proximal nucleotides**, as the most predictive features. Our interpretation
+  pass found the same shape: the eight PAM-proximal positions carry 63% / 62% of the model's split
+  gain, position 18 alone 14% (`EXTENSION_LOG.md` §14).
+- **An apparent disagreement that resolves into a mechanism.** They find gene essentiality carries
+  predictive weight; we find essentiality is a flat null (+0.00004, reproducing Guo et al. to four
+  decimal places). The two are consistent once the labels are read properly. Their label is a
+  **fitness** effect in human cells, where whether the edited gene matters *is* the phenotype; ours
+  is survival after a double-strand break in *E. coli*, where an unrepaired break is lethal more or
+  less regardless of which gene carried it. Essentiality *should* predict one and not the other. This
+  is a good example of the report's own rule that two screens' numbers are only comparable when the
+  measured quantity is.
+- **What we could add to it, and the honest caveat.** They use no flanking genomic context at all.
+  Whether this project's flank effect transfers to a human base-editing fitness screen is untested,
+  and the *E. coli*-specific findings should not be assumed to hold there — the one cross-kingdom
+  thing we tested inverted (GC against activity, −0.20 here against +0.02 there). Jacky's human
+  family A is the live test, and it is currently blocked on the duplicate-guide problem (Part 3,
+  `EXTENSION_LOG.md` §16).
+
+### A calibration this pass forces on our own headline
+
+Recent independent benchmarks of human predictors put CRISPRon first, Rule Set 3 and DeepSpCas9
+close behind, with the ordering **changing between datasets and organisms** — one plant-focused
+evaluation found older, simpler scores tracking in-planta efficiency better than either deep model.
+The differences that reorder those rankings are of the same size as our lead over crisprHAL 2
+(+0.023 to +0.029 ρ on two splits of one organism's screens). So the lead should be stated as what it
+is — measured, audited, confirmed on untouched genes, and against crisprHAL 2 **as shipped** — and
+not as a claim that one architecture is better than another. The sentence this report has always
+defended, that the advantage is about *reach* rather than architecture, is the one that survives this
+comparison too.
 
 ---
 
@@ -3264,9 +3512,17 @@ stating in proportion. The whole measured span of hyperparameter tuning here is
 **+0.0131**, of which **+0.0087 is adaptive inflation**; eight model classes span
 0.108 ρ; the selection budget is worth ±0.0005; and one feature family is worth
 **+0.164**. Hyperparameters are a hundredth-scale knob on a problem whose open
-variance is 0.22 ρ. The one place they are not is a *different dataset*: on the
+variance is ~0.21 ρ. **This subsection was written before the fork's joint search, which
+found +0.016 rather than +0.0131 — so the scale conclusion holds but the span is about a
+fifth larger (Appendix B, "Fork update"); and Finding 4 shows that +0.016 collapses to
++0.003 without family A, so even the larger figure is a statement about the flank columns
+rather than about the learner.** The one place hyperparameters are not a hundredth-scale knob
+looked like a *different dataset*: on the
 human matrix depth and learning rate are worth **+0.10**, and `max_depth` 4 → 6
-alone is **+0.0585** against +0.0063 here. Tuning buys insurance against a change
+alone is **+0.0585** against +0.0063 here — **but those two human figures are now
+suspended**, because they come from row-wise folds of a matrix in which 49% of rows have a
+duplicate guide and depth is one of the knobs that memorises a duplicate (Part 3,
+`EXTENSION_LOG.md` §10, §16). Tuning buys insurance against a change
 of signal shape, not a better number on a signal already fitted.
 
 ### Fork update, 9 November: a joint search, judged on genes it never saw (`EXTENSION_LOG.md` §11)
@@ -4696,6 +4952,20 @@ A CRISPRi screen in *E. coli* reveals sequence-specific toxicity of dCas9.
 — the dCas9 CRISPRi screen used as the final untouched test (Finding 3); its two
 measurement arms also set the ceiling range quoted in Appendix B.
 
+DeWeirdt, P. C., McGee, A. V., Zheng, F., Nwolah, I., Hegde, M., & Doench, J. G.
+(2022). Accounting for small variations in the tracrRNA sequence improves sgRNA
+activity predictions for CRISPR screening. *Nature Communications*, *13*(1), 5255.
+https://doi.org/10.1038/s41467-022-33024-2
+— Rule Set 3; cited in Part 6 for how the human predictors are ranked and how the
+ranking moves between datasets.
+
+Doench, J. G., Fusi, N., Sullender, M., Hegde, M., Vaimberg, E. W., Donovan, K. F.,
+Smith, I., Tothova, Z., Wilen, C., Orchard, R., Virgin, H. W., Listgarten, J., &
+Root, D. E. (2016). Optimized sgRNA design to maximize activity and minimize
+off-target effects of CRISPR-Cas9. *Nature Biotechnology*, *34*(2), 184–191.
+https://doi.org/10.1038/nbt.3437
+— Rule Set 2, the reference point for guide-intrinsic design rules (Part 6).
+
 Guo, J., Wang, T., Guan, C., Liu, B., Luo, C., Xie, Z., Zhang, C., & Xing, X.
 (2018). Improved sgRNA design in bacteria via genome-wide activity profiling.
 *Nucleic Acids Research*, *46*(14), 7052–7069. https://doi.org/10.1093/nar/gky572
@@ -4752,6 +5022,16 @@ explainable-AI driven feature engineering. *Nucleic Acids Research*, *51*(19),
 — the feature matrix decoded here; their iRF re-runs in our harness at Pearson
 0.4881 against their reported 0.5019, on a third of their rows.
 
+Orro, A., Consiglio, A., Curci, M. I., Scichilone, M., Hasin, F., Minervini, M.,
+Mencar, C., De Bellis, G., Cocola, C., Pelucchi, P., & Selmi, T. (2026). Machine
+learning-based prediction of base editor sgRNA fitness score. *Scientific Reports*.
+Advance online publication, 10 November 2026.
+https://doi.org/10.1038/s41598-026-79920-1
+— base-editing fitness prediction with gene-held-out validation; agrees with this
+project that PAM-proximal positions dominate the sequence signal, and finds gene
+essentiality weakly predictive where we find it null, which the labels explain
+(Part 6).
+
 SantaLucia, J., & Hicks, D. (2004). The thermodynamics of DNA structural motifs.
 *Annual Review of Biophysics and Biomolecular Structure*, *33*(1), 415–440.
 https://doi.org/10.1146/annurev.biophys.32.110601.141800
@@ -4772,6 +5052,25 @@ and machine learning. *Nature*, *643*(8071), 539–550.
 https://doi.org/10.1038/s41586-025-09021-y
 — the 770 six-position SpCas9 variants with 64-PAM rate constants used in
 Finding 9 (training data file from github.com/RachelSilverstein/PAMmla, BSD-3).
+
+Xiang, X., Corsi, G. I., Anthon, C., Qu, K., Pan, X., Liang, X., Han, P., Dong, Z.,
+Liu, L., Zhong, J., Ma, T., Wang, J., Zhang, X., Jiang, H., Xu, F., Liu, X., Xu, X.,
+Wang, J., Yang, H., Bolund, L., Church, G. M., Lin, L., Gorodkin, J., & Luo, Y.
+(2021). Enhancing CRISPR-Cas9 gRNA efficiency prediction by data integration and
+deep learning. *Nature Communications*, *12*(1), 3238.
+https://doi.org/10.1038/s41467-021-23576-0
+— CRISPRon; the one predictor in Part 6's table that reads outside the protospacer
+via an *experimental* track (chromatin accessibility) rather than sequence.
+
+Yu, Y., Gawlitt, S., de Andrade e Sousa, L. B., Merdivan, E., Piraud, M.,
+Beisel, C. L., & Barquist, L. (2024). Improved prediction of bacterial CRISPRi guide
+efficiency from depletion screens through mixed-effect machine learning and data
+integration. *Genome Biology*, *25*(1), 13.
+https://doi.org/10.1186/s13059-023-03153-y
+— the closest methodological neighbour: gene-wise cross-validation and a mixed-effect
+model separating guide efficiency from the targeted gene, on bacterial CRISPRi. Their
+guide-only model reaches ρ ≈ 0.21 and gene-level features take it to ≈ 0.66, which is
+the same guide/gene decomposition this project makes (Part 6).
 
 Zhou, T., Yang, L., Lu, Y., Dror, I., Dantas Machado, A. C., Ghane, T., Di Felice,
 R., & Rohs, R. (2013). DNAshape: a method for the high-throughput prediction of DNA

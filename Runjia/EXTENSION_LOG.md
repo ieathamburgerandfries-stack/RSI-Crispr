@@ -721,3 +721,165 @@ featurisers reproduce the stored columns exactly (0.0 difference on 33,567 guide
 
 **Not done / limits.** crisprHAL 2 was not retuned or seed-ensembled on its own splits (GPU time), so the lead is against its shipped model. The panel intervals resample guides of one split. The end-to-end timing
 excludes retrieving the flanking sequence from a genome (the same for both models) and the first timing run shared the machine with a finishing job (rerun on an idle machine gave the figures quoted). GPU timings were not repeated.
+
+## 16. Three gaps closed after a review of the whole project (19 Nov; the user asked for all items of a critique to be done)
+
+*Why these three.* A full read of the report against its own result files found three things worth compute, each one a
+claim that was either resting on the wrong model, resting on leaked folds, or resting on a single split.
+
+### 16.1 Family A's increment at the tuned settings — the headline biology number against the headline model
+
+*The gap.* Every version of the +0.164 flank increment was measured with the **champion**, and the fork's search then
+found +0.016 from hyperparameters alone, so the report's headline accuracy figure and its headline biology figure
+belonged to two different models. `tune_fullcv.csv` had four arms and **all of them included family A**; no base-only
+arm existed at the tuned settings. Two outcomes were possible: if the tuned model extracts more from the 6,169 base
+columns, the flank increment shrinks and part of what family A was credited with was unexploited capacity; if the extra
+capacity goes into the flank columns, it grows.
+
+*Design* (`family_a_at_tuned.py`). Standard protocol so the numbers line up with `tune_fullcv.csv`: gene-grouped 5 folds
+x 3 seeds on the 30,203 gene-labelled guides, selection fitted inside each training fold, four configurations
+(champion, depth6, d099x, d077x) on two matrices. The matrices differ only in what the selector is offered -- base-only
+ranks the 6,169 base columns and an assertion rejects any ranking that reaches a family A column. Resumable per fit.
+
+| 15 folds, paired, bootstrap over folds | base only | base + family A | family A's increment |
+|---|---:|---:|---:|
+| champion | 0.5588 | 0.7151 | **+0.1563** [+0.1515, +0.1616], 15/15 |
+| depth6 | 0.5569 | 0.7223 | +0.1655 |
+| **tuned d099x** | 0.5617 | **0.7314** | **+0.1697** [+0.1659, +0.1738], 15/15 |
+| tuned d077x | 0.5631 | 0.7310 | +0.1680 |
+| best-of-four (d099x over d077x) | 0.5631 | 0.7314 | +0.1683 [+0.1642, +0.1728] |
+| **tuning gain (d099x - champion)** | **+0.0028** [+0.0009, +0.0050], **9/15** | **+0.0162** [+0.0152, +0.0173], **15/15** | |
+
+**Result, and it is the cleanest thing the fork has produced.** Family A's increment **grows** with tuning, +0.156 ->
++0.170. The mirror image is sharper: the same hyperparameter change is worth **+0.003 on the base representation alone**
+(positive in only 9 of 15 folds) and **+0.016 with family A present** (15 of 15). The tuned settings are not buying
+generic capacity the champion left on the table; they are buying the ability to *use the flanking columns*. That turns
+the apparent refutation of Finding 4 ("the model is at its material limit") into the sharpest evidence for it, and the
+finding's heading was changed from "at its material limit" to "out of *material*" to say so.
+
+*Harness check:* champion base+A = 0.7151 and d099x = 0.7314, both identical to `tune_fullcv.csv`, so this is the
+established protocol and not a third one.
+
+*Caveat, stated in the report too.* The tuned configurations were chosen on DEV genes **with family A present**, so the
+base-only column may be slightly pessimistic; four configurations per side and the best-of-four bound guard against it,
+but a matched search over base-only columns has not been run. It would need to find about +0.013 on base-only -- four
+times the largest tuning gain observed there -- to overturn the reading.
+
+### 16.2 The human additivity claim under twin-grouped folds
+
+*The gap.* Section 10 found that 8,499 of the human matrix's 17,421 rows (49%) are a repeat measurement of a guide that
+appears elsewhere, and that the teammate's configuration falls from 0.5076 to 0.2515 under twin-grouped folds. The
+correction was recorded in Appendix B.4 with an honest list of what had not been re-run -- but three statements resting
+on those folds were still in the **main text** without a caveat, one of them a contribution-level biology claim ("the two
+kingdoms differ in interaction order, and two unrelated instruments agree on it").
+
+*The logical problem, which is worse than the missing caveat.* Every knob that "helped" on human is a memorisation
+knob: depth 4->6 (+0.0585), learning rate 0.05->0.3 (+0.0416), trees 400->1,000 (+0.0361), while turning subsampling
+*off* cost -0.0075. Memorising a sequence whose twin is in the training fold is exactly what deep, fast-learning trees
+do, so the "second, independent instrument" is the first artefact's signature rather than separate evidence -- and the
+63.7% ratio has the leaked 0.5076 in its denominator.
+
+*Design* (`human_additivity_twin.py`). Ridge and the whole knob sweep, under **both** fold schemes in one run with the
+same columns and seeds, so the only thing that differs is the folds and the row-wise arms act as a positive control for
+the harness. Twin-grouped folds are asserted to share no protospacer across the split.
+
+**Status: queued behind 16.1 on the same machine; results and the resolution of the claim to follow.** Expectation
+recorded in advance: the ratio should *rise* under grouped folds, because ridge has no mechanism for memorising a twin
+and boosting does. If it rises past the *E. coli* figure the claim inverts and should be withdrawn rather than rescoped.
+Pending that, the three statements are flagged in Part 2 and Part 3 and a note for Jacky, whose number this is, is in
+`NOTE_human_twin_leak.md`.
+
+### 16.3 A second gene split, with its own search
+
+*The gap.* The whole tuning result rests on one partition (`tune_ecoli.SPLIT_SEED = 2026`): the +0.0143 on held-out
+genes, the configurations, the blend weights, the untouched-genes comparison. The bootstrap intervals resample genes
+*within* that split, so they cannot show split-to-split variation.
+
+*What would be wrong.* Re-scoring d099x on a different CONFIRM set is contaminated -- d099x was chosen using split 1's
+DEV genes, and a new split reshuffles them into both halves. The claim at risk is not "d099x is good" but "a search on
+70% of the genes yields a configuration that beats the champion on the other 30%", so the replication has to re-run the
+**procedure**: a fresh search on the new DEV, a fresh winner, confirmed on genes that search never saw. A different
+winner is the expected outcome, not a problem.
+
+*Design* (`tune_split2.py`). Genes re-split 70/30 with seed 7 (asserted to share no gene, and the overlap with split 1's
+CONFIRM set is printed); 40 fresh configurations from a different stream of the same search space; the best 3 re-scored
+on one further partition with the extended tree grid; champion, the new winner and the top-3 average confirmed on the
+new CONFIRM over three seeds with a gene bootstrap. d099x is also scored there as a secondary row, labelled
+`contaminated`. Resumable draw by draw, so a partial run is still an answer.
+
+**Status: queued third. Results to follow.**
+
+## 17. Literature pass: how this work compares with other published predictors (19 Nov; the user asked for a comparison, starting from a paper they found)
+
+*Why.* The project had never written down how it sits against the field beyond crisprHAL 2, and the paper the user
+supplied turned out to land in a gap Part 3 names explicitly. Written up as **Part 6 of the report**, in the main text
+rather than an appendix, because it is the comparison a paper's discussion has to make. Nothing here is a new
+measurement; it is a reading of other people's.
+
+**The paper the user supplied.** The URL they gave (`.../s41598-026-79920-1_reference.pdf`) is behind Nature's identity
+provider and was not fetched. The DOI is real and resolves through CrossRef: **Orro et al. (2026), "Machine
+learning-based prediction of base editor sgRNA fitness score", *Scientific Reports*,
+[10.1038/s41598-026-79920-1](https://doi.org/10.1038/s41598-026-79920-1)**, published 10 November 2026, CC-BY, indexed
+but not yet in PubMed or PMC, so the abstract and metadata come from CrossRef rather than the full text. A pooled
+base-editing screen, decision-tree models, **gene-held-out** validation, AUC-ROC 0.87-0.94 and AU-PR 0.53-0.75
+(a classification task, so not commensurable with our rho). Most predictive features: sgRNA sequence and specifically
+**PAM-proximal nucleotides**; gene essentiality and predicted variant effect carry weight "albeit to a more marginal
+extent".
+
+Three points of contact, in order of how much they matter to us:
+
+1. *It fills a gap we named.* Part 3 says "nothing here speaks to nickase editors; base and prime editors bind and nick
+   rather than cut". This is exactly that assay.
+2. *It agrees about where the sequence signal is.* PAM-proximal dominance matches section 14's gain-by-position result
+   (eight PAM-proximal positions 63% / 62% of split gain; position 18 alone 14%). Two different label types, two model
+   families, same answer about position.
+3. *An apparent contradiction that resolves into a mechanism.* They find essentiality predictive; we find it a flat null
+   (+0.00004, reproducing Guo et al. to four decimals). Both are right, because the labels differ: a **fitness** effect
+   in human cells depends on whether the edited gene matters, while survival after a double-strand break in *E. coli*
+   is lethal more or less regardless of which gene was cut. Essentiality should predict one and not the other. This is
+   the report's own "two screens' numbers are comparable only when the measured quantity is" rule, applied to someone
+   else's paper.
+
+**The closest methodological neighbour, which we had not cited at all: Yu et al. (2024), *Genome Biology*,
+[10.1186/s13059-023-03153-y](https://doi.org/10.1186/s13059-023-03153-y)** (Barquist lab), bacterial CRISPRi guide
+efficiency. Found via PubMed/Europe PMC; full text read. It matters for three reasons:
+
+- *It reaches our decomposition independently.* Their headline is "the surprising discovery that gene-specific features
+  substantially impact prediction", and their answer is a **mixed-effect random forest** — 129 guide features as fixed
+  effects, 9 gene features as random effects, 301 genes as clusters — separating guide efficiency from the targeted
+  gene. That is the same guide/gene split as our within-gene versus between-gene analysis and as Finding 2's "+0.061
+  asked entirely inside genes".
+- *It validates the way we evaluate.* They abandon guide-wise cross-validation for a **gene-wise** scheme for our
+  reason, and additionally report train/test Hamming distances (minimum 7, median 21). Orro et al. also hold out genes.
+  So gene-grouped evaluation is what a reviewer will expect, which is what this report quotes.
+- *It is ahead of us in one respect.* They *model* the gene effect as a random term; we group folds and decompose
+  afterwards. We have not tried a mixed-effect formulation, and on a survival label it might sharpen the within-gene
+  signal Finding 3 now leans on. Logged as an open item, not run.
+
+Their numbers, which are not comparable to ours (CRISPRi depletion, different label) but are informative about the
+assay: guide sequence plus PAM plus 4 nt upstream and 3 nt after the PAM gives rho ~0.21; adding thermodynamics and
+distance to the start codon gives ~0.25; adding gene-level covariates (expression, transcription-unit structure, gene
+GC, gene length, distance to operon start) gives **~0.66**. Their dominant feature is maximal RNA expression. This is
+consistent with our Finding 3 reading that in a dCas9 screen the gene context dominates the ranking and the flank
+effect is weak and strand-confounded.
+
+**The novelty question, asked properly.** Of everything read in this pass, the longest input any predictor takes is
+crisprHAL 2's 378 nt (SpCas9) / 406 nt (eSpCas9), which its authors reached by their own length search. The only other
+routes outside the protospacer are an *experimental* track (CRISPRon's chromatin accessibility; Xiang et al. 2021) or
+*gene-level* covariates (Yu et al.; Orro et al.). **Nothing found builds compositional descriptors of flanking DNA in
+windows of hundreds to a thousand nucleotides and measures their increment.** Caveat stated rather than buried: a
+literature search failing to find something is weak evidence that it does not exist, and this was a handful of searches
+plus citation chasing, not a systematic review.
+
+**A calibration against our own headline.** Recent independent benchmarks of the human predictors put CRISPRon first
+with Rule Set 3 (DeWeirdt et al. 2022) and DeepSpCas9 close behind, and the ordering **changes between datasets and
+organisms** - one plant evaluation found older, simpler scores tracking in-planta efficiency better than either deep
+model. Differences of that size are the size of our lead over crisprHAL 2 (+0.023 to +0.029 rho on two splits of one
+organism's screens). So the lead is worth stating as measured, audited and confirmed on untouched genes, against
+crisprHAL 2 **as shipped** - and not as a claim that one architecture beats another. The sentence this report has always
+defended, that the advantage is about *reach*, is the one that survives the comparison.
+
+**Also noted, not pursued.** The same group's 2025 SaCas9 preprint reports that dinucleotides at +1/+2 beyond the
+NNGRRN PAM and PAM adenine methylation affect activity in bacteria - independent evidence that flanking sequence
+matters in bacteria, at a range (1-2 nt) three orders of magnitude shorter than ours, and through a mechanism
+(methylation) we have no feature for. A possible addition to family A if the project ever returns to feature building.

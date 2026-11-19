@@ -425,6 +425,41 @@ chk("residual correlation espcas9", float(bw[(bw.split == "espcas9") & bw.weight
 chk("residual correlation wt", float(bw[(bw.split == "wt") & bw.weight_on_crisprhal.isna()].rho.iloc[0]), 0.81, 2)
 chk("fast family A ms per guide", float(fe["family A ms per guide (whole cohort, one call)"]), 0.068, 3); chk("fast base ms per guide", float(fe["base ms per guide (whole cohort, one call)"]), 0.019, 3)
 
+print("16.1 family A at the tuned settings")
+fa = pd.read_csv(OUT / "family_a_at_tuned_summary.csv").set_index("comparison")
+fr = pd.read_csv(OUT / "family_a_at_tuned.csv")
+chk("16.1 folds measured", len(fr) / 8, 15, 0)            # 4 arms x 2 matrices per fold
+chk("16.1 base-only rankings never reach family A", float(fr[fr.matrix == "base"].n_flank_cols.abs().max()), 0, 0)
+for arm, (b, w, d_, lo, hi) in (("champion", (0.5588, 0.7151, 0.1563, 0.1515, 0.1616)),
+                                ("depth6", (0.5569, 0.7223, 0.1655, None, None)),
+                                ("d099x", (0.5617, 0.7314, 0.1697, 0.1659, 0.1738)),
+                                ("d077x", (0.5631, 0.7310, 0.1680, None, None))):
+    r = fa.loc[f"family A increment, {arm}"]
+    chk(f"16.1 {arm} base only", float(r.base), b, 4)
+    chk(f"16.1 {arm} base+A", float(r.with_a), w, 4)
+    chk(f"16.1 {arm} family A increment", float(r.delta), d_, 4)
+    if lo is not None:
+        chk(f"16.1 {arm} increment lo", float(r.lo), lo, 4); chk(f"16.1 {arm} increment hi", float(r.hi), hi, 4)
+    chk(f"16.1 {arm} folds positive", float(r.folds_positive), 15, 0)
+bo = fa.loc[[i for i in fa.index if i.startswith("family A increment, best-of-four")][0]]
+chk("16.1 best-of-four increment", float(bo.delta), 0.1683, 4)
+chk("16.1 best-of-four lo", float(bo.lo), 0.1642, 4); chk("16.1 best-of-four hi", float(bo.hi), 0.1728, 4)
+tb = fa.loc["tuning gain (d099x - champion) on base"]
+ta = fa.loc["tuning gain (d099x - champion) on base+A"]
+chk("16.1 tuning gain on base only", float(tb.delta), 0.0028, 4)
+chk("16.1 tuning gain on base, lo", float(tb.lo), 0.0009, 4); chk("16.1 tuning gain on base, hi", float(tb.hi), 0.0050, 4)
+chk("16.1 tuning gain on base, folds positive", float(tb.folds_positive), 9, 0)
+chk("16.1 tuning gain on base+A", float(ta.delta), 0.0162, 4)
+chk("16.1 tuning gain on base+A, lo", float(ta.lo), 0.0152, 4); chk("16.1 tuning gain on base+A, hi", float(ta.hi), 0.0173, 4)
+chk("16.1 tuning gain on base+A, folds positive", float(ta.folds_positive), 15, 0)
+chk("16.1 ratio of tuning gains, with A over without", float(ta.delta / tb.delta), 5.7, 1)
+# the two arms that must reproduce tune_fullcv.csv, or this is a third protocol rather than the project's
+fc = pd.read_csv(OUT / "tune_fullcv.csv").groupby("arm").rho.mean()
+chk("16.1 champion base+A reproduces tune_fullcv", float(fa.loc["family A increment, champion"].with_a), float(fc.loc["champion"]), 3)
+chk("16.1 d099x base+A reproduces tune_fullcv", float(fa.loc["family A increment, d099x"].with_a), float(fc.loc["tuned d099x"]), 3)
+chk("16.1 ceiling gap at the tuned model", 0.946 - float(fa.loc["family A increment, d099x"].with_a), 0.21, 2)
+
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:
     print("  MISMATCH", b)
+raise SystemExit(1 if bad else 0)       # so `./run_audit.sh` can be used as a check in a pipeline
