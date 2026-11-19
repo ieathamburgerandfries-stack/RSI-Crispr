@@ -2917,14 +2917,33 @@ out-encode a tuned deep model on DNA both sides hold, we have access to DNA it
 never sees. That is a narrower claim and a much harder one to attack.
 
 Every withdrawal but one was caught by **our own tests**; the exception, the
-nearest-gene orientation confound, was caught by a teammate's. The newest one
+nearest-gene orientation confound, was caught by a teammate's. One
 came from chasing down a teammate's *unexplained number* rather than a claim:
-reproducing ρ 0.472 on the human matrix showed our human model was the wrong
+reproducing ρ 0.472 on the human matrix appeared to show our human model was the wrong
 shape for its data, and the transfer interval was resting on that. None were caught by
 re-reading the text, and in every case the data needed was already on disk: the
 bottleneck was that nobody had asked the number to defend itself.
 `docs/FINDINGS_LOG.md`, which is local, records each one where it happened,
 with what replaced it.
+
+**A sixth withdrawal, 19 November, and it is the one with the clearest lesson.** The
+sentence above — that reproducing the teammate's human figure showed our model was the wrong
+shape — was itself wrong. Both the figure and the diagnosis were duplicate guides: 49% of
+the human matrix's rows repeat a guide that appears elsewhere, and under folds that keep
+them together the configuration that looked 0.10 better is 0.08 worse, the champion is the
+best of six arms, and the depth result that corroborated "the human signal is less additive"
+changes sign (Part 2 claim 4, Appendix B.4, `EXTENSION_LOG.md` §16.2).
+
+What makes it instructive is *how long it survived and why*. It had a reproduction (the
+teammate's number came out of our harness to four decimals), a mechanism (depth is the
+interaction-order knob), and a second instrument that agreed (the ridge ratio). Three of the
+things this project treats as evidence, and all three were downstream of one unchecked
+property of the data. The two instruments were not independent — depth is *how* a tree
+memorises a twin — so the corroboration was the artefact's signature rather than
+confirmation of it. **The check that would have caught it costs one line: count the distinct
+guides and compare with the number of rows.** It is now the first thing to run on any new
+matrix, and it is the one procedural lesson from this phase to put beside "seal first, and
+seal by gene".
 
 ---
 
@@ -2946,7 +2965,7 @@ literature search failing to find something is weak evidence that it does not ex
 | **SLICER, frozen champion** | *E. coli*, cutting | **±1,000 nt** windowed composition | XGBoost, 300 columns | **gene-grouped** 5×5 | ρ 0.7218 CV; 0.6997 / 0.7842 on their splits |
 | **SLICER, tuned (fork)** | same | same | XGBoost, 450 columns, 4,000 trees | gene-grouped; DEV/CONFIRM genes | ρ 0.7314 CV; 0.7172 / 0.8107 on their splits |
 | Yu et al. 2024 (*Genome Biology*) | bacteria, **CRISPRi** depletion | gene-level covariates: expression, transcription-unit structure, gene GC, gene length, distance to operon start | **mixed-effect random forest** (129 guide features as fixed effects, 9 gene features as random effects, 301 genes as clusters), autoML | **gene-wise** CV, with train/test Hamming distances reported | ρ ≈ 0.21 guide-only → 0.25 with thermodynamics → **0.66** with gene features |
-| Orro et al. 2026 (*Scientific Reports*) | human, **base-editing** fitness screen | gene essentiality, predicted variant effect | decision-tree ensembles | **gene-held-out** | AUC-ROC 0.87–0.94, AU-PR 0.53–0.75 (classification) |
+| Orro et al. 2026 (*Scientific Reports*) | human, **base-editing** fitness screen; ~11,000 sgRNAs over 47 genes | **±15 nt** context sweep (total 20–50 nt), plus gene strand, DepMap essentiality, mutation type and three external editing-efficiency predictors | six classifiers at **library defaults**; LightGBM / XGBoost / CatBoost best | **gene-held-out** per the published abstract; the preprint's methods describe 5-fold CV × 10 seeds | AUC-ROC 0.838–0.948 (classification, so not commensurable with ρ) |
 | CRISPRon (Xiang et al. 2021) | human, Cas9 knockout | **experimental chromatin accessibility** | CNN | internal + external test sets | ρ 0.80 internal, ≈0.46–0.68 external |
 | Rule Set 2 / 3 (Doench 2016; DeWeirdt 2022) | human | target context, (RS3) tracr and context | gradient boosting / linear | varies | second to CRISPRon in recent benchmarks |
 
@@ -2954,9 +2973,12 @@ literature search failing to find something is weak evidence that it does not ex
 
 **Novel: the reach, and the claim that the reach is compositional.** Of everything above, the
 longest input any predictor reads is crisprHAL 2's 378–406 nt, and its authors arrived at that by
-their own length search, reporting that the gains level off. The only other ways the field looks
-outside the protospacer are an **experimental** track (CRISPRon's chromatin accessibility) or
-**gene-level** covariates (Yu et al.; Orro et al.'s essentiality). Nothing found in this pass builds
+their own length search, reporting that the gains level off. Everyone else who reads flanking
+sequence at all reads very little of it: Orro et al. sweep ±15 nt, crisprHAL 37 nt in total, Yu et
+al. 4 nt upstream and 3 beyond the PAM, CRISPOR 50 bp each side for scoring. The other ways the
+field looks outside the protospacer are an **experimental** track (CRISPRon's chromatin
+accessibility) or **gene-level** covariates (Yu et al.'s expression and operon structure; Orro et
+al.'s essentiality). Nothing found in this pass builds
 *compositional descriptors of the flanking DNA in windows of hundreds to a thousand nucleotides and
 measures their increment*. That is this project's Finding 2, and the three properties that make it a
 finding rather than a feature — it is a smooth gradient with no motif, it has a measured
@@ -3017,26 +3039,58 @@ independently:
 Orro et al. (2026), *Machine learning-based prediction of base editor sgRNA fitness score*,
 lands precisely in a gap Part 3 names: *"Nothing here speaks to nickase editors; base and prime
 editors bind and nick rather than cut, which puts them between the two assays this project
-compares."* Three points of contact:
+compares."* The published article is behind an identity provider; the Research Square preprint of
+the same work is open, and the detail below is from it, with the published abstract used where the
+two differ (noted).
 
-- **It agrees with us about where the sequence signal is.** They report sgRNA sequence, and
-  specifically **PAM-proximal nucleotides**, as the most predictive features. Our interpretation
-  pass found the same shape: the eight PAM-proximal positions carry 63% / 62% of the model's split
-  gain, position 18 alone 14% (`EXTENSION_LOG.md` §14).
-- **An apparent disagreement that resolves into a mechanism.** They find gene essentiality carries
-  predictive weight; we find essentiality is a flat null (+0.00004, reproducing Guo et al. to four
-  decimal places). The two are consistent once the labels are read properly. Their label is a
-  **fitness** effect in human cells, where whether the edited gene matters *is* the phenotype; ours
-  is survival after a double-strand break in *E. coli*, where an unrepaired break is lethal more or
-  less regardless of which gene carried it. Essentiality *should* predict one and not the other. This
-  is a good example of the report's own rule that two screens' numbers are only comparable when the
-  measured quantity is.
-- **What we could add to it, and the honest caveat.** They use no flanking genomic context at all.
-  Whether this project's flank effect transfers to a human base-editing fitness screen is untested,
-  and the *E. coli*-specific findings should not be assumed to hold there — the one cross-kingdom
-  thing we tested inverted (GC against activity, −0.20 here against +0.02 there). Jacky's human
-  family A is the live test, and it is currently blocked on the duplicate-guide problem (Part 3,
-  `EXTENSION_LOG.md` §16).
+*What it is.* Hanna et al.'s cytosine-base-editor screen — about **11,000 sgRNAs over just 47
+genes**, 10 of them pan-lethal essential — across five cell lines (A375, MELJUSO, OVCAR8, HAP1,
+HA1E). The label is binarised (proliferation z < −2 against the rest), so it is a classification
+task and its AUC values are not commensurable with our ρ. Features: dinucleotide one-hot sequence,
+sgRNA and gene strand, Rule Set 2 on-target score, melting temperature, PFAM, mutation type,
+predicted editing efficiency from three external tools (BE-Hive, DeepBE, BE-DICT), and DepMap
+essentiality. Six classifiers **all at library default hyperparameters**; LightGBM, XGBoost and
+CatBoost best, AUC 83.8–94.8%.
+
+Four points of contact, and the first is the strongest independent corroboration this project has
+received:
+
+- **Their position profile is ours.** Aggregating SHAP to positions along the 20-mer, importance
+  "increases toward the 3′ end", peaking at **position 19 (0.237) and position 20 (0.328)**, with
+  positions 13–16 substantial (0.139–0.304) and positions 1–5 minimal (0.065–0.068). Our
+  interpretation pass, on a different organism, a different nuclease, a continuous label and split
+  gain rather than SHAP, found the eight PAM-proximal positions carrying **63% / 62%** of the gain
+  and positions 1–12 only 10% / 17% (`EXTENSION_LOG.md` §14). Two unrelated measurements of "where
+  along the guide the signal lives" agreeing this closely is worth more than either alone.
+- **Strand dominates their non-sequence features, as it dominated our dCas9 screen.** Their most
+  influential non-sequence feature is **gene strand (0.493)**, ahead of DepMap essentiality (0.179)
+  and mutation type (0.101). Finding 3's hardest-won correction was that the +0.268 family-A gain
+  inside essential genes was *the screen's own strand rule*, leaving +0.007 to +0.025 once a strand
+  indicator was supplied. Pooled screens appear to put a large, easily-mistaken strand term in front
+  of whatever else is there, in two assays and two kingdoms. Anyone reading a subgroup result off a
+  pooled screen should control strand first.
+- **An apparent disagreement that resolves into a mechanism.** They find gene essentiality
+  predictive (0.179, and it "drives the global difference between BE3.9 and Cas9 activity"); we find
+  essentiality a flat null (+0.00004, reproducing Guo et al. to four decimals). Both are right once
+  the labels are read properly: their label is a **fitness** effect in human cells, where whether the
+  edited gene matters *is* the phenotype, while ours is survival after a double-strand break in
+  *E. coli*, where an unrepaired break is lethal more or less regardless of which gene carried it.
+  Essentiality *should* predict one and not the other — an instance of this report's own rule that
+  two screens' numbers are comparable only when the measured quantity is.
+- **Their reach is ±15 nt, which is where we have something to add — and where we have a worry for
+  them.** They do use flanking sequence, but their context sweep runs U and D over **0, 5, 10 and
+  15 nt (total context 20–50 nt)**, shorter even than crisprHAL's 37. So the kilobase-scale
+  compositional window is untested in their setting. The honest caveat is that our *E. coli* result
+  should not be assumed to transfer — the one cross-kingdom thing this project tested inverted (GC
+  against activity, −0.20 here against +0.02 there) — and Jacky's human family A, the live test, is
+  currently blocked on the duplicate-guide problem (Part 3, §16.2).
+  **The worry:** with 47 genes, gene-level features among the inputs, and a preprint that describes
+  plain 5-fold cross-validation repeated over ten seeds, sgRNAs from the same gene would sit on both
+  sides of most splits, and DepMap essentiality is constant within a gene. The published abstract
+  says "gene-held out validation", so the final version appears to address exactly this; the
+  preprint's methods do not state it. If the published scheme is gene-held-out then the concern is
+  answered — and the fact that it had to be is the same lesson this project learned twice, once by
+  gene and once, expensively, by duplicate guide.
 
 ### A calibration this pass forces on our own headline
 
@@ -3886,8 +3940,11 @@ endorse the number: the five per-fold winners chose depths of **4, 8, −1, 3 an
 What the folds agree on is **low capacity** and 1,600 trees at a small learning
 rate; depth is only one of the two ways the space offers to express it, and
 `num_leaves = 8` is the other. So the defensible statement is that the fitted
-model is shallow, not that 4 is optimal — and the setting is data-specific, since
-on the human matrix, where the signal is not additive, depth 6 is worth +0.0585.
+model is shallow, not that 4 is optimal. ~~And the setting is data-specific, since on
+the human matrix, where the signal is not additive, depth 6 is worth +0.0585.~~
+**That second clause is withdrawn** (§16.2): the human +0.0585 was duplicate guides, and
+under twin-grouped folds depth 6 is worth **−0.0062** there. Shallow is what both matrices
+want, so the setting is *less* data-specific than this paragraph claimed.
 
 **280 of 300 columns are ever split on, 45 carry half the gain, top ten 19.5%.**
 This is the weakest of the three as an interpretability claim: it says the model
@@ -5092,9 +5149,11 @@ Mencar, C., De Bellis, G., Cocola, C., Pelucchi, P., & Selmi, T. (2026). Machine
 learning-based prediction of base editor sgRNA fitness score. *Scientific Reports*.
 Advance online publication, 10 November 2026.
 https://doi.org/10.1038/s41598-026-79920-1
-— base-editing fitness prediction with gene-held-out validation; agrees with this
-project that PAM-proximal positions dominate the sequence signal, and finds gene
-essentiality weakly predictive where we find it null, which the labels explain
+(preprint: https://doi.org/10.21203/rs.3.rs-9224117/v1, which is the version read here)
+— base-editing fitness prediction over ~11,000 sgRNAs and 47 genes. Its SHAP position
+profile independently reproduces this project's gain-by-position result, and gene strand
+is its largest non-sequence feature, as strand was in our dCas9 screen. It finds gene
+essentiality weakly predictive where we find it null, which the two labels explain
 (Part 6).
 
 SantaLucia, J., & Hicks, D. (2004). The thermodynamics of DNA structural motifs.

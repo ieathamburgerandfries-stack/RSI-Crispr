@@ -858,29 +858,51 @@ supplied turned out to land in a gap Part 3 names explicitly. Written up as **Pa
 rather than an appendix, because it is the comparison a paper's discussion has to make. Nothing here is a new
 measurement; it is a reading of other people's.
 
-**The paper the user supplied.** The URL they gave (`.../s41598-026-79920-1_reference.pdf`) is behind Nature's identity
-provider and was not fetched. The DOI is real and resolves through CrossRef: **Orro et al. (2026), "Machine
-learning-based prediction of base editor sgRNA fitness score", *Scientific Reports*,
-[10.1038/s41598-026-79920-1](https://doi.org/10.1038/s41598-026-79920-1)**, published 10 November 2026, CC-BY, indexed
-but not yet in PubMed or PMC, so the abstract and metadata come from CrossRef rather than the full text. A pooled
-base-editing screen, decision-tree models, **gene-held-out** validation, AUC-ROC 0.87-0.94 and AU-PR 0.53-0.75
-(a classification task, so not commensurable with our rho). Most predictive features: sgRNA sequence and specifically
-**PAM-proximal nucleotides**; gene essentiality and predicted variant effect carry weight "albeit to a more marginal
-extent".
+**The paper the user supplied, and how it was obtained.** The URL they gave
+(`.../s41598-026-79920-1_reference.pdf`) is in fact the official gold-OA PDF -- OpenAlex lists it as the `oa_url` -- but
+Nature's identity provider blocks automated fetches of it (303 to `idp.nature.com`), so it was not read there. The DOI
+resolves through CrossRef: **Orro et al. (2026), "Machine learning-based prediction of base editor sgRNA fitness score",
+*Scientific Reports*, [10.1038/s41598-026-79920-1](https://doi.org/10.1038/s41598-026-79920-1)**, published
+10 November 2026, CC-BY, not yet in PubMed or PMC. OpenAlex gave a second open location, the **Research Square
+preprint** of the same work ([10.21203/rs.3.rs-9224117/v1](https://doi.org/10.21203/rs.3.rs-9224117/v1)), whose PDF was
+readable; the detail below is from it, with the published abstract used where the two differ. Treated as data, not
+instructions.
 
-Three points of contact, in order of how much they matter to us:
+*What it is.* Hanna et al.'s cytosine-base-editor screen -- about **11,000 sgRNAs over 47 genes**, 10 pan-lethal
+essential -- in five cell lines (A375, MELJUSO, OVCAR8, HAP1, HA1E). Label binarised at proliferation z < -2, so it is
+classification and the AUCs are not commensurable with our rho. Features: dinucleotide one-hot sequence over a context
+swept at U and D of **0, 5, 10, 15 nt** (total 20-50 nt), sgRNA and gene strand, Rule Set 2 score, melting temperature,
+PFAM, mutation type, three external editing-efficiency predictors (BE-Hive, DeepBE, BE-DICT) and DepMap essentiality.
+Six classifiers, **all at library default hyperparameters**; LightGBM / XGBoost / CatBoost best, AUC 83.8-94.8%.
+
+Four points of contact, in order of how much they matter to us:
 
 1. *It fills a gap we named.* Part 3 says "nothing here speaks to nickase editors; base and prime editors bind and nick
    rather than cut". This is exactly that assay.
-2. *It agrees about where the sequence signal is.* PAM-proximal dominance matches section 14's gain-by-position result
-   (eight PAM-proximal positions 63% / 62% of split gain; position 18 alone 14%). Two different label types, two model
-   families, same answer about position.
-3. *An apparent contradiction that resolves into a mechanism.* They find essentiality predictive; we find it a flat null
-   (+0.00004, reproducing Guo et al. to four decimals). Both are right, because the labels differ: a **fitness** effect
-   in human cells depends on whether the edited gene matters, while survival after a double-strand break in *E. coli*
-   is lethal more or less regardless of which gene was cut. Essentiality should predict one and not the other. This is
-   the report's own "two screens' numbers are comparable only when the measured quantity is" rule, applied to someone
-   else's paper.
+2. *Their position profile is ours, measured a completely different way -- the strongest independent corroboration this
+   project has had.* Aggregating SHAP along the 20-mer they report importance rising toward the 3' end, peaking at
+   **position 19 (0.237) and position 20 (0.328)**, positions 13-16 substantial (0.139-0.304), positions 1-5 minimal
+   (0.065-0.068). Section 14, on a different organism, nuclease and label, using split gain rather than SHAP, found the
+   eight PAM-proximal positions carrying **63% / 62%** of the gain and positions 1-12 only 10% / 17%.
+3. *Strand dominates their non-sequence features, as it dominated our dCas9 screen.* Their largest non-sequence feature
+   is **gene strand (0.493)**, ahead of DepMap essentiality (0.179) and mutation type (0.101). Finding 3's hardest
+   correction was that the +0.268 family-A gain inside essential genes was *the screen's own strand rule*, worth
+   +0.007 to +0.025 once a strand indicator was supplied. Two assays, two kingdoms, same trap: control strand before
+   reading any subgroup result off a pooled screen.
+4. *An apparent contradiction that resolves into a mechanism.* They find essentiality predictive (0.179, and it "drives
+   the global difference between BE3.9 and Cas9 activity"); we find it a flat null (+0.00004, reproducing Guo et al. to
+   four decimals). Both are right, because the labels differ: a **fitness** effect in human cells depends on whether the
+   edited gene matters, while survival after a double-strand break in *E. coli* is lethal more or less regardless of
+   which gene was cut. Essentiality should predict one and not the other. This is the report's own "two screens' numbers
+   are comparable only when the measured quantity is" rule, applied to someone else's paper.
+
+*One concern worth recording, stated as a question rather than a criticism.* With 47 genes, gene-level features among
+the inputs (DepMap essentiality is constant within a gene), and a preprint whose methods describe plain 5-fold
+cross-validation repeated over ten seeds, sgRNAs from the same gene would sit on both sides of most splits. The
+**published abstract specifies "gene-held out validation"**, so the final version appears to have addressed precisely
+this; the preprint's methods do not say it. If the published scheme is gene-held-out the concern is answered -- and that
+it needed answering is the lesson this project learned twice, once by gene and once, expensively, by duplicate guide
+(section 16.2).
 
 **The closest methodological neighbour, which we had not cited at all: Yu et al. (2024), *Genome Biology*,
 [10.1186/s13059-023-03153-y](https://doi.org/10.1186/s13059-023-03153-y)** (Barquist lab), bacterial CRISPRi guide
@@ -906,12 +928,14 @@ consistent with our Finding 3 reading that in a dCas9 screen the gene context do
 effect is weak and strand-confounded.
 
 **The novelty question, asked properly.** Of everything read in this pass, the longest input any predictor takes is
-crisprHAL 2's 378 nt (SpCas9) / 406 nt (eSpCas9), which its authors reached by their own length search. The only other
-routes outside the protospacer are an *experimental* track (CRISPRon's chromatin accessibility; Xiang et al. 2021) or
-*gene-level* covariates (Yu et al.; Orro et al.). **Nothing found builds compositional descriptors of flanking DNA in
-windows of hundreds to a thousand nucleotides and measures their increment.** Caveat stated rather than buried: a
-literature search failing to find something is weak evidence that it does not exist, and this was a handful of searches
-plus citation chasing, not a systematic review.
+crisprHAL 2's 378 nt (SpCas9) / 406 nt (eSpCas9), which its authors reached by their own length search. Everyone else who
+reads flanking sequence reads very little of it: Orro et al. sweep +-15 nt, crisprHAL 37 nt in total, Yu et al. 4 nt
+upstream and 3 beyond the PAM, CRISPOR 50 bp each side for scoring. The other routes outside the protospacer are an
+*experimental* track (CRISPRon's chromatin accessibility; Xiang et al. 2021) or *gene-level* covariates (Yu et al.'s
+expression and operon structure; Orro et al.'s essentiality). **Nothing found builds compositional descriptors of
+flanking DNA in windows of hundreds to a thousand nucleotides and measures their increment.** Caveat stated rather than
+buried: a literature search failing to find something is weak evidence that it does not exist, and this was a handful of
+searches plus citation chasing, not a systematic review.
 
 **The claim we should stop making, found by looking.** "A boosted tree over engineered features matches a tuned deep
 model" has a published precedent on human data: **BoostMEC** (Zarate et al. 2022, *BMC Bioinformatics*,
