@@ -366,7 +366,7 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
-*Current state of the audit (19 Nov):* it has grown with each section and now stands at **663 checks, 0 mismatches**,
+*Current state of the audit (19 Nov):* it has grown with each section and now stands at **682 checks, 0 mismatches**,
 covering sections 7-16. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
 modules need and exits non-zero if any quoted number no longer matches its file.
 
@@ -671,7 +671,7 @@ extra-trees 0.6642, ridge 0.6458. LightGBM and several XGBoost finalists sat at 
 
 Prediction correlations with XGBoost (Spearman, DEV out-of-fold): LightGBM 0.985, CatBoost 0.977, neural network 0.934, extra-trees 0.903, ridge 0.860; residual
 correlations 0.973 / 0.959 / 0.882 / 0.836 / 0.767. **Inference:** the gradient-boosted families agree closely, so mixing them adds +0.0015;
-families that do differ are too weak to help at equal weight. **Status: verified on one gene split;** the blend weights come from one OOF partition.
+families that do differ are too weak to help at equal weight. **Status: verified on one gene split;** the blend weights come from one OOF partition. (The *tuning* result was replicated on a second split in section 16.3; the **mixing** result was not, and mixing is the part the cost verdict rejects anyway.)
 
 ## 13. Against crisprHAL 2 again, and the cost of the extra accuracy (9 Nov; `vs_crisprhal.py`, `vs_crisprhal_wt_hal.py`, `cost_bench.py`)
 
@@ -764,10 +764,12 @@ finding's heading was changed from "at its material limit" to "out of *material*
 *Harness check:* champion base+A = 0.7151 and d099x = 0.7314, both identical to `tune_fullcv.csv`, so this is the
 established protocol and not a third one.
 
-*Caveat, stated in the report too.* The tuned configurations were chosen on DEV genes **with family A present**, so the
-base-only column may be slightly pessimistic; four configurations per side and the best-of-four bound guard against it,
-but a matched search over base-only columns has not been run. It would need to find about +0.013 on base-only -- four
-times the largest tuning gain observed there -- to overturn the reading.
+*Caveat, with the size of it computed.* The tuned configurations were chosen on DEV genes **with family A present**, so
+the base-only column may be slightly pessimistic; four configurations per side and the best-of-four bound guard against
+it, but a matched search over base-only columns has not been run. For the reading to be overturned -- family A's tuned
+increment falling back to the champion's +0.1563 -- a base-only search would have to reach rho **0.5751**: **+0.0120
+beyond the best of the four tried** (d077x, 0.5631) and about **2.9x the largest base-only gain any of them produced**
+(+0.0042). Worth one night if this conclusion ever has to stand alone, but the margin is not marginal.
 
 ### 16.2 The human additivity claim under twin-grouped folds
 
@@ -849,7 +851,43 @@ on one further partition with the extended tree grid; champion, the new winner a
 new CONFIRM over three seeds with a gene bootstrap. d099x is also scored there as a secondary row, labelled
 `contaminated`. Resumable draw by draw, so a partial run is still an answer.
 
-**Status: queued third. Results to follow.**
+Split 2 gives DEV 21,222 / CONFIRM 8,981 guides (2,809 / 1,204 genes), and **357 of the 1,204 new CONFIRM genes were
+also CONFIRM in split 1** -- so 847 of them fed split 1's selection, which is exactly why d099x's row here is labelled
+contaminated and why a fresh search was necessary.
+
+| split-2 CONFIRM genes (rho; difference to the champion, 95% bootstrap over genes, three seeds) | rho | vs champion |
+|---|---:|---:|
+| champion | 0.7329 | |
+| depth6 | 0.7374 | +0.0045 [+0.0013, +0.0077] |
+| **split-2 winner s2d017** (depth 6, lr 0.020, 2,000 trees, 450 columns) | **0.7450** | **+0.0121 [+0.0092, +0.0152]** |
+| s2d002x / s2d000x | 0.7446 / 0.7435 | +0.0117 / +0.0105 |
+| **average of the top 3** | **0.7488** | **+0.0159 [+0.0132, +0.0186]** |
+| *d099x, split 1's winner (contaminated: 847 of these genes fed its selection)* | *0.7472* | *+0.0143 [+0.0112, +0.0176]* |
+
+**Result: the tuning payoff replicates.** A fresh 40-draw search on a different 70% of the genes yields
+**+0.0121 [+0.0092, +0.0152]** on genes it never saw, against **+0.0143 [+0.0111, +0.0174]** from the 200-draw search on
+split 1. The intervals overlap substantially, and the ensemble figures agree too (+0.0159 against +0.0174). The split-2
+estimate is a little smaller, which is consistent both with less winner's curse and with less search power at 40 draws
+instead of 200; this design cannot separate those two.
+
+**A different winner, the same region of the space.** s2d017 is depth 6, lr 0.020, 2,000 trees; d099x is depth 5,
+lr 0.013, 4,000 trees. Both sit at 450 columns on the raw target with slow learning, and the split-2 top three span
+depth 3 to 6, min_child_weight 2 to 51 and lambda 0.76 to 15.3 while scoring within 0.0015 of each other. That is
+section 11's "broad plateau, not a point" reading, confirmed on an independent partition.
+
+**A bonus that was not the point of the run: an independent estimate of the selection effect.** d099x scored on these
+genes reads +0.0143, but 847 of the 1,204 contributed labels to choosing it; the honest fresh-search figure is +0.0121.
+The difference, **+0.0022**, is a direct measurement of what selecting on the same genes adds. Section 11 had estimated
+"about +0.002" for the same quantity by a completely different route (whole-cohort CV gain minus held-out-gene gain).
+Two unrelated routes to the same number is the sort of agreement this project has learned to want before believing
+something -- and, unlike section 16.2's case, these two really are independent.
+
+**The thing a single split could not have shown, and it is the most useful part.** The champion scores **0.7073** on
+split 1's held-out genes and **0.7329** on split 2's. That is a **0.026** swing in absolute difficulty between two
+random 30% gene partitions of the same cohort -- about **twice the size of the entire tuning gain**. So absolute rho on
+one gene partition should not be read to three decimals as though it were a property of the model, while the
+*difference between arms* reproduces across partitions to within 0.002. Every held-out-gene figure in sections 11-16
+is a difference for this reason; where a level is quoted, it belongs to its split.
 
 ## 17. Literature pass: how this work compares with other published predictors (19 Nov; the user asked for a comparison, starting from a paper they found)
 

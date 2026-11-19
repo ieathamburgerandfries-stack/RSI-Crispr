@@ -1132,13 +1132,17 @@ way. Second, the champion's base+A figure here is **0.7151**, identical to `tune
 and d099x's is **0.7314**, also identical — so this run reproduces the established
 protocol rather than introducing a third one.
 
-*The honest caveat.* The tuned configurations were selected on DEV genes **with family A
-present**, so applying them to a base-only matrix is not a matched tuning effort and the
-base-only column could be slightly pessimistic. Four configurations were run on each side
-and the best-of-four reported for that reason, but a genuinely matched answer needs a
-search of its own over base-only columns, which has not been run. It would have to find
-about +0.013 on base-only — four times the largest tuning gain seen there — to overturn
-the reading.
+*The honest caveat, with the size of it computed rather than waved at.* The tuned
+configurations were selected on DEV genes **with family A present**, so applying them to a
+base-only matrix is not a matched tuning effort and the base-only column could be slightly
+pessimistic. Four configurations were run on each side and the best-of-four reported for
+that reason, but a genuinely matched answer needs a search of its own over base-only
+columns, which has not been run. For the reading to be overturned — that is, for family A's
+increment at the tuned settings to fall back to the champion's +0.1563 — a base-only search
+would have to reach ρ **0.5751**, which is **+0.0120 beyond the best of the four tried**
+(d077x at 0.5631) and **about 2.9× the largest base-only gain any of them produced**
+(+0.0042). Not impossible, and worth one night if the conclusion ever has to carry weight on
+its own; but the margin is not marginal.
 
 
 ### 5. On a redundant matrix, importance and faithfulness are both uninterpretable
@@ -3627,8 +3631,27 @@ rank-normalising the target) are each within ±0.001 once the others are held fi
 (the selector gives non-zero gain to only 878 of 6,517 columns; 450 to 2,500 columns score 0.7208 to 0.7199).
 **The gain survives the check that sank the sweep's winner:** on never-seen genes it is +0.014 for one configuration and +0.017
 for the average of five, the same size as on the tuning folds, and it carries to a different nuclease on a different cohort
-(+0.023 to +0.026, ahead on 10 of 10 folds; larger there, where the cohort is 59,489 guides). Intervals resample genes or folds of one
-partition, so they do not include split-to-split variation; the confirmation is one gene split.
+(+0.023 to +0.026, ahead on 10 of 10 folds; larger there, where the cohort is 59,489 guides).
+
+**~~The confirmation is one gene split.~~ Replicated on a second, 19 November** (`tune_split2.py`, §16.3). Genes were
+re-split 70/30 with a different seed and a **fresh 40-draw search** run on the new development half — a re-score of
+d099x would have been contaminated, since 847 of the new confirmation set's 1,204 genes fed split 1's selection. The
+payoff reproduces: **+0.0121 [+0.0092, +0.0152]** for the new winner against +0.0143 [+0.0111, +0.0174] here, and
++0.0159 against +0.0174 for the ensemble. The new winner is a *different* configuration (depth 6, lr 0.020, 2,000 trees
+against depth 5, lr 0.013, 4,000) in the same region — 450 columns, raw target, slow learning — which is the plateau
+reading above, confirmed independently.
+
+Two things that run brought out, neither of them the point of it:
+
+* **An independent estimate of the selection effect.** d099x reads +0.0143 on the new confirmation genes, most of which
+  fed its selection; the honest fresh-search figure is +0.0121. The difference, **+0.0022**, measures what selecting on
+  the same genes adds — and the paragraph below arrives at "about +0.002" for the same quantity by an unrelated route
+  (whole-cohort CV gain minus held-out-gene gain). Two independent routes, one number.
+* **Levels move far more than differences, and this is the reason to distrust absolute ρ on one partition.** The
+  champion scores **0.7073** on split 1's held-out genes and **0.7329** on split 2's: a **0.026** swing in difficulty
+  between two random 30% gene partitions of the same cohort, roughly **twice the whole tuning gain**. Differences
+  between arms reproduce across partitions to within 0.002; levels do not. Every tuned-model figure in this report and
+  in `EXTENSION_LOG.md` §§11–16 is therefore quoted as a difference, and where a level appears it belongs to its split.
 **Scope.** About one and a half hundredths of ρ, on a problem whose open variance is 0.22: the earlier conclusion that tuning is
 a hundredth-scale knob stands, but it is a hundredth that is now collected rather than declined. The champion elsewhere in this
 report keeps its original settings, since every comparison here was made against them.

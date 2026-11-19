@@ -458,6 +458,14 @@ fc = pd.read_csv(OUT / "tune_fullcv.csv").groupby("arm").rho.mean()
 chk("16.1 champion base+A reproduces tune_fullcv", float(fa.loc["family A increment, champion"].with_a), float(fc.loc["champion"]), 3)
 chk("16.1 d099x base+A reproduces tune_fullcv", float(fa.loc["family A increment, d099x"].with_a), float(fc.loc["tuned d099x"]), 3)
 chk("16.1 ceiling gap at the tuned model", 0.946 - float(fa.loc["family A increment, d099x"].with_a), 0.21, 2)
+# how much a base-only search would have to find for the reading to flip
+_p = fr.pivot_table(index="arm", columns="matrix", values="rho")
+_need = float(_p.loc["d099x", "base+A"]) - float(fa.loc["family A increment, champion"].delta)
+_best, _champ = float(_p["base"].max()), float(_p.loc["champion", "base"])
+chk("16.1 base-only rho needed to flip the reading", _need, 0.5751, 4)
+chk("16.1   beyond the best of the four", _need - _best, 0.0120, 4)
+chk("16.1   largest base-only gain observed", _best - _champ, 0.0042, 4)
+chk("16.1   ratio", (_need - _best) / (_best - _champ), 2.9, 1)
 
 print("16.2 the human additivity claim under twin-grouped folds")
 ht = pd.read_csv(OUT / "human_additivity_twin_summary.csv").set_index(["folds", "arm"])["mean"]
@@ -483,6 +491,31 @@ hw = pd.read_csv(OUT / "human_additivity_twin.csv")
 chk("16.2 twin-grouped folds share no protospacer",
     float(hw[hw.folds == "twin-grouped"].shared_protospacers.abs().max()), 0, 0)
 chk("16.2 folds per arm per scheme", len(hw) / (7 * 2), 15, 0)
+
+print("16.3 a second gene split with its own search")
+s2 = pd.read_csv(OUT / "tune_split2_confirm.csv").set_index("arm")
+win = [a for a in s2.index if a.startswith("split-2 winner")][0]
+chk("16.3 split-2 champion rho", float(s2.loc["champion", "rho"]), 0.7329, 4)
+chk("16.3 split-2 depth6 gain", float(s2.loc["depth6", "d_vs_champion"]), 0.0045, 4)
+chk("16.3 split-2 winner rho", float(s2.loc[win, "rho"]), 0.7450, 4)
+chk("16.3 split-2 winner gain", float(s2.loc[win, "d_vs_champion"]), 0.0121, 4)
+chk("16.3 split-2 winner gain lo", float(s2.loc[win, "d_lo"]), 0.0092, 4)
+chk("16.3 split-2 winner gain hi", float(s2.loc[win, "d_hi"]), 0.0152, 4)
+chk("16.3 split-2 top-3 average rho", float(s2.loc["average of top 3", "rho"]), 0.7488, 4)
+chk("16.3 split-2 top-3 average gain", float(s2.loc["average of top 3", "d_vs_champion"]), 0.0159, 4)
+chk("16.3 split-2 d099x (contaminated) gain", float(s2.loc["d099x (contaminated)", "d_vs_champion"]), 0.0143, 4)
+# the selection effect: contaminated minus honest, against the ~+0.002 section 11 got another way
+_sel = float(s2.loc["d099x (contaminated)", "d_vs_champion"]) - float(s2.loc[win, "d_vs_champion"])
+chk("16.3 selection effect (contaminated - fresh search)", _sel, 0.0022, 4)
+# split-to-split variation in the level, which is the point of running a second split
+_c1 = pd.read_csv(OUT / "tune_confirm.csv").set_index("arm")
+chk("16.3 split-1 champion rho", float(_c1.loc["champion", "rho"]), 0.7073, 4)
+chk("16.3 level swing between splits", float(s2.loc["champion", "rho"]) - float(_c1.loc["champion", "rho"]), 0.026, 3)
+_g1 = float([_c1.loc[a, "d_vs_champion"] for a in _c1.index if a.startswith("tuned best")][0])
+chk("16.3 split-1 tuning gain", _g1, 0.0143, 4)
+chk("16.3 gain agreement between splits", abs(_g1 - float(s2.loc[win, "d_vs_champion"])), 0.0022, 3)
+s2s = pd.read_csv(OUT / "tune_split2_stage1.csv")
+chk("16.3 split-2 draws scored", float(s2s.draw.nunique()), 42, 0)      # 40 fresh + champion + depth6
 
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:

@@ -29,6 +29,29 @@ computed on arrays. Four of six metrics are clear; the two top-end metrics are t
 on its own splits, so the lead is against their released model. Everything quoted for the extension is recomputed from
 its result files by `./run_audit.sh`.
 
+**Then, on 19 November, a review of the whole project against its own files** (`EXTENSION_LOG.md` §16–17), which
+produced the two results worth knowing about before reading anything else:
+
+* **The tuning gain is the flank columns, not the learner.** Family A's increment is **+0.1563** at the champion's
+  settings and **+0.1697** at the tuned ones — it *grows* when the model improves — while the same hyperparameter
+  change is worth **+0.0162** with those columns present and only **+0.0028** without them. So Finding 4's "the model
+  is out of material" is strengthened rather than refuted by the retuning (§16.1).
+* **A contribution-level claim was withdrawn.** "The two kingdoms differ in interaction order" rested on the human
+  matrix, where **49% of rows repeat a guide that appears elsewhere**. Under folds that keep duplicates together the
+  ridge/boosting ratio goes 63.7% → **88.8%** and the corroborating depth effect changes sign (+0.0585 → **−0.0062**).
+  Withdrawn, not rescoped; the row-wise arms reproduce every published figure to four decimals in the same run, as a
+  positive control (§16.2). A note for the teammate whose baseline this was: `NOTE_human_twin_leak.md`.
+
+* **The tuning payoff replicates on a second gene split.** A fresh 40-draw search on a different 70% of the genes gives
+  **+0.0121 [+0.0092, +0.0152]** on genes it never saw, against +0.0143 on the first split, with a *different* winning
+  configuration in the same region of the space. It also showed the thing one split cannot: the champion's absolute ρ
+  moves **0.026** between two random gene partitions — twice the tuning gain — so differences between arms replicate and
+  levels do not (§16.3).
+
+**Part 6 of the report** now compares this work with the field — what each published predictor reads, how it validates,
+and where this project is novel (the kilobase reach) and explicitly is not (boosted trees matching a deep model, which
+BoostMEC did first).
+
 **Working figures (curated frame).** Frozen champion: base + family A, ρ **0.7218** on the curated
 five folds; **0.6985** on crisprHAL 2's own held-out partition against the
 **0.695** Browne et al. report for it. Tuned (fork): **0.7314** on the whole cohort under the standard
