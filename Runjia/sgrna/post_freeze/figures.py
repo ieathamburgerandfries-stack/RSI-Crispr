@@ -402,7 +402,7 @@ def fig7():
         (0.345, "fixed selector\ntop 450 of 6,517\n(fitted in-fold)", "#eef4fd"),
         (0.515, "boosted trees\ndepth 5, 4,000\nsquared error", "#eef4fd"),
         (0.685, "gene-grouped CV\n5 folds × 3 seeds\n+ 100 kb blocks", "#fdf0ea"),
-        (0.855, "audit\n799 checks\nrecomputed", "#ffffff"),
+        (0.855, "audit\nevery number\nrecomputed", "#ffffff"),
     ]
     for x, label, fc in stages:
         ax.add_patch(FancyBboxPatch((x, 0.47), 0.14, 0.33, boxstyle="round,pad=0.008",
@@ -438,7 +438,13 @@ def main():
     for k in want:
         print(f"fig {k}:", flush=True)
         rows.append(FIGS[k]())
-    pd.DataFrame(rows).to_csv(OUT / "figure_manifest.csv", index=False)
+    man = OUT / "figure_manifest.csv"
+    out = pd.DataFrame(rows)
+    if len(want) < len(FIGS) and man.exists():          # regenerating one figure must not drop the others' rows
+        old = pd.read_csv(man)
+        out = pd.concat([old[~old.figure.isin(out.figure)], out], ignore_index=True)
+        out = out.sort_values("figure", key=lambda c: c.str.extract(r"fig(\d+)")[0].astype(int))
+    out.to_csv(man, index=False)
     print(f"\n{len(rows)} figure(s) -> {FIGDIR}")
 
 

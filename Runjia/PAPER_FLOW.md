@@ -87,11 +87,15 @@ field. C becomes one short section, honestly scoped.
 - Our replicate-derived ceiling, from crisprHAL's released per-replicate counts.
 - The correction: attenuation √, then Spearman–Brown; the review's own numbers give 0.91–0.93.
 - Consequence: models at ρ ≈ 0.70 are at 75–77% of attainable, not at the top.
-- **Table 1**: *r* → √*r* → 2-replicate reliability → ceiling, with our row.
+- **Table 1**: *r* → √*r* → *k*-replicate reliability → ceiling, with our row, and the parametric grid
+  (`ceiling_parametric.csv`) so the claim does not rest on recovering anyone's replicate count.
+- **Fig 5** carries the same thing as a picture; use one or the other, not both.
 - Caveat in text: exact for Pearson, approximate for Spearman.
 
 ### Results 6 — "A compact model reaches this with far fewer labels" (Finding 7, scoped)
-- Short and honest. Parity for the frozen model; +0.023–0.029 once tuned; ~3× fewer labels; 13–21× faster.
+- Short and honest. Parity for the frozen model; +0.023–0.029 once tuned; ~3× fewer labels; 13–21× faster,
+  34× on the design path — and say why that ratio is fair (95% of crisprHAL 2's cost is its forward pass,
+  so the same precompute could take at most 4.7% off it).
 - **Say in the text**: measured against crisprHAL 2 *as shipped*, not retuned on its own splits; the
   architecture claim is not novel (cite BoostMEC).
 - Top-end metrics tied, and four objectives aimed at the top end all failed.
@@ -111,34 +115,28 @@ field. C becomes one short section, honestly scoped.
 - Follow crisprHAL 2's order: Datasets → Data processing → Features → Model → Metrics → Splits.
 - **Splits section must carry**: gene-grouped and 100 kb-block CV; the train/test Hamming statistic
   (min 3, no identical guides) — both comparators report this and reviewers will look for it.
-- Reproducibility: `run_audit.sh`, 799 checks.
+- Reproducibility: `run_audit.sh`, 885 checks; `import_check.py` for the code itself.
 
 ---
 
 ## Figures and tables
 
-| # | content | source |
-|---|---|---|
-| Fig 1 | decoding + 412-column equivalence | Finding 1 |
-| Fig 2 | shift-distance autocorrelation; cut vs bind | Findings 2–3 |
-| Fig 3 | distance profile by side; resolution curve; purine null; interaction pairs | Finding 10 |
-| Fig 4 | position × base heatmaps, *E. coli* vs human | Finding 10 |
-| Table 1 | the ceiling correction | Finding 6 |
-| Table 2 | metric panel + data efficiency | Finding 7 |
-| Supp | family ablations, adaptive-overfitting draws, nuclease and shape nulls (Findings 8–9) | Appendices |
+**The figures exist** (`results/post_freeze/figures/`, built by `sgrna/post_freeze/figures.py`,
+vector PDF + 600 dpi PNG each, geometry and completeness checked by the audit). One table, so the
+plan and the built set cannot disagree:
 
-**The figures now exist** (`results/post_freeze/figures/`, built by `sgrna/post_freeze/figures.py`,
-vector PDF + 600 dpi PNG each, geometry checked by the audit):
-
-| file | size (in) | notes |
-|---|---|---|
-| `fig1_representation` | 7.00 × 1.85 | schematic, deliberately not a plot — see below |
-| `fig2_locality_cut_vs_bind` | 7.00 × 2.35 | (a) shift autocorrelation, (b) dumbbell by screen |
-| `fig3_what_the_signal_is` | 7.00 × 4.60 | four panels, the Finding 10 core |
-| `fig4_design_rules_by_kingdom` | 4.73 × 3.50 | the two position × base heatmaps |
-| `fig5_attainable_ceiling` | 3.33 × 2.60 | single column |
-| `fig6_flank_windows_schematic` | 7.00 × 2.15 | what family A actually reads |
-| `fig7_pipeline` | 7.00 × 2.50 | how a ρ in this paper is produced |
+| # | file | size (in) | content | source | where it goes |
+|---|---|---|---|---|---|
+| Fig 1 | `fig1_representation` | 7.00 × 1.85 | decoding + the 412-column equivalence; a schematic, deliberately not a plot — see below | Finding 1 | Results 1 |
+| Fig 2 | `fig2_locality_cut_vs_bind` | 7.00 × 2.35 | (a) Δρ vs shift distance, (b) cut vs bind as a dumbbell by screen | Findings 2–3 | Results 2 |
+| Fig 3 | `fig3_what_the_signal_is` | 7.00 × 4.60 | (a) GC distance profile by side, (b) the purine null on the same scale, (c) the resolution curve, (d) interaction pairs | Finding 10 | Results 3 |
+| Fig 4 | `fig4_design_rules_by_kingdom` | 4.73 × 3.50 | position × base heatmaps, *E. coli* vs human | Finding 10 | Results 4 |
+| Fig 5 | `fig5_attainable_ceiling` | 3.33 × 2.60 | the corrected ceiling, single column | Finding 6 | Results 5 |
+| Fig 6 | `fig6_flank_windows_schematic` | 7.00 × 2.15 | what family A actually reads | Findings 2, 10 | Methods or Results 2 |
+| Fig 7 | `fig7_pipeline` | 7.00 × 2.50 | how a ρ in this paper is produced, with the two leakage controls | Part 4 | Methods |
+| Table 1 | — | — | the ceiling correction, now parametric in *r* and *k* (`ceiling_parametric.csv`) | Finding 6 | Results 5 |
+| Table 2 | — | — | metric panel on both splits + data efficiency + the design-path cost | Finding 7 | Results 6 |
+| Supp | — | — | family ablations, adaptive-overfitting draws, nuclease and shape nulls (Findings 8–9), the local-sequence bound | Appendices | Supplementary |
 
 ACS applied: ≤ 3.33 in single column and ≤ 7 in double, ≤ 9.167 in depth, Helvetica at ≥ 7 pt
 (the floor is 4.5 pt but ACS pages disagree, so everything clears every variant), no rule thinner

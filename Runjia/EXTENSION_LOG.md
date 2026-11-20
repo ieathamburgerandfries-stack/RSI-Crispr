@@ -19,7 +19,8 @@ The report (`PROGRESS_REPORT.md`) carries only what survived.
 | curated E. coli cutting cohort | crisprHAL curated 33,567 guides, already in the project | -- | the cohort every cutting-side number in the report uses |
 
 Deep DNAshape (JinsenLi/deepDNAshape) was cloned to `external_data/deepDNAshape_src` and **not run**:
-the sandbox refused to execute third-party model code. The pentamer table is the data route.
+the sandbox refused to execute third-party model code. The pentamer table is the data route, and 22.3 closes the
+question a different way -- by bounding what *any* local shape predictor could add, which does not require running one.
 
 ### 0b. The search: what was found, what was used, what was not
 
@@ -28,10 +29,10 @@ the sandbox refused to execute third-party model code. The pentamer table is the
 | Kim et al. 2020 (Nat Biotechnol) Supplementary Tables | 40,128 targets x 9 Cas9 variants with the authors' split; 256-PAM profiles | **used** (Finding 9); the only public sheet found that gives >= 9 nucleases on the same targets with processed activities |
 | DNAshapeR pentamer table (Rohs lab) | 512 pentamers x 90 numbers: MC, X-ray and MD shape parameters, step parameters included | **used** (Finding 8); the "several kinds of column in one table" case |
 | PDB 5F9R (Jiang et al. 2016) | Cas9 - sgRNA - target / non-target DNA R-loop | **used** for nuclease structure descriptors |
-| Deep DNAshape (Li, Chiu, Rohs; GitHub JinsenLi/deepDNAshape) | neural predictor, 14 shape features with up to 7 bp of context | cloned, **not run**: the sandbox refused to execute third-party model code. The DNAshapeR table gives the 5-mer-context version of the same features; the wider context is what was not tested |
+| Deep DNAshape (Li, Chiu, Rohs; GitHub JinsenLi/deepDNAshape) | neural predictor, 14 shape features with up to 7 bp of context | cloned, **not run**: the sandbox refused to execute third-party model code, and running a downloaded model is not prudent in any case. The DNAshapeR table gives the 5-mer-context version. **Closed by a bound instead of by running it** (22.3): its output over the inner flank is a deterministic function of the local sequence, and giving the model that sequence explicitly adds nothing |
 | ABC / muABC tetranucleotide MD stiffness (Pasi et al. 2014) | 6x6 stiffness per tetranucleotide | **not obtained**: no direct download page found; this is the data that a true stiffness-tensor encoding would need, and its absence is the main limit of Finding 8 |
 | E. coli Hi-C / 3D chromosome (Lioy et al. 2018, GSE107301) | contact maps, 3D coordinates | already family E (`eng.nuc`), a null; not repeated |
-| E. coli NAP ChIP-seq (GSE24991 H-NS/Fis; SRP008538 IHF/HU) and IPOD-HR protein occupancy (GSE164796) | protein-bound DNA tracks | **not used**: no processed track was fetched; these describe the nucleoid, and Hi-C-derived family E was already null. An open item |
+| E. coli NAP ChIP-seq (GSE24991 H-NS/Fis; SRP008538 IHF/HU) and IPOD-HR protein occupancy (GSE164796) | protein-bound DNA tracks | **not used**: no processed track was fetched. Registered as open with a bound (report Part 4, open-questions register, row 2): Hi-C-derived family E was already null; 21.4 shows the flank effect has no structure below ~250 nt, so a track can only enter through its coarse average; and the coarse average of H-NS/Fis/IHF occupancy is AT-driven, which family A's composition columns already carry. That is an argument, not a measurement, and what would settle it is one processed track mapped to the 33,567 loci plus a single ablation arm |
 | DeepSpCas9variants (GitHub NahyeKim) | trained models only, no training data; published accuracies are in the paywalled article | weights **not run**; published per-variant Spearman (Fig. 4b of the article, supplied by the user on 9 Nov, `lit_review/`) compared with ours in `results/post_freeze/kim2020_published_vs_ours.csv`: mean 0.896 against 0.881, ahead on 5 of 9 variants, evoCas9 0.683 against 0.81 |
 | Schmid-Burgk et al. 2020 (Mol Cell), others | specificity profiling with 59 guides | too small to condition a model on |
 | human flank sequences for the project's human matrix | would let Finding 8 be run on human | not available locally (the matrix carries computed columns, not sequence); needs hg38 coordinates |
@@ -366,9 +367,12 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
-*Current state of the audit (19 Nov):* it has grown with each section and now stands at **682 checks, 0 mismatches**,
-covering sections 7-16. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
-modules need and exits non-zero if any quoted number no longer matches its file.
+*Current state of the audit (20 Nov):* it has grown with each section and now stands at **885 checks, 0 mismatches**,
+covering sections 7-22. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
+modules need and exits non-zero if any quoted number no longer matches its file. Since 22.4 it also checks three things
+about itself: that every module in the package imports and that importing one writes nothing; that four claims which
+later work made false have not come back; and that the check count quoted in this sentence, in the report, in
+`results/README.md` and in `PAPER_FLOW.md` is the count it actually ran. The four had drifted to 682, 784, 799 and 682.
 
 Errors made and caught on the way, because they bear on how much to trust the rest:
 * a splice that duplicated 350 lines of the report (the end marker preceded the start marker after an earlier
@@ -955,8 +959,9 @@ efficiency. Found via PubMed/Europe PMC; full text read. It matters for three re
   reason, and additionally report train/test Hamming distances (minimum 7, median 21). Orro et al. also hold out genes.
   So gene-grouped evaluation is what a reviewer will expect, which is what this report quotes.
 - *It is ahead of us in one respect.* They *model* the gene effect as a random term; we group folds and decompose
-  afterwards. We have not tried a mixed-effect formulation, and on a survival label it might sharpen the within-gene
-  signal Finding 3 now leans on. Logged as an open item, not run.
+  afterwards. Logged here as an open item and **run the same day** -- see 18.1: a back-fitted mixed-effect version of
+  the tuned model moves accuracy from between-gene to within-gene exactly as predicted (-0.0080 and +0.0016) and leaves
+  pooled rho unchanged at -0.0003, because on a *cutting* screen the gene term is signal rather than nuisance.
 
 Their numbers, which are not comparable to ours (CRISPRi depletion, different label) but are informative about the
 assay: guide sequence plus PAM plus 4 nt upstream and 3 nt after the PAM gives rho ~0.21; adding thermodynamics and
@@ -1378,3 +1383,192 @@ being removed from the baseline as well as from the arm, and the *increment* is 
 reparameterisation, and it is the kind of thing Finding 8's limits section anticipated. The human family A is a
 teammate's hg38 build rather than ours, so the two are not strictly comparable, and the human arm is otherwise stopped;
 flagged for whoever picks it up.
+
+## 22. The per-locus precompute, and a sweep for loose ends (20 Nov; the user asked for the precompute, then for the whole project to be checked for open questions and each closed rigorously)
+
+### 22.1 Family A from a locus instead of from a guide (`flank_locus.py`)
+
+Section 13 made the featuriser fast; it did not make it *cheap*. `a_flank_fast` still gives every guide its own two
+1,000-nt flanks and re-indexes four k-mer series over each of them, so at 0.068 ms per guide it was **three quarters of
+the 0.093 ms end-to-end bill**. That is work paid per guide for information that is shared: *E. coli* carries an
+NGG-flanked site about every 8.6 nt, so under the old path each base of the chromosome is scanned roughly 150 times.
+
+**What replaces it.** Scan a stretch of chromosome once, store cumulative tracks along it, and answer every guide inside
+that stretch by differencing them:
+
+| column group | how a window is answered |
+|---|---|
+| `comp.*.gc`, `comp.*.purine` | cumulative base counts; one subtraction (purine is complemented for a minus-strand guide, GC is not) |
+| `win.*.mean`, `win.*.sd` | cumulative sum and sum of squares of the tensor series, centred on the lookup table's own mean so the variance does not cancel; two subtractions |
+| `comp.*.maxrun` | the one column that is **not** a sum of anything -- the longest homopolymer run inside a window. Still O(1): list the maximal runs of the stretch once, and the answer is the better of the two truncated boundary runs and the longest run strictly between them, which a sparse table over run lengths gives in two lookups. A window of *w* nt spans at most *w* runs, so the table needs `ceil(log2(w)) + 1` levels |
+| one-hot, per-position tensors | direct gathers at the 26 labelled offsets around the cut, complemented and reversed for a minus-strand guide |
+
+Nothing reads a stored flanking string: a guide is a plus-strand coordinate and a strand, which is what a design tool
+actually has. `base_fast.matrix_fast` gained a `codes=` argument for the same reason -- a design run holds its 20-mers as
+genome array slices, and turning them into Python strings only to turn them back into the same codes is pure overhead.
+
+**Verified against the path it replaces**, on all 33,567 curated guides: same column names in the same order, same
+missing-value pattern, **largest relative difference 4.6e-12** (floating-point reassociation, nothing else), zero columns
+above 1e-9. Two checks come free with it and both pass: the stored flanking strings in the guide index agree with the
+genome exactly, and the protospacers regathered from the chromosome by coordinate match the screen's own to the base.
+
+**Cost, at the density a design tool meets** (every NGG site in a stretch, one per ~8.6 nt):
+
+| stretch | sites | `a_flank_fast` | `flank_locus` | of which precompute | speed-up |
+|---|---:|---:|---:|---:|---:|
+| 1 kb (about one gene) | 123 | 0.0614 | 0.0113 | 0.0051 | 5.4x |
+| 10 kb | 1,153 | 0.0604 | 0.0044 | 0.0009 | 13.6x |
+| 100 kb | 11,671 | 0.0632 | **0.0039** | 0.0005 | **16.1x** |
+| 1 Mb | 113,201 | 0.1383 | 0.0042 | 0.0005 | 33.1x |
+
+(ms per guide, one thread.) End to end -- featurise, select, impute, predict -- on the same stretches:
+
+| ms per guide, one thread | 1 kb | 100 kb | 1 Mb |
+|---|---:|---:|---:|
+| original champion | 0.0234 | **0.0223** | 0.0300 |
+| **tuned XGBoost (d099x)** | 0.0392 | **0.0361** | 0.0477 |
+| average of 5 XGBoost | 0.0890 | 0.0835 | 0.1003 |
+
+**The tuned model goes from 0.093 to 0.036 ms per guide, and from 13x to 34x faster than crisprHAL 2** (54x for the
+champion). Three honest qualifications, because each is a real limit of the measurement:
+
+1. *The precompute is paid per nucleotide, not per guide*, so the gain depends on guide density. At the **curated
+   cohort's** density -- one guide every 138 nt, because that screen samples genes rather than tiling -- the same code
+   gives only 3-5x. The 16x is a statement about designing guides, not about re-scoring a screen.
+2. *At 1 Mb the bottleneck moves.* 113,201 guides x 6,517 float32 columns is a 2.95 GB feature matrix, and per-guide cost
+   rises again (0.0039 -> 0.0042 for the flank block, 0.036 -> 0.048 end to end). A design run should chunk at tens of
+   kilobases; nothing is gained by going wider.
+3. *No number in the report moves.* The columns are identical to 4.6e-12, so accuracy, every ablation and every finding
+   are untouched. This is an engineering result and is reported as one.
+
+**It also retires an open item.** Section 21.4 ended with "the flank featuriser could be about four columns per side
+rather than 174, which is most of the remaining end-to-end cost". The cost half of that argument is now gone: the flank
+block is 0.0039 of a 0.0361 ms bill, so the four-column version would save about 0.003 ms per guide -- and 21.4's own
+ladder prices it at **0.6462 against 0.7314 rho**, a loss of 0.085. It was only ever attractive because featurisation
+was expensive. It is not, so it should not be done.
+
+### 22.2 The ceiling correction, parametrically, so it no longer needs anyone's replicate counts (`ceiling_table.py`)
+
+Section 19 corrected the field's ceiling and had to end *"Not done: corrected ceilings for the specific datasets the
+review tabulates, which needs their per-replicate counts. Most are not released."* That is the wrong shape of gap to
+leave open, because the correction needs only two numbers a dataset's own paper states -- the replicate agreement *r*
+and how many replicates *k* the released label averages -- and both steps are arithmetic. So it is tabulated over the
+whole plausible range of both (`ceiling_parametric.csv`), which lets anyone apply it to any row of that review, or to a
+dataset published tomorrow, without re-deriving it. The three rows the report already quotes are reproduced exactly
+(0.9113, 0.9328, 0.9460).
+
+The useful consequence is that **the conclusion does not depend on pinning down anyone's *r* and *k* at all**:
+
+| | *r* = 0.50 | 0.60 | 0.70 | 0.71 | 0.77 | 0.80 | 0.90 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| ceiling, *k* = 1 (no averaging at all) | 0.707 | 0.775 | 0.837 | 0.843 | 0.877 | 0.894 | 0.949 |
+| ceiling, *k* = 2 | 0.817 | 0.866 | 0.908 | 0.911 | 0.933 | 0.943 | 0.973 |
+| where rho 0.70 sits, *k* = 2 | 86% | 81% | 77% | 77% | 75% | 74% | 72% |
+
+Read along the review's **own** replicate range, *r* = 0.71-0.77: a model at rho 0.70 is at **80-83%** of attainable
+even under the most conservative possible assumption, that the released label is a *single* measurement with no
+averaging at all, and at **75-77%** if it averages two. It is never at the ceiling, for any *k*. So the correction does
+not depend on recovering anyone's replicate count -- the only way "~0.7 is an upper limit" comes out right is if
+replicate agreement were near 0.5 *and* labels were unaveraged, and the review itself states that agreement is 0.71-0.77.
+
+*What the table is not.* Exact for Pearson correlations with independent additive replicate noise; Spearman's rho is a
+rank correlation, so these are close approximations. And both steps assume replicate noise is independent -- shared batch
+effects inflate *r* and so inflate the ceiling, a real systematic difference between replicates deflates it. That is the
+assumption `cohorts/ceiling2.py` tests directly for our own cohort rather than assuming, and the module says so.
+
+### 22.3 An upper bound on every local shape predictor, including the one we could not run (`local_sequence_bound.py`)
+
+Finding 8 tested tabulated DNA shape -- DNAshapeR's pentamer table, 5 bp of context -- and found nothing on top of family
+A. **Deep DNAshape**, which reads up to **7 bp** of context, was cloned and never run: the sandbox refuses to execute
+third-party model code, and running a downloaded model is not prudent in any case. So the finding has had to carry the
+caveat *"the wider context is what was not tested"*, which leaves it open to the obvious objection that the next shape
+predictor along might work.
+
+That objection can be closed without running anyone's model, because of what a shape predictor **is**. Its output at a
+position is a deterministic function of the handful of nucleotides around it. Over the inner flank, therefore, its entire
+output is a function of the local sequence -- so hand the model that sequence explicitly and see what it buys. Family A
+already one-hot encodes u10..u1, the PAM's N and d1..d15; this adds the 75 positions it does not reach, out to +-50 nt
+(u50..u11 and d16..d50; 300 columns), which makes every 7 bp-context feature from u47 to d47 a function of columns the
+model now holds. Protocol is the project's standard and identical to 16.1's, so the numbers line up with it: gene-grouped
+5 folds x 3 seeds on the 30,203 guides with a gene label, top-900 ranking fitted inside each training fold, and a
+**shuffled control** carrying the same 300 columns permuted across guides, because 300 new candidates could dilute a
+fixed selector budget whatever they contain.
+
+| configuration | arm | rho | difference from base+A | 95% CI | folds up | local columns picked, of the budget |
+|---|---|---:|---:|---|---:|---:|
+| **tuned (d099x)** | base+A | **0.7314** | -- | | | 0 of 450 |
+| | + the inner +-50 nt | 0.7316 | **+0.0002** | [-0.0004, +0.0008] | 8/15 | 8.7 |
+| | + the same, shuffled | 0.7309 | -0.0004 | [-0.0012, +0.0003] | 6/15 | 5.3 |
+| champion | base+A | 0.7151 | -- | | | 0 of 300 |
+| | + the inner +-50 nt | 0.7144 | -0.0008 | [-0.0015, -0.0001] | 6/15 | 2.1 |
+| | + the same, shuffled | 0.7152 | +0.0001 | [-0.0006, +0.0008] | 8/15 | 0.9 |
+
+**Nothing is there.** At the capacity that *can* use flank columns -- Finding 4's point, and the reason the bound is
+measured at the tuned settings rather than only the champion -- the explicit local sequence is worth **+0.0002 rho, with
+an upper confidence bound of +0.0008**. It is indistinguishable from the same columns shuffled; the selector does not
+reject it, it picks 8.7 of them out of 450 and picks 5.3 of the noise ones, which is the clearest form of the result: the
+ranking cannot tell the real local sequence from noise. At the champion's smaller budget the real block is very slightly
+negative and the shuffle is not, which is dilution noise at a 300-column budget rather than anything about the columns.
+
+**What this bounds, stated exactly, because it would be easy to overclaim.** Two measurements sit side by side: the
+pipeline gains at most +0.0008 rho from holding the inner +-50 nt explicitly, and Finding 8 separately measured the
+5 bp-context *reparameterisation* of exactly that sequence and got nothing. What remains logically possible is that a
+7 bp-context predictor is a better-*shaped* feature for the same information -- a learnability claim, not an information
+one. That is the smallest residue this question reduces to without executing the model, and the prize is capped at
++0.0008 rho either way. The report's Finding 8 limits section now says that instead of "not tested".
+
+*Two checks that came free.* `base+A` at the tuned configuration gives **0.7314**, reproducing the report's headline rho
+to four decimals through a separately written cohort builder; and the register's row 3 is narrowed to what it should have
+been all along -- not "shape", but specifically a *measured*, non-sequence-derived quantity such as a stiffness matrix,
+which no local predictor supplies.
+
+### 22.4 Two modules did their work at import, and one of them overwrote its own result file (`import_check.py`)
+
+Found by accident, while writing a script that only meant to check that every module in the package loads. Importing
+`sgrna.post_freeze.equiv_check` refitted two models and **rewrote `featuriser_equivalence.csv`** with timings measured on
+a machine that happened to be running an experiment, which then made the audit fail on two numbers that had nothing wrong
+with them. Importing `sgrna.post_freeze.verify_numbers` ran the whole audit and raised `SystemExit` **in the importing
+process**, which is why the sweep never finished and the cause took a moment to find. `strand/strand_recoverable.py` has
+the same shape and writes a results file at import too.
+
+All three were written as scripts with their body at the top level, which is convenient to run and quietly unsafe to
+import. Their bodies now live in `main()` behind a `__main__` guard; the audit still reports the identical 806 checks and
+0 mismatches afterwards, which is the evidence that the move changed nothing.
+
+**The guard against it coming back** is `import_check.py`, which asserts two things and is run by the audit:
+
+* every module under `sgrna/` imports without raising -- 150 modules, 2 excluded by name with the reason recorded
+  (`vs_crisprhal_wt_hal` reads `sys.argv[1]` at the top level and needs the TensorFlow venv; `controls/numcheck` is a
+  document-coverage script pinned to the shared repo's absolute paths). This is also the only check in the project that
+  the code *loads*, as distinct from the audit's check that the numbers match their files;
+* the sweep leaves `results/` byte-identical -- all 675 files hashed before and after, 0 changed.
+
+The sweep runs in a subprocess, because the entire point is that an unsafe module may exit or write and neither should be
+able to reach the caller.
+
+*Worth saying plainly:* this is a mistake of mine that cost two wrong audit lines and a confusing half hour, and the only
+reason it did not quietly corrupt a reported number is that the two rows it overwrote were timings the audit checks.
+
+### 22.5 The sweep itself: what was found, and where the answer now lives
+
+The user asked for the whole project to be checked for loose ends and open questions, and for each found to be closed
+rigorously. What the sweep turned up, in the order it was found:
+
+| found | kind | what was done |
+|---|---|---|
+| Three places said the mixed-effect formulation was **untried**; 18.1 had run it the day before | stale claim | all three rewritten with the result; the audit now fails if any of the four stale phrases returns |
+| The audit's check count was quoted as **682, 784, 799 and 682** in four documents | drift | all four set to the real count, and the audit now checks its own quoted count in all four, so they cannot separate again |
+| `PAPER_FLOW.md` planned four figures and listed seven built ones in a second table | internal contradiction | one table, with the section each figure belongs to |
+| `fig7_pipeline` had "799 checks" drawn into it | a volatile number inside a vector figure | replaced with "every number recomputed". A figure should not need regenerating when a check is added; `figures.py --fig 7` also no longer truncates the manifest to one row |
+| `PROGRESS_REPORT.md` cited `final_eval.csv`, which does not exist | dangling reference | the file is `final_eval_espcas9.csv`; the numbers it supports (0.7842 against 0.7821) check out |
+| Importing the package ran the audit, exited the process, and overwrote a result file | hazard, and it had already caused two wrong audit lines | 22.4 |
+| "Not done: corrected ceilings for the review's datasets" | an open item that did not need to be | 22.2 |
+| "Deep DNAshape: not run" | an open item that could be bounded instead | 22.3 |
+| "the flank featuriser could be four columns per side" | an open item whose premise had changed | 22.1 |
+| Open questions scattered across two documents in four phrasings | no single list, so staleness was invisible | **the open-questions register**, report Part 4. Nine genuinely open, six closed with where |
+
+**Nine questions remain open and the register says why each one is.** None of them is open through oversight: four need
+data this project does not have (a retuned crisprHAL 2, a processed occupancy track, a measured stiffness matrix, an
+untouched cutting screen), two need an experiment no pooled screen can provide, one was stopped by the user, one needs
+per-guide read counts, and one needs a document I cannot read. That is the honest end state, and it is now in one place
+where the next person can see it without reading 5,700 lines.

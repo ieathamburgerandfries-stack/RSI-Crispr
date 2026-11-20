@@ -60,12 +60,21 @@ def _window_index(codes, k):
     return np.where(bad, -1, idx)
 
 
-def matrix_fast(protospacers, v_mapping=None, tables=None):
+def matrix_fast(protospacers, v_mapping=None, tables=None, codes=None):
+    """`codes` lets a caller that already holds the protospacers as 0-3 base codes skip the string round-trip.
+
+    A design run reads its 20-mers out of a genome array, so turning them into Python strings only to turn them back into the
+    same codes is pure overhead; `flank_locus.protospacer_codes` produces the (n, 20) array this expects.
+    """
     v_mapping = v_mapping or featurise.load_v_mapping(); tables = tables or qct.load_tables()
     plan = _plan(v_mapping, tables)
-    seqs = [str(s).upper() for s in protospacers]
-    codes = LUT[np.frombuffer("".join(seqs).encode("ascii"), np.uint8)].reshape(len(seqs), SPACER_LENGTH)
-    M = np.zeros((len(seqs), plan["n"]), np.float32)
+    if codes is None:
+        seqs = [str(s).upper() for s in protospacers]
+        codes = LUT[np.frombuffer("".join(seqs).encode("ascii"), np.uint8)].reshape(len(seqs), SPACER_LENGTH)
+    else:
+        codes = np.ascontiguousarray(codes, np.uint8)
+        assert codes.ndim == 2 and codes.shape[1] == SPACER_LENGTH, codes.shape
+    M = np.zeros((codes.shape[0], plan["n"]), np.float32)
     idx_cache = {}
 
     def widx(k):

@@ -7,7 +7,13 @@ thread. The guide's flanking sequence is taken from the cohort index; fetching i
 
 crisprHAL 2 side (TensorFlow environment): `processing.onehotencode` on random 378-nt contexts, then the shipped model.
 
+`--locus` scores the real design target instead: every NGG-flanked site in a stretch of chromosome, through the per-locus
+precompute (`flank_locus`), which reads the protospacers and the flank tracks straight out of the genome array. That is the path
+a design tool takes, and the one the cost comparison with crisprHAL 2 should be read against; the default table above is the
+cost of re-scoring a sparse, already-extracted cohort, which is a different question.
+
     python -m sgrna.post_freeze.e2e_bench --members d099x,...
+    python -m sgrna.post_freeze.e2e_bench --locus
     .venv-crisprhal/bin/python sgrna/post_freeze/e2e_bench.py --hal <project root>
 """
 import os
@@ -32,20 +38,15 @@ def _time(fn, reps):
     return float(np.median(ts)) * 1000.0
 
 
-def slicer_side(sets):
+def _make_models(sets):
+    """One callable per model, fitted on random data of the real width and tree count, as in `cost_bench.py`."""
     import xgboost as xgb
-    from sgrna import config
-    from sgrna.build import featurise, qct
-    from . import a_flank_fast as AF
-    from . import base_fast as BF
     from . import mix_ecoli as M
     from . import tune_ecoli as T
     from .common import OUT
     sel = T.selected()
     cfgs = {**json.loads((OUT / "tune_configs.json").read_text()), **M.all_cfgs()}
     fin = pd.read_csv(OUT / "mix_finalists.csv").set_index("name")
-    idx = pd.read_csv(config.INTERIM / "curated_guide_index.csv"); idx["located"] = idx["located"].astype(bool)
-    tables, vm = qct.load_tables(), featurise.load_v_mapping()
     rng = np.random.default_rng(0)
 
     def make(name):
@@ -69,9 +70,20 @@ def slicer_side(sets):
             return m.predict(np.where(np.isnan(B), med, B))
         return fn
 
+    return {lab: [make(n) for n in names] for lab, names in sets.items()}
+
+
+def slicer_side(sets):
+    from sgrna import config
+    from sgrna.build import featurise, qct
+    from . import a_flank_fast as AF
+    from . import base_fast as BF
+    idx = pd.read_csv(config.INTERIM / "curated_guide_index.csv"); idx["located"] = idx["located"].astype(bool)
+    tables, vm = qct.load_tables(), featurise.load_v_mapping()
+    models = _make_models(sets)
+
     rows = []
-    for lab, names in sets.items():
-        fns = [make(n) for n in names]
+    for lab, fns in models.items():
         for b in BATCHES:
             sub = idx.iloc[:b].copy()
 
@@ -84,6 +96,34 @@ def slicer_side(sets):
             ms = _time(run, 200 if b == 1 else (20 if b == 100 else 3))
             rows.append(dict(model=lab, batch=b, ms_per_call=ms, ms_per_guide=ms / b))
             print(f"  {lab:26s} batch {b:6d}: {ms:9.2f} ms  ({ms / b:.4f} ms/guide)", flush=True)
+    return rows
+
+
+def locus_side(sets, widths=(1_000, 100_000, 1_000_000), start=1_000_000):
+    """Score every NGG site in a stretch of chromosome, through the per-locus precompute: the design path, end to end."""
+    from sgrna.build import featurise, qct
+    from . import base_fast as BF
+    from . import flank_locus as FL
+    tables, vm = qct.load_tables(), featurise.load_v_mapping()
+    codes = FL.genome_codes()
+    models = _make_models(sets)
+
+    rows = []
+    for lab, fns in models.items():
+        for width in widths:
+            l0, sg = FL.ngg_sites(codes, start, start + width)
+            plus = sg > 0
+            n = len(l0)
+
+            def run():
+                Mb, _ = BF.matrix_fast(None, vm, tables, codes=FL.protospacer_codes(codes, l0, plus))
+                Ma, _ = FL.build_matrix(l0, sg, codes, tables)
+                X = np.hstack([Mb, Ma.astype(np.float32)])
+                return [f(X) for f in fns]
+            run()
+            ms = _time(run, 10 if n < 5_000 else (3 if n < 50_000 else 1))
+            rows.append(dict(model=lab, width_nt=width, n_guides=n, ms_per_call=ms, ms_per_guide=ms / n))
+            print(f"  {lab:26s} {width:>9,} nt, {n:6,} sites: {ms:9.2f} ms  ({ms / n:.4f} ms/guide)", flush=True)
     return rows
 
 
@@ -115,6 +155,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--members", default="")
     ap.add_argument("--hal", default="")
+    ap.add_argument("--locus", action="store_true", help="the design path: every NGG site in a stretch of chromosome")
     a = ap.parse_args()
     if a.hal:
         out = os.path.join(a.hal, "RSI-Crispr-fork", "Runjia", "results", "post_freeze", "e2e_crisprhal.csv")
@@ -127,4 +168,7 @@ if __name__ == "__main__":
         sets = {"original champion": ["champion"], "tuned XGBoost (d099x)": ["d099x"], "XGBoost average of 5": ["d099x", "d077x", "d021x", "d080x", "d000x"]}
         if mix:
             sets["mixed ensemble"] = mix
-        pd.DataFrame(slicer_side(sets)).to_csv(OUT / "e2e_slicer.csv", index=False)
+        if a.locus:
+            pd.DataFrame(locus_side(sets)).to_csv(OUT / "e2e_slicer_locus.csv", index=False)
+        else:
+            pd.DataFrame(slicer_side(sets)).to_csv(OUT / "e2e_slicer.csv", index=False)

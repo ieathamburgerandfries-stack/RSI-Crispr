@@ -52,7 +52,8 @@ state.** A joint hyperparameter search worth **+0.014 ρ on genes it never saw**
 the parity into a lead of **+0.023 to +0.029 ρ** on both of crisprHAL 2's own splits —
 clear on Spearman, Kendall τ, Pearson and R², tied on the two top-end metrics that a
 guide picker actually uses — and an exact array rewrite of the flank featuriser makes
-end-to-end scoring **13–21× faster** rather than slightly slower. The lead is measured
+end-to-end scoring **13–21× faster** rather than slightly slower, and **34×** once guides are
+designed across a locus rather than scored one at a time. The lead is measured
 against crisprHAL 2 **as shipped**: it was never retuned on its own splits, so the
 honest form is that a tuned boosted tree beats their released model, not their
 architecture (Finding 7, last two subsections). Two representation ideas the freeze had deferred were also run in the fork: the flank's shape and 3D structure add nothing to its composition (Finding 8), and nuclease descriptors carry an unseen enzyme's PAM usage and, at most, a little of its sequence rules (Finding 9).
@@ -115,8 +116,10 @@ experiment and the numbers it produced. It is **not** a second copy of this repo
 what was tried, in what order, what was expected before the run, and which expectations
 were wrong. Where a finding cites a §, that is the working, not a load-bearing part of the
 claim. `./run_audit.sh` recomputes every post-freeze number quoted in this document from
-the files that produced it (784 checks as of 20 November) and exits non-zero on any
-mismatch.
+the files that produced it (885 checks as of 20 November) and exits non-zero on any
+mismatch — including a check that the four documents quoting that count all quote the same
+one, so it cannot drift again, and a check that the package still imports without writing
+anything (`EXTENSION_LOG.md` §22.4).
 
 **What the *E. coli* work is for.** It is scaffolding. The destination is the
 human dataset, and the reason to spend this long on one bacterium is that the
@@ -1463,7 +1466,7 @@ to be chosen to say so: no margin here was pre-declared, so the interval is
 reported in place of a verdict (Appendix B audits the dates).
 And on both of their splits the margin is small and ours:
 
-| their split (`final_eval.csv`, `their_split_slicer.csv`) | their published ρ | SLICER | margin |
+| their split (`final_eval_espcas9.csv`, `their_split_slicer.csv`) | their published ρ | SLICER | margin |
 |---|---:|---:|---:|
 | *E. coli* SpCas9, 26,830 train | 0.695 | **0.6997** | +0.005 |
 | *E. coli* eSpCas9, 47,591 train | 0.782 | **0.7842** | +0.002 |
@@ -1590,6 +1593,26 @@ instead of 1.33 and 0.08. End to end per guide on one thread (featurise, select,
 
 The tuned model is **21× / 15× / 13× faster than crisprHAL 2 end to end**, where before the fix it was 7–22% slower in large batches; the earlier cost verdict (one tuned model: yes; averaging and mixing: no) is unchanged.
 SLICER now leads or ties on every metric in the comparison: accuracy (four of six clearly, two tied), data efficiency, fit time, and end-to-end scoring time.
+
+**And the flank block stops being the bill, once guides are designed rather than re-scored** (fork, 20 November; `EXTENSION_LOG.md` §22.1, `flank_locus.py`).
+The table above still gives every guide its own two 1,000-nt flanks. A design run does not need to: *E. coli* carries an NGG-flanked site about every 8.6 nt, so
+neighbouring guides read almost the same DNA, and under that path each base of the chromosome is scanned roughly 150 times. Scanning a stretch of chromosome once into
+cumulative tracks — base counts, and the sum and sum of squares of each tensor series — turns every window statistic into a subtraction, and the one column that is not a
+sum of anything (the longest homopolymer run) into two lookups in a sparse table over the stretch's maximal runs. The columns are **identical** to the path above on all
+33,567 curated guides (largest relative difference 4.6 × 10⁻¹², same names, same missing-value pattern), so no number anywhere in this report moves.
+
+| ms per guide, one thread, every NGG site in a stretch | 1 kb (≈ one gene) | 100 kb | 1 Mb |
+|---|---:|---:|---:|
+| family A columns, per guide (was 0.063) | 0.0113 | **0.0039** | 0.0042 |
+| original champion, end to end | 0.0234 | **0.0223** | 0.0300 |
+| **tuned XGBoost, end to end** | 0.0392 | **0.0361** | 0.0477 |
+
+**0.093 → 0.036 ms per guide, and 13× → 34× faster than crisprHAL 2** (54× for the champion). The ratio is fair rather than an artefact of optimising only our side: 95% of
+crisprHAL 2's 1.214 ms is its model forward pass (1.157 ms) and only 0.058 ms is its input encoding, so the same precompute trick could take at most 4.7% off it. Three limits, because each is real: the precompute is paid per *nucleotide*,
+so at the curated cohort's sparse density (one guide per 138 nt) the same code gives only 3–5× and the 16× is a statement about designing guides rather than re-scoring a
+screen; at 1 Mb the bottleneck moves to the 2.95 GB feature matrix and per-guide cost rises again, so a design run should chunk at tens of kilobases; and accuracy is
+untouched by construction. It also settles the "four columns per side" note at the end of Finding 10: that idea existed only because featurisation was expensive, and at
+0.0039 of a 0.0361 ms bill it would save ~0.003 ms per guide for a **0.085 ρ** loss (0.6462 against 0.7314).
 
 #### Each published model on the cohort it was built for
 
@@ -1766,7 +1789,8 @@ subsections above, audited in `sgrna/post_freeze/verify_numbers.py`):
 > split and +0.0226 [+0.0139, +0.0314] on their SpCas9 split, with Kendall τ, Pearson
 > and R² clear in the same direction and the two top-end metrics tied; it reaches
 > crisprHAL 2's 26,853-guide accuracy on about 9,100 labelled guides, roughly three
-> times fewer, and scores guides 13–21× faster end to end. The lead holds on 1,204
+> times fewer, and scores guides 13–21× faster end to end — 34× when designing across a
+> locus. The lead holds on 1,204
 > genes untouched by any search (+0.0324 [+0.0248, +0.0403] against their published
 > configuration), and is measured against crisprHAL 2 as released: it was not retuned
 > or seed-ensembled on its own splits. Under equal input DNA the ranking still depends
@@ -1983,10 +2007,21 @@ the gain is too small for trees to split on, was not separated. "Shape adds noth
 boosted pipeline, not about the pentamer table. (ii) The values are tabulated pentamer means, not
 measurements of this genome's DNA, and they are static: no stiffness matrix or fluctuation was used. A neural
 shape predictor with seven base pairs of context (Deep DNAshape) was downloaded but **not run** (the sandbox
-refused to execute third-party model code). (iii) One organism: the human case needs hg38 flanks for the
+refused to execute third-party model code, and running a downloaded model is not prudent in any case). That
+is now **bounded rather than left open** (`EXTENSION_LOG.md` §22.3): a shape predictor's output at a position
+is a deterministic function of the few nucleotides around it, so the model was handed the inner ±50 nt
+one-hot explicitly — the 75 positions family A does not reach, 300 columns — and at the tuned configuration
+it is worth **+0.0002 ρ [−0.0004, +0.0008]**, indistinguishable from the same columns shuffled across guides
+(−0.0004), with the selector picking 8.7 of the real ones and 5.3 of the shuffled ones out of 450. Any
+deterministic function of that window, Deep DNAshape included, is capped by that. What remains logically
+possible is only that a 7 bp-context predictor is a better-*shaped* feature for information worth at most
++0.0008 ρ — a learnability claim, not an information one. (iii) One organism: the human case needs hg38 flanks for the
 human matrix, which this project's human file does not carry. (iv) The 3D path is a reconstruction from
 mean step parameters and says nothing about nucleosome-free DNA looping or about the supercoiled chromosome;
-the nucleoid's own 3D structure (Hi-C) is family E, whose null stands.
+the nucleoid's own 3D structure (Hi-C) is family E, whose null stands. **What is still genuinely open after
+§22.3** is therefore narrower than "shape": it is a *measured*, non-sequence-derived quantity — a stiffness
+matrix, or a shape measurement of this genome's own DNA — which no local sequence predictor supplies. That is
+row 3 of the open-questions register in Part 4.
 
 
 ### 9. Nuclease information: descriptors carry an unseen enzyme's PAM usage and little else — and pooling is worth labels
@@ -2311,7 +2346,7 @@ the labelled guides**. On our own five folds we are ahead by +0.0172
 their model transfers better. **Retuning in the fork turns the parity into a lead
 of +0.023 to +0.029 ρ on both of their splits** (four of six metrics clear, two tied),
 with **about three times fewer labels** to match their accuracy and **13–21× faster**
-end-to-end scoring (Finding 7). **The contribution is still not the architecture** — it
+end-to-end scoring, 34× on the design path (Finding 7). **The contribution is still not the architecture** — it
 is that a boosted tree over a few hundred engineered columns matches, and once tuned
 exceeds, a tuned deep network at a fraction of the cost, because the signal it encodes is
 long-range and the network's input does not reach it (Findings 2 and 7). The lead is
@@ -2863,7 +2898,7 @@ three kinds, and only one kind is worth more compute.
 | The margin on our own folds is formally an upper bound | our search used 97–157 draws per fold against crisprHAL's 5–8, a residual ~20× | ~40 GPU-hours for a matched search. Declined on 16 October with the reason recorded: the cheap version already reverts to their published configuration in four folds of five |
 | "Degraded by wider input" is a claim about their *published configuration* | their epochs, dropout, filters and GRU width were all chosen at 378 nt | 4–6 GPU-hours. `colab/crisprhal_tune_by_width.py` is written, anchored on the 378 nt positive control, with the interpretation pre-registered both ways |
 | **The post-freeze lead is against crisprHAL 2 *as shipped*, and the search asymmetry grew when we retuned** | the fork spent 200 draws plus a five-family mix on our side; their side is still its released weights. The existing defence — their published configuration won four of five inner searches, and an equal small search buys them nothing while buying us +0.0103 — was measured **on our folds with 5–8 draws**, not on their splits at the scale we have now searched | ~40 GPU-hours, the same order as the row above and now the **highest-value** declined item, because it is the one a reviewer will reach for first. Until it is run, the claim is "a tuned boosted tree beats their released model", not "beats their architecture" (Finding 7) |
-| **The gene effect is removed by design rather than modelled** | we group folds by gene and decompose within/between afterwards; Yu et al. (2024) instead fit a **mixed-effect** model with the gene as a random term and report it as their main methodological contribution on a bacterial CRISPRi screen (Part 6) | a mixed-effect random forest or boosted equivalent on the curated cohort. Untried. On a survival label it might sharpen the within-gene signal that Finding 3's revised conclusion now rests on, and it is the one place where the closest published neighbour is ahead of us |
+| **The gene effect is removed by design rather than modelled** | we group folds by gene and decompose within/between afterwards; Yu et al. (2024) instead fit a **mixed-effect** model with the gene as a random term and report it as their main methodological contribution on a bacterial CRISPRi screen (Part 6) | a mixed-effect random forest or boosted equivalent on the curated cohort. **Done** (`EXTENSION_LOG.md` §18.1): back-fitting a boosted fixed part with shrunk per-gene intercepts moves accuracy from between-gene to within-gene as predicted (-0.0080 / +0.0016) and leaves pooled rho at -0.0003. The gain Yu et al. report is a property of *depletion* labels, where the gene term is nuisance; on a cutting screen our between-gene rho is 0.729, so there is little nuisance to absorb |
 
 **Not addressable without new experiments — and these are the ones that matter.**
 
@@ -3115,6 +3150,42 @@ reviewer to ask about.
 cohort on 13 October, before the pivot, rather than on 16 October after it. That is the one procedural
 lesson worth carrying to the next organism — seal first, and seal by gene.
 
+
+### The open-questions register
+
+*Added 20 November 2026, after a sweep of the whole project for loose ends.* Open questions were
+scattered across this report, `EXTENSION_LOG.md` and two tables, in several phrasings — "an open
+item", "not run", "untried", "Not done" — and three of them had been **answered by later work and
+never updated**. This is the single list. Anything open belongs here; anything here says what would
+settle it, and if it cannot be settled in this project, why.
+
+**Still open.** Each is open because of something this project does not have, not because it was
+forgotten.
+
+| # | question | what would settle it | why not here |
+|---|---|---|---|
+| 1 | **Would crisprHAL 2, retuned on its own splits, still trail?** | their search on their splits, roughly 40 GPU-hours | no GPU budget. Every comparison in this report therefore says "as shipped", and the asymmetry is declared wherever the lead is quoted |
+| 2 | **Does measured nucleoid-protein occupancy add anything beyond family A?** (H-NS/Fis ChIP, GSE24991; IHF/HU, SRP008538; IPOD-HR, GSE164796) | one processed track mapped to the 33,567 loci, plus a single ablation arm | no processed track was fetched. **Bounded, not measured:** Hi-C-derived family E is already null; Finding 10 shows the flank effect has no structure below ~250 nt, so a track can only enter through its coarse average; and the coarse average of NAP occupancy is AT-driven, which family A's composition columns already carry. That is an argument, and it is labelled as one |
+| 3 | **Would a *measured* DNA shape, or a stiffness matrix, differ from the tabulated pentamer means?** | ABC/muABC tetranucleotide stiffness (Pasi et al. 2014), for which no download page was found | not obtained. The *local-predictor* half of this is now closed by measurement (`EXTENSION_LOG.md` §22.3); what remains open is specifically a non-sequence-derived, measured quantity |
+| 4 | **Does nuclease-descriptor transfer work *within* a PAM class?** | more than nine nucleases assayed on common targets | the sign flips with model capacity (+0.035 at 1,500 × 8, −0.002 at 500 × 6), and nine enzymes cannot settle it. The report says "PAM usage and little else" for this reason |
+| 5 | **How much of the unexplained ρ is repair rather than cutting?** — P(repair) and P(the break is unsurvivable) | an assay that separates cutting from survival for the same guide | no pooled survival screen can provide it. This is the honest form of the 0.215 ρ gap |
+| 6 | **Does the lead hold on an untouched cutting screen?** | a new, never-used *E. coli* cutting screen | none remains; both the eSpCas9 split and Cui's CRISPRi screen are spent. The single dimension on which this project is furthest behind the field |
+| 7 | **Why do the 1,222 panel genes differ from the rest?** | per-guide read counts, to separate dynamic range from different biology | the counts were not used here. The essentiality explanation is argued against (family G's essentiality column is worth +0.00004) |
+| 8 | **Does the human arm's shape result (+0.018 on top of family A, where *E. coli* gives zero) mean anything?** | the human family A rebuilt on our own hg38 flanks rather than a teammate's | the human arm was stopped on request on 9 November; flagged for whoever picks it up |
+| 9 | **Does `PAPER_FLOW.md` agree with the shared Google Doc?** | the document, which I cannot read | needs the user. If the Doc already has an outline, reconcile rather than replace |
+
+**Closed since 19 November, with where.** Listed because four of these were previously written as
+open and are now not, and a register that only grows is not a register.
+
+| question | how it was closed |
+|---|---|
+| Does modelling the gene as a random effect, as Yu et al. do, sharpen the within-gene signal? | **Run** (`EXTENSION_LOG.md` §18.1). It does what it should — −0.0080 between-gene for +0.0016 within-gene — and pooled ρ moves −0.0003, because on a cutting screen the gene term is signal, not nuisance. Not a gap |
+| Corrected ceilings for the datasets Konstantakos et al. tabulate, which need their replicate counts | **Removed the dependence** (§22.2). The correction is arithmetic in *r* and *k*, so it is tabulated over both; on the review's own range a model at ρ 0.70 is at 80–83% of attainable even with no replicate averaging at all |
+| Deep DNAshape's 7 bp of context, which the sandbox would not run | **Bounded by measurement instead** (§22.3). Its output over the inner flank is a function of the local sequence; giving the model that sequence explicitly adds nothing |
+| Should the flank featuriser shrink to ~4 columns per side, since it is most of the scoring cost? | **No** (§22.1). The per-locus precompute removes the cost argument — the flank block is now 0.0039 of a 0.0361 ms bill — and the four-column version costs 0.085 ρ |
+| Was the reduced-representation ladder confounded by a fixed 300-column selector budget? | **Re-run with no selection at all**, which is what makes the tetramer and quantum-column results statements about representations (Appendix B) |
+| Can the package be imported safely? | **No, and now yes** (§22.4). Three modules did their work at import and one overwrote its own result file; `import_check.py` asserts that all 150 modules import and that importing them changes nothing under `results/` |
+
 ## Part 5 — What the control phase changed
 
 Work resumed on **2 October** after a pause following family A's discovery
@@ -3249,8 +3320,10 @@ independently:
 
 1. **Yu et al. *model* the gene effect; we only group folds and decompose afterwards.** A
    mixed-effect formulation would estimate guide efficiency with the gene effect as a random term
-   rather than removing it by design. We have not tried it, and on a screen whose label is survival
-   it might sharpen the within-gene signal that Finding 3 now leans on.
+   rather than removing it by design. **Tried, and it is not a gap after all** (`EXTENSION_LOG.md`
+   §18.1): the random intercept does what it should -- it trades -0.008 between-gene for +0.0016
+   within-gene -- but pooled rho moves by -0.0003, because on a cutting screen the gene effect is
+   largely signal (between-gene rho 0.729) rather than the nuisance it is in their CRISPRi setting.
 2. **External breadth.** BoostMEC benchmarks on 13 external datasets; a 2025 comparison uses nine.
    This project has one cohort, two relatives, and — for the cutting claims — **no untouched external
    set left**. That is the single dimension on which we are furthest behind the field, and Part 3
@@ -3389,8 +3462,13 @@ us included, is at about three-quarters of the ceiling while the standard frame 
 about our model; it is a claim that the field has roughly **three times more headroom than it believes**, and that the
 reason nobody is looking is a missing square root. It also makes the 0.4 success threshold far too lenient.
 
-*Not done:* corrected ceilings for the specific datasets the review tabulates, which needs their per-replicate counts.
-Most are not released; crisprHAL's are, which is why we could do one.
+*What it does not need.* It was first written up as *"not done: corrected ceilings for the specific datasets the review
+tabulates, which needs their per-replicate counts"* — most are not released; crisprHAL's are, which is why we could work
+one. That gap is closed the right way, by removing the dependence rather than chasing the counts (`EXTENSION_LOG.md`
+§22.2, `ceiling_parametric.csv`): the correction is arithmetic in two numbers a dataset's own paper states, so it is
+tabulated over the whole range of both. Along the review's own *r* = 0.71–0.77, a model at ρ 0.70 sits at **80–83%** of
+attainable even if the released label is a *single* unaveraged measurement, and **75–77%** if it averages two. The
+conclusion therefore holds for every replicate count, not only the one dataset we could check.
 
 ### Decisions they make differently, and the two we should change
 
@@ -5328,6 +5406,19 @@ Recorded so a rerun is a rerun, not an approximation.
 | LightGBM / XGBoost / CatBoost | 4.7.0 / 3.4.1 / 1.2.10 |
 | SHAP | 0.52.0 |
 | PyTorch (the CNN controls) | 2.14.1 |
+| machine, for every timing in this report | Apple M5, 10 cores, 16 GB, macOS 26.6.2 |
+
+**Timings.** Every millisecond figure here — the featuriser costs, the end-to-end
+tables, the ratios against crisprHAL 2 — is wall-clock on **one thread** of the machine
+above, median of repeated calls after a warm-up, with `OMP_NUM_THREADS` and the three
+sibling variables pinned to 1 so no arm quietly uses more cores than another. Two
+consequences worth stating. The **ratios travel and the absolutes do not**: a different
+machine will move 0.036 and 1.214 ms together, and the 34× with much less. And the audit
+compares each quoted timing against the measurement stored in `results/post_freeze/`, so
+re-measuring on other hardware will make those lines fail — correctly: the right response
+is to re-quote them, not to widen the tolerance. (This bit once, on 20 November, when a
+module that ran its body at import silently re-measured two of them under load; see
+`EXTENSION_LOG.md` §22.4.)
 
 **Seeds.** `config.SEEDS = (41, 42, 43, 44, 45)`; `config.N_SPLITS = 5`. Ablations
 use all five seeds × five folds (25 fits per arm). The head-to-head against

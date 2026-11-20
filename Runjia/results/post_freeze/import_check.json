@@ -1,0 +1,12 @@
+{
+ "n_modules": 150,
+ "n_skipped": 2,
+ "fails": [],
+ "files_in_results": 675,
+ "files_changed_by_import": 0,
+ "changed": [],
+ "excluded": {
+  "sgrna.post_freeze.vs_crisprhal_wt_hal": "reads sys.argv[1] at the top level and needs the TensorFlow venv",
+  "sgrna.controls.numcheck": "a document-coverage control script pinned to the shared repo's absolute paths"
+ }
+}

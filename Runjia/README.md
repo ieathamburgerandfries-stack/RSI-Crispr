@@ -48,6 +48,29 @@ produced the two results worth knowing about before reading anything else:
   moves **0.026** between two random gene partitions — twice the tuning gain — so differences between arms replicate and
   levels do not (§16.3).
 
+**Then, on 20 November** (`EXTENSION_LOG.md` §18–22), four things that change what the paper leads with:
+
+* **Finding 10 — what the flank signal is physically made of.** It is GC, not purine; side-symmetric, so not
+  directional; it has one length scale of 250–500 nt and **no structure below ~250 nt**; and its strongest interaction
+  is with the seed region. The position × base design rules **do not transfer between kingdoms** (ρ = −0.052 between
+  *E. coli* and human, 15 of 27 cells invert, position-20 G inverts) — which is why mammalian predictors fail here.
+* **The field's performance ceiling is mis-derived, and that is this project's strongest contribution to the field.**
+  Replicate agreement is a *reliability*, not a ceiling: restoring the square root and the Spearman–Brown step moves the
+  stated ~0.7 upper limit to **0.91–0.93**, so everyone — us included — sits at about three-quarters of attainable with
+  roughly three times more headroom than the standard frame says. Now tabulated parametrically, so it does not depend on
+  recovering anyone's replicate counts (§22.2).
+* **Seven publication figures** to ACS specification (`results/post_freeze/figures/`, vector PDF + 600 dpi PNG), and a
+  paper-flow skeleton in `PAPER_FLOW.md` — a flow, not a draft.
+* **The design path is 34× faster than crisprHAL 2, not 13×** (§22.1). Scanning a locus once into cumulative tracks
+  makes the flank block a table lookup: 0.093 → **0.036 ms per guide**, with columns identical to 4.6 × 10⁻¹², so no
+  result moves.
+
+**Where the open questions are.** All of them are in one place — the **open-questions register**, `PROGRESS_REPORT.md`
+Part 4. Nine remain open and each says what would settle it; six were closed on 20 November and the register says where.
+`./run_audit.sh` recomputes every post-freeze number (885 checks), checks that four documents agree on that count, that
+four claims later work made false have not returned, and that every module in the package imports without writing
+anything.
+
 **Part 6 of the report** now compares this work with the field — what each published predictor reads, how it validates,
 and where this project is novel (the kilobase reach) and explicitly is not (boosted trees matching a deep model, which
 BoostMEC did first).
