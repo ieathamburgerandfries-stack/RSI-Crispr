@@ -1,0 +1,5 @@
+scheme,n_guides,guide_len,min,p1,median,frac_identical,frac_le_2
+curated / gene-grouped,33567,20,3,4.0,6.0,0.0,0.0
+curated / random rows,33567,20,3,4.0,6.0,0.0,0.0
+human / twin-grouped,17421,20,3,4.0,6.0,0.0,0.0
+human / random rows,17421,20,0,0.0,6.0,0.3910223293725963,0.3911371333448137

@@ -518,6 +518,55 @@ chk("16.3 gain agreement between splits", abs(_g1 - float(s2.loc[win, "d_vs_cham
 s2s = pd.read_csv(OUT / "tune_split2_stage1.csv")
 chk("16.3 split-2 draws scored", float(s2s.draw.nunique()), 42, 0)      # 40 fresh + champion + depth6
 
+print("18 imported design choices")
+mf = pd.read_csv(OUT / "lit_merf.csv").groupby("arm")[["pooled", "between", "within"]].mean()
+R, M = "tuned regression (d099x)", "mixed effects, gene intercept"
+chk("18.1 regression pooled", float(mf.loc[R, "pooled"]), 0.7215, 4)
+chk("18.1 regression between-gene", float(mf.loc[R, "between"]), 0.7293, 4)
+chk("18.1 regression within-gene", float(mf.loc[R, "within"]), 0.7124, 4)
+chk("18.1 mixed-effect pooled", float(mf.loc[M, "pooled"]), 0.7213, 4)
+chk("18.1 mixed-effect between-gene", float(mf.loc[M, "between"]), 0.7213, 4)
+chk("18.1 mixed-effect within-gene", float(mf.loc[M, "within"]), 0.7140, 4)
+chk("18.1 within-gene gain", float(mf.loc[M, "within"] - mf.loc[R, "within"]), 0.0016, 4)
+chk("18.1 between-gene loss", float(mf.loc[M, "between"] - mf.loc[R, "between"]), -0.0080, 4)
+bn = pd.read_csv(OUT / "lit_binary.csv").groupby("arm")[["rho", "top_decile_precision", "pick10_percentile"]].mean()
+chk("18.2 regression rho", float(bn.loc["tuned regression", "rho"]), 0.7215, 4)
+chk("18.2 regression top-decile precision", float(bn.loc["tuned regression", "top_decile_precision"]), 0.2912, 4)
+chk("18.2 regression pick percentile", float(bn.loc["tuned regression", "pick10_percentile"]), 85.10, 2)
+for fr, v in ((10, 0.6135), (20, 0.6679), (30, 0.6913)):
+    chk(f"18.2 classifier top {fr}% rho", float(bn.loc[f"classifier, top {fr}%", "rho"]), v, 4)
+chk("18.2 best classifier rho is below regression",
+    1.0 if bn.loc[[a for a in bn.index if a.startswith("classifier")], "rho"].max() < bn.loc["tuned regression", "rho"] else 0.0, 1, 0)
+chk("18.2 best blend top-decile precision", float(bn.loc["regression + classifier top 30%", "top_decile_precision"]), 0.2938, 4)
+
+print("19 the field's ceiling, recomputed")
+import math
+sb = lambda r, k=2: k * r / (1 + (k - 1) * r)
+chk("19 ceiling vs 1 replicate at r=0.71", math.sqrt(0.71), 0.843, 3)
+chk("19 ceiling vs 1 replicate at r=0.77", math.sqrt(0.77), 0.877, 3)
+chk("19 2-replicate reliability at r=0.71", sb(0.71), 0.830, 3)
+chk("19 2-replicate reliability at r=0.77", sb(0.77), 0.870, 3)
+chk("19 ceiling vs 2-rep mean at r=0.71", math.sqrt(sb(0.71)), 0.911, 3)
+chk("19 ceiling vs 2-rep mean at r=0.77", math.sqrt(sb(0.77)), 0.933, 3)
+chk("19 our replicate agreement -> our ceiling", math.sqrt(sb(0.8097)), 0.946, 3)
+chk("19 understatement at r=0.71", math.sqrt(sb(0.71)) - 0.7, 0.211, 3)
+chk("19 understatement at r=0.77", math.sqrt(sb(0.77)) - 0.7, 0.233, 3)
+chk("19 tuned model as % of our ceiling", 0.7314 / 0.946 * 100, 77.3, 1)
+
+print("20 our own two questions")
+rc = pd.read_csv(OUT / "novel_relative_composition.csv").set_index("columns")
+chk("20.1 absolute, C. rodentium", float(rc.loc["absolute (as shipped)", "crod_rho"]), 0.7142, 4)
+chk("20.1 relative, C. rodentium", float(rc.loc["species-relative percentile", "crod_rho"]), 0.7105, 4)
+chk("20.1 transfer difference", float(rc.loc["species-relative percentile", "crod_rho"] - rc.loc["absolute (as shipped)", "crod_rho"]), -0.0037, 4)
+chk("20.1 home difference (monotone no-op)", float(rc.loc["species-relative percentile", "home_cv_rho"] - rc.loc["absolute (as shipped)", "home_cv_rho"]), -0.0003, 4)
+chk("20.1 C. rodentium guides", float(rc.loc["absolute (as shipped)", "n_crod"]), 25210, 0)
+fd = pd.read_csv(OUT / "fold_distance.csv").set_index("scheme")
+for s, mn, fi in (("curated / gene-grouped", 3, 0.0), ("curated / random rows", 3, 0.0),
+                  ("human / twin-grouped", 3, 0.0), ("human / random rows", 0, 0.391)):
+    chk(f"20.2 {s}: min Hamming", float(fd.loc[s, "min"]), mn, 0)
+    chk(f"20.2 {s}: fraction identical", float(fd.loc[s, "frac_identical"]), fi, 3)
+chk("20.2 twin count predicts the leak fraction (0.49 x 0.8)", 0.49 * 0.8, float(fd.loc["human / random rows", "frac_identical"]), 2)
+
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:
     print("  MISMATCH", b)

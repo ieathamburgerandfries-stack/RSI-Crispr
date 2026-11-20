@@ -3120,6 +3120,112 @@ not as a claim that one architecture is better than another. The sentence this r
 defended, that the advantage is about *reach* rather than architecture, is the one that survives this
 comparison too.
 
+### How good are these models, and is "good" even comparable?
+
+**The bacterial numbers, from crisprHAL 2's own Table 3** (Browne et al. 2026, PeerJ 14:e20706), which is the one place
+in this literature where several models are scored on the same curated data under the same protocol:
+
+| model | training data | 5-fold CV ρ | held-out test ρ |
+|---|---|---:|---:|
+| crisprHAL Tev | *C. rodentium* TevSpCas9 | 0.754 | 0.746 (n = 5,049) |
+| crisprHAL eSp | *E. coli* eSpCas9 | 0.783 | **0.782** (n = 11,898) |
+| crisprHAL WT | *E. coli* SpCas9 | 0.697 | **0.695** (n = 6,700) |
+| Guo eSp | *E. coli* eSpCas9 | 0.682 | 0.680 |
+| Guo WT | *E. coli* SpCas9 | 0.542 | 0.540 |
+| DeepSgRNA eSp | *E. coli* eSpCas9 | 0.711 | — |
+| DeepSgRNA WT | *E. coli* SpCas9 | 0.582 | — |
+
+The two we are measured against are the bold rows, and this settles a question worth settling: their paper's highest
+number, **0.754, belongs to crisprHAL Tev on *C. rodentium*** — a different organism and a different nuclease — so our
+comparison against 0.695 and 0.782 is against the right figures, not against their weakest. (One small unexplained
+discrepancy: their Table 3 gives the SpCas9 split as 26,795 / 6,700 where we load 26,830 / 6,737. Our run of their
+shipped weights reproduces ρ 0.6945 against their published 0.695, which is the check that matters, but the 35-guide
+difference is not accounted for.)
+
+**The human numbers do not mean the same thing.** CRISPRon reports ρ 0.80 on its internal test set and 0.46–0.68
+externally; independent benchmarks put it first with Rule Set 3 and DeepSpCas9 behind at *r* ≈ 0.40–0.45; DeepHF reports
+0.867 same-cell-line and 0.433 on a new cell line. A 0.4 and a 0.8 in that list can describe equally good models on
+differently noisy data. Which is exactly the problem the next subsection is about.
+
+### The field's ceiling is mis-derived, and fixing it is our strongest contribution to the field as a whole
+
+**What the field uses.** Konstantakos et al. (2022, *NAR*) set the benchmarking frame this literature works in:
+*"for datasets where replicates are available, the Spearman correlation is in the range of 0.71–0.77 … suggests that a
+correlation of ∼0.7 constitutes an upper limit of any prediction."* They then take ρ 0.4 as the threshold for calling a
+tool successful.
+
+**Why it is wrong, in two steps that push the same way.** A replicate-to-replicate correlation is a *reliability*, not a
+ceiling. The largest correlation any predictor can have with a noisy observed target is the **square root** of that
+target's reliability; and when the target is an *average* over replicates — as essentially every released activity score
+is — Spearman–Brown raises its reliability to *kr*/(1+(*k*−1)*r*). Using *r* itself as the ceiling drops the square root
+and ignores the averaging.
+
+| replicate agreement *r* | ceiling vs one replicate, √*r* | reliability of a 2-replicate mean | **ceiling vs that mean** |
+|---:|---:|---:|---:|
+| 0.71 | 0.843 | 0.830 | **0.911** |
+| 0.77 | 0.877 | 0.870 | **0.933** |
+| 0.8097 *(ours, measured)* | 0.900 | 0.895 | **0.946** |
+
+On the review's own numbers the attainable ceiling is **0.91–0.93, not ∼0.7** — understated by **0.21–0.23**, of which
+**0.14–0.18 is the missing square root alone**. Finding 6 is the worked example of the corrected route, and it is the
+only place in this literature we have found where a ceiling is derived this way from released per-replicate counts.
+
+**What it changes.** Under the field's ceiling, a bacterial model at 0.695–0.782 looks saturated and the residual looks
+like irreducible noise. Under the corrected one, models at ρ ≈ 0.70 sit at **75–77%** of attainable, and our tuned model
+at 0.7314 sits at **77.3%** of 0.946 with **0.215 ρ** of real, repeatable signal unexplained. Everyone in this field,
+us included, is at about three-quarters of the ceiling while the standard frame says they are at the top of it. So the
+"0.21 ρ unexplained" that Part 3 reports as this project's most useful number for a biologist is not a modest caveat
+about our model; it is a claim that the field has roughly **three times more headroom than it believes**, and that the
+reason nobody is looking is a missing square root. It also makes the 0.4 success threshold far too lenient.
+
+*Not done:* corrected ceilings for the specific datasets the review tabulates, which needs their per-replicate counts.
+Most are not released; crisprHAL's are, which is why we could do one.
+
+### Decisions they make differently, and the two we should change
+
+| decision | them | us | verdict |
+|---|---|---|---|
+| **train/test sequence-similarity check** | Browne et al. check Hamming distance between every training and held-out guide (their Fig. S1) and confirm no identical inputs across the split; Yu et al. report minimum and median Hamming distances (7 and 21) | we check exact duplicates and group by gene and by 100 kb block, but have **never reported a sequence-distance statistic** | **adopt.** Two of three comparators do it, it is nearly free, and near-duplicate leakage is precisely what invalidated the human additivity claim (§16.2). Gene and block grouping should already cover it in *E. coli*; the point is to show that rather than assert it |
+| **loss function** | crisprHAL 2 trains with mean squared error and reports Spearman | same | **keep.** Our mismatch is the field norm, and §15 plus §18.2 now show four alternatives are worse |
+| **read-count filtering** | the control-count cutoff is tuned by 5-fold CV for model performance, removing 16.2% of guides, and is applied before the split | we inherit their filtered cohort | **keep, but the criticism in Part 3 is now quotable from their own methods** rather than inferred: it is a hyperparameter, not an independent cleanliness rule, and it cleans the test set too |
+| **hyperparameters** | Orro et al. use library defaults for all six classifiers and find LightGBM/XGBoost/CatBoost within 1 point of each other | we ran a 200-draw search for +0.016 | **keep, with humility.** Their result independently supports our "hyperparameters are a hundredth-scale knob", and §16.1 shows our +0.016 is really the flank columns being usable, not capacity |
+| **what is shipped** | all of them ship an installable tool with weights | we ship findings and say a design tool is not a deliverable | **worth revisiting.** Every comparator is usable by a bench scientist in one command. Our end-to-end speed and data efficiency are only an advantage to someone who can run the thing |
+
+### Has this project been nullified by the literature? No — but the claim has to be the right one
+
+Honest accounting, separating what the field already had from what it did not.
+
+**Not ours, and we should stop implying otherwise.** That a gradient-boosted model over engineered sequence features can
+match a tuned deep network — BoostMEC did that in 2022 across 13 external datasets. That gene-grouped evaluation is the
+right protocol — Yu et al. and Orro et al. both do it. That flanking sequence matters at all — Browne et al. built their
+whole model on ±190 nt and searched the length themselves.
+
+**Ours, and not found anywhere in this pass.**
+
+1. **Finding 1.** No paper makes the arithmetic argument that a published feature matrix is a lossless re-encoding of the
+   guide, and therefore that no deterministic function of the guide can add information to it. It is why several imported
+   biophysical families could not have helped, settled without running them.
+2. **Finding 2's characterisation, not its existence.** Browne et al. own the existence of a flank effect. What is new is
+   its *shape*: compositional rather than motif-based, with a measured autocorrelation length (8% survives a 1 kb shift,
+   none survives 10 kb), no dependence on where window edges fall (+0.1634 vs +0.1638 at four widths sharing no value),
+   and a reach of 250–1,000 nt that no published predictor's input comes near — the longest in the field is 406 nt. The
+   field's prior runs the other way: a plant study reports flanking sequence having no measurable effect.
+3. **Finding 3.** The effect is two to three times larger when Cas9 cuts than when it only binds, from dCas9 CRISPRi
+   screens on the same genome with that assay's strand rule controlled. Nobody else separates cutting from binding this
+   way.
+4. **The corrected ceiling** (above), and with it the claim that the field has three times the headroom it thinks.
+5. **The supercoiling deconstruction.** A ChIP track worth +0.139 turned out to be read density, and read density turned
+   out to be gene dosage, recoverable from distance to *oriC* with no experimental data at all. That is a transferable
+   warning about every coverage-derived feature in this field, including the chromatin tracks CRISPRon uses.
+6. **The duplicate-guide result.** 49% of a widely-used published human matrix's rows repeat a guide; under folds that
+   keep them together the best-looking configuration is 0.08 *worse* than the default one (§16.2).
+7. **The adaptive-overfitting measurement.** +0.0087 ρ from the automatable part, over fifteen sealed-gene draws. We have
+   not found another guide-prediction paper that measures its own selection bias.
+
+So the modelling is incremental and the measurement is not. **The paper this project can write is about what determines
+cutting and about how much of it is knowable — not about having built a better predictor**, and five of the seven items
+above are methodological results that outlive any particular model.
+
 ---
 
 # Appendices
@@ -5141,6 +5247,15 @@ model using machine transfer learning with small high-quality datasets. *Nature
 Communications*, *14*(1), 5514. https://doi.org/10.1038/s41467-023-41143-7
 — the *C. rodentium* screen used for cross-organism transfer.
 
+Haeussler, M., Schönig, K., Eckert, H., Eschstruth, A., Mianné, J., Renaud, J.-B.,
+Schneider-Maunoury, S., Shkumatava, A., Teboul, L., Kent, J., Joly, J.-S., &
+Concordet, J.-P. (2016). Evaluation of off-target and on-target scoring algorithms
+and integration into the guide RNA selection tool CRISPOR. *Genome Biology*,
+*17*(1), 148. https://doi.org/10.1186/s13059-016-1012-2
+— the source of the replicate correlations (0.71–0.77) that the field's ∼0.7 ceiling
+is built on, and an early demonstration that duplicate on-target entries make random
+cross-validation train and test on the same guide (Part 6).
+
 Jiang, F., Taylor, D. W., Chen, J. S., Kornfeld, J. E., Zhou, K., Thompson, A. J.,
 Nogales, E., & Doudna, J. A. (2016). Structures of a CRISPR-Cas9 R-loop complex
 primed for DNA cleavage. *Science*, *351*(6275), 867–871.
@@ -5153,6 +5268,14 @@ activity of Cas9 variants. *Nature Biotechnology*, *38*, 1328–1336.
 https://doi.org/10.1038/s41587-020-0537-9
 — Supplementary Tables 6 and 7: the nine-nuclease activity sheet and the PAM
 profiles behind Finding 9.
+
+Konstantakos, V., Nentidis, A., Krithara, A., & Paliouras, G. (2022). CRISPR–Cas9
+gRNA efficiency prediction: an overview of predictive tools and the role of deep
+learning. *Nucleic Acids Research*, *50*(7), 3616–3637.
+https://doi.org/10.1093/nar/gkac192
+— the review that sets this field's benchmarking frame, and the source of the
+"∼0.7 constitutes an upper limit of any prediction" claim that Part 6 shows to be
+understated by 0.21–0.23 ρ. Quoted from the full text.
 
 Li, J., Sagendorf, J. M., Chiu, T.-P., Pasi, M., Perez, A., & Rohs, R. (2017).
 Expanding the repertoire of DNA shape features for genome-scale studies of

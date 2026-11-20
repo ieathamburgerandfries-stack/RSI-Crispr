@@ -996,3 +996,166 @@ defended, that the advantage is about *reach*, is the one that survives the comp
 NNGRRN PAM and PAM adenine methylation affect activity in bacteria - independent evidence that flanking sequence
 matters in bacteria, at a range (1-2 nt) three orders of magnitude shorter than ours, and through a mechanism
 (methylation) we have no feature for. A possible addition to family A if the project ever returns to feature building.
+
+## 18. Importing two published design choices, and both are nulls with a mechanism (20 Nov; `lit_followups.py`)
+
+*Why.* Section 17 found two things other people do that we never had. Importing them is the cheap way to find out
+whether our choices were right or merely ours. Both run on `tune_ecoli`'s DEV/CONFIRM gene split with the tuned
+configuration, so the regression baseline reproduces the 0.7215 already on record.
+
+### 18.1 Yu et al.'s mixed-effect model: the gain is assay-specific, and it is not ours to have
+
+Yu et al. (2024) fit bacterial CRISPRi guide efficiency with a mixed-effect random forest -- guide features fixed, the
+targeted gene random -- and report the gene term as their main methodological contribution. We only ever *grouped
+folds* by gene, which removes gene leakage but not gene-level noise from the training signal. Hypothesis recorded before
+running: a random intercept absorbs the between-gene level differences that cannot transfer to an unseen gene, so the
+fixed part should become a cleaner estimate of *within-gene* efficiency even if pooled rho does not move.
+
+Implementation is back-fitting: alternate a boosted fixed part with shrunk per-gene intercepts,
+`b_g = n_g/(n_g+lam) * mean(residual in g)` and `lam = sigma2_eps/sigma2_b` re-estimated each round, six rounds.
+Held-out genes get `b = 0` by construction, which is the point -- the fixed part has to carry everything that transfers.
+
+| CONFIRM genes, 3 seeds | pooled rho | between-gene | within-gene |
+|---|---:|---:|---:|
+| tuned regression (d099x) | 0.7215 | 0.7293 | 0.7124 |
+| mixed effects, gene intercept | 0.7213 | 0.7213 | **0.7140** |
+| difference | -0.0003 | **-0.0080** | **+0.0016** |
+
+**The hypothesis was right about the direction and small about the size, and the reason is the assay.** The random
+intercept does what it is supposed to: it moves accuracy from between-gene to within-gene, trading -0.008 for +0.0016.
+But on a *cutting* screen the gene-level component is not nuisance -- our between-gene rho is **0.729**, i.e. gene-level
+prediction is good, and much of it is carried by family A, because neighbouring loci share flank composition. In Yu et
+al.'s CRISPRi setting the gene term *is* mostly nuisance: guide-only features reach rho ~0.21 and it takes gene-level
+covariates (expression, operon structure) to reach ~0.66, so there the gene effect dominates and removing it is worth a
+lot. **The mixed-effect gain is therefore a property of depletion-screen labels, not of bacterial guide prediction**, and
+our fold-grouping had already collected the part that transfers. That is a cleaner answer than "we should have done it
+too", and it is only available because the two assays sit side by side in this project.
+
+### 18.2 Orro et al.'s binarised classifier: discretising the label loses more than the top end gains
+
+Orro et al. (2026) binarise their fitness label and fit classifiers. Section 15 had tried weighting high-activity
+guides, pairwise ranking and NDCG -- none helped -- but never the plain thing: train on "is this guide in the top X%".
+Top-decile precision and the pick percentile of the ten best-scoring guides are the two metrics where we only tie
+crisprHAL 2, and the two a designer actually uses, so this was aimed at the known weakness. A regression+classifier
+blend is included because a classifier can be better at the top while worse overall.
+
+| CONFIRM genes, 3 seeds | rho | top-decile precision | pick percentile of top 10 |
+|---|---:|---:|---:|
+| tuned regression | **0.7215** | **0.2912** | 85.10 |
+| classifier, top 10% | 0.6135 | 0.2509 | 79.97 |
+| classifier, top 20% | 0.6679 | 0.2744 | 83.47 |
+| classifier, top 30% | 0.6913 | 0.2867 | **86.18** |
+| regression + classifier, top 10% | 0.7019 | 0.2651 | 81.73 |
+| regression + classifier, top 20% | 0.7099 | 0.2785 | 84.43 |
+| regression + classifier, top 30% | 0.7156 | **0.2938** | 83.32 |
+
+**Null.** Every classifier arm is worse on rho, by 0.03 to 0.11, and the best top-end numbers (+0.0026 precision for the
+top-30% blend, +1.1 percentile points for the top-30% classifier) are inside the seed-to-seed spread. The coarser the
+threshold the less is lost, which is the signature of information thrown away by discretising rather than of a better
+objective. **So four separate ways of targeting the top end -- activity weighting, pairwise ranking, NDCG and now
+binarised classification -- all fail**, which makes a stronger statement than any one of them: the top end is hard here
+because the label is noisiest where activity is highest, not because squared error is the wrong objective. Worth noting
+that Orro et al.'s own task *is* classification (their label is a binary fitness call), so this is not a criticism of
+their design -- it is a finding about ours.
+
+## 19. The field's performance ceiling is mis-derived, and correcting it triples the apparent headroom (20 Nov)
+
+This is the most consequential thing the literature pass produced, and it is a contribution rather than an import.
+
+**What the field uses.** Konstantakos et al. (2022, *Nucleic Acids Research* 50:3616-3637), a widely-cited review that
+sets up the benchmarking frame for this field, writes: *"The upper bound is based on a previous study (8), which showed
+that the measured efficiencies are not perfectly correlated even for data from the same assay and cell line.
+Specifically, they showed that for datasets where replicates are available, the Spearman correlation is in the range of
+0.71-0.77. This illustrates the quality of the data and suggests that a correlation of ~0.7 constitutes an upper limit
+of any prediction."* Reference (8) is Haeussler et al. (2016). They then set 0.4 as the threshold for calling a tool
+successful. Verified in the full text, not from a snippet.
+
+**Why that is wrong, by two steps, both in the same direction.** A replicate-to-replicate correlation *r* is a
+reliability, not a ceiling. The largest correlation any predictor can have with a noisy observed target is the square
+root of that target's reliability -- the standard attenuation relation -- and when the target is an *average* of
+replicates, as essentially every released activity score is, its reliability is raised by Spearman-Brown to
+`k*r/(1+(k-1)*r)`. Taking *r* itself as the ceiling drops the square root and ignores the averaging.
+
+| replicate agreement *r* | ceiling vs a single replicate, sqrt(r) | reliability of a 2-replicate mean | **ceiling vs that mean** |
+|---:|---:|---:|---:|
+| 0.71 | 0.843 | 0.830 | **0.911** |
+| 0.77 | 0.877 | 0.870 | **0.933** |
+| 0.8097 *(ours, measured)* | 0.900 | 0.895 | **0.946** |
+
+On the review's own numbers the attainable ceiling is **0.91-0.93, not ~0.7** -- an understatement of **0.21-0.23**, and
+**+0.14-0.18 from the missing square root alone**, before any averaging correction. Our Finding 6 is the worked example
+of the corrected route: replicate agreement 0.8097 on crisprHAL's own per-replicate counts, Spearman-Brown 0.8948,
+square root **0.946**.
+
+**What it changes, and this is the point.** Under the field's ceiling a bacterial model at rho 0.695-0.782 or a human one
+at 0.6-0.8 looks saturated, and the rational conclusion is that the remaining error is irreducible noise. Under the
+corrected ceiling:
+
+* models at rho ~0.70 sit at **75-77%** of what is attainable;
+* our own tuned model at 0.7314 sits at **77.3%** of 0.946, with **0.215 rho** of real, repeatable signal unexplained;
+* so *everyone*, us included, is at about three-quarters of the ceiling while the frame says they are at the top of it.
+
+That reframes this project's "0.21 rho unexplained" from a modest caveat into a claim about the field: there is roughly
+three times more headroom than the standard benchmarking frame implies, and the reason nobody is looking for it is a
+missing square root. It also means the 0.4 success threshold is far too lenient. **This is a self-contained result that
+needs no new data and would stand as a short methodological comment on its own.**
+
+*What would make it stronger, and is not done:* recomputing corrected ceilings for the specific benchmark datasets the
+review tabulates, which needs their per-replicate counts rather than the published aggregate scores. We did it for one
+label (crisprHAL's curated score) because their replicate counts are released; most are not.
+
+## 20. Two of our own questions, not imported ones (20 Nov; `novel_followups.py`, `fold_distance.py`)
+
+### 20.1 Species-relative composition: the report's "cheapest portability lever" is a null, and the null is mechanistic
+
+Part 3's limits table named this as *"the single cheapest thing that could make the representation species-portable"*:
+family A's strongest column is a **raw** GC fraction, K-12 is 50.79% GC and *C. rodentium* 54.72% (both reproduced here
+from the fastas), so a flank at 52% GC is above background in one genome and below it in the other -- the feature
+carries the opposite sign of local enrichment across the two. Expressing each window as a percentile of its **own**
+genome's distribution of that statistic should fix the sign.
+
+A design note that decided the experiment: **within one genome this cannot change anything**, because a percentile map
+of a single column is monotone and boosted trees are invariant to monotone transforms of individual features. So the
+home cohort is only a check that it is exactly a no-op, and the real test is transfer.
+
+| 16 raw composition columns, tuned configuration | *C. rodentium* rho (25,210 guides) | home gene-grouped CV |
+|---|---:|---:|
+| absolute, as shipped | **0.7142** | 0.7342 |
+| species-relative percentile | 0.7105 | 0.7340 |
+| difference | **-0.0037** | -0.0003 |
+
+**Null, and slightly the wrong way.** The home difference is -0.0003, which confirms the monotone-invariance prediction
+and so validates the setup. On transfer the absolute fraction is **better** by 0.0037.
+
+*The reading, which is worth more than the portability gain would have been.* If the flank effect were about being
+GC-rich *for this genome* -- local enrichment against background -- the percentile should have won. It loses, so the
+effect tracks **absolute base composition**, not composition relative to genomic context. That points at a physical
+property of the DNA itself (duplex stability, bendability, protein affinity at a given composition) rather than at
+anything the cell reads relative to its own background, and it is consistent with Finding 8's result that shape
+descriptors are a reparameterisation of composition. The limits-table item is retired: absolute is the right
+parameterisation, and the 9-12% lost on cross-organism transfer is not recoverable this way.
+
+### 20.2 The train/test sequence-distance statistic our comparators report, and ours
+
+Browne et al. check Hamming distance between training and held-out guides; Yu et al. report minimum and median (7 and
+21). We checked exact duplicates and grouped folds, but never published a distance. Adopting it (`fold_distance.py`):
+for every validation guide, the minimum Hamming distance to any training guide.
+
+| cohort / fold scheme | min | 1st pct | median | fraction with an identical training guide |
+|---|---:|---:|---:|---:|
+| curated *E. coli* / gene-grouped | **3** | 4 | 6 | **0.000** |
+| curated *E. coli* / random rows | 3 | 4 | 6 | 0.000 |
+| human / twin-grouped | **3** | 4 | 6 | **0.000** |
+| human / random rows | **0** | 0 | 6 | **0.391** |
+
+**Two things, and the second is the better one.** First, the bacterial cohort is clean: no validation guide has a
+training guide closer than 3 substitutions, under either scheme, so the report's claim that grouping covers
+near-duplicate leakage is now shown rather than asserted. (The gene and 100 kb grouping still matter, but for the
+*positional* features, which is a different axis of leakage from sequence similarity.)
+
+Second, **the statistic recovers section 16.2's leak from an entirely different measurement, and the two agree
+numerically.** Under row-wise human folds 39.1% of validation rows have an *identical* guide in training; under
+twin-grouped folds, none. And 39.1% is what the twin count predicts independently: 49% of rows have a twin somewhere,
+and 5-fold CV puts 80% of the matrix in training, so 0.49 x 0.8 = 39.2% of validation rows should find their twin
+across the split. A performance collapse (0.5076 -> 0.2515) and a distance statistic computed from sequence alone,
+arriving at the same number from opposite directions.
