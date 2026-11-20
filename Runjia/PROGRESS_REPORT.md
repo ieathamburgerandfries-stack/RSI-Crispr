@@ -1098,7 +1098,7 @@ flagged family A at 0.147 *before* family A existed, and family A was then worth
 
 **The heading used to read "at its material limit", and the post-freeze tuning looked
 like a refutation of it. Measured, it is the opposite — and this is the cleanest result
-of the fork** (19 November; `family_a_at_tuned.py`, `results/ext/family_a_at_tuned*.csv`,
+of the fork** (19 November; `family_a_at_tuned.py`, `results/post_freeze/family_a_at_tuned*.csv`,
 `EXTENSION_LOG.md` §16). The tuned configuration is worth +0.016 ρ, so the obvious
 objection is that a model one hyperparameter search away from +0.016 was not at any kind
 of limit. The test is to ask *where* that +0.016 comes from, by running the same four
@@ -1684,7 +1684,7 @@ test sets (a bounded comparison: the test subsets differ in size and composition
 
 **After the post-freeze retuning this is no longer the strongest true sentence, and
 the one the paper should use is the following** (every number from the two
-subsections above, audited in `sgrna/ext/verify_numbers.py`):
+subsections above, audited in `sgrna/post_freeze/verify_numbers.py`):
 
 > With its hyperparameters chosen on 70% of the genes and confirmed on the other 30%,
 > SLICER leads crisprHAL 2 by +0.0286 ρ [+0.0239, +0.0331] on its authors' eSpCas9
@@ -1822,7 +1822,7 @@ Appendix A.
 
 ### 8. The flank's shape and 3D structure add nothing that its composition does not already hold
 
-*Run in a fork, outside the freeze (`sgrna/ext/`, `EXTENSION_LOG.md`).* Part 3 left one representation idea
+*Run in a fork, outside the freeze (`sgrna/post_freeze/`, `EXTENSION_LOG.md`).* Part 3 left one representation idea
 deferred: every column in the matrix is a scalar, while DNA shape is a vector per step with direction, so the
 earlier null for shape (`i_shape`, +0.0007 over family A) might have been about the *scalar summary* rather
 than the *information*. This finding runs it.
@@ -1916,7 +1916,7 @@ the nucleoid's own 3D structure (Hi-C) is family E, whose null stands.
 
 ### 9. Nuclease information: descriptors carry an unseen enzyme's PAM usage and little else — and pooling is worth labels
 
-*Run in a fork, outside the freeze (`sgrna/ext/nuclease_*.py`, `EXTENSION_LOG.md`).* The other deferred idea
+*Run in a fork, outside the freeze (`sgrna/post_freeze/nuclease_*.py`, `EXTENSION_LOG.md`).* The other deferred idea
 (Part 3): the model is fitted per nuclease and never told which one it is scoring. Three *E. coli* cohorts
 cannot test it, because with three enzymes a descriptor has three values and "which property of the enzyme
 matters" is not identifiable. A public sheet with nine can.
@@ -2666,7 +2666,7 @@ shape was not an artefact of the scalar summary (Finding 8). *Nuclease
 information:* three *E. coli* cohorts could not test it and a public nine-nuclease sheet
 could — descriptors are worth nothing in distribution, carry an unseen enzyme's PAM usage
 and little of its sequence rules, and pooling is worth about a fourfold saving in labels for a
-new enzyme (Finding 9). Both ran outside the frozen pipeline (`sgrna/ext/`,
+new enzyme (Finding 9). Both ran outside the frozen pipeline (`sgrna/post_freeze/`,
 `EXTENSION_LOG.md`), on a fork, and neither changes a number in Findings 1–7; the revision of
 Finding 3's dCas9 conclusion comes from the within-gene analysis, not from these two ideas.
 
@@ -4341,7 +4341,7 @@ underneath. It is a mechanism with a measurement attached, not a law.
 > `EXTENSION_LOG.md` §10). Re-run with folds that keep identical protospacers together — same
 > columns, same seeds, same code, with the row-wise arms retained as a positive control that
 > reproduces every published figure to four decimals (`human_additivity_twin.py`,
-> `results/ext/human_additivity_twin*.csv`, §16.2):
+> `results/post_freeze/human_additivity_twin*.csv`, §16.2):
 >
 > | 400 columns, 3 seeds × 5 folds | row-wise ρ | **twin-grouped ρ** |
 > |---|---:|---:|

@@ -1,7 +1,7 @@
 # Extension work: 3D structure and nuclease information (private-fork experiments)
 
-Everything here lives in the fork, outside the frozen pipeline. New code is `Runjia/sgrna/ext/`;
-results are `Runjia/results/ext/`. The frozen modules are imported, never edited. The shared
+Everything here lives in the fork, outside the frozen pipeline. New code is `Runjia/sgrna/post_freeze/`;
+results are `Runjia/results/post_freeze/`. The frozen modules are imported, never edited. The shared
 repository (smal-boi/RSI-Crispr) is untouched.
 
 This file is the running record: what was run, what it showed, and the inference drawn, with each
@@ -32,7 +32,7 @@ the sandbox refused to execute third-party model code. The pentamer table is the
 | ABC / muABC tetranucleotide MD stiffness (Pasi et al. 2014) | 6x6 stiffness per tetranucleotide | **not obtained**: no direct download page found; this is the data that a true stiffness-tensor encoding would need, and its absence is the main limit of Finding 8 |
 | E. coli Hi-C / 3D chromosome (Lioy et al. 2018, GSE107301) | contact maps, 3D coordinates | already family E (`eng.nuc`), a null; not repeated |
 | E. coli NAP ChIP-seq (GSE24991 H-NS/Fis; SRP008538 IHF/HU) and IPOD-HR protein occupancy (GSE164796) | protein-bound DNA tracks | **not used**: no processed track was fetched; these describe the nucleoid, and Hi-C-derived family E was already null. An open item |
-| DeepSpCas9variants (GitHub NahyeKim) | trained models only, no training data; published accuracies are in the paywalled article | weights **not run**; published per-variant Spearman (Fig. 4b of the article, supplied by the user on 9 Nov, `lit_review/`) compared with ours in `results/ext/kim2020_published_vs_ours.csv`: mean 0.896 against 0.881, ahead on 5 of 9 variants, evoCas9 0.683 against 0.81 |
+| DeepSpCas9variants (GitHub NahyeKim) | trained models only, no training data; published accuracies are in the paywalled article | weights **not run**; published per-variant Spearman (Fig. 4b of the article, supplied by the user on 9 Nov, `lit_review/`) compared with ours in `results/post_freeze/kim2020_published_vs_ours.csv`: mean 0.896 against 0.881, ahead on 5 of 9 variants, evoCas9 0.683 against 0.81 |
 | Schmid-Burgk et al. 2020 (Mol Cell), others | specificity profiling with 59 guides | too small to condition a model on |
 | human flank sequences for the project's human matrix | would let Finding 8 be run on human | not available locally (the matrix carries computed columns, not sequence); needs hg38 coordinates |
 
@@ -93,7 +93,7 @@ All arms: XGBoost on the same 596-column featurisation of the 30-mer (one-hot, d
 targets with an NGG PAM only, i.e. sequence-dependent efficiency under the canonical PAM.
 
 ### 3.1 Column kinds of the sheet, removed one at a time (per-nuclease models)
-`results/ext/nuclease_indist.csv`. Mean over nine nucleases (rho / NGG):
+`results/post_freeze/nuclease_indist.csv`. Mean over nine nucleases (rho / NGG):
 
 | columns | rho | NGG |
 |---|---:|---:|
@@ -141,7 +141,7 @@ sparse one at fixed capacity, not information about the enzymes. In distribution
 of the nuclease is equivalent, as it must be when the nuclease was seen in training.
 
 ### 3.4 Leave one nuclease out: where descriptors do help, and where they cannot
-`results/ext/nuclease_lono_rep.csv`, saved predictions in `lono_preds/`; 3 replicates (different 15k-row
+`results/post_freeze/nuclease_lono_rep.csv`, saved predictions in `lono_preds/`; 3 replicates (different 15k-row
 training subsamples and seeds); 4 shuffled-descriptor controls per replicate; the unit of analysis is the
 held-out nuclease (n = 9) and intervals are a bootstrap over nuclease. Reference U = a pooled model with
 no nuclease information, trained on the same rows.
@@ -394,7 +394,7 @@ public set found with a few hundred variants is Silverstein et al. 2025 (Nature 
 PI-domain positions (D1135 S1136 G1218 E1219 R1335 T1337), each with the HT-PAMDA log10 rate constant for 64 PAMs (N + 3 nt).
 Data: `training_data/220924_6pos_selected_random_only.csv` of github.com/RachelSilverstein/PAMmla (BSD-3), 729 KB, read as
 text, no code from the repository run. Code: `pam_variants.py` (loader, descriptors, metrics), `pam_learn.py`,
-`pam_analyze.py`. Results: `results/ext/pam_variants/`.
+`pam_analyze.py`. Results: `results/post_freeze/pam_variants/`.
 
 **Column kinds of the sheet** (separated; only the six residues are inputs): identifiers (sample, prep, name); provenance
 (selected/rational, variant source, source library, PAM selected on, shuffled?, extra mutations); a derived flag
@@ -588,7 +588,7 @@ gene-grouped folds used throughout keep together.
 
 *Aim (from the user): improve the E. coli model's rho; improvements may later carry to human data.* A joint search replaces the
 earlier one-knob-at-a-time sweep, judged on genes it never saw. Code: `tune_ecoli.py`, `tune_analyze.py`; results
-`results/ext/tune_*.csv`, `tune_configs.json`.
+`results/post_freeze/tune_*.csv`, `tune_configs.json`.
 
 **Design.** Curated cutting cohort, base + family A (6,517 columns), 30,203 guides with a gene label. Genes split once into DEV
 (70%: 2,809 genes, 21,260 guides) and CONFIRM (30%: 1,204 genes, 8,943 guides); the split was asserted to share no gene.
@@ -603,7 +603,7 @@ through `iteration_range`; finalists whose best count sat at the cap were re-run
 Column selection stays the project's fixed selector (XGBoost, 300 trees, depth 4); the champion is depth 4, lr 0.05, 400 trees,
 subsample 0.8, colsample 0.8, 300 columns.
 
-**What 200 draws say about each knob** (marginal means; `results/ext/tune_stage1_effects.txt`). Shallower and slower is better:
+**What 200 draws say about each knob** (marginal means; `results/post_freeze/tune_stage1_effects.txt`). Shallower and slower is better:
 mean rho by depth 3/4/5/6/7/8/9/10 = 0.712/0.714/0.713/0.707/0.706/0.704/0.700/0.698; by learning-rate quartile (low to high)
 0.713/0.713/0.707/0.696; by column budget 150/300/450/600/900 = 0.698/0.709/0.711/0.711/0.708. Holding the others fixed (ridge on
 the standardised settings), +1 sd of tree count is +0.006, of depth -0.003, of budget +0.002, of learning rate -0.002, rank-normalised
@@ -679,7 +679,7 @@ Three conditions of the original comparison with four SLICER arms (champion, tun
 the mean of the XGBoost, LightGBM and CatBoost group averages). crisprHAL 2's shipped WT-SpCas9 weights were run on their own WT test file (6,737 guides,
 Spearman 0.6945 against their published 0.695) to get paired predictions; the eSpCas9 and five-fold predictions were the stored ones. Results, rho
 and the paired difference to crisprHAL 2 (95% bootstrap over guides, 4,000 resamples) are tabulated in the report ("After retuning") and in
-`results/ext/vs_crisprhal_{espcas9,wt,folds}.csv`. The champion arm reproduces the earlier figures (0.7842 and +0.0021 [-0.0031, +0.0072] on their eSpCas9
+`results/post_freeze/vs_crisprhal_{espcas9,wt,folds}.csv`. The champion arm reproduces the earlier figures (0.7842 and +0.0021 [-0.0031, +0.0072] on their eSpCas9
 split; +0.0115 [+0.0076, +0.0156] and +0.0044 [+0.0005, +0.0082] on our folds), which checks the pipeline; on the WT split it gives 0.6985
 against the 0.6997 of the earlier `their_split_slicer` run, a 0.001 difference between two fits of the same configuration. **Result:** tuned XGBoost leads by
 +0.0286 [+0.0239, +0.0331] (eSpCas9) and +0.0226 [+0.0139, +0.0314] (WT-SpCas9); the average of five and the mixed ensemble are within 0.003 of it
@@ -694,7 +694,7 @@ large batches (champion and tuned model; the mix 20-32% slower). A first, cold m
 
 ## 14. What the tuned settings say about the signal (9 Nov; `interpret.py`)
 
-Seven readings, each tested rather than assumed (numbers in the report's Appendix B subsection and `results/ext/interpret_*.csv`): the interaction-order curve (stumps 0.6905, depth 2
+Seven readings, each tested rather than assumed (numbers in the report's Appendix B subsection and `results/post_freeze/interpret_*.csv`): the interaction-order curve (stumps 0.6905, depth 2
 0.7177, depth 3 0.7206, depth 4 0.7210 on CONFIRM, ridge 0.647: 59% of what trees add to a linear model is per-column nonlinearity, 37% pairs, 4% third and
 fourth order); the gain by column kind (indicators 35% -> 51%, quantum 37% -> 27%, flank 27% -> 22%; 131 -> 223 indicator columns in the top
 300 / 450); the gain by position (eight PAM-proximal positions 63% / 62%; position 18 alone 14%; 3 nt after the PAM 6% / 5%); within-gene against

@@ -48,7 +48,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from .. import config, qct
+from .. import config
+from ..build import qct
 from ..io_utils import save_block
 
 PREFIX = "eng.flank"

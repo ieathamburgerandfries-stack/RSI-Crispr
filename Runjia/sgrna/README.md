@@ -4,6 +4,43 @@ Every number in that report comes from this package. Committed as one unit
 because the modules import each other; individual files will not run on their
 own.
 
+## Layout
+
+Reorganised 20 November 2026: the package had 76 modules in one flat directory. Nothing was
+rewritten, only moved, and the report cites modules by bare filename so every citation still
+resolves. `config.py` and `io_utils.py` stay at the top because almost every module imports them
+and `config.py` locates the project root from its own path.
+
+| folder | what is in it | n |
+|---|---|---|
+| `build/` | turning sequence into columns: the feature matrix, the guide index, the genome and quantum-chemical tables, the published-matrix decoder | 10 |
+| `harness/` | the shared fit-and-score machinery every result goes through: `run_ablation`, folds, the tuner, the model zoo | 7 |
+| `cohorts/` | the curated and published cohorts, their ablations, ceilings and label variance | 9 |
+| `compare/` | comparisons against other models: crisprHAL 2 re-runs, the final evaluations, the head-to-heads, sample complexity | 9 |
+| `controls/` | nulls and audits — shifted-flank, no-information, Chi sites, the sealed holdout, the selector audit | 11 |
+| `interpret/` | importance, attribution, faithfulness, redescription, the reduced representation | 12 |
+| `strand/` | the strand and within-gene decompositions Finding 3 rests on | 5 |
+| `screens/` | other screens and transfer: Cui, Rousset/Wang, cross-organism, cross-kingdom, the human baseline | 7 |
+| `cost/` | wall-clock, CPU and inference benchmarks | 3 |
+| `features/` | the eleven feature families, one module each (unchanged) | 12 |
+| `post_freeze/` | **everything measured after the 11 October freeze** — Findings 8–9, the tuning, the crisprHAL 2 re-comparison, the literature-driven work. Was `ext/`. Nothing here edits the frozen pipeline; it imports it | 45 |
+
+Results split the same way: `results/` holds the frozen numbers, `results/post_freeze/` the ones from
+after the freeze. `./run_ext.sh <module>` runs anything in `post_freeze` with the three environment
+variables it needs; `./run_audit.sh` recomputes every post-freeze number the report quotes.
+
+**If you move a module,** run the import check and the audit:
+
+```
+RSI09_ROOT=<project> PYTHONPATH=$PWD python -c "
+import importlib, pkgutil, sgrna
+[importlib.import_module(m.name) for m in pkgutil.walk_packages(sgrna.__path__, 'sgrna.')]"
+./run_audit.sh
+```
+
+Note that a few `post_freeze` modules execute on import and rewrite their own result file, so the
+import check is not side-effect free — `featuriser_equivalence.csv` is the one to watch.
+
 ## It needs a data layout that is not in this repo
 
 The code resolves paths relative to a working folder three levels up from

@@ -19,7 +19,7 @@ folds → R² 0.2937 ± 0.0015, Spearman 0.5278, Pearson 0.5424 on Noshay's 13,8
 guides — kept because reproducing it to four decimal places is how this pipeline
 is checked, not because it is the current baseline.
 
-**Extension (this fork only).** Work outside the frozen pipeline (`sgrna/ext/`, `EXTENSION_LOG.md`).
+**Extension (this fork only).** Work outside the frozen pipeline (`sgrna/post_freeze/`, `EXTENSION_LOG.md`).
 Two representation ideas the freeze deferred, as Findings 8–9: the flank's shape and 3D structure add nothing to
 its composition, and nuclease descriptors carry an unseen enzyme's PAM usage and little else. Then, from 9 November,
 **a joint hyperparameter search that changes the headline** (`EXTENSION_LOG.md` §11–15): +0.014 ρ on genes it never

@@ -43,7 +43,8 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 
-from .. import config, genome
+from .. import config
+from ..build import genome
 from ..io_utils import save_block
 
 PREFIX = "eng.txn"
