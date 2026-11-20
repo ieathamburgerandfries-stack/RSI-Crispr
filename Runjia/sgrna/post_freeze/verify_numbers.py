@@ -654,6 +654,18 @@ chk("transfer: the asymmetry holds under both settings",
             and not bool(kt.loc[("human -> ecoli", "champion"), "excludes_zero"])
             and not bool(kt.loc[("human -> ecoli", "human_fitted"), "excludes_zero"])) else 0.0, 1, 0)
 
+print("figures: ACS geometry and completeness")
+import os
+man = pd.read_csv(OUT / "figure_manifest.csv")
+chk("figures produced", float(len(man)), 7, 0)
+chk("widest figure within the 7.0 in double-column limit", float(man.width_in.max()), 7.0, 2)
+chk("no figure exceeds the 7.0 in limit", 0.0 if (man.width_in > 7.0 + 1e-6).any() else 1.0, 1, 0)
+chk("deepest figure within the 9.167 in limit", 1.0 if (man.height_in <= 9.167).all() else 0.0, 1, 0)
+chk("single-column figure is within 3.33 in", float(man.width_in.min()), 3.33, 2)
+_fd = OUT / "figures"
+chk("every figure has a vector PDF", float(sum((_fd / f"{n_}.pdf").exists() for n_ in man.figure)), 7, 0)
+chk("every figure has a 600 dpi PNG", float(sum((_fd / f"{n_}.png").exists() for n_ in man.figure)), 7, 0)
+
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:
     print("  MISMATCH", b)

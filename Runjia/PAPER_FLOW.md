@@ -127,8 +127,35 @@ field. C becomes one short section, honestly scoped.
 | Table 2 | metric panel + data efficiency | Finding 7 |
 | Supp | family ablations, adaptive-overfitting draws, nuclease and shape nulls (Findings 8–9) | Appendices |
 
-**Figures that do not exist yet.** Everything above is in result CSVs; none of it is plotted. That is
-the main non-writing task left.
+**The figures now exist** (`results/post_freeze/figures/`, built by `sgrna/post_freeze/figures.py`,
+vector PDF + 600 dpi PNG each, geometry checked by the audit):
+
+| file | size (in) | notes |
+|---|---|---|
+| `fig1_representation` | 7.00 × 1.85 | schematic, deliberately not a plot — see below |
+| `fig2_locality_cut_vs_bind` | 7.00 × 2.35 | (a) shift autocorrelation, (b) dumbbell by screen |
+| `fig3_what_the_signal_is` | 7.00 × 4.60 | four panels, the Finding 10 core |
+| `fig4_design_rules_by_kingdom` | 4.73 × 3.50 | the two position × base heatmaps |
+| `fig5_attainable_ceiling` | 3.33 × 2.60 | single column |
+| `fig6_flank_windows_schematic` | 7.00 × 2.15 | what family A actually reads |
+| `fig7_pipeline` | 7.00 × 2.50 | how a ρ in this paper is produced |
+
+ACS applied: ≤ 3.33 in single column and ≤ 7 in double, ≤ 9.167 in depth, Helvetica at ≥ 7 pt
+(the floor is 4.5 pt but ACS pages disagree, so everything clears every variant), no rule thinner
+than 0.5 pt, vector PDF so the raster minima are satisfied by construction. Colour is secondary
+throughout — marker shape and line style carry identity too, so each figure survives greyscale.
+
+**Two judgement calls worth knowing about before you write captions:**
+
+* **Fig 1 is a schematic, not a chart.** The 412-vs-6,232 equivalence spans two protocols and no
+  single result file holds both arms. A first attempt assembled a two-point chart from
+  incommensurable sources and produced a spurious −0.019 ρ. The numbers are stated as annotation
+  instead.
+* **Fig 2b is a dumbbell, not three bars of Δρ.** Plotting Δρ side by side reads "binding beats
+  cutting" (+0.102 and +0.114 against +0.085), which is the opposite of the claim. The screens
+  start from very different within-gene baselines — 0.62 for cutting, 0.17 and 0.08 for binding —
+  so the figure shows the baselines and lets the reader see why the raw numbers are not comparable.
+  The share-of-attainable-gain form (26% against 13–14%) stays in the text.
 
 ---
 
