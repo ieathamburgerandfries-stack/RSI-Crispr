@@ -3,6 +3,18 @@
 **S**imple **L**ightweight **I**nterpretable **C**RISPR **E**fficiency **R**anker.
 RSI09, as of 11 October 2026. **The analysis is frozen** (Part 4).
 
+**Status of the post-freeze work, 20 November 2026.** Findings 8–9 and everything in
+`EXTENSION_LOG.md` §§7–17 — the flank's 3D structure, nuclease descriptors, the hyperparameter
+search, the re-comparison against crisprHAL 2, the literature pass — were developed outside the
+frozen pipeline in a public fork, and are **now merged into this repository's main branch**. The
+freeze still means what it says: no model, feature or hyperparameter choice was made against the
+curated five-fold split, and Findings 1–7 are untouched by the later work except where a
+subsection says otherwise in so many words. The boundary is visible in the layout —
+`sgrna/post_freeze/` and `results/post_freeze/` hold everything measured after 11 October, and
+`./run_audit.sh` recomputes all 682 numbers those sections quote. The fork
+(`github.com/ieathamburgerandfries-stack/RSI-Crispr`) is kept as the archive of the commit-by-commit
+history.
+
 **In one paragraph.** A 2023 resource published 6,232 quantum-chemical and
 positional features for 13,880 *E. coli* guides but **not the guide sequences**,
 which made it unusable for new targets. We decoded it: 99% of those columns
