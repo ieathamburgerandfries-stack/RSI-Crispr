@@ -1159,3 +1159,83 @@ twin-grouped folds, none. And 39.1% is what the twin count predicts independentl
 and 5-fold CV puts 80% of the matrix in training, so 0.49 x 0.8 = 39.2% of validation rows should find their twin
 across the split. A performance collapse (0.5076 -> 0.2515) and a distance statistic computed from sequence alone,
 arriving at the same number from opposite directions.
+
+## 21. Biology out of the model, by routes redundancy does not disqualify (20 Nov; `mechanism.py`)
+
+*Why this was overdue.* The user's criticism was fair: most of what this project contributes beyond the model is a
+warning. Finding 5 is partly to blame -- it says that on a matrix where 99% of columns regenerate from the 20-mer,
+column-level importance is a statement about the selector -- so the project had been cautious about reading mechanism
+off the model at all. The way out is to use routes where there is no model to be confounded: the label against the
+sequence directly, and partial associations.
+
+### 21.1 The flank effect is GC, it is symmetric, and it peaks at 250-500 nt
+
+Partial Spearman of each flank window's composition with the label, holding **target** GC fixed (33,567 guides, no
+model involved; `mechanism_distance_profile.csv`). Sign convention checked twice against the report: flank GC is
+positively associated with activity and target GC negatively, and both reproduce here (+0.14 to +0.16 marginal for
+flank GC, -0.147 for target GC), so a positive number means more cutting.
+
+| statistic | side | 50 nt | 250 nt | 500 nt | 1,000 nt |
+|---|---|---:|---:|---:|---:|
+| GC | upstream | +0.172 | **+0.203** | +0.196 | +0.173 |
+| GC | downstream | +0.146 | **+0.197** | +0.194 | +0.181 |
+| purine | upstream | -0.000 | +0.001 | -0.005 | -0.005 |
+| purine | downstream | -0.007 | -0.018 | -0.014 | -0.000 |
+
+**Three statements, each a constraint on mechanism rather than a feature importance.**
+
+1. **It is GC, not base composition in general.** Purine fraction is flat at every distance and on both sides, within
+   +-0.018 of zero, while GC runs +0.15 to +0.20. So this is not a generic composition or strand-chemistry effect. It
+   rules out anything keyed to purine/pyrimidine asymmetry and points at GC-specific physics -- duplex stability,
+   stacking, melting -- which is the same direction as 20.1's finding that the effect tracks *absolute* composition
+   rather than enrichment against genomic background, and as Finding 8's result that shape descriptors are a
+   reparameterisation of composition.
+2. **It is symmetric.** Upstream and downstream profiles agree to within 0.026 at every window. A directional process
+   -- replication fork direction, transcription direction, one-sided resection -- would not produce that. Worth putting
+   beside the orientation result (Jacky's, delta 0.051 against a curated TSS): orientation matters, but it cannot be
+   acting through flank *composition*, because composition is side-blind. Those are two separate effects.
+3. **There is a length scale, and it is 250-500 nt.** The association rises from 50 nt to 250 nt and falls again by
+   1,000 nt, on both sides. That is far longer than anything Cas9 contacts (~20-30 nt) and far shorter than nucleoid
+   macrodomains (hundreds of kb). It is one to three persistence lengths of duplex DNA (~150 bp). *Hypothesis, not a
+   result:* the effect tracks the local mechanical or topological environment over a few persistence lengths. It is
+   stated as a hypothesis because the measurement is a length scale and nothing here tests the physics.
+
+### 21.2 Position x base design rules, and one of them inverts between kingdoms
+
+Effect of each base at each guide position on the label, in SD units, computed straight from the 33,567 protospacers
+and their labels -- no model, no selector (`mechanism_position_base.csv`; 95% intervals from the normal approximation
+to the SE of a mean over thousands of guides). Position 1 is PAM-distal, 20 is PAM-proximal.
+
+| | A | C | G | T |
+|---|---:|---:|---:|---:|
+| positions 1-7 | all within +-0.04 | | | |
+| 14 | -0.008 | **-0.147** | +0.012 | **+0.141** |
+| 15 | -0.033 | -0.133 | +0.103 | +0.088 |
+| 17 | -0.022 | +0.125 | -0.086 | -0.015 |
+| 18 | +0.075 | -0.060 | **-0.266** | **+0.210** |
+| 19 | -0.115 | -0.161 | +0.138 | +0.152 |
+| 20 | +0.193 | -0.142 | **-0.322** | **+0.348** |
+
+**The seed region carries all of it.** Positions 1-7 are flat -- every base within 0.04 SD of zero -- and the strongest
+twelve effects are all at positions 14-20. That agrees with two independent measurements: our own gain-by-position
+profile (eight PAM-proximal positions carry 63% / 62% of split gain, section 14) and Orro et al.'s SHAP profile on a
+human base-editing screen, which peaks at positions 19 and 20. Three routes, two organisms, two assays, one answer
+about where along the guide the signal lives.
+
+**It is mostly the GC rule, but not entirely.** Positions 18 and 20 follow it -- G and C depressed, A and T raised --
+which is the target-GC effect resolved by position. Position 19 breaks it: G is *favoured* there (+0.138) while C is
+disfavoured (-0.161). So there is position-specific base chemistry on top of composition.
+
+**And the largest single effect appears to invert between kingdoms.** G at position 20, immediately 5' of the PAM, is
+the most disfavoured base-position combination we measure, at **-0.322 SD** [-0.343, -0.300]. The eukaryotic literature
+consistently reports the opposite: G at position 20 is a *favoured* base and one of the main drivers of the Doench
+score. If that holds, it joins the GC inversion already in the report (target GC against activity: -0.20 here, +0.02 in
+human) to make a coherent statement -- **the guide-intrinsic design rules invert between *E. coli* and human** -- which
+would also explain, mechanistically rather than by appeal to "different organism", the field's repeated observation
+that mammalian-trained predictors transfer poorly to bacteria.
+
+*Status: our measurement is firm, the comparison is not yet.* The human side comes from reviews and a third-party
+calculator, not from primary weights, and positional numbering conventions differ between papers (some number from the
+PAM, some from the 5' end), which is exactly the kind of detail that can flip a sign. Confirming it needs Doench et
+al.'s 2016 supplementary weights read directly. **Do not put the inversion in a draft until that is done**; the
+*E. coli* matrix itself can go in now.

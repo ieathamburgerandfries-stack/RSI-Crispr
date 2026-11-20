@@ -567,6 +567,27 @@ for s, mn, fi in (("curated / gene-grouped", 3, 0.0), ("curated / random rows", 
     chk(f"20.2 {s}: fraction identical", float(fd.loc[s, "frac_identical"]), fi, 3)
 chk("20.2 twin count predicts the leak fraction (0.49 x 0.8)", 0.49 * 0.8, float(fd.loc["human / random rows", "frac_identical"]), 2)
 
+print("21 mechanism")
+dp = pd.read_csv(OUT / "mechanism_distance_profile.csv")
+g = dp[dp.statistic == "gc"].set_index(["side", "window_nt"]).partial_given_target_gc
+for side, vals in (("up", {50: 0.172, 250: 0.203, 500: 0.196, 1000: 0.173}),
+                   ("dn", {50: 0.146, 250: 0.197, 500: 0.194, 1000: 0.181})):
+    for w, v in vals.items():
+        chk(f"21.1 GC {side} {w}nt partial", float(g[(side, w)]), v, 3)
+pu = dp[dp.statistic == "purine"].partial_given_target_gc.abs().max()
+chk("21.1 purine: largest |partial| at any window/side", float(pu), 0.018, 3)
+chk("21.1 GC peaks at 250nt upstream", 1.0 if g[("up", 250)] == g[("up",)].max() else 0.0, 1, 0)
+chk("21.1 up/dn largest disagreement", float(max(abs(g[("up", w)] - g[("dn", w)]) for w in (50, 250, 500, 1000))), 0.026, 3)
+pb = pd.read_csv(OUT / "mechanism_position_base.csv").set_index(["position", "base"])
+for pos, b, v in ((20, "T", 0.348), (20, "G", -0.322), (18, "G", -0.266), (18, "T", 0.210),
+                  (20, "A", 0.193), (19, "C", -0.161), (19, "T", 0.152), (14, "C", -0.147),
+                  (14, "T", 0.141), (19, "G", 0.138), (15, "C", -0.133), (15, "G", 0.103)):
+    chk(f"21.2 position {pos} base {b}", float(pb.loc[(pos, b), "effect_sd"]), v, 3)
+chk("21.2 G at 20 interval excludes zero", 1.0 if pb.loc[(20, "G"), "hi"] < 0 else 0.0, 1, 0)
+early = pd.read_csv(OUT / "mechanism_position_base.csv").query("position <= 7").effect_sd.abs().max()
+chk("21.2 largest |effect| at positions 1-7", float(early), 0.039, 3)
+chk("21.2 strongest effect overall is position 20", float(pd.read_csv(OUT / "mechanism_position_base.csv").effect_sd.abs().max()), 0.348, 3)
+
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:
     print("  MISMATCH", b)
