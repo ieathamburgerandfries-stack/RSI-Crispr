@@ -9,7 +9,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from .common import OUT
+from .common import INTERIM, OUT
+from sgrna import config
 
 bad, n = [], 0
 
@@ -201,11 +202,11 @@ for lab, v, c in (("random base", hs["h_base"], 0.3807), ("random A", hs["h_base
 hb = pd.read_csv(OUT.parent / "human_baseline.csv").set_index("arm").spearman
 chk("random baseline harness", float(hb["harness_default"]), 0.4036, 4)
 chk("random baseline library-defaults", float(hb["jacky_400_1000"]), 0.5076, 4)
-dec = pd.read_csv(OUT.parent.parent.parent / "data" / "interim" / "post_freeze" / "human" / "decoded.csv", dtype={"sgRNAID": str})
+dec = pd.read_csv(INTERIM / "human" / "decoded.csv", dtype={"sgRNAID": str})
 vc = dec.protospacer.value_counts()
 chk("human rows", len(dec), 17421, 0); chk("distinct 20-mers", len(vc), 13138, 0)
 chk("sequences occurring more than once", int((vc > 1).sum()), 4216, 0); chk("rows with a twin", int(vc[vc > 1].sum()), 8499, 0)
-ci = pd.read_csv(OUT.parent.parent.parent / "data" / "interim" / "curated_guide_index.csv")
+ci = pd.read_csv(config.INTERIM / "curated_guide_index.csv")
 chk("bacterial rows", len(ci), 33567, 0); chk("bacterial distinct protospacers", ci.protospacer.nunique(), 33567, 0)
 
 
