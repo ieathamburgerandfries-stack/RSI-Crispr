@@ -890,7 +890,7 @@ that attached.
 control a three-screen result instead of a one-screen one, which is what Finding
 3's localisation needed most. It does **not** widen the project's scope: all
 three screens are *E. coli* K-12 MG1655, so "one organism and two relatives"
-stands untouched, and all three are CRISPRi, so nothing here bears on the 0.22 ρ
+stands untouched, and all three are CRISPRi, so nothing here bears on the ~0.21 ρ
 still unexplained on the cutting side. What it buys is robustness for one
 control, not reach.
 
@@ -1367,7 +1367,7 @@ well for roughly-normal data and is not exact.
 ---
 
 
-### 7. Against the state of the art: parity, and the margin depends on the question
+### 7. Against the state of the art: parity for the frozen model, a lead once retuned, and the margin depends on the question
 
 crisprHAL 2 (Browne et al., 2026) is the state of the art for bacterial Cas9,
 and the comparison with it was measured under four conditions over three days.
@@ -3432,10 +3432,27 @@ whole model on ±190 nt and searched the length themselves.
    keep them together the best-looking configuration is 0.08 *worse* than the default one (§16.2).
 7. **The adaptive-overfitting measurement.** +0.0087 ρ from the automatable part, over fifteen sealed-gene draws. We have
    not found another guide-prediction paper that measures its own selection bias.
+8. **Finding 10, which is the positive mechanistic half and arrived last.** The flank effect is **GC specifically** —
+   purine is flat at every window and side — **side-symmetric** to within 0.026, and has **one length scale of
+   250–500 nt with no structure below ~250 nt** (four columns carry 76% of it; 200 columns score below 32). It is
+   **coupled to the PAM-proximal seed** rather than additive, the largest pairwise interaction being 250 nt flank GC
+   against position 20. And measured with one estimator on both cohorts, the guide's own position × base preferences are
+   **uncorrelated between kingdoms (ρ = −0.052)** with the strongest inverting: G immediately 5′ of the PAM is the most
+   disfavoured base in *E. coli* and a favoured one in human. That last one explains an observation the bacterial
+   literature repeats without explaining — that mammalian-trained predictors fail here — and is a design rule a bench
+   scientist can apply today.
+
+**An honest accounting of that list, because "we have contributions" is easy to say.** Items 1, 2, 3 and 8 are
+**findings**: statements about what determines cutting that were not previously known. Items 4, 5, 6 and 7 are
+**warnings and methods**: things that are wrong, or measured wrongly, in this field or in our own earlier work. The
+split is four and four, and it was three warnings to one finding until Finding 10 — the imbalance was real and the fix
+was to stop avoiding mechanism because Finding 5 had made the obvious route to it invalid. Of the four warnings, two
+(the ceiling, the dosage deconstruction) generalise beyond this project and are the ones most likely to be useful to
+other people.
 
 So the modelling is incremental and the measurement is not. **The paper this project can write is about what determines
-cutting and about how much of it is knowable — not about having built a better predictor**, and five of the seven items
-above are methodological results that outlive any particular model.
+cutting and about how much of it is knowable — not about having built a better predictor**, and it has four findings
+and four methodological results that outlive any particular model.
 
 ---
 
@@ -4275,9 +4292,17 @@ empirical observation. But it is a guarantee about *this configuration*, and the
 configuration was **inherited, not chosen**: depth 4 comes from
 `FINAL_baseline_ecoli_sgRNA_model_5seeds.py` along with `learning_rate=0.05`,
 400 trees and the 300-column budget. It was tested after the fact rather than
-selected, and it survives the test — a 627-draw nested search buys only +0.0131 ρ,
-and XGBoost's champion and LightGBM at unrelated defaults land within 0.0002 of
-each other on the curated cohort with family A. What the search does *not* do is
+selected, and it survives the test in the sense that mattered at the time — a
+627-draw nested search buys only +0.0131 ρ, and XGBoost's champion and LightGBM at
+unrelated defaults land within 0.0002 of each other on the curated cohort with family A.
+**The post-freeze joint search revised this** (Finding 4, `EXTENSION_LOG.md` §11): the
+better direction is *slower and slightly deeper* — depth 5, learning rate 0.013, 4,000
+trees — worth **+0.016** rather than +0.013, so depth 4 is marginally too shallow rather
+than optimal, and the depth-4 interaction-order guarantee belongs to the frozen
+configuration only (the tuned one caps at five). What does survive unchanged is the scale:
+§14's interaction-order curve puts third- and fourth-order terms at 4% of what trees add
+over a linear model, and Finding 4 shows the whole +0.016 collapses to +0.003 without
+family A, so none of it is depth buying unused capacity. What the search does *not* do is
 endorse the number: the five per-fold winners chose depths of **4, 8, −1, 3 and
 −1**, while three of them chose `num_leaves = 8`.
 
@@ -4793,6 +4818,24 @@ TSS, terminator and operon boundary. None of the first three carries a mechanism
 of its own; the RegulonDB items are the properly-annotated version of the
 nearest-gene proxy behind Jacky's orientation result, and so the highest-value
 thing left on this list.
+
+**Finding 10 narrows this list considerably, and the narrowing is the useful part.**
+Three of its results bear on what could still be built from the genome alone:
+
+* *The flank signal has no spatial structure below ~250 nt*, and describing it more
+  finely eventually costs (200 columns score below 32). So **any feature whose content
+  is fine-grained positional structure is predicted to be a null before it is built** —
+  which covers k-mer entropy and run-length density as flank features, and is the
+  general form of the periodicity null that family J already produced.
+* *The effect is GC and not composition in general* — purine is flat at every window
+  and side. So features that re-describe composition in a non-GC basis are
+  reparameterisations, exactly as DNA shape turned out to be (Finding 8).
+* *The effect is side-symmetric to within 0.026.* A directional feature cannot explain
+  the composition part, so the RegulonDB orientation items are not competing for the
+  same budget: they would be explaining the *orientation* effect, which Finding 10 shows
+  is a separate thing. That makes them the highest-value item on this list for a better
+  reason than before — they are the only candidates left that address an effect the
+  composition account does not already cover.
 
 ### Is the flank effect a *repair* effect? The Chi-site test: a null
 
