@@ -635,6 +635,25 @@ chk("21.6 increment survives (clear of zero)", 1.0 if tw["h_base+A"] - tw["h_bas
 chk("21.6 shape on A, twin folds", float(tw["h_base+A+mc"] - tw["h_base+A"]), 0.0177, 4)
 chk("21.6 shape on A, row-wise folds", float(rw["h_base+A+mc"] - rw["h_base+A"]), 0.0183, 4)
 
+print("cross-kingdom transfer, re-quoted at champion")
+kt = pd.read_csv(config.RESULTS / "kingdom_transfer_boot.csv").set_index(["direction", "settings"])
+for d, s, v, lo, hi in (("ecoli -> human", "champion", -0.046, -0.061, -0.031),
+                        ("human -> ecoli", "champion", -0.016, -0.032, 0.001),
+                        ("ecoli -> human", "human_fitted", -0.039, -0.054, -0.024),
+                        ("human -> ecoli", "human_fitted", -0.006, -0.023, 0.011)):
+    chk(f"transfer {d} ({s})", float(kt.loc[(d, s), "spearman"]), v, 3)
+    chk(f"transfer {d} ({s}) lo", float(kt.loc[(d, s), "ci_lo"]), lo, 3)
+    chk(f"transfer {d} ({s}) hi", float(kt.loc[(d, s), "ci_hi"]), hi, 3)
+chk("transfer: ecoli->human excludes zero at champion",
+    1.0 if bool(kt.loc[("ecoli -> human", "champion"), "excludes_zero"]) else 0.0, 1, 0)
+chk("transfer: human->ecoli does NOT exclude zero at champion",
+    0.0 if bool(kt.loc[("human -> ecoli", "champion"), "excludes_zero"]) else 1.0, 1, 0)
+chk("transfer: the asymmetry holds under both settings",
+    1.0 if (bool(kt.loc[("ecoli -> human", "champion"), "excludes_zero"])
+            and bool(kt.loc[("ecoli -> human", "human_fitted"), "excludes_zero"])
+            and not bool(kt.loc[("human -> ecoli", "champion"), "excludes_zero"])
+            and not bool(kt.loc[("human -> ecoli", "human_fitted"), "excludes_zero"])) else 0.0, 1, 0)
+
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:
     print("  MISMATCH", b)

@@ -3,17 +3,27 @@
 **S**imple **L**ightweight **I**nterpretable **C**RISPR **E**fficiency **R**anker.
 RSI09, as of 11 October 2026. **The analysis is frozen** (Part 4).
 
-**Status of the post-freeze work, 20 November 2026.** Findings 8–9 and everything in
-`EXTENSION_LOG.md` §§7–17 — the flank's 3D structure, nuclease descriptors, the hyperparameter
-search, the re-comparison against crisprHAL 2, the literature pass — were developed outside the
-frozen pipeline in a public fork, and are **now merged into this repository's main branch**. The
+**Status of the post-freeze work, 20 November 2026.** Findings 8–10 and everything in
+`EXTENSION_LOG.md` §§7–21 — the flank's 3D structure, nuclease descriptors, the hyperparameter
+search, the re-comparison against crisprHAL 2, the literature pass, and the mechanistic readings —
+were developed outside the frozen pipeline in a public fork, and are **now merged into this
+repository's main branch**. The
 freeze still means what it says: no model, feature or hyperparameter choice was made against the
-curated five-fold split, and Findings 1–7 are untouched by the later work except where a
-subsection says otherwise in so many words. The boundary is visible in the layout —
+curated five-fold split. Findings 1–3 and 5–7 are unchanged by the later work except where a
+subsection says otherwise in so many words; **Finding 4 was re-framed** by it (the tuning gain
+turns out to be evidence *for* its claim, not against it) and **Finding 6 gained a second half**
+(the field's version of the ceiling is mis-derived). The boundary is visible in the layout —
 `sgrna/post_freeze/` and `results/post_freeze/` hold everything measured after 11 October, and
-`./run_audit.sh` recomputes all 682 numbers those sections quote. The fork
+`./run_audit.sh` recomputes all 784 numbers those sections quote. The fork
 (`github.com/ieathamburgerandfries-stack/RSI-Crispr`) is kept as the archive of the commit-by-commit
 history.
+
+**Claims withdrawn by the post-freeze work, listed once so they are not read anywhere else:**
+"the two kingdoms differ in interaction order" (Part 2, biology claim 4 — the human matrix repeats
+49% of its guides); "the champion hyperparameters are mis-specified by 0.10 ρ on the human matrix"
+(Part 3 — same cause); and "the single cheapest thing that could make the representation
+species-portable" (Part 3's limits table — tested, and absolute composition is the right
+parameterisation). Each is struck through where it appeared, with the measurement that closed it.
 
 **In one paragraph.** A 2023 resource published 6,232 quantum-chemical and
 positional features for 13,880 *E. coli* guides but **not the guide sequences**,
@@ -95,9 +105,18 @@ are in B2 and B3 rather than in Part 1, because a list of things that did not
 work is not a finding. `../results/RESULTS.md` indexes every claim here to the file
 that backs it and the command that produced it; per-fold numbers and the
 long-form commentary to 10 October are in `../results/` beside it. The
-chronological working log has been retired: the shared repository's git history
-is the record of what was believed when, and it does the job without a second
-copy drifting out of date.
+pre-freeze chronological log was retired, because the repository's git history
+records what was believed when without a second copy drifting out of date.
+
+**`EXTENSION_LOG.md` is the exception, and it is deliberate.** Everything measured after
+the 11 October freeze is recorded there, §§7–21, with the design argument for each
+experiment and the numbers it produced. It is **not** a second copy of this report: every
+*claim* in Parts 1–6 is stated and defended here, and the log is where the working lives —
+what was tried, in what order, what was expected before the run, and which expectations
+were wrong. Where a finding cites a §, that is the working, not a load-bearing part of the
+claim. `./run_audit.sh` recomputes every post-freeze number quoted in this document from
+the files that produced it (784 checks as of 20 November) and exits non-zero on any
+mismatch.
 
 **What the *E. coli* work is for.** It is scaffolding. The destination is the
 human dataset, and the reason to spend this long on one bacterium is that the
@@ -2707,13 +2726,22 @@ biology paper.
 - **Everything is bacterial — and that boundary turns out to be a property of
   the representation, not of the kingdoms.** On the **shared published columns**,
   cross-kingdom transfer is useless in both directions, and the two directions
-  are not the same kind of useless: with the human model fitted to the human
-  matrix rather than to *E. coli*'s hyperparameters, *E. coli* → human is
-  **ρ −0.039 [−0.054, −0.024]**, clear of zero, while human → *E. coli* is
-  **−0.006 [−0.023, +0.011]**, which is zero
-  (`results/kingdom_transfer_boot.csv`, 2,000 test-row resamples). Both
-  directions excluded zero only while the human model was undertuned; fitting it
-  properly moved one of them to zero.
+  are not the same kind of useless: *E. coli* → human is
+  **ρ −0.046 [−0.061, −0.031]**, clear of zero, while human → *E. coli* is
+  **−0.016 [−0.032, +0.001]**, whose interval includes zero
+  (`results/kingdom_transfer_boot.csv`, 2,000 test-row resamples, champion
+  settings on both sides).
+  **Re-quoted at champion on 20 November, and the conclusion survives the change.**
+  These figures used to be quoted at a "human-fitted" configuration —
+  400 columns, 1,000 trees, library defaults — which §16.2 then showed was selected
+  under the duplicate-guide leak and is 0.08 ρ *worse* than the champion on honest
+  human folds, so it should not be the arm anything is quoted at. At that setting the
+  two directions read −0.039 [−0.054, −0.024] and −0.006 [−0.023, +0.011]. **The
+  asymmetry is the same under both settings** — one direction clear of zero, the other
+  not — so it never depended on the leak-selected configuration; what changes is that
+  at champion the human → *E. coli* interval only just includes zero (+0.001 at the
+  top), so "which is zero" is a weaker statement than it was and is stated as the
+  interval rather than as a verdict.
   **But the shared columns have no family A on the human side**, because family A
   needs each guide located on a reference genome and the human arm never was.
   Jacky has since built it there, and with flanking context on *both* sides the
@@ -2859,7 +2887,11 @@ could — descriptors are worth nothing in distribution, carry an unseen enzyme'
 and little of its sequence rules, and pooling is worth about a fourfold saving in labels for a
 new enzyme (Finding 9). Both ran outside the frozen pipeline (`sgrna/post_freeze/`,
 `EXTENSION_LOG.md`), on a fork, and neither changes a number in Findings 1–7; the revision of
-Finding 3's dCas9 conclusion comes from the within-gene analysis, not from these two ideas.
+Finding 3's dCas9 conclusion comes from the within-gene analysis, not from these two ideas. **A
+third deferred question was also answered, and it did change the picture:** what the flanking
+signal is physically made of — GC rather than composition in general, side-symmetric, one length
+scale of 250–500 nt, coupled to the PAM-proximal seed, with the guide's own position preferences
+uncorrelated between kingdoms (Finding 10).
 
 **The one-sentence version.** Everything cheap has been done, two things are
 declined on cost with the reason written down, and what is left is a measurement
