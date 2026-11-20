@@ -588,6 +588,53 @@ early = pd.read_csv(OUT / "mechanism_position_base.csv").query("position <= 7").
 chk("21.2 largest |effect| at positions 1-7", float(early), 0.039, 3)
 chk("21.2 strongest effect overall is position 20", float(pd.read_csv(OUT / "mechanism_position_base.csv").effect_sd.abs().max()), 0.348, 3)
 
+print("21.3-21.5 cross-kingdom rules, resolution floor, interaction pairs")
+cmp_ = pd.read_csv(OUT / "mechanism_position_base_compare.csv").set_index(["position", "base"])
+from scipy.stats import spearmanr as _sp
+chk("21.3 rank correlation of the two matrices", float(_sp(cmp_.ecoli, cmp_.human).statistic), -0.052, 3)
+both_clear = cmp_[cmp_.ecoli_clear & cmp_.human_clear]
+chk("21.3 cells clear of zero in both", float(len(both_clear)), 27, 0)
+chk("21.3 of those, opposite in sign", float((np.sign(both_clear.ecoli) != np.sign(both_clear.human)).sum()), 15, 0)
+for pos, b, ec, hu in ((20, "G", -0.322, 0.131), (20, "T", 0.348, -0.170)):
+    chk(f"21.3 position {pos} {b}, E. coli", float(cmp_.loc[(pos, b), "ecoli"]), ec, 3)
+    chk(f"21.3 position {pos} {b}, human", float(cmp_.loc[(pos, b), "human"]), hu, 3)
+chk("21.3 position 20 G inverts", 1.0 if cmp_.loc[(20, "G"), "ecoli"] < 0 < cmp_.loc[(20, "G"), "human"] else 0.0, 1, 0)
+
+res = pd.read_csv(OUT / "novel_resolution.csv").set_index("arm")
+base, ref = float(res.loc["base only", "rho"]), float(res.loc["base + family A comp block (24 cols)", "rho"])
+chk("21.4 base only", base, 0.5617, 4)
+chk("21.4 family A comp block reference", ref, 0.6732, 4)
+for cols, rho, share in ((4, 0.6462, 75.7), (8, 0.6616, 89.6), (16, 0.6679, 95.2),
+                         (32, 0.6701, 97.2), (80, 0.6718, 98.7), (200, 0.6687, 96.0)):
+    lbl = [a for a in res.index if a.startswith(f"base + {cols} binned")][0]
+    chk(f"21.4 {cols} binned columns", float(res.loc[lbl, "rho"]), rho, 4)
+    chk(f"21.4 {cols} columns, share of composition signal", (float(res.loc[lbl, "rho"]) - base) / (ref - base) * 100, share, 1)
+chk("21.4 the curve turns over at 200 columns",
+    1.0 if float(res.loc[[a for a in res.index if a.startswith("base + 200 binned")][0], "rho"])
+    < float(res.loc[[a for a in res.index if a.startswith("base + 32 binned")][0], "rho"]) else 0.0, 1, 0)
+chk("21.4 all of family A", float(res.loc["base + all of family A (348 cols)", "rho"]), 0.7314, 4)
+
+bp = pd.read_csv(OUT / "mechanism_pairs_blocks.csv").set_index("block_pair").gain_share
+chk("21.5 largest block pair share", float(bp.max()), 0.058, 3)
+chk("21.5 flank composition x protospacer basepair quantum",
+    float(bp["flank: window composition x protospacer quantum: basepair"]), 0.048, 3)
+cp = pd.read_csv(OUT / "mechanism_pairs_columns.csv").set_index("col_pair").gain_share
+chk("21.5 strongest single pair share", float(cp.max()), 0.0186, 4)
+chk("21.5 strongest pair is up250 GC x position 20",
+    1.0 if "up250.gc" in cp.idxmax() and "p20" in cp.idxmax() else 0.0, 1, 0)
+
+print("21.6 human flank gain under twin-grouped folds")
+tw = pd.read_csv(OUT / "human_shape_ablation_twin.csv").set_index("arm").spearman
+rw = pd.read_csv(OUT / "human_shape_ablation.csv").set_index("arm").spearman
+chk("21.6 twin h_base", float(tw["h_base"]), 0.3063, 4)
+chk("21.6 twin h_base+A", float(tw["h_base+A"]), 0.3289, 4)
+chk("21.6 twin h_base+A+mc", float(tw["h_base+A+mc"]), 0.3466, 4)
+chk("21.6 twin family A increment", float(tw["h_base+A"] - tw["h_base"]), 0.0226, 4)
+chk("21.6 row-wise family A increment", float(rw["h_base+A"] - rw["h_base"]), 0.0480, 4)
+chk("21.6 increment survives (clear of zero)", 1.0 if tw["h_base+A"] - tw["h_base"] > 0.01 else 0.0, 1, 0)
+chk("21.6 shape on A, twin folds", float(tw["h_base+A+mc"] - tw["h_base+A"]), 0.0177, 4)
+chk("21.6 shape on A, row-wise folds", float(rw["h_base+A+mc"] - rw["h_base+A"]), 0.0183, 4)
+
 print(f"\n{n} checks, {len(bad)} mismatches")
 for b in bad:
     print("  MISMATCH", b)

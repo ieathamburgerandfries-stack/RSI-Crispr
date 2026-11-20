@@ -47,15 +47,33 @@ against crisprHAL 2 **as shipped**: it was never retuned on its own splits, so t
 honest form is that a tuned boosted tree beats their released model, not their
 architecture (Finding 7, last two subsections). Two representation ideas the freeze had deferred were also run in the fork: the flank's shape and 3D structure add nothing to its composition (Finding 8), and nuclease descriptors carry an unseen enzyme's PAM usage and, at most, a little of its sequence rules (Finding 9).
 
-**How this document is organised.** **Part 1** is nine findings, each stated as
+**What the signal turns out to be made of (Finding 10).** The flank effect is carried by
+**GC specifically** — purine fraction is flat at every distance — is **side-symmetric**, and has a
+single characteristic length of **250–500 nt** with no spatial structure below about 250 nt: four
+numbers per guide carry three quarters of it, and describing it more finely eventually costs. The
+guide's own position-specific preferences sit entirely in the PAM-proximal seed, and measured with
+the same estimator on a human matrix they are **uncorrelated between kingdoms (ρ = −0.052), with the
+strongest one inverting** — G immediately 5′ of the PAM is the most disfavoured base here and a
+favoured one in human. The two halves are **coupled rather than additive**: the largest pairwise
+interaction in the model is 250 nt flank GC against position 20. **And the field's performance
+ceiling is mis-derived.** The standard frame takes a replicate-to-replicate correlation of 0.71–0.77
+as implying "∼0.7 is an upper limit of any prediction"; that drops the attenuation square root and
+the Spearman–Brown correction for averaging replicates, and on those same numbers the attainable
+ceiling is **0.91–0.93**. Everyone in this field, us included, is at roughly three quarters of the
+ceiling while believing they are at the top of it (Part 6).
+
+**How this document is organised.** **Part 1** is ten findings, each stated as
 a claim, followed by the evidence it rests on and the limit of what it supports.
 They are ordered as an argument rather than chronologically: **1** decodes the
 published representation and shows what it cannot contain, **2–3** establish the
 one large effect, what shape it has and where it lives, **4–6** are the
 supporting results — the model's material limit, what its internals will and
 will not tell you, and the ceiling on the label — **7** is the comparison
-with the state of the art, and **8–9** are two representation ideas that the freeze
-deferred, run in a fork: the flank's 3D structure and the nuclease's identity. **Part 2** states the three contributions and the
+with the state of the art, **8–9** are two representation ideas that the freeze
+deferred, run in a fork — the flank's 3D structure and the nuclease's identity —
+and **10** is what the signal is physically made of, which is the positive
+mechanistic reading the earlier findings had deliberately avoided until Finding 5's
+redundancy problem could be routed around. **Part 2** states the five contributions and the
 biology separately from the modelling, **Part 3** where the work stops,
 **Part 4** the freeze and the remaining items, **Part 5** what the adversarial
 phase changed, and **Part 6** how the work compares with other published predictors —
@@ -1299,7 +1317,33 @@ for curated numbers; that derivation is in Appendix B.
 
 So SLICER at ρ 0.707–0.721 leaves **about 0.22 of ρ unaccounted for** — 0.225
 against the curated label's measured 0.946, and the gap is not a rounding
-artefact of an inherited ceiling.
+artefact of an inherited ceiling. (With the tuned model at 0.7314 it is **0.215**,
+or 77.3% of attainable.)
+
+**And the route matters more than the number, because the field's version of this is wrong**
+(added 20 November; Part 6 has the full working, `EXTENSION_LOG.md` §19). The standard
+benchmarking frame for this literature — Konstantakos et al. (2022, *NAR*) — reasons from
+replicate agreement directly: *"for datasets where replicates are available, the Spearman
+correlation is in the range of 0.71–0.77 … suggests that a correlation of ∼0.7 constitutes an
+upper limit of any prediction"*, with 0.4 taken as the threshold for a successful tool. That
+treats a **reliability** as a **ceiling**. Two corrections apply and both push the same way: the
+largest correlation any predictor can have with a noisy target is the **square root** of that
+target's reliability (Spearman's 1904 correction for attenuation), and when the target is an
+*average* over replicates — as essentially every released activity score is — Spearman–Brown
+raises the reliability first. On the review's own numbers the attainable ceiling is **0.911 to
+0.933**, not ∼0.7: understated by 0.21–0.23, of which 0.14–0.18 is the missing square root alone.
+
+| replicate agreement *r* | √*r* | reliability of a 2-replicate mean | attainable ceiling |
+|---:|---:|---:|---:|
+| 0.71 | 0.843 | 0.830 | **0.911** |
+| 0.77 | 0.877 | 0.870 | **0.933** |
+| **0.8097** (measured here) | 0.900 | 0.895 | **0.946** |
+
+So the derivation above is not merely a tighter number for one label; it is the corrected form of a
+quantity the field has been using in a form that understates it by about 0.2 ρ. *Caveat stated
+rather than buried:* attenuation theory is exact for Pearson under classical test theory, and
+applying it to Spearman — as both the review and this report do — is an approximation that holds
+well for roughly-normal data and is not exact.
 
 ---
 
@@ -2092,6 +2136,119 @@ by 0.014–0.037, behind on HF1, HypaCas9 and eSpCas9(1.1) by 0.03–0.05 and on
 this is a bounded comparison, not a head-to-head; the paper's weights were not run (external model code). (v) All of it is the 30-mer; flanking DNA beyond 3 nt is
 not in this sheet, so nothing here bears on Findings 2 and 8.
 
+### 10. What the signal is made of: GC over a few hundred bases, a seed region that inverts between kingdoms, and the two coupled
+
+**Claim.** The flanking effect of Findings 2–3 is carried by **GC specifically**, is **side-symmetric**, has a single
+characteristic length of **250–500 nt** with **no structure finer than ~250 nt**, and **interacts with the PAM-proximal
+seed** rather than adding to it. Separately, the guide's own position-specific base preferences are confined to the
+seed and are **uncorrelated between *E. coli* and human** — the strongest one inverts. Run after the freeze
+(`mechanism.py`, `novel_followups.py`; `EXTENSION_LOG.md` §20–21).
+
+*Why these routes.* Finding 5 proved that on a matrix where 99% of columns regenerate from the 20-mer, column-level
+importance is a statement about the selector. So nothing below reads importance off the model: three of the five are
+partial or marginal associations computed from sequence and label directly, one is a resolution ablation, and the last
+uses a depth-2 model whose splits *are* pairs.
+
+**It is GC, not composition in general.** Partial Spearman of each flank window against the label, holding target GC
+fixed (33,567 guides, no model involved):
+
+| | 50 nt | 250 nt | 500 nt | 1,000 nt |
+|---|---:|---:|---:|---:|
+| **GC**, upstream | +0.172 | **+0.203** | +0.196 | +0.173 |
+| **GC**, downstream | +0.146 | **+0.197** | +0.194 | +0.181 |
+| purine, upstream | −0.000 | +0.001 | −0.005 | −0.005 |
+| purine, downstream | −0.007 | −0.018 | −0.014 | −0.000 |
+
+Purine fraction is flat everywhere, within ±0.018 of zero, while GC runs +0.15 to +0.20. That excludes any mechanism
+keyed to purine/pyrimidine asymmetry and points at GC-specific physics — stacking, duplex stability, melting. Same
+direction as two independent results: the effect tracks **absolute** composition rather than enrichment against the
+genome's own background (§20.1, which also retires Part 3's species-portability item), and DNA-shape descriptors are a
+reparameterisation of composition rather than a second channel (Finding 8).
+
+**It is symmetric, which separates it from orientation.** Upstream and downstream agree to within 0.026 at every
+window. A directional process — fork direction, transcription direction, one-sided resection — cannot produce that. So
+the orientation effect (Jacky's, Δ 0.051 against a curated TSS) and the composition effect are **two different
+things**, and orientation is not acting through composition.
+
+**One length scale, 250–500 nt, and no fine structure.** The partial association rises from 50 to 250 nt and falls by
+1,000 nt on both sides. Independently, binning the flank at increasing resolution saturates:
+
+| flank described by | columns | ρ | share of the composition signal |
+|---|---:|---:|---:|
+| nothing (base only) | 0 | 0.5617 | |
+| GC and purine over the whole kilobase, each side | **4** | 0.6462 | **75.7%** |
+| 500 nt bins | 8 | 0.6616 | 89.6% |
+| 250 nt bins | **16** | 0.6679 | **95.2%** |
+| 125 nt bins | 32 | 0.6701 | 97.2% |
+| 50 nt bins | 80 | 0.6718 | 98.7% |
+| 20 nt bins | 200 | 0.6687 | 96.0% — *turns over* |
+| family A's four nested windows | 24 | 0.6732 | reference |
+
+Four numbers carry three quarters of it, sixteen carry 95%, halving the bin width past 250 nt buys +0.0022, and at
+20 nt bins the curve **turns over** — 200 columns score below 32. **The
+effect has essentially no spatial structure below ~250 nt, and describing it more finely actively costs** — what a bulk property averaged over a few hundred bases
+predicts, and what a motif, a positioned protein or a periodic feature would not. 250–500 nt is one to three
+persistence lengths of duplex DNA (~150 bp), far longer than anything Cas9 contacts (~20–30 nt) and far shorter than
+nucleoid macrodomains. *That the length scale is mechanically meaningful is a hypothesis; that there is one, and only
+one, is the measurement.*
+
+**The guide's own preferences live in the seed, and they invert across kingdoms.** Effect of each base at each position
+on the label in SD units, straight from the protospacers (positive = more cutting; position 1 is PAM-distal, 20
+PAM-proximal):
+
+| | A | C | G | T |
+|---|---:|---:|---:|---:|
+| positions 1–7 | every base within ±0.04 of zero | | | |
+| 14 | −0.008 | −0.147 | +0.012 | +0.141 |
+| 18 | +0.075 | −0.060 | **−0.266** | **+0.210** |
+| 19 | −0.115 | −0.161 | +0.138 | +0.152 |
+| 20 | +0.193 | −0.142 | **−0.322** | **+0.348** |
+
+PAM-distal positions are flat; the twelve strongest effects are all at 14–20. Three independent measurements agree:
+this one, our gain-by-position profile (63% of split gain in the eight PAM-proximal positions, §14), and Orro et al.'s
+SHAP profile on a human base-editing screen, which peaks at 19–20.
+
+Running the **identical estimator** on the human matrix — deduplicated to 13,138 distinct guides, labels averaged, and
+the sign convention verified on both sides first (target GC against label −0.147 here and +0.018 there, both
+reproducing the signs established elsewhere in this report) — settles it:
+
+| position 20 | *E. coli* | human |
+|---|---:|---:|
+| G | **−0.322** | **+0.131** |
+| T | **+0.348** | **−0.170** |
+
+and across the whole matrix a rank correlation of **−0.052**, with **15 of 27** jointly-significant cells opposite in
+sign. **The guide-intrinsic design rules are not merely weaker across kingdoms — they are unrelated, and the strongest
+one inverts.** G immediately 5′ of the PAM is the most disfavoured base-position combination in *E. coli* and a
+favoured one in human, which is what the eukaryotic literature independently reports. That explains, mechanistically
+rather than by appeal to "a different organism", the observation the bacterial literature keeps making — that
+mammalian-trained predictors predict poorly in bacteria. It is also usable today: **avoid G and prefer T immediately
+5′ of the PAM in *E. coli***, the opposite of what a human-derived tool will say.
+
+**The flank and the seed are coupled, not additive.** §14 found 37% of what trees add over a linear model is pairwise
+but not which pairs. A depth-2 model's splits are pairs:
+
+| block pair | share of interaction gain |
+|---|---:|
+| flank window composition × flank window quantum | 0.058 |
+| seed indicators (16–20) × protospacer dimer quantum | 0.048 |
+| **flank window composition × protospacer basepair quantum** | 0.048 |
+| flank window quantum × protospacer basepair quantum | 0.047 |
+
+The strongest single pair is `eng.flank.comp.up250.gc` against a property of **position 20** (1.9% of interaction
+gain) — the same window the distance profile peaks at and the same position carrying the strongest base preference and
+the inversion. So **how much the surrounding composition matters depends on what the PAM-proximal bases are.** The
+coupling is diffuse: no block pair above 5.8%, no column pair above 1.9%, which is what a smooth gradient rather than a
+discrete rule predicts.
+
+**Limits.** (i) The length scale is a measurement; the persistence-length reading is a hypothesis and nothing here
+tests the physics. (ii) The cross-kingdom comparison is between two different assays — survival after cutting against
+an indel/knockout score — so it compares *design rules*, not mechanisms, and says nothing about why they invert; the
+human side is one cohort. (iii) The 15-of-27 figure is sign agreement among jointly-significant cells, not a formal
+test of independence. (iv) The interaction analysis is depth 2 and by construction cannot see third-order structure,
+which §14 bounds at 4% anyway. (v) All of it is *E. coli* SpCas9 on one curated label.
+
+
 
 ---
 
@@ -2150,9 +2307,31 @@ against 0.6799), and SLICER leads by **0.065** only once the window reaches
 about architecture, and Finding 7 tabulates every condition under which the
 comparison has been asked rather than choosing one.
 
+**4. What the flanking signal physically is, and a design rule that inverts between kingdoms.**
+The effect is **GC** and not composition in general (purine is flat at every distance and side), it
+is **side-symmetric** — so whatever carries it is not directional, which separates it from the
+orientation effect — and it has **one characteristic length of 250–500 nt** with no structure below
+about 250 nt: four numbers per guide carry three quarters of it and finer descriptions eventually
+cost. The guide's own preferences sit entirely in the PAM-proximal seed and are **uncorrelated
+between *E. coli* and human (ρ = −0.052)**, with the strongest inverting: G immediately 5′ of the
+PAM is the most disfavoured base here and a favoured one in human. The two halves are **coupled**,
+the largest pairwise interaction being 250 nt flank GC against position 20 (Finding 10). This is the
+project's positive mechanistic result, and it arrived late because Finding 5 had correctly ruled out
+the obvious route to it — reading importance off a redundant matrix — so it needed estimators with
+no model in them.
+
+**5. A correction to how this field measures its own headroom.** The standard benchmarking frame
+takes replicate agreement of 0.71–0.77 as implying "∼0.7 is an upper limit of any prediction". That
+treats a reliability as a ceiling: the attainable correlation is the **square root** of the target's
+reliability, and released scores average replicates, so Spearman–Brown applies first. On the same
+numbers the ceiling is **0.911–0.933**. Models at ρ ≈ 0.70 — and ours at 0.7314 — are therefore at
+**75–77%** of attainable rather than at the top of it, so the field has roughly three times the
+headroom it believes (Finding 6, Part 6). This needs no new data and is the one result here that
+changes how other people's numbers should be read.
+
 ### What is new about the biology, separately from the model
 
-The three contributions above are partly about modelling. Stripped of everything
+The first three contributions above are partly about modelling, and the fourth is not. Stripped of everything
 computational, this is what the project claims about *E. coli* Cas9 biology that
 was not known before it — one positive localisation, one directional effect, and
 a set of constraints that are worth as much because each kills a plausible
@@ -2260,7 +2439,7 @@ efficiency **inverts** between *E. coli* and human (−0.20 against +0.02).
 > sign. The GC inversion is untouched, because it needs no model to fit.
 
 And **flanking context is the part of the representation that does cross**:
-built on both sides it is worth +0.052 ρ on the human matrix on its own ground,
+built on both sides it is worth **+0.023 ρ** on the human matrix on its own ground — re-measured on 20 November under folds that keep repeated guides together, which halves the +0.048 the leaked folds gave but leaves it clear of zero (0.3063 → 0.3289, sd 0.003 over 15 fits; §16.2, §21) —
 and it turns cross-kingdom transfer from ≈0.049 against to +0.022 for, in both
 directions (Jacky's result, Part 3) — **both figures on the row-wise human folds just
 flagged, so both inherit the duplicate-guide problem and neither has been re-run.** The
@@ -2645,7 +2824,7 @@ three kinds, and only one kind is worth more compute.
 |---|---|---|
 | Everything interpretive is conditioned on a redundancy-blind selector | the 300 columns are the top *k* of a gain ranking, and gain over-weights binary columns by 14 points of composition. "45 columns carry half the gain", the concentration figures and every family increment inherit that | **not at the selector — tested and it fails.** A redundancy-penalised rule costs −0.0023 and leaves a *more* binary, less readable set, because the redundant columns here are the informative ones (Appendix B). The limit stands; the fix is block-level attribution, which Finding 5 already prescribes |
 | The label is **P(cut) × P(the break kills)** and no arm separates the terms | survival is the only readout, so the model is fitted to the product (Part 2) | partial, and cheap: Cui's screen carries **two time points**, 18 and 75 generations, which the pipeline averages for reliability. Their *difference* is a depletion-rate signal, and rate separates "cuts fast" from "eventually dies" in a way an endpoint cannot. Applies to the dCas9 cohort only, which is the limit of it |
-| **Family A's composition columns are absolute, so they do not mean the same thing in two genomes** | its strongest column is `eng.flank.comp.up250.gc`, a raw GC *fraction*. *E. coli* K-12 is **50.79%** GC and *C. rodentium* is **54.72%**, so a flank at 52% GC is 1.2 points **above** background in one genome and 2.7 points **below** it in the other. The feature carries the opposite sign of local enrichment across the two, and the cross-organism transfer that retains 88–91% does so despite this | express each window's composition **relative to its own genome**: a z-score against the genome-wide distribution, or a percentile rank, instead of a raw fraction. Both genomes and the transfer harness are already on disk (`transfer.py`), so this is a rebuild of family A plus a re-run of the existing arms. It is the single cheapest thing that could make the representation species-portable, and the ~10% currently lost on the *C. rodentium* transfer is the budget it is competing for |
+| ~~**Family A's composition columns are absolute, so they do not mean the same thing in two genomes**~~ **— tested, and absolute is the right parameterisation** | its strongest column is `eng.flank.comp.up250.gc`, a raw GC *fraction*, and K-12 is **50.79%** GC against *C. rodentium*'s **54.72%** (both reproduced from the fastas), so a flank at 52% GC is above background in one genome and below it in the other | **done, 20 November, and it is a null the wrong way** (§20.1). Re-expressing all 16 raw composition columns as percentiles of each genome's own distribution of that statistic changes *C. rodentium* transfer by **−0.0037** (0.7142 → 0.7105) and the home figure by −0.0003 — the latter confirming the design prediction that within one genome a percentile map is monotone and so invisible to a tree, which is what validates the setup. **The reading is worth more than the gain would have been:** if the effect were about being GC-rich *for this genome*, the percentile should have won, so it tracks **absolute** base composition and therefore a physical property of the DNA rather than anything read against genomic background (Finding 10). The ~10% lost on transfer is not recoverable this way |
 | ~~Faithfulness is only ever measured by refitting~~ | every drop-and-refit measure is confounded by redundancy in the refit itself | **done, and the attribution is faithful to the fixed model**: sensitivity-*n* is +0.93 for single columns and +0.97 for six-block subsets against ≈0 for permuted attributions (Finding 5). What remains is not faithfulness but stability: correlated columns still split credit arbitrarily *between* fits, so the unit stays the block |
 | Per-guide label reliability is heterogeneous and ignored | the 0.946 ceiling is an average over guides whose replicate disagreement spans 0.06 to 2.39 log2 units | **measured, and the answer is no** (Appendix B). Inverse-variance weighting costs −0.0050, of which −0.0041 is reproduced by permuting the weights, and dropping the noisiest decile is indistinguishable from dropping a random one. ALDEx2's posterior has already spent the information. The limit is real; the obvious lever is not the way to move it |
 
@@ -2926,7 +3105,7 @@ cost, because the cost was not small.
 
 ### What that means
 
-**The three contributions survive; several of the sentences supporting them did
+**The contributions survive; several of the sentences supporting them did
 not.** The decoding and the flanking-context effect came through every control
 intact or stronger. What changed is the *framing* of the third: we do not
 out-encode a tuned deep model on DNA both sides hold, we have access to DNA it
@@ -4565,7 +4744,7 @@ the "library defaults, 1,000 trees" configuration (from 0.5076)**: the configura
 because deep, fast-learning trees can memorise a sequence whose twin is in training. The teammate's "n_estimators kept improving
 with no clear plateau, unlike bacteria" is what memorisation of twins would produce, and the 0.5076 configuration does not hold
 once twins are kept together. Statements that
-rest on row-wise human folds and were *not* re-run: the +0.052 flank gain, the 64% linear-to-boosted ratio, and the
+rest on row-wise human folds. **Two of the three have since been re-run (20 November).** The flank gain survives at **+0.023** against the +0.048 the leaked folds gave, so the claim holds at half the size; the 64% linear-to-boosted ratio is withdrawn (it becomes 88.8%, §16.2). Not re-run, and not needing to be, is the
 cross-kingdom transfer figures. The bacterial cohort has no repeated guides (33,567 distinct in 33,567) and is gene-grouped.
 
 ### What other long-range features could be built without new data?

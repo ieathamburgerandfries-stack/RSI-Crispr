@@ -105,7 +105,7 @@ def run(seeds=(41, 42, 43), verbose: bool = True):
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--bootstrap", action="store_true",
-                    help="resample test rows at the human-fitted settings")
+                    help="resample test rows; covers both the champion and the human-fitted settings")
     a = ap.parse_args(argv)
     bootstrap() if a.bootstrap else run()
     return 0
@@ -125,7 +125,7 @@ def main(argv=None) -> int:
 BOOT = config.RESULTS / "kingdom_transfer_boot.csv"
 
 
-def bootstrap(seeds=(41, 42, 43), n_boot=2000, verbose: bool = True):
+def bootstrap(seeds=(41, 42, 43), n_boot=2000, verbose: bool = True, settings=("champion", "human_fitted")):
     import xgboost as xgb
 
     from ..harness.run_ablation import _impute, champion_params, make_selector
@@ -136,6 +136,7 @@ def bootstrap(seeds=(41, 42, 43), n_boot=2000, verbose: bool = True):
 
     rows = []
     for name, (X_tr0, y_tr, X_te0, y_te) in directions.items():
+      for setting in settings:
         preds = []
         for seed in seeds:
             X_tr, X_te = _impute(X_tr0, X_te0)
@@ -143,7 +144,8 @@ def bootstrap(seeds=(41, 42, 43), n_boot=2000, verbose: bool = True):
             sel.fit(X_tr, y_tr)
             top = np.argsort(sel.feature_importances_)[::-1][:config.N_FEATURES]
             p = dict(champion_params(seed))
-            p.update(HUMAN_FITTED)
+            if setting == "human_fitted":
+                p.update(HUMAN_FITTED)
             m = xgb.XGBRegressor(**p)
             m.fit(X_tr[:, top], y_tr)
             preds.append(m.predict(X_te[:, top]))
@@ -156,7 +158,7 @@ def bootstrap(seeds=(41, 42, 43), n_boot=2000, verbose: bool = True):
             i = rng.integers(0, n, n)
             draws[b] = spearmanr(y_te[i], yhat[i]).statistic
         lo, hi = np.percentile(draws, [2.5, 97.5])
-        rows.append(dict(direction=name, settings="human_fitted", n_test=n,
+        rows.append(dict(direction=name, settings=setting, n_test=n,
                          spearman=float(spearmanr(y_te, yhat).statistic),
                          ci_lo=float(lo), ci_hi=float(hi), n_boot=n_boot,
                          excludes_zero=bool(lo < 0 and hi < 0)))

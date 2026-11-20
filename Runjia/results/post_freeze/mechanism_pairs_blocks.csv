@@ -1,0 +1,79 @@
+block_pair,gain_share
+flank: window composition x flank: window quantum,0.05796211166591086
+protospacer indicators: pos 16-20 (seed) x protospacer quantum: dimer,0.04805599233588909
+flank: window composition x protospacer quantum: basepair,0.04752846295096045
+flank: window quantum x protospacer quantum: basepair,0.046630504562115864
+flank: window composition x protospacer quantum: dimer,0.043225742075703975
+protospacer quantum: dimer x protospacer quantum: dimer,0.04063308749009703
+protospacer indicators: pos 16-20 (seed) x protospacer indicators: pos 16-20 (seed),0.03933114937682555
+flank: window quantum x flank: window quantum,0.030641231872302017
+protospacer quantum: basepair x protospacer quantum: dimer,0.03028920340455491
+protospacer indicators: pos 16-20 (seed) x protospacer quantum: tetramer,0.02881613153895989
+flank: quantum within 10 nt x protospacer indicators: pos 16-20 (seed),0.028568559146823724
+protospacer indicators: pos 16-20 (seed) x protospacer indicators: pos 6-15 (middle),0.028027299704545868
+flank: window quantum x protospacer quantum: tetramer,0.02563787182394818
+flank: window composition x protospacer quantum: tetramer,0.025184456076581617
+protospacer indicators: pos 16-20 (seed) x protospacer quantum: trimer,0.02497476460723995
+protospacer indicators: pos 16-20 (seed) x protospacer quantum: basepair,0.023444823806406247
+flank: window quantum x protospacer quantum: dimer,0.021915585199043377
+flank: window composition x flank: window composition,0.021645844314257725
+flank: quantum within 10 nt x flank: quantum within 10 nt,0.021182383735253815
+flank: quantum within 10 nt x protospacer indicators: pos 6-15 (middle),0.02005509944737411
+flank: window quantum x protospacer indicators: pos 6-15 (middle),0.018579533385316108
+protospacer quantum: tetramer x protospacer quantum: trimer,0.016501249425781402
+protospacer indicators: pos 6-15 (middle) x protospacer quantum: dimer,0.015600428962721504
+protospacer indicators: pos 6-15 (middle) x protospacer quantum: tetramer,0.01545446574614035
+flank: window quantum x protospacer indicators: pos 16-20 (seed),0.015034167458687724
+flank: bases within 10 nt x protospacer indicators: pos 16-20 (seed),0.015032184594910824
+flank: quantum within 10 nt x flank: window quantum,0.014710241399639758
+flank: bases within 10 nt x flank: quantum within 10 nt,0.014140191733537718
+flank: quantum within 10 nt x protospacer quantum: tetramer,0.01321196413864334
+protospacer quantum: tetramer x protospacer quantum: tetramer,0.012559431022637945
+flank: quantum within 10 nt x protospacer quantum: trimer,0.011738255165035618
+protospacer indicators: pos 6-15 (middle) x protospacer quantum: trimer,0.011543823110246834
+protospacer quantum: dimer x protospacer quantum: trimer,0.010352820240761233
+flank: window quantum x protospacer quantum: trimer,0.009448477474008439
+protospacer quantum: trimer x protospacer quantum: trimer,0.009232752461193637
+flank: quantum within 10 nt x protospacer quantum: dimer,0.008948002314024458
+flank: quantum within 10 nt x flank: window composition,0.00854098242319763
+flank: window composition x protospacer indicators: pos 6-15 (middle),0.008163034940053375
+protospacer quantum: dimer x protospacer quantum: tetramer,0.008053133457000525
+flank: bases within 10 nt x protospacer indicators: pos 6-15 (middle),0.0075602151432373685
+protospacer indicators: pos 16-20 (seed) x protospacer quantum: monomer,0.006988712039916938
+flank: window composition x protospacer indicators: pos 16-20 (seed),0.0058615190547586125
+protospacer indicators: pos 6-15 (middle) x protospacer indicators: pos 6-15 (middle),0.005860157534033123
+flank: bases within 10 nt x flank: window quantum,0.005828566691891932
+flank: quantum within 10 nt x protospacer quantum: basepair,0.0049037026944302505
+flank: bases within 10 nt x protospacer quantum: tetramer,0.00467574638472733
+protospacer indicators: pos 6-15 (middle) x protospacer quantum: basepair,0.0045085796839820225
+protospacer indicators: pos 6-15 (middle) x protospacer quantum: monomer,0.0044895018946485635
+protospacer quantum: dimer x protospacer quantum: monomer,0.004482438316122623
+flank: window composition x protospacer quantum: trimer,0.004414808882789218
+flank: bases within 10 nt x protospacer quantum: trimer,0.004213337781494712
+protospacer quantum: monomer x protospacer quantum: tetramer,0.003950565943545641
+protospacer indicators: pos 1-5 (PAM-distal) x protospacer indicators: pos 16-20 (seed),0.003265613041859686
+flank: quantum within 10 nt x protospacer indicators: pos 1-5 (PAM-distal),0.002847777221892531
+flank: bases within 10 nt x protospacer quantum: basepair,0.0028207080457155745
+protospacer indicators: pos 1-5 (PAM-distal) x protospacer quantum: trimer,0.002784500763137853
+protospacer quantum: basepair x protospacer quantum: tetramer,0.0026843599864127257
+protospacer indicators: pos 1-5 (PAM-distal) x protospacer indicators: pos 6-15 (middle),0.002555695785361131
+flank: quantum within 10 nt x protospacer quantum: monomer,0.0025152346370067983
+flank: bases within 10 nt x protospacer quantum: dimer,0.002473778321155878
+protospacer quantum: monomer x protospacer quantum: trimer,0.0024383181935992686
+flank: bases within 10 nt x flank: bases within 10 nt,0.002367121558313227
+flank: window quantum x protospacer quantum: monomer,0.0022800117231238266
+flank: window composition x protospacer quantum: monomer,0.002006345491724551
+flank: window quantum x protospacer indicators: pos 1-5 (PAM-distal),0.0019474942299451932
+protospacer indicators: pos 1-5 (PAM-distal) x protospacer quantum: tetramer,0.0018112079737924586
+protospacer indicators: pos 1-5 (PAM-distal) x protospacer quantum: dimer,0.0014480974404800094
+protospacer quantum: basepair x protospacer quantum: trimer,0.0013813739845169642
+protospacer quantum: basepair x protospacer quantum: basepair,0.0009344075910839103
+flank: bases within 10 nt x protospacer quantum: monomer,0.0008948590624471302
+flank: bases within 10 nt x protospacer indicators: pos 1-5 (PAM-distal),0.000801293296523913
+protospacer indicators: pos 1-5 (PAM-distal) x protospacer indicators: pos 1-5 (PAM-distal),0.0003729890175703985
+flank: bases within 10 nt x flank: window composition,0.0003720782717490506
+protospacer quantum: monomer x protospacer quantum: monomer,0.0001927310924658774
+protospacer indicators: pos 1-5 (PAM-distal) x protospacer quantum: monomer,0.00017449851493384517
+flank: window composition x protospacer indicators: pos 1-5 (PAM-distal),0.00012686281819922757
+protospacer quantum: basepair x protospacer quantum: monomer,9.609826320005504e-05
+protospacer indicators: pos 1-5 (PAM-distal) x protospacer quantum: basepair,7.324703987790894e-05

@@ -1,0 +1,21 @@
+col_pair,gain_share
+eng.flank.comp.up250.gc x p20basepair.Hlgap.eVEraw,0.01859551323003903
+p18dimer.Hbond.energyraw x p19dimer.Hbond.stackingraw,0.01626460863290409
+eng.flank.win.dn500.trimer.Hbondenergy.mean x p20basepair.Hlgap.eVEraw,0.01593294494798342
+eng.flank.comp.up250.gc x eng.flank.win.dn500.trimer.Hbondenergy.mean,0.013679726527864904
+p19dimer.HLgap.eVEraw x p20basepair.Hlgap.eVEraw,0.009278751505557008
+eng.flank.comp.up250.gc x p19dimer.Hbond.stackingraw,0.009166900953841737
+eng.flank.win.up250.trimer.Hbondenergy.mean x p20basepair.Hlgap.eVEraw,0.009025262672778908
+p19dimer.HLgap.eVEraw x p19dimer.Hbond.energyraw,0.008702436690759395
+eng.flank.comp.up250.gc x p19dimer.Hbond.energyraw,0.007769684931222085
+eng.flank.comp.up250.gc x eng.flank.win.dn250.trimer.Hbondenergy.mean,0.007153381184949813
+eng.flank.comp.dn250.gc x p19dimer.Hbond.stackingraw,0.006805463504855529
+p18basepair.Hlgap.eVEraw x p18dimer.Hbond.stackingraw,0.006594870913463844
+eng.flank.comp.dn250.gc x eng.flank.comp.up250.gc,0.006533179292327315
+eng.flank.comp.dn500.gc x eng.flank.comp.up250.gc,0.006476211141899752
+eng.flank.win.dn250.trimer.Hbondenergy.mean x p20basepair.Hlgap.eVEraw,0.006446443302251227
+V4299sgRNA.raw x p19dimer.Hbond.energyraw,0.006442878803515145
+V231.xsgRNA.raw x V257.xsgRNA.raw,0.0053245501350065285
+eng.flank.win.dn500.trimer.Hbondenergy.mean x p19dimer.Hbond.stackingraw,0.005130946593471737
+V1110.xsgRNA.raw x p20basepair.Hlgap.eVEraw,0.0050377384276401515
+eng.flank.comp.dn250.gc x p20basepair.Hlgap.eVEraw,0.004916893823969265

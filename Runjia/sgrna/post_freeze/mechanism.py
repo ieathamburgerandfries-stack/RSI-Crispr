@@ -150,7 +150,7 @@ def asymmetry(seeds=(41, 42, 43)):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--test", choices=["bases", "distance", "asymmetry", "all"], default="all")
+    ap.add_argument("--test", choices=["bases", "distance", "asymmetry", "human", "pairs", "all"], default="all")
     a = ap.parse_args()
     if a.test in ("distance", "all"):
         print("\n=== signed flank-distance profile ===", flush=True)
@@ -161,7 +161,124 @@ def main():
     if a.test in ("asymmetry", "all"):
         print("\n=== upstream against downstream composition ===", flush=True)
         asymmetry()
+    if a.test in ("human", "all"):
+        print("\n=== the same estimator on the human matrix ===", flush=True)
+        human_bases()
+    if a.test in ("pairs", "all"):
+        print("\n=== which column pairs carry the interaction ===", flush=True)
+        pairs()
 
+
+
+
+# ------------------------------------------------------------------ the same estimator on human
+def human_bases():
+    """Position x base effects on the human matrix, by the identical estimator, for a like-for-like
+    comparison with 21.2.
+
+    Comparing our statistic against Doench's fitted model weights would be apples to oranges -- their
+    weights come from a regularised regression over many correlated features and are not per-position
+    marginals. So we run OUR estimator on THEIR data instead. Guides are deduplicated first (17,421
+    rows decode to 13,138 distinct 20-mers, and a repeated guide is a repeat measurement, not a second
+    observation), labels averaged within a guide.
+    """
+    from .human_flank import decode
+    dec = decode()
+    y = pd.to_numeric(dec.y, errors="coerce").to_numpy(float)
+    ok = np.isfinite(y) & dec.decoded_ok.to_numpy(bool)
+    d = pd.DataFrame({"p": dec.protospacer[ok].astype(str).to_numpy(), "y": y[ok]})
+    g = d.groupby("p", sort=False).y.mean()
+    protos, yy = g.index.to_numpy(), g.to_numpy()
+    print(f"  human: {int(ok.sum()):,} usable rows -> {len(protos):,} distinct guides (labels averaged)", flush=True)
+    seqs = np.frombuffer("".join(protos).encode("ascii"), np.uint8).reshape(len(protos), 20)
+    gc = np.array([(s.count("G") + s.count("C")) / 20 for s in protos])
+    print(f"  target GC vs label rho = {spearmanr(gc, yy).statistic:+.4f} "
+          f"(report: +0.02 in human against -0.20 in E. coli)", flush=True)
+    sd = yy.std()
+    rows = []
+    for pos in range(20):
+        col = seqs[:, pos]
+        for b in BASES:
+            m = col == ord(b)
+            if m.sum() < 50:
+                continue
+            eff = (yy[m].mean() - yy.mean()) / sd
+            se = yy[m].std(ddof=1) / np.sqrt(m.sum()) / sd
+            rows.append(dict(position=pos + 1, base=b, n=int(m.sum()), effect_sd=float(eff),
+                             lo=float(eff - 1.96 * se), hi=float(eff + 1.96 * se)))
+    out = pd.DataFrame(rows)
+    out["clear_of_zero"] = (out.lo > 0) | (out.hi < 0)
+    out.to_csv(OUT / "mechanism_position_base_human.csv", index=False)
+    pd.set_option("display.width", 200)
+    print("\n  human, effect on the label in SD units:")
+    print(out.pivot(index="position", columns="base", values="effect_sd").round(3).to_string())
+    # the comparison that matters
+    ec = pd.read_csv(OUT / "mechanism_position_base.csv").set_index(["position", "base"])
+    hu = out.set_index(["position", "base"])
+    both = pd.DataFrame({"ecoli": ec.effect_sd, "human": hu.effect_sd,
+                         "ecoli_clear": ec.clear_of_zero, "human_clear": hu.clear_of_zero}).dropna()
+    both["inverts"] = (np.sign(both.ecoli) != np.sign(both.human)) & both.ecoli_clear & both.human_clear
+    both.to_csv(OUT / "mechanism_position_base_compare.csv")
+    print(f"\n  rank correlation of the two matrices: {spearmanr(both.ecoli, both.human).statistic:+.4f}")
+    print(f"  position-base cells clear of zero in BOTH and opposite in sign: "
+          f"{int(both.inverts.sum())} of {int((both.ecoli_clear & both.human_clear).sum())}")
+    key = both.loc[[(20, 'G'), (20, 'T'), (18, 'G'), (18, 'T')]] if (20, 'G') in both.index else both.head(4)
+    print("\n  the cells the inversion claim rests on:")
+    print(key.round(3).to_string())
+    return both
+
+
+# ------------------------------------------------------------------ which pairs interact
+def pairs(seed=41, top=20):
+    """Column pairs that co-occur on a depth-2 tree's root-to-leaf path, weighted by gain.
+
+    Section 14 found that 37% of what trees add over a linear model is pairwise. A depth-2 model can
+    express exactly pairs, so its (root, child) pairs ARE the interactions, with none of SHAP's
+    additivity assumptions. Reported at block level, which is the unit Finding 5 says is readable.
+    """
+    import json
+    import xgboost as xgb
+    from sgrna.harness.run_ablation import _impute, make_selector
+    from sgrna.interpret.importance import block_of
+    from . import tune_ecoli as T
+    from sgrna.cohorts.curated_ablation import _base, _block
+    X0, y, names, protos = _base()
+    A, an = _block("a_flank", protos)
+    allnames = list(names) + list(an)
+    co = T.Cohort()
+    cfg = dict(json.loads((OUT / "tune_configs.json").read_text())["d099x"], max_depth=2, n_estimators=4000)
+    rk = T.DIR / f"rank_devall_s{seed}.npy"
+    top_cols = np.load(rk)[: int(cfg["nf"])]
+    Atr, _ = _impute(co.X[co.dev][:, top_cols], co.X[co.conf][:1][:, top_cols])
+    m = xgb.XGBRegressor(**T.xgb_params(cfg, seed)).fit(Atr, co.y[co.dev])
+    tdf = m.get_booster().trees_to_dataframe()
+    tdf = tdf[tdf.Feature != "Leaf"]
+    idx = {f"f{i}": allnames[c] for i, c in enumerate(top_cols)}
+    rows = []
+    for tree, grp in tdf.groupby("Tree"):
+        root = grp[grp.ID.str.endswith("-0")]
+        if root.empty:
+            continue
+        rf = root.Feature.iloc[0]
+        rg = float(root.Gain.iloc[0])
+        for _, ch in grp[~grp.ID.str.endswith("-0")].iterrows():
+            rows.append(dict(a=idx.get(rf, rf), b=idx.get(ch.Feature, ch.Feature), gain=rg + float(ch.Gain)))
+    d = pd.DataFrame(rows)
+    d["block_a"] = d.a.map(block_of); d["block_b"] = d.b.map(block_of)
+    d["block_pair"] = [" x ".join(sorted([x, y_])) for x, y_ in zip(d.block_a, d.block_b)]
+    d["col_pair"] = [" x ".join(sorted([x, y_])) for x, y_ in zip(d.a, d.b)]
+    bl = d.groupby("block_pair").gain.sum().sort_values(ascending=False)
+    bl = (bl / bl.sum()).rename("gain_share").reset_index()
+    bl.to_csv(OUT / "mechanism_pairs_blocks.csv", index=False)
+    cp = d.groupby("col_pair").gain.sum().sort_values(ascending=False)
+    cp = (cp / cp.sum()).rename("gain_share").head(top).reset_index()
+    cp.to_csv(OUT / "mechanism_pairs_columns.csv", index=False)
+    pd.set_option("display.width", 220)
+    print("  interaction gain by block pair:")
+    print(bl.head(12).round(4).to_string(index=False))
+    print("\n  top specific column pairs:")
+    print(cp.round(4).to_string(index=False))
+    return bl, cp
 
 if __name__ == "__main__":
     main()
