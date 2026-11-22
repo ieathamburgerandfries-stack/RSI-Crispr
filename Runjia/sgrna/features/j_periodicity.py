@@ -1,7 +1,7 @@
 """Family J -- strand asymmetry and helical periodicity in the flanking DNA.
 
 Three features, chosen because each is something GC content provably cannot be.
-Part 6's rule says a candidate can only help if it is not computable from what
+The report's rule is that a candidate can only help if it is not computable from what
 the model already holds; these are all *positional* properties of the genome, so
 they pass by construction, and two of them are not even functions of base
 composition.
@@ -9,7 +9,7 @@ composition.
 **GC skew**, (G - C) / (G + C) over a window. GC *content* is symmetric under
 swapping the two strands; GC skew is not. That matters here because the one
 effect this project cannot explain -- the long-range downstream-versus-upstream
-asymmetry (Part 5) -- is itself strand-asymmetric, and a symmetric quantity is
+asymmetry -- is itself strand-asymmetric, and a symmetric quantity is
 the wrong shape to explain an asymmetric effect. In *E. coli* skew also flips
 sign at the replication origin and terminus, so it carries replichore
 information without the model being told the coordinate.

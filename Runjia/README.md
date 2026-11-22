@@ -75,7 +75,7 @@ Part 4. Ten remain open and each says what would settle it; six were closed on 2
 four claims later work made false have not returned, and that every module in the package imports without writing
 anything.
 
-**Part 6 of the report** now compares this work with the field — what each published predictor reads, how it validates,
+**Part 5 of the report** now compares this work with the field — what each published predictor reads, how it validates,
 and where this project is novel (the kilobase reach) and explicitly is not (boosted trees matching a deep model, which
 BoostMEC did first).
 
@@ -118,7 +118,7 @@ search of their own (free Colab T4, 16 October) found **nothing better than thei
 published configuration**, which won four of five inner searches. And on a screen
 neither model trained on, **their** model transfers better (\|ρ\| 0.0867 against
 0.0609). The claim that survives every condition is parity plus data efficiency,
-not a better model. Details and all four conditions: Part 6 (the head-to-head) of
+not a better model. Details and all four conditions: Part 5 (the head-to-head) of
 [`docs/PROGRESS_REPORT.md`](PROGRESS_REPORT.md).
 
 (The source paper this extends reports Pearson 0.502 / R² 0.249 on the same
@@ -276,7 +276,7 @@ the model cannot already compute, not about what the phenotype depends on — se
 the increments beside each family's strongest *marginal* association and the
 latter is nearly flat, 0.12 to 0.18, with the single strongest column in the
 whole matrix being a guide-determined hybridisation energy at 0.184 (report,
-Part 2, *Further inferences about the process*). Three more measurements close off the alternatives — the
+Part 2, inference 2; Appendix B). Three more measurements close off the alternatives — the
 champion has no feature left with residual correlation above 0.035, sixteen
 model classes span only 0.116 Spearman, and a CNN reading raw bases *ties* the
 engineered matrix on the guide (ρ 0.498 vs 0.527) while losing badly on the

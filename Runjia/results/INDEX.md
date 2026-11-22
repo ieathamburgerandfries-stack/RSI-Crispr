@@ -32,7 +32,7 @@ Within a group the order is alphabetical.
 | `portability_audit.csv` | 2.7 | cited | `handnamed_split`, `portability` | column, kind, r2_from_20mer, portable |
 | `selector_control.csv` | 0.2 | cited | — | arm, n_cols, selected, spearman, sd |
 
-### Finding 2 — The DNA around the cut site predicts cutting — the one large effect, and it is a gradient
+### Finding 2 — The DNA around the cut site predicts cutting — the one large effect, and it is local and compositional
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
@@ -74,10 +74,12 @@ Within a group the order is alphabetical.
 | `transfer.csv` | 17.5 | audited | `transfer` | dataset, arm, model, seed, fold, n_rows, n_cols … |
 | `transfer_model.csv` | 4.8 | cited | `transfer` | source, target, arm, model, seed, n_train, n_test … |
 
-### Finding 4 — The model is out of *material* — and the post-freeze tuning gain is the sharpest evidence for it
+### Finding 4 — The model is out of *material*, and the tuning gain is evidence for it
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
+| `ceiling.json` | 0.3 | cited | `diagnose` |  |
+| `headroom.csv` | 606.0 | audited | `diagnose` | column, family, used, rho_with_residual, rho_with_label, abs_resid |
 | `kmer_order_paired.csv` | 1.8 | audited | — | seed, fold, arm, n_columns, spearman |
 | `post_freeze/family_a_at_tuned.csv` | 6.0 | audited | `family_a_at_tuned` | matrix, arm, seed, fold, n_train, n_test, n_flank_cols … |
 | `post_freeze/family_a_at_tuned_summary.csv` | 1.0 | audited | `family_a_at_tuned` | comparison, base, with_a, delta, lo, hi, folds_positive … |
@@ -87,6 +89,11 @@ Within a group the order is alphabetical.
 | `post_freeze/tune_external.csv` | 1.5 | audited | `tune_ecoli` | arm, seed, fold, rho |
 | `post_freeze/tune_fullcv.csv` | 2.0 | audited | `tune_ecoli` | arm, seed, fold, rho |
 | `post_freeze/tune_stage2.csv` | 69.4 | receipt | `tune_ecoli` | draw, seed, fold, k, rho |
+| `redundancy.csv` | 38.4 | cited | `diagnose` | family, column, r2_from_protospacer |
+| `representation.csv` | 0.9 | receipt | `representation` | arm, n_columns, spearman, spearman_sd, r2, r2_sd, complete |
+| `representation_depth.csv` | 1.1 | receipt | `representation` | arm, n_columns, max_depth, spearman, spearman_sd, r2, complete |
+| `representation_headroom.csv` | 1937.3 | audited | `representation` | arm, column, group, rho_with_residual |
+| `representation_residual.csv` | 0.3 | receipt | `representation` | arm, n_columns, spearman, spearman_sd, r2, complete |
 
 ### Finding 5 — On a redundant matrix, importance and faithfulness are both uninterpretable
 
@@ -177,17 +184,10 @@ Within a group the order is alphabetical.
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `ceiling.json` | 0.3 | cited | `diagnose` |  |
-| `headroom.csv` | 606.0 | audited | `diagnose` | column, family, used, rho_with_residual, rho_with_label, abs_resid |
 | `post_freeze/sealed_organism.csv` | 0.4 | audited | `sealed_organism` | arm, rho_seed_mean, rho_seed_sd, rho_of_seed_average, minus_champion, lo, hi |
-| `redundancy.csv` | 38.4 | cited | `diagnose` | family, column, r2_from_protospacer |
-| `representation.csv` | 0.9 | receipt | `representation` | arm, n_columns, spearman, spearman_sd, r2, r2_sd, complete |
-| `representation_depth.csv` | 1.1 | receipt | `representation` | arm, n_columns, max_depth, spearman, spearman_sd, r2, complete |
-| `representation_headroom.csv` | 1937.3 | audited | `representation` | arm, column, group, rho_with_residual |
-| `representation_residual.csv` | 0.3 | receipt | `representation` | arm, n_columns, spearman, spearman_sd, r2, complete |
 | `sealed_holdout.csv` | 6.2 | cited | `sealed_holdout` | arm, n_cols, n_dev, n_sealed, cv_in_pool, sealed, gap … |
 
-### Part 6 — Where this sits in the field
+### Part 5 — Where this sits in the field
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|

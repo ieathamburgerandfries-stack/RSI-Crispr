@@ -2,7 +2,7 @@
 
 > **Finding numbers in this log are those of 20 November 2026 and are not rewritten, because the log is a record of what was
 > believed when.** On 22 November the report was reorganised: the old **Finding 7** (the comparison with crisprHAL 2) is the first
-> section of **Part 6**; the old **Finding 8** (shape and 3D) is **Appendix B4**; the old **Finding 9** (nuclease) was removed
+> section of **Part 5**; the old **Finding 8** (shape and 3D) is **Appendix B4**; the old **Finding 9** (nuclease) was removed
 > (`REMOVED.md`); the old **Finding 10** is now **Finding 7**. Findings 1–6 are unchanged.
 
 Everything here lives in the fork, outside the frozen pipeline. The code is organised by function across `Runjia/sgrna/` (it lived in `sgrna/post_freeze/` until 22 Nov);
@@ -906,7 +906,7 @@ is a difference for this reason; where a level is quoted, it belongs to its spli
 ## 17. Literature pass: how this work compares with other published predictors (19 Nov; the user asked for a comparison, starting from a paper they found)
 
 *Why.* The project had never written down how it sits against the field beyond crisprHAL 2, and the paper the user
-supplied turned out to land in a gap Part 3 names explicitly. Written up as **Part 6 of the report**, in the main text
+supplied turned out to land in a gap Part 3 names explicitly. Written up as **Part 5 of the report**, in the main text
 rather than an appendix, because it is the comparison a paper's discussion has to make. Nothing here is a new
 measurement; it is a reading of other people's.
 

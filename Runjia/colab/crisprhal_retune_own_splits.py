@@ -38,7 +38,7 @@
 # null here is a lower bound on what a bigger search would find, not proof of none. (b) Inner validation is a random split by
 # protospacer, matching how THEIR test file was made; ours was judged on whole held-out genes, which is stricter. (c) SLICER's
 # settings were chosen on genes that include their WT test guides (the 1,204 CONFIRM genes, untouched by any search, are the clean
-# comparison; see the report's Part 6). (d) GPU kernels are not bit-reproducible, so a re-run moves rho by ~0.002.
+# comparison; see the report's Part 5). (d) GPU kernels are not bit-reproducible, so a re-run moves rho by ~0.002.
 #
 # COST, from measurement: their published configuration fits one WT fold in 5.5 minutes on a Colab T4. With early stopping a
 # draw averages ~8 minutes, so WT is ~8-10 T4-hours in total (40 draws, 6 finalists x 2 partitions, 10 final fits): 2-3 free

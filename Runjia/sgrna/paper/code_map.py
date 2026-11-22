@@ -33,7 +33,7 @@ PACKAGES = [
     ("cohorts", "Ablations on the curated cohort and the arguments about what its numbers mean (ceilings, inflation, label noise), including the shape ablations of Appendix B4."),
     ("controls", "The adversarial phase: nulls, shuffles, floors, selector and leakage audits, and the check that the fast featurisers equal the originals."),
     ("interpret", "What the model uses and what the signal is made of: importance, attribution, redundancy, the mechanism work of Finding 7, and what the tuned settings say."),
-    ("compare", "Every comparison with something else (Part 6 of the report): crisprHAL 2, the inherited baseline, other organisms and the human matrix, and other assays (the dCas9 boundary experiment of Appendix B5)."),
+    ("compare", "Every comparison with something else (Part 5 of the report): crisprHAL 2, the inherited baseline, other organisms and the human matrix, and other assays (the dCas9 boundary experiment of Appendix B5)."),
     ("cost", "What each model costs to train and to run, measured rather than estimated."),
     ("paper", None),
 ]
@@ -42,19 +42,19 @@ PACKAGES = [
 # Modules whose conclusion the report states without naming the module or its files. Applied only when the automatic lookup
 # finds nothing, so a name in the report always wins. Each was checked by searching the report for the conclusion itself.
 STATED_UNNAMED = {
-    "blend_with_hal": "Part 6", "clean_vs_hal": "Part 6", "e2e_bench": "Part 6", "topend": "Part 6",
-    "topk_panel": "Part 6", "data_efficiency": "Part 6", "equiv_check": "Part 6", "cost_bench": "Part 6",
+    "blend_with_hal": "Part 5", "clean_vs_hal": "Part 5", "e2e_bench": "Part 5", "topend": "Part 5",
+    "topk_panel": "Part 5", "data_efficiency": "Part 5", "equiv_check": "Part 5", "cost_bench": "Part 5",
     "esp_replicate": "Appendix B4", "ridge_check": "Appendix B4", "shape_analyze": "Appendix B4", "geom_importance": "Appendix B4",
     "local_sequence_bound": "Appendix B4", "redundancy": "Appendix B4", "shape_build": "Appendix B4", "shape_ablate": "Appendix B4",
-    "ceiling_table": "Finding 6", "fold_distance": "Part 6", "lit_followups": "Part 6",
+    "ceiling_table": "Finding 6", "fold_distance": "Part 5", "lit_followups": "Part 5",
     "human_shape": "Part 2", "human_twin_check": "Part 2", "human_additivity_twin": "Part 2", "human_flank": "Part 2",
-    "tune_split2": "Part 6", "tune_analyze": "Part 6", "family_a_at_tuned": "Finding 4", "tuned_settings": "Finding 5",
-    "mix_ecoli": "Part 6", "mlp_worker": "Part 6", "flank_locus": "Part 6", "a_flank_fast": "Part 6", "base_fast": "Part 6",
+    "tune_split2": "Part 5", "tune_analyze": "Part 5", "family_a_at_tuned": "Finding 4", "tuned_settings": "Finding 5",
+    "mix_ecoli": "Part 5", "mlp_worker": "Part 5", "flank_locus": "Part 5", "a_flank_fast": "Part 5", "base_fast": "Part 5",
     "cut_within_gene": "Appendix B5", "novel_followups": "Finding 7",
     "import_check": "Part 4", "doc_refs": "Part 4", "code_map": "Part 4", "verify_numbers": "Part 4",
-    "why_inflation": "Appendix B2a", "floors": "Appendix A", "diagnose": "Finding 4", "headtohead": "Part 6", "panel_vs_hal": "Part 6",
-    "vs_crisprhal": "Part 6", "vs_crisprhal_wt_hal": "Part 6", "dnashape": "Appendix B4", "importance_models": "Finding 5",
-    "panel": "Part 6", "attribution": "Finding 5", "faithfulness": "Finding 5", "importance": "Finding 5",
+    "why_inflation": "Appendix B2a", "floors": "Appendix A", "diagnose": "Finding 4", "headtohead": "Part 5", "panel_vs_hal": "Part 5",
+    "vs_crisprhal": "Part 5", "vs_crisprhal_wt_hal": "Part 5", "dnashape": "Appendix B4", "importance_models": "Finding 5",
+    "panel": "Part 5", "attribution": "Finding 5", "faithfulness": "Finding 5", "importance": "Finding 5",
 }
 
 

@@ -1,4 +1,4 @@
-"""Two ideas taken from the published predictors and tested on our cohort (Part 6 of the report).
+"""Two ideas taken from the published predictors and tested on our cohort (Part 5 of the report).
 
 The literature pass found two places where other people's design choices had never been tried here.
 Neither is a tweak to our model; each is a different answer to a question we had settled one way.

@@ -23,7 +23,7 @@ Two things to settle before writing, because they change the shape:
 
 **Convention to adopt:** claim-shaped Results headings. Our report already states findings as
 claims, so each finding maps to one heading. **Convention to reject:** leading with the model.
-Browne et al. can, because the model *is* their contribution. Ours is not (Part 6).
+Browne et al. can, because the model *is* their contribution. Ours is not (Part 5).
 
 ---
 
@@ -95,7 +95,7 @@ field. C becomes one short section, honestly scoped.
 - **Fig 5** carries the same thing as a picture; use one or the other, not both.
 - Caveat in text: exact for Pearson, approximate for Spearman.
 
-### Results 6 — "A compact model reaches this with far fewer labels" (report Part 6, the head-to-head, scoped)
+### Results 6 — "A compact model reaches this with far fewer labels" (report Part 5, the head-to-head, scoped)
 - Short and honest. Parity for the frozen model; +0.023–0.029 once tuned; ~3× fewer labels; 13–21× faster,
   34× on the design path — and say why that ratio is fair (95% of crisprHAL 2's cost is its forward pass,
   so the same precompute could take at most 4.7% off it).
@@ -138,7 +138,7 @@ plan and the built set cannot disagree:
 | Fig 6 | `fig6_flank_windows_schematic` | 7.00 × 2.15 | what family A actually reads | Findings 2, 7 | Methods or Results 2 |
 | Fig 7 | `fig7_pipeline` | 7.00 × 2.50 | how a ρ in this paper is produced, with the two leakage controls | Part 4 | Methods |
 | Table 1 | — | — | the ceiling correction, now parametric in *r* and *k* (`ceiling_parametric.csv`) | Finding 6 | Results 5 |
-| Table 2 | — | — | metric panel on both splits + data efficiency + the design-path cost | report Part 6 | Results 6 |
+| Table 2 | — | — | metric panel on both splits + data efficiency + the design-path cost | report Part 5 | Results 6 |
 | Supp | — | — | family ablations, adaptive-overfitting draws, the shape null (Appendix B4), the local-sequence bound | Appendices | Supplementary |
 
 ACS applied: ≤ 3.33 in single column and ≤ 7 in double, ≤ 9.167 in depth, Helvetica at ≥ 7 pt

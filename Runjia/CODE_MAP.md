@@ -62,23 +62,22 @@ Every experiment module has the same four parts, so any of them can be read the 
 | report section | what it is | modules | lines | result files | where the code lives |
 |---|---|---:|---:|---:|---|
 | Finding 1 | The published representation is a re-encoding of the guide, and holds about twenty variables | 4 | 506 | 5 | cohorts, compare, controls |
-| Finding 2 | The DNA around the cut site predicts cutting — the one large effect, and it is a gradient | 3 | 632 | 6 | controls, harness, interpret |
+| Finding 2 | The DNA around the cut site predicts cutting — the one large effect, and it is local and compositional | 3 | 632 | 6 | controls, harness, interpret |
 | Finding 3 | The effect belongs to the DNA, and transfers | 3 | 1,680 | 26 | compare, harness |
-| Finding 4 | The model is out of *material* — and the post-freeze tuning gain is the sharpest evidence for it | 2 | 516 | 9 | tuning |
+| Finding 4 | The model is out of *material*, and the tuning gain is evidence for it | 4 | 1,351 | 16 | controls, interpret, tuning |
 | Finding 5 | On a redundant matrix, importance and faithfulness are both uninterpretable | 6 | 1,574 | 22 | interpret |
 | Finding 6 | The label's ceiling is 0.946, measured from crisprHAL's own replicates | 1 | 122 | 1 | cohorts |
 | Finding 7 | What the signal is made of: GC over a few hundred bases, a seed region that inverts between kingdoms, and the two coupled | 4 | 1,226 | 32 | compare, interpret |
 | Part 2 | Contributions | 3 | 434 | 16 | compare |
 | Part 3 | Where this stops | 1 | 179 | 2 | compare |
-| Part 4 | The freeze, and what remains | 5 | 1,282 | 9 | build, compare, controls, interpret |
-| Part 6 | Where this sits in the field | 32 | 5,279 | 51 | build, cohorts, compare, controls, cost, interpret, tuning |
-| Appendix A | Controls and nulls | 1 | 86 | 13 | controls |
+| Part 4 | The freeze, and what remains | 3 | 447 | 2 | build, compare, controls |
+| Part 5 | Where this sits in the field | 32 | 5,279 | 51 | build, cohorts, compare, controls, cost, interpret, tuning |
+| Appendix A | Controls and nulls | 2 | 341 | 13 | build, controls |
 | Appendix B | The methods and controls behind the findings | 13 | 3,551 | 38 | cohorts, compare, controls, harness, interpret, tuning |
-| Appendix B2 | Why the imported families failed, and why that is not a screen | 1 | 255 | 0 | build |
 | Appendix B2a | Curation: what it is, and why family A doubled between cohorts | 2 | 263 | 2 | cohorts, controls |
-| Appendix B3 | The family ablations on the curated cohort, and what they measure | 13 | 2,375 | 6 | cohorts, features, interpret |
+| Appendix B3 | The family ablations on the curated cohort, and what they measure | 14 | 2,650 | 6 | cohorts, features, interpret |
 | Appendix B4 | The flank's shape and 3D structure add nothing that its composition does not already hold | 11 | 1,584 | 21 | build, cohorts, features, interpret |
-| Appendix B5 | A boundary experiment, demoted: the dCas9 / CRISPRi screens | 10 | 2,059 | 22 | cohorts, compare, controls, features |
+| Appendix B5 | A boundary experiment, demoted: the dCas9 / CRISPRi screens | 9 | 1,784 | 22 | cohorts, compare, controls |
 | Appendix C0 | Reproducibility: versions, seeds and protocol | 1 | 199 | 0 | (top) |
 | tooling | the audit, the figures, the guards and this map | 5 | 2,017 | 0 | paper |
 | library | shared code the experiments are built on | 10 | 2,060 | 4 | (top), build, harness |
@@ -108,8 +107,8 @@ Decode the published matrix, locate every guide on the genome, rebuild features 
 
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
-| `a_flank_fast` | 196 | Family A without a Python loop over nucleotides: the same 348 columns, computed on arrays. | Part 6 | — |
-| `base_fast` | 111 | The 6,169 base columns without a Python loop over columns or guides: the same matrix as `featurise.matrix`, on arrays. | Part 6 | — |
+| `a_flank_fast` | 196 | Family A without a Python loop over nucleotides: the same 348 columns, computed on arrays. | Part 5 | — |
+| `base_fast` | 111 | The 6,169 base columns without a Python loop over columns or guides: the same matrix as `featurise.matrix`, on arrays. | Part 5 | — |
 | `build_curated_features` | 174 | Build feature families on crisprHAL's curated cohort, not the published rows. | library | — |
 | `build_features` | 89 | Step 1 -- build one or more feature families. | library | — |
 | `build_guide_index` | 166 | Step 0 -- turn 13,880 anonymous rows into located guides. | library | — |
@@ -117,8 +116,8 @@ Decode the published matrix, locate every guide on the genome, rebuild features 
 | `decode_v_columns` | 196 | Work out what the 5,888 `V####` columns are, so new guides can be featurised. | library | — |
 | `expand` | 176 | Lift the 13,880-row cap: featurise every guide in the curated Guo screen. | library | `learning_curve.csv` |
 | `featurise` | 126 | Generate the published feature representation for guides outside the matrix. | Part 4 | — |
-| `flank_locus` | 472 | Family A from a locus instead of from a guide: the window block becomes a table lookup. | Part 6 | `flank_locus_bench.csv` |
-| `genome` | 255 | Reference genome helpers for E. coli K-12 MG1655 (NC_000913.2). | Appendix B2 | — |
+| `flank_locus` | 472 | Family A from a locus instead of from a guide: the window block becomes a table lookup. | Part 5 | `flank_locus_bench.csv` |
+| `genome` | 255 | Reference genome helpers for E. coli K-12 MG1655 (NC_000913.2). | Appendix A | — |
 | `make_diagnostic_blocks` | 223 | Decompose the positional families, to find out what they are really measuring. | library | — |
 | `qct` | 288 | Quantum chemical tensor (QCT) decoding and extension. | Appendix B4 | — |
 
@@ -136,7 +135,7 @@ The eleven feature families A-J (family A, the flanking-DNA composition, is the 
 | `dnashape` | 184 | The DNAshapeR pentamer query table, separated into the kinds of column it lumps together. | Appendix B4 | — |
 | `e_nucleoid` | 226 | Family E -- nucleoid organisation, the bacterial answer to chromatin. | Appendix B3 | — |
 | `f_methylation` | 133 | Family F -- Dam and Dcm methylation at the target site. | Appendix B3 | — |
-| `g_transcription` | 275 | Family G -- transcription and replication context. | Appendix B5 | — |
+| `g_transcription` | 275 | Family G -- transcription and replication context. | Appendix B3 | — |
 | `geom` | 280 | DNA shape and 3D path descriptors of the locus around a guide, by data source. | Appendix B4 | — |
 | `h_offtarget` | 133 | Family H -- off-target burden and target copy number. | Appendix B3 | — |
 | `i_shape` | 208 | Family I -- the physical shape of the DNA around the target, not its letters. | Appendix B3 | — |
@@ -162,10 +161,10 @@ Hyperparameter search and model mixing: the joint search on development genes, i
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
 | `family_a_at_tuned` | 159 | Is family A still worth +0.164 once the model is tuned? | Finding 4 | `family_a_at_tuned.csv`, `family_a_at_tuned_summary.csv` +1 |
-| `mix_ecoli` | 289 | Mixing model families for the E. coli model: does an ensemble that is not all XGBoost beat the tuned XGBoost ensemble? | Part 6 | `mix_configs_cat.json`, `mix_configs_et.json` +9 |
-| `mlp_worker` | 53 | Neural-network member of the E. coli mix, run in its own process. | Part 6 | — |
-| `tune` | 241 | Does the head-to-head margin survive hyper-parameter tuning? | Part 6 | `tuning.csv`, `tuning_trace.csv` |
-| `tune_analyze` | 60 | What the stage-1 search says about each hyperparameter (marginal effects on the DEV-fold rho). | Part 6 | `tune_configs.json`, `tune_stage1.csv` |
+| `mix_ecoli` | 289 | Mixing model families for the E. coli model: does an ensemble that is not all XGBoost beat the tuned XGBoost ensemble? | Part 5 | `mix_configs_cat.json`, `mix_configs_et.json` +9 |
+| `mlp_worker` | 53 | Neural-network member of the E. coli mix, run in its own process. | Part 5 | — |
+| `tune` | 241 | Does the head-to-head margin survive hyper-parameter tuning? | Part 5 | `tuning.csv`, `tuning_trace.csv` |
+| `tune_analyze` | 60 | What the stage-1 search says about each hyperparameter (marginal effects on the DEV-fold rho). | Part 5 | `tune_configs.json`, `tune_stage1.csv` |
 | `tune_ecoli` | 357 | Joint hyperparameter search for the E. coli model, with the selection kept apart from the confirmation. | Finding 4 | `tune_budget_check.csv`, `tune_configs.json` +5 |
 | `tune_split2` | 231 | Does the tuning payoff replicate on a second gene split? | Appendix B | `tune_configs.json`, `tune_split2_configs.json` +3 |
 | `xgb_knobs` | 243 | Which XGBoost knobs has this project never touched, and do they matter? | Appendix B | `xgb_knobs.csv`, `xgb_knobs_verify.csv` |
@@ -176,14 +175,14 @@ Ablations on the curated cohort and the arguments about what its numbers mean (c
 
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
-| `ceiling_table` | 109 | The corrected ceiling as a function of replicate agreement and replicate count -- the parametric form of Finding 6. | Part 6 | `ceiling_parametric.csv` |
+| `ceiling_table` | 109 | The corrected ceiling as a function of replicate agreement and replicate count -- the parametric form of Finding 6. | Part 5 | `ceiling_parametric.csv` |
 | `curated_ablation` | 246 | Feature-family ablations on crisprHAL's curated cohort. | Appendix B3 | `ablation_curated.csv`, `ablation_curated_gene.csv` +1 |
 | `curated_ceiling` | 122 | The ceiling for the label we actually train on, from replicate agreement. | Finding 6 | `curated_ceiling.json` |
 | `curated_joint` | 122 | Joint arms on the curated cohort: how much of the eleven family gains overlap? | Appendix B3 | `ablation_curated.csv`, `curated_joint.csv` |
 | `curated_ladder` | 123 | The reduced-representation ladder, re-run on the curated cohort without selection. | Finding 1 | `curated_ladder.csv` |
 | `curated_models` | 95 | Does model class matter more once the representation has family A in it? | Appendix B | `curated_models.csv` |
 | `curation_variance` | 159 | Why did every family's gain rise when the baseline rose too? | Appendix B2a | `curation_variance.csv` |
-| `data_ablation` | 152 | Hold SLICER fixed and change only the training data. | Part 6 | `data_ablation.csv` |
+| `data_ablation` | 152 | Hold SLICER fixed and change only the training data. | Part 5 | `data_ablation.csv` |
 | `esp_replicate` | 110 | Second, independent cohort for the shape / 3D question: crisprHAL's E. coli eSpCas9 screen. | Appendix B4 | `esp_replicate.csv` |
 | `local_sequence_bound` | 193 | An upper bound on what any local shape or stiffness predictor can add -- the open item Deep DNAshape left behind. | Appendix B4 | `local_sequence_bound.csv`, `local_sequence_bound_summary.csv` +1 |
 | `replicate_weight` | 295 | The label's reliability is per guide, and the model treats it as uniform. | Appendix B | `replicate_weight.csv`, `replicate_weight_raw.csv` |
@@ -199,10 +198,10 @@ The adversarial phase: nulls, shuffles, floors, selector and leakage audits, and
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
 | `chi_sites` | 198 | Is the flank effect a *repair* effect? | Appendix B | `chi_sites.csv` |
-| `diagnose` | 429 | Why doesn't adding features help? | Part 4 | `ceiling.json`, `headroom.csv` +1 |
-| `equiv_check` | 57 | Recorded equivalence of the array-based featurisers with the originals, and of the predictions built on them. | Part 6 | `featuriser_equivalence.csv`, `tune_configs.json` |
+| `diagnose` | 429 | Why doesn't adding features help? | Finding 4 | `ceiling.json`, `headroom.csv` +1 |
+| `equiv_check` | 57 | Recorded equivalence of the array-based featurisers with the originals, and of the predictions built on them. | Part 5 | `featuriser_equivalence.csv`, `tune_configs.json` |
 | `floors` | 86 | Per-family permutation floors, paired fold by fold. | Appendix A | `folds_base_plus_K562_ATAC.csv`, `folds_base_plus_K562_DNase.csv` +11 |
-| `fold_distance` | 94 | Sequence distance between training and validation guides, the leakage statistic our comparators report. | Part 6 | `fold_distance.csv` |
+| `fold_distance` | 94 | Sequence distance between training and validation guides, the leakage statistic our comparators report. | Part 5 | `fold_distance.csv` |
 | `no_information` | 94 | Decompose `d_mechanics`'s +0.099 into representation and new DNA. | Finding 1 | `no_information.csv` |
 | `rederive` | 543 | Re-derive the result files whose producer was lost, and check they agree. | Appendix B | `ablation_curated.csv`, `ablation_curated_gene.csv` +5 |
 | `sealed_holdout` | 224 | Can the adaptive-overfitting caveat be measured by sealing part of the cohort? | Part 4 | `sealed_holdout.csv` |
@@ -220,7 +219,7 @@ What the model uses and what the signal is made of: importance, attribution, red
 | `asymmetry` | 237 | Is the downstream flank's advantage a transcription effect? | — | `asymmetry_expression.csv`, `asymmetry_strand_audit.csv` |
 | `attribution` | 214 | Two models, different features, same score. | Finding 5 | `attribution.csv`, `attribution_summary.csv` |
 | `base_enrichment` | 185 | Is the curated table inflated because the base has no dense summaries? | Appendix B3 | `base_enrichment.csv`, `base_enrichment_published.csv` |
-| `complexity` | 118 | What is SLICER's equivalent of a CNN's parameter count? | Part 6 | `complexity.json` |
+| `complexity` | 118 | What is SLICER's equivalent of a CNN's parameter count? | Part 5 | `complexity.json` |
 | `faithfulness` | 270 | Dropping a model's top columns costs nothing. | Finding 5 | `faithfulness_clusters.csv`, `faithfulness_clusters_reduced.csv` +2 |
 | `gcstrata` | 210 | Is the flanking-context effect just target GC wearing a different hat? | Finding 2 | `gc_strata_ablation.csv`, `gc_strata_corr.csv` +1 |
 | `geom_importance` | 81 | Which geometry columns does the model use, and are they re-expressions of composition? | Appendix B4 | `geom_importance.csv` |
@@ -232,51 +231,51 @@ What the model uses and what the signal is made of: importance, attribution, red
 | `novel_followups` | 231 | Two experiments that are ours rather than borrowed: species-relative composition, and the resolution floor of the flank signal. | Finding 7 | `novel_relative_composition.csv`, `novel_resolution.csv` +1 |
 | `redescription` | 741 | How much is re-description worth, and does it have to mean anything? | Appendix B | `recoverability_percolumn.csv`, `recoverability_trend.csv` +7 |
 | `redundancy` | 43 | How much of each shape / 3D block is already in family A (flank composition)? | Appendix B4 | `shape_redundancy_from_A.csv` |
-| `representation` | 406 | Does the model need all 6,232 published columns, or one spelling of the 20-mer? | Part 4 | `representation.csv`, `representation_depth.csv` +2 |
+| `representation` | 406 | Does the model need all 6,232 published columns, or one spelling of the 20-mer? | Finding 4 | `representation.csv`, `representation_depth.csv` +2 |
 | `tuned_settings` | 199 | What the tuned hyperparameters say about the signal: four tests, each answering a question the choice of settings raises. | Finding 5 | `interpret_data_scaling.csv`, `interpret_depth.csv` +4 |
 
 ### `sgrna/compare/`  —  36 modules, 6,829 lines
 
-Every comparison with something else (Part 6 of the report): crisprHAL 2, the inherited baseline, other organisms and the human matrix, and other assays (the dCas9 boundary experiment of Appendix B5).
+Every comparison with something else (Part 5 of the report): crisprHAL 2, the inherited baseline, other organisms and the human matrix, and other assays (the dCas9 boundary experiment of Appendix B5).
 
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
-| `blend_with_hal` | 47 | Is crisprHAL 2's network complementary to the tuned trees? | Part 6 | `blend_with_hal.csv` |
-| `clean_vs_hal` | 65 | A comparison with crisprHAL 2 that the tuning cannot have touched: the 30% of genes held out from every search. | Part 6 | `clean_vs_hal.csv` |
+| `blend_with_hal` | 47 | Is crisprHAL 2's network complementary to the tuned trees? | Part 5 | `blend_with_hal.csv` |
+| `clean_vs_hal` | 65 | A comparison with crisprHAL 2 that the tuning cannot have touched: the 30% of genes held out from every search. | Part 5 | `clean_vs_hal.csv` |
 | `crisprhal_rerun` | 151 | Re-run crisprHAL 2 ourselves, on our rows and our folds. | Appendix B | `crisprhal_rerun.csv` |
 | `crisprhal_tune` | 284 | Give crisprHAL 2 the same courtesy we gave ourselves: a hyperparameter search. | Appendix B | `crisprhal_tuned_folds.csv`, `crisprhal_tuning.csv` |
 | `crispri_screens` | 324 | Three CRISPRi screens instead of one, and what that buys beyond accuracy. | Appendix B5 | `crispri_screen_agreement.csv`, `crispri_screen_family_a.csv` +1 |
-| `cui_final_exam` | 219 | Both models, neither trained on it, scored on Cui's CRISPRi screen. | Part 6 | `cui_final_exam.csv` |
+| `cui_final_exam` | 219 | Both models, neither trained on it, scored on Cui's CRISPRi screen. | Part 5 | `cui_final_exam.csv` |
 | `cui_screen` | 593 | The last untouched test: does the flanking-context effect appear in a CRISPRi screen? | Appendix B5 | `cui_essential_marginals.csv`, `cui_essential_position.csv` +4 |
 | `cut_within_gene` | 36 | The cutting-screen figure on the within-gene definition used for the dCas9 screens. | Appendix B5 | `cut_within_gene.csv` |
-| `data_efficiency` | 67 | The data-efficiency curve again, with the tuned model against the stored crisprHAL 2 curve. | Part 6 | `data_efficiency.csv`, `sample_complexity.csv` +1 |
+| `data_efficiency` | 67 | The data-efficiency curve again, with the tuned model against the stored crisprHAL 2 curve. | Part 5 | `data_efficiency.csv`, `sample_complexity.csv` +1 |
 | `eukaryote_rules` | 309 | Do the guide's own design rules, and the flank effect, carry between eukaryotes, and how do they differ from E. coli's? | Finding 7 | `eukaryote_contrast_g_minus_t.csv`, `eukaryote_flank_step.csv` +4 |
-| `final_eval` | 247 | The designated final evaluation: both models on crisprHAL's eSpCas9 split. | Part 6 | `final_eval_espcas9.csv` |
+| `final_eval` | 247 | The designated final evaluation: both models on crisprHAL's eSpCas9 split. | Part 5 | `final_eval_espcas9.csv` |
 | `handnamed_split` | 122 | Split the 63 hand-named columns into the computable and the rest, and test both. | Finding 1 | `handnamed_split.csv`, `portability_audit.csv` |
-| `headtohead` | 303 | The like-for-like comparison against crisprHAL 2. | Part 6 | `headtohead.csv` |
-| `heldout_compare` | 156 | How do the two models compare on a held-out fold? | Part 6 | `heldout_compare.csv` |
+| `headtohead` | 303 | The like-for-like comparison against crisprHAL 2. | Part 5 | `headtohead.csv` |
+| `heldout_compare` | 156 | How do the two models compare on a held-out fold? | Part 5 | `heldout_compare.csv` |
 | `human_additivity_twin` | 154 | The human additivity claim and the knob sweep behind it, re-run with folds that keep repeated guides together. | Appendix B | `human_additivity_twin.csv`, `human_additivity_twin_claim.csv` +1 |
 | `human_baseline` | 270 | Does the human baseline reproduce ρ ≈ 0.472 under this harness? | Appendix B | `human_additivity.csv`, `human_baseline.csv` +1 |
 | `human_flank` | 173 | Human guides with their genomic flanks, for running Appendix B4 (shape / 3D versus family A) on human. | Part 2 | — |
 | `human_shape` | 201 | Appendix B4 on human: do the shape / 3D descriptors add to family A on the human cutting matrix? | Part 2 | `folds_base_plus_K562_ATAC.csv`, `folds_base_plus_K562_DNase.csv` +13 |
 | `human_twin_check` | 60 | Does the project's human baseline survive when repeat measurements of a guide are kept in the same fold? | Part 2 | `human_twin_check.csv` |
 | `kingdom_transfer` | 179 | Cross-kingdom transfer, with the human side fitted properly. | Part 3 | `kingdom_transfer.csv`, `kingdom_transfer_boot.csv` |
-| `lit_followups` | 211 | Two ideas taken from the published predictors and tested on our cohort (Part 6 of the report). | Part 6 | `lit_binary.csv`, `lit_merf.csv` +2 |
-| `noshay_replicate` | 232 | Reproduce the inherited paper's own model, as its methods section describes it. | Part 6 | `noshay_replication.csv` |
-| `panel` | 219 | The full metric panel, for untuned and tuned, on identical folds. | Part 6 | `metric_panel.csv` |
-| `panel_vs_hal` | 110 | The six-metric panel against crisprHAL 2 on its own two splits, for the tuned and mixed models, with raw predictions kept. | Part 6 | `panel_espcas9.csv`, `panel_wt.csv` |
+| `lit_followups` | 211 | Two ideas taken from the published predictors and tested on our cohort (Part 5 of the report). | Part 5 | `lit_binary.csv`, `lit_merf.csv` +2 |
+| `noshay_replicate` | 232 | Reproduce the inherited paper's own model, as its methods section describes it. | Part 5 | `noshay_replication.csv` |
+| `panel` | 219 | The full metric panel, for untuned and tuned, on identical folds. | Part 5 | `metric_panel.csv` |
+| `panel_vs_hal` | 110 | The six-metric panel against crisprHAL 2 on its own two splits, for the tuned and mixed models, with raw predictions kept. | Part 5 | `panel_espcas9.csv`, `panel_wt.csv` |
 | `portability` | 167 | Can the 427-column representation be rebuilt for a guide we have never seen? | Finding 1 | `portability.csv`, `portability_audit.csv` |
-| `sample_complexity` | 220 | How many labelled guides does each method need? | Part 6 | `sample_complexity.csv` |
+| `sample_complexity` | 220 | How many labelled guides does each method need? | Part 5 | `sample_complexity.csv` |
 | `sealed_organism` | 97 | Does the tuned model's advantage survive a dataset that no choice in this project ever saw? | Part 4 | `sealed_organism.csv` |
 | `strand_families` | 241 | With the strand call supplied, how do all eleven families compare on the dCas9 screen? | Appendix B5 | `strand_families.csv`, `strand_families_proxies.csv` +1 |
 | `strand_recoverable` | 47 | How well can the strand call be read back from each family's columns, after proxy removal? | Appendix B5 | `strand_families_recoverable.csv` |
 | `strand_strata` | 142 | Two controls on the strand result. | Appendix B5 | `strand_flip.csv`, `strand_strata_rousset.csv` |
 | `strand_within_gene` | 181 | Inside the coding-strand guides, is a family's gain between genes or within them? | Appendix B5 | `strand_within_gene_cui.csv`, `strand_within_gene_cui_joint.csv` +1 |
-| `topend` | 96 | Do objectives aimed at the top of the ranking improve top-end metrics, where crisprHAL 2 still leads on pick percentile? | Part 6 | `topend_confirm.csv`, `tune_configs.json` |
-| `topk_panel` | 97 | Smoother top-end metrics against crisprHAL 2 on its own splits, and seed stability of the lead. | Part 6 | `seed_stability.csv`, `topk_panel.csv` |
+| `topend` | 96 | Do objectives aimed at the top of the ranking improve top-end metrics, where crisprHAL 2 still leads on pick percentile? | Part 5 | `topend_confirm.csv`, `tune_configs.json` |
+| `topk_panel` | 97 | Smoother top-end metrics against crisprHAL 2 on its own splits, and seed stability of the lead. | Part 5 | `seed_stability.csv`, `topk_panel.csv` |
 | `transfer` | 588 | Does the flank effect transfer to another nuclease? | Finding 3 | `hybrid.csv`, `transfer.csv` +1 |
-| `vs_crisprhal` | 186 | The tuned / mixed E. coli model against crisprHAL 2 again, under the three conditions of the original comparison. | Part 6 | `mix_finalists.csv`, `tune_configs.json` +3 |
-| `vs_crisprhal_wt_hal` | 35 | crisprHAL 2's shipped WT-SpCas9 weights on their own WT test file, saved for a paired comparison (TensorFlow environment). | Part 6 | — |
+| `vs_crisprhal` | 186 | The tuned / mixed E. coli model against crisprHAL 2 again, under the three conditions of the original comparison. | Part 5 | `mix_finalists.csv`, `tune_configs.json` +3 |
+| `vs_crisprhal_wt_hal` | 35 | crisprHAL 2's shipped WT-SpCas9 weights on their own WT test file, saved for a paired comparison (TensorFlow environment). | Part 5 | — |
 
 ### `sgrna/cost/`  —  5 modules, 1,136 lines
 
@@ -285,10 +284,10 @@ What each model costs to train and to run, measured rather than estimated.
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
 | `bench` | 319 | Peak memory and training cost, measured rather than estimated. | — | `memory_comparison.csv`, `memory_comparison_runs.csv` +1 |
-| `cost` | 372 | How much computation does each model actually cost, and how light can SLICER get? | Part 6 | `cost_cpu_seconds.csv`, `cost_flops.csv` +1 |
-| `cost_bench` | 129 | What the extra accuracy costs: inference latency, model size, and featurisation, on one host thread, same machine. | Part 6 | `cost_crisprhal.csv`, `cost_featurise.csv` +3 |
-| `e2e_bench` | 175 | End-to-end scoring cost per guide, one thread: featurisation + column selection + imputation + model, against crisprHAL 2 with its input encoding. | Part 6 | `e2e_crisprhal.csv`, `e2e_slicer.csv` +3 |
-| `inference_cost` | 141 | Training cost is the wrong clock for a guide-design tool. | Part 6 | `inference_cost.csv` |
+| `cost` | 372 | How much computation does each model actually cost, and how light can SLICER get? | Part 5 | `cost_cpu_seconds.csv`, `cost_flops.csv` +1 |
+| `cost_bench` | 129 | What the extra accuracy costs: inference latency, model size, and featurisation, on one host thread, same machine. | Part 5 | `cost_crisprhal.csv`, `cost_featurise.csv` +3 |
+| `e2e_bench` | 175 | End-to-end scoring cost per guide, one thread: featurisation + column selection + imputation + model, against crisprHAL 2 with its input encoding. | Part 5 | `e2e_crisprhal.csv`, `e2e_slicer.csv` +3 |
+| `inference_cost` | 141 | Training cost is the wrong clock for a guide-design tool. | Part 5 | `inference_cost.csv` |
 
 ### `sgrna/paper/`  —  5 modules, 2,017 lines
 

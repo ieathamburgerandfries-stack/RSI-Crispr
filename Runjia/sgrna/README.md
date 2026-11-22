@@ -22,7 +22,7 @@ and checked by the audit; [`../CODE_OVERVIEW.md`](../CODE_OVERVIEW.md) is the sh
 | `cohorts/` | the curated and published cohorts, their ablations, ceilings and label variance, and the shape ablations | 15 |
 | `controls/` | nulls and audits: shifted flank, no-information, Chi sites, the sealed holdout, the selector audit, leakage distance, and the check that the fast featurisers equal the originals | 12 |
 | `interpret/` | importance, attribution, faithfulness, redescription, redundancy, the mechanism work of Finding 7, and what the tuned settings say | 16 |
-| `compare/` | every comparison with something else (Part 6 of the report): crisprHAL 2, the inherited baseline, other organisms and the human matrix, and other assays, including the dCas9 boundary experiment of Appendix B5 | 34 |
+| `compare/` | every comparison with something else (Part 5 of the report): crisprHAL 2, the inherited baseline, other organisms and the human matrix, and other assays, including the dCas9 boundary experiment of Appendix B5 | 34 |
 | `cost/` | wall-clock, CPU, memory and inference benchmarks | 5 |
 | `paper/` | the audit, the figures, the import and reference guards, the code-map generator | 5 |
 
