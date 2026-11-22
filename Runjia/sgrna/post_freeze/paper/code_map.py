@@ -57,7 +57,7 @@ STATED_UNNAMED = {
     "mix_ecoli": "Finding 7", "mlp_worker": "Finding 7", "flank_locus": "Finding 7", "a_flank_fast": "Finding 7", "base_fast": "Finding 7",
     "cut_within_gene": "Finding 3", "novel_followups": "Finding 10",
     "import_check": "Part 4", "doc_refs": "Part 4", "code_map": "Part 4", "verify_numbers": "Part 4",
-    "why_inflation": "Appendix B2a", "diagnose": "Finding 4", "headtohead": "Finding 7", "panel_vs_hal": "Finding 7",
+    "why_inflation": "Appendix B2a", "floors": "Appendix A", "diagnose": "Finding 4", "headtohead": "Finding 7", "panel_vs_hal": "Finding 7",
     "vs_crisprhal": "Finding 7", "vs_crisprhal_wt_hal": "Finding 7", "dnashape": "Finding 8", "importance_models": "Finding 5",
 }
 
@@ -240,8 +240,9 @@ def render(data: dict[str, list[dict]]) -> str:
              "#### By the report section each module supports", "", by_section(data), "",
              "Read the table above as the price list for the report: each claim carries its code and its result files with it. "
              "A module is placed in the section that cites it (or the result files it writes) most often. The `—` row, if "
-             "there is one, is code that no section points at; each such module is nevertheless imported by something that "
-             "stays, or audited, which is why `REMOVED.md` does not list it.", "",
+             "there is one, is completed work that no section of the report points at. Each such module is listed in "
+             "`REMOVED.md` under \"Candidates for removal\", with what it found, because whether it leaves is a decision about "
+             "the report and not about the code.", "",
              "#### Result files that exist only outside this repository", "", _untracked_table(), "",
              "#### Package by package", ""]
     for pkg, blurb in PACKAGES:

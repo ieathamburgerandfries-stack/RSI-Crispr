@@ -53,7 +53,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 
 <!-- generated:begin -->
 
-**138 modules, 29,077 lines** of Python in 20 folders (not counting the `__init__.py` markers).
+**138 modules, 29,078 lines** of Python in 20 folders (not counting the `__init__.py` markers).
 
 #### By the report section each module supports
 
@@ -61,9 +61,9 @@ Every experiment module has the same four parts, so any of them can be read the 
 |---|---|---:|---:|---:|---|
 | Finding 1 | The published representation is a re-encoding of the guide, and holds about tw | 4 | 506 | 5 | cohorts, compare, controls, screens |
 | Finding 2 | The DNA around the cut site predicts cutting — the one large effect, and it is | 3 | 632 | 5 | controls, harness, interpret |
-| Finding 3 | The effect belongs to the DNA, and transfers | 15 | 4,405 | 47 | cohorts, controls, features, harness, pf/signal, screens, strand |
-| Finding 4 | The model is out of *material* — and the post-freeze tuning gain is the sharpe | 2 | 516 | 9 | pf/tuning |
-| Finding 5 | On a redundant matrix, importance and faithfulness are both uninterpretable | 3 | 797 | 11 | interpret, pf/tuning |
+| Finding 3 | The effect belongs to the DNA, and transfers | 14 | 3,862 | 43 | cohorts, controls, features, harness, pf/signal, screens, strand |
+| Finding 4 | The model is out of *material* — and the post-freeze tuning gain is the sharpe | 3 | 922 | 10 | interpret, pf/tuning |
+| Finding 5 | On a redundant matrix, importance and faithfulness are both uninterpretable | 3 | 797 | 14 | interpret, pf/tuning |
 | Finding 6 | The label's ceiling is 0.946, measured from crisprHAL's own replicates | 1 | 122 | 1 | cohorts |
 | Finding 7 | Against the state of the art: parity for the frozen model, a lead once retuned | 27 | 4,343 | 43 | cohorts, compare, cost, harness, interpret, pf/speed, pf/tuning, pf/vs_crisprhal, screens |
 | Finding 8 | The flank's shape and 3D structure add nothing that its composition does not a | 11 | 1,584 | 21 | build, pf/shape |
@@ -73,16 +73,17 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Part 3 | Where this stops | 1 | 179 | 2 | screens |
 | Part 4 | The freeze, and what remains | 9 | 2,786 | 1 | build, compare, controls, harness, interpret |
 | Part 6 | Where this sits in the field | 3 | 414 | 6 | pf/human, pf/signal |
-| Appendix B | The methods and controls behind the findings | 12 | 3,008 | 31 | cohorts, compare, controls, harness, interpret, pf/human, pf/tuning, screens |
+| Appendix A | Controls and nulls | 1 | 86 | 12 | controls |
+| Appendix B | The methods and controls behind the findings | 13 | 3,551 | 37 | cohorts, compare, controls, harness, interpret, pf/human, pf/tuning, screens |
 | Appendix B2 | Why the imported families failed, and why that is not a screen | 1 | 255 | 0 | build |
 | Appendix B2a | Curation: what it is, and why family A doubled between cohorts | 2 | 263 | 2 | cohorts, controls |
 | Appendix B3 | The family ablations on the curated cohort, and what they measure | 12 | 2,253 | 5 | cohorts, features, interpret |
 | Appendix C0 | Reproducibility: versions, seeds and protocol | 1 | 199 | 0 |  |
-| tooling | the audit, the figures, the guards and this map | 5 | 1,889 | 0 | pf/paper |
+| tooling | the audit, the figures, the guards and this map | 5 | 1,890 | 0 | pf/paper |
 | library | shared code the experiments are built on | 9 | 1,353 | 2 | , build, post_freeze |
-| — | no section of the report points at it | 4 | 1,048 | 14 | controls, cost, interpret |
+| — | no section of the report points at it | 2 | 556 | 2 | cost, interpret |
 
-Read the table above as the price list for the report: each claim carries its code and its result files with it. A module is placed in the section that cites it (or the result files it writes) most often. The `—` row, if there is one, is code that no section points at; each such module is nevertheless imported by something that stays, or audited, which is why `REMOVED.md` does not list it.
+Read the table above as the price list for the report: each claim carries its code and its result files with it. A module is placed in the section that cites it (or the result files it writes) most often. The `—` row, if there is one, is completed work that no section of the report points at. Each such module is listed in `REMOVED.md` under "Candidates for removal", with what it found, because whether it leaves is a decision about the report and not about the code.
 
 #### Result files that exist only outside this repository
 
@@ -189,7 +190,7 @@ Head-to-head against crisprHAL 2 and the inherited baseline, as of the freeze.
 
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
-| `crisprhal_rerun` | 151 | Re-run crisprHAL 2 ourselves, on our rows and our folds. | Appendix B | — |
+| `crisprhal_rerun` | 151 | Re-run crisprHAL 2 ourselves, on our rows and our folds. | Appendix B | `crisprhal_rerun.csv` |
 | `crisprhal_tune` | 284 | Give crisprHAL 2 the same courtesy we gave ourselves: a hyperparameter search. | Appendix B | `crisprhal_tuned_folds.csv` |
 | `final_eval` | 247 | The designated final evaluation: both models on crisprHAL's eSpCas9 split. | Finding 7 | `final_eval_espcas9.csv` |
 | `handnamed_split` | 122 | Split the 63 hand-named columns into the computable and the rest, and test both. | Finding 1 | `handnamed_split.csv`, `portability_audit.csv` |
@@ -207,9 +208,9 @@ The adversarial phase: nulls, shuffles, floors, selector and leakage audits.
 |---|---:|---|---|---|
 | `chi_sites` | 198 | Is the flank effect a *repair* effect? | Appendix B | `chi_sites.csv` |
 | `diagnose` | 429 | Why doesn't adding features help? | Part 4 | — |
-| `floors` | 86 | Per-family permutation floors, paired fold by fold. | — | `folds_base_plus_K562_ATAC.csv`, `folds_base_plus_K562_DNase.csv` +10 |
+| `floors` | 86 | Per-family permutation floors, paired fold by fold. | Appendix A | `folds_base_plus_K562_ATAC.csv`, `folds_base_plus_K562_DNase.csv` +10 |
 | `no_information` | 94 | Decompose `d_mechanics`'s +0.099 into representation and new DNA. | Finding 1 | `no_information.csv` |
-| `rederive` | 543 | Re-derive the result files whose producer was lost, and check they agree. | Finding 3 | `ablation_curated.csv`, `ablation_curated_gene.csv` +4 |
+| `rederive` | 543 | Re-derive the result files whose producer was lost, and check they agree. | Appendix B | `ablation_curated.csv`, `ablation_curated_gene.csv` +5 |
 | `sealed_holdout` | 224 | Can the adaptive-overfitting caveat be measured by sealing part of the cohort? | Part 4 | `sealed_holdout.csv` |
 | `selector_audit` | 272 | The pipeline selects columns with the one metric the report says never to use. | Appendix B | `selector_audit.csv`, `selector_audit_ranks.csv` +1 |
 | `shiftnull` | 140 | A spatially preserving null for family A: shift the chromosome, keep its texture. | Finding 2 | `shift_null.csv` |
@@ -265,10 +266,10 @@ What the model uses and whether that is the data's property or the model's.
 | `faithfulness` | 270 | Dropping a model's top columns costs nothing. | Part 4 | — |
 | `gcstrata` | 210 | Is the flanking-context effect just target GC wearing a different hat? | Finding 2 | `gc_strata_ablation.csv`, `gc_strata_corr.csv` +1 |
 | `importance` | 293 | At what granularity is "feature importance" actually a property of the data? | Part 4 | — |
-| `importance_models` | 297 | Is "feature importance" a property of the data, or of the model asked? | Finding 5 | — |
+| `importance_models` | 297 | Is "feature importance" a property of the data, or of the model asked? | Finding 5 | `importance_model_blocks.csv`, `importance_model_methods.csv` +1 |
 | `interp_extra` | 301 | Three interpretability tests the report listed as not yet run. | Finding 5 | `interp_counterfactual.csv`, `interp_interaction_blocks.csv` +3 |
 | `redescription` | 741 | How much is re-description worth, and does it have to mean anything? | Appendix B | `recoverability_percolumn.csv`, `recoverability_trend.csv` +7 |
-| `representation` | 406 | Does the model need all 6,232 published columns, or one spelling of the 20-mer? | — | — |
+| `representation` | 406 | Does the model need all 6,232 published columns, or one spelling of the 20-mer? | Finding 4 | `representation_headroom.csv` |
 
 ### `sgrna/post_freeze/`  —  1 modules, 48 lines
 
@@ -376,13 +377,13 @@ What the flank signal is, the field's ceiling, and published ideas tried on our 
 | `mechanism` | 285 | Biology out of the model, by routes that Finding 5's redundancy caution does not disqualify. | Finding 10 | `mechanism_distance_profile.csv`, `mechanism_pairs_blocks.csv` +5 |
 | `novel_followups` | 231 | Two experiments that are ours rather than borrowed: species-relative composition, and the resolution floor of the flank signal. | Finding 10 | `novel_relative_composition.csv`, `novel_resolution.csv` +1 |
 
-### `sgrna/post_freeze/paper/`  —  5 modules, 1,889 lines
+### `sgrna/post_freeze/paper/`  —  5 modules, 1,890 lines
 
 The tooling the paper rests on: the audit, the figures, and the import guard.
 
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
-| `code_map` | 313 | Generate the per-module tables of CODE_MAP.md from the code itself, so the map cannot drift from the files. | tooling | — |
+| `code_map` | 314 | Generate the per-module tables of CODE_MAP.md from the code itself, so the map cannot drift from the files. | tooling | — |
 | `doc_refs` | 165 | Every module, path and Colab script that a document or a docstring names still exists. | tooling | — |
 | `figures` | 453 | Publication figures, to ACS graphics specifications, generated from the result files. | tooling | — |
 | `import_check` | 106 | Every module in the package imports, and importing it writes nothing. | tooling | — |
