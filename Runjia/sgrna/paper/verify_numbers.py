@@ -793,7 +793,8 @@ def main():
 
     print("results/: every tracked file is in the generated index, and no two are the same file")
     import hashlib, subprocess
-    _tracked = [f for f in subprocess.check_output(["git", "ls-files", "results"], text=True, cwd=_sg.parent).split("\n") if f and f != "results/INDEX.md"]
+    _tracked = [f for f in subprocess.check_output(["git", "ls-files", "results"], text=True, cwd=_sg.parent).split("\n")
+                if f and f != "results/INDEX.md" and not pathlib.Path(f).name.startswith(code_map.TEAMMATE_RESULTS)]
     _idx = (_sg.parent / "results" / "INDEX.md").read_text()
     chk("results/INDEX.md: tracked files the index does not list", float(sum(1 for f in _tracked if f"| `{f.removeprefix('results/')}` |" not in _idx)), 0, 0)
     _sha = [hashlib.sha1((_sg.parent / f).read_bytes()).hexdigest() for f in _tracked]

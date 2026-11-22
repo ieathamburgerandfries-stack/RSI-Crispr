@@ -55,7 +55,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 
 <!-- generated:begin -->
 
-**132 modules, 28,024 lines** of Python in 11 folders (not counting the `__init__.py` markers).
+**132 modules, 28,029 lines** of Python in 11 folders (not counting the `__init__.py` markers).
 
 #### By the report section each module supports
 
@@ -80,7 +80,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Appendix B4 | The flank's shape and 3D structure add nothing that its composition does not already hold | 11 | 1,584 | 21 | build, cohorts, features, interpret |
 | Appendix B5 | A boundary experiment, demoted: the dCas9 / CRISPRi screens | 10 | 2,059 | 22 | cohorts, compare, controls, features |
 | Appendix C0 | Reproducibility: versions, seeds and protocol | 1 | 199 | 0 | (top) |
-| tooling | the audit, the figures, the guards and this map | 5 | 1,950 | 0 | paper |
+| tooling | the audit, the figures, the guards and this map | 5 | 1,955 | 0 | paper |
 | library | shared code the experiments are built on | 10 | 2,060 | 4 | (top), build, harness |
 | — | no section of the report points at it | 2 | 556 | 5 | cost, interpret |
 
@@ -289,17 +289,17 @@ What each model costs to train and to run, measured rather than estimated.
 | `e2e_bench` | 175 | End-to-end scoring cost per guide, one thread: featurisation + column selection + imputation + model, against crisprHAL 2 with its input encoding. | Part 6 | `e2e_crisprhal.csv`, `e2e_slicer.csv` +3 |
 | `inference_cost` | 141 | Training cost is the wrong clock for a guide-design tool. | Part 6 | `inference_cost.csv` |
 
-### `sgrna/paper/`  —  5 modules, 1,950 lines
+### `sgrna/paper/`  —  5 modules, 1,955 lines
 
 The tooling the paper rests on: the audit, the figures, the import and reference guards, and the code map.
 
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
-| `code_map` | 416 | Generate the per-module tables of CODE_MAP.md from the code itself, so the map cannot drift from the files. | tooling | — |
+| `code_map` | 420 | Generate the per-module tables of CODE_MAP.md from the code itself, so the map cannot drift from the files. | tooling | — |
 | `doc_refs` | 165 | Every module, path and Colab script that a document or a docstring names still exists. | tooling | — |
 | `figures` | 427 | Publication figures, to ACS graphics specifications, generated from the result files. | tooling | — |
 | `import_check` | 106 | Every module in the package imports, and importing it writes nothing. | tooling | — |
-| `verify_numbers` | 836 | Audit: recompute every headline number of Appendix B4 and the Finding 3 addendum from the result files and compare with the value typed into the report. | tooling | — |
+| `verify_numbers` | 837 | Audit: recompute every headline number of Appendix B4 and the Finding 3 addendum from the result files and compare with the value typed into the report. | tooling | — |
 
 #### Old paths, for documents written before the reorganisations
 
