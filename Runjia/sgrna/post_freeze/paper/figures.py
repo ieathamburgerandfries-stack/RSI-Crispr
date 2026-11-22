@@ -118,15 +118,22 @@ def fig1():
     return _save(fig, "fig1_representation")
 
 
-# ---------------------------------------------------------------- Fig 2: locality and cut-vs-bind
+# ---------------------------------------------------------------- Fig 2: locality
 def fig2():
-    """Findings 2-3: the effect is spatially local, and it is larger when Cas9 cuts than when it binds."""
-    fig, axes = plt.subplots(1, 2, figsize=(DOUBLE, 2.35))
-    fig.subplots_adjust(wspace=0.33)
+    """Finding 2: the effect is spatially local -- the texture-preserving shift null measures its autocorrelation length.
 
-    ax = axes[0]; _panel(ax, "a")
+    This figure used to carry a second panel comparing the flank gain on cutting and dCas9 screens. That comparison was demoted
+    to Appendix B5 (22 November 2026) because the screens differ in assay, library, laboratory and phenotype at once, so the
+    panel could not support a claim; the panel is not rebuilt anywhere.
+    """
+    fig, ax = plt.subplots(figsize=(SINGLE, 2.35))
+
     sh = pd.read_csv(FROZEN / "shift_null.csv").sort_values("shift_bp")
-    base = float(pd.read_csv(FROZEN / "folds_shift_baseline.csv").spearman.mean())
+    # the frozen baseline file holds 18 rows for 15 (seed, fold) cells -- a re-run appended duplicates -- and counting them
+    # moves the baseline from 0.5291 to 0.5307, which turns the report's "+0.0769, 1 kb retains 8%" into "+0.075, 6%"
+    fl = pd.read_csv(FROZEN / "folds_shift_baseline.csv").drop_duplicates(["seed", "fold"])
+    assert len(fl) == 15, len(fl)
+    base = float(fl.spearman.mean())
     gain = sh.spearman.to_numpy() - base
     x = np.arange(len(sh))
     ax.axhline(0, color=INK2, linewidth=0.5, zorder=1)
@@ -143,40 +150,7 @@ def fig2():
     ax.annotate(f"1 kb retains {gain[k]/gain[0]*100:.0f}%", (k, gain[k]),
                 textcoords="offset points", xytext=(8, 10), fontsize=6, color=INK2,
                 arrowprops=dict(arrowstyle="-", linewidth=0.4, color=INK2))
-
-    ax = axes[1]; _panel(ax, "b")
-    # A dumbbell, not three bars of Δρ. Raw Δρ side by side would read "binding > cutting",
-    # which is the opposite of the claim: the screens start from very different baselines, and
-    # that is exactly what the reader has to see.
-    cut = pd.read_csv(OUT / "cut_within_gene_summary.csv").set_index("arm")
-    cui = pd.read_csv(FROZEN / "strand_within_gene_cui_summary.csv").set_index("arm")
-    rou = pd.read_csv(FROZEN / "strand_within_gene_rousset_summary.csv").set_index("arm")
-    rows = [("Cas9, cutting", cut, "o"), ("dCas9, Cui\n(binding)", cui, "s"),
-            ("dCas9, Rousset\n(binding)", rou, "^")]
-    for i, (lab, d, mk) in enumerate(rows):
-        b0 = float(d.loc["base", "within_genes"]); b1 = float(d.loc["a_flank", "within_genes"])
-        ax.plot([b0, b1], [i, i], "-", color=INK2, linewidth=0.8, zorder=2)
-        ax.plot([b0], [i], mk, color="white", markeredgecolor=INK2, markeredgewidth=0.8,
-                markersize=4.0, zorder=3)
-        ax.plot([b1], [i], mk, color=BLUE if i == 0 else ORANGE, markeredgecolor="white",
-                markeredgewidth=0.4, markersize=4.4, zorder=4)
-        ax.annotate(f"{b1 - b0:+.3f}", ((b0 + b1) / 2, i), textcoords="offset points",
-                    xytext=(0, 6), ha="center", fontsize=6.2, color=INK)
-    ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows], fontsize=6.5)
-    ax.invert_yaxis(); ax.set_ylim(len(rows) - 0.45, -0.75)
-    ax.set_xlabel("within-gene ρ")
-    ax.set_xlim(0, 0.80); ax.xaxis.grid(True); ax.set_axisbelow(True)
-    from matplotlib.lines import Line2D
-    ax.legend(handles=[Line2D([], [], marker="o", linestyle="none", color="white",
-                              markeredgecolor=INK2, markeredgewidth=0.8, label="guide only"),
-                       Line2D([], [], marker="o", linestyle="none", color=BLUE,
-                              markeredgecolor="white", label="+ flanking composition")],
-              loc="lower right", handlelength=1.0, borderpad=0.1, handletextpad=0.4)
-    ax.text(0.0, -0.62, "the three screens start from very different baselines, so the Δρ values "
-                        "are not\ncomparable directly; as a share of each label's attainable gain it is "
-                        "26% for cutting\nand 13–14% for binding (see text)",
-            fontsize=5.6, color=INK2, va="top")
-    return _save(fig, "fig2_locality_cut_vs_bind")
+    return _save(fig, "fig2_locality")
 
 
 # ---------------------------------------------------------------- Fig 3: what the signal is made of

@@ -65,8 +65,9 @@ field. C becomes one short section, honestly scoped.
 - The increment (+0.164 CV, +0.156 sealed genes), gene-grouped.
 - Locality: the texture-preserving null and the autocorrelation length.
 - Not mappability, not gene ranking, survives holding out whole genes, within-gene +0.061.
-- Cut vs bind: 2–3× larger with a break (two dCas9 screens, strand controlled).
-- **Fig 2**: Δρ vs shift distance (the autocorrelation measurement) + the cut/bind comparison.
+- Transfer: 88–91% retained across nuclease and organism with no retraining; flanks carry +0.150 of the 0.628 that arrives.
+- Whether it needs a break is **not** a claim of this paper: the dCas9 screens did not settle it (report Appendix B5). If a sentence is wanted, it belongs in the limits.
+- **Fig 2**: Δρ vs shift distance (the autocorrelation measurement).
 
 ### Results 3 — "The effect is GC over a few hundred bases, and it is coupled to the seed" (Finding 7)
 - **This is the paper's centre of gravity under Frame A.**
@@ -115,7 +116,7 @@ field. C becomes one short section, honestly scoped.
 - Follow crisprHAL 2's order: Datasets → Data processing → Features → Model → Metrics → Splits.
 - **Splits section must carry**: gene-grouped and 100 kb-block CV; the train/test Hamming statistic
   (min 3, no identical guides) — both comparators report this and reviewers will look for it.
-- Reproducibility: `run_audit.sh`, 817 checks; `import_check.py` for the code itself.
+- Reproducibility: `run_audit.sh`, 822 checks; `import_check.py` for the code itself.
 
 ---
 
@@ -128,7 +129,7 @@ plan and the built set cannot disagree:
 | # | file | size (in) | content | source | where it goes |
 |---|---|---|---|---|---|
 | Fig 1 | `fig1_representation` | 7.00 × 1.85 | decoding + the 412-column equivalence; a schematic, deliberately not a plot — see below | Finding 1 | Results 1 |
-| Fig 2 | `fig2_locality_cut_vs_bind` | 7.00 × 2.35 | (a) Δρ vs shift distance, (b) cut vs bind as a dumbbell by screen | Findings 2–3 | Results 2 |
+| Fig 2 | `fig2_locality` | 3.33 × 2.35 | Δρ vs shift distance (single column; it had a second panel, cut vs bind, removed with the dCas9 demotion) | Finding 2 | Results 2 |
 | Fig 3 | `fig3_what_the_signal_is` | 7.00 × 4.60 | (a) GC distance profile by side, (b) the purine null on the same scale, (c) the resolution curve, (d) interaction pairs | Finding 7 | Results 3 |
 | Fig 4 | `fig4_design_rules_by_kingdom` | 4.73 × 3.50 | position × base heatmaps, *E. coli* vs human | Finding 7 | Results 4 |
 | Fig 5 | `fig5_attainable_ceiling` | 3.33 × 2.60 | the corrected ceiling, single column | Finding 6 | Results 5 |
@@ -149,11 +150,9 @@ throughout — marker shape and line style carry identity too, so each figure su
   single result file holds both arms. A first attempt assembled a two-point chart from
   incommensurable sources and produced a spurious −0.019 ρ. The numbers are stated as annotation
   instead.
-* **Fig 2b is a dumbbell, not three bars of Δρ.** Plotting Δρ side by side reads "binding beats
-  cutting" (+0.102 and +0.114 against +0.085), which is the opposite of the claim. The screens
-  start from very different within-gene baselines — 0.62 for cutting, 0.17 and 0.08 for binding —
-  so the figure shows the baselines and lets the reader see why the raw numbers are not comparable.
-  The share-of-attainable-gain form (26% against 13–14%) stays in the text.
+* **Fig 2 is one panel.** It had a second, a dumbbell of cut against bind by screen, which was removed with the dCas9
+  demotion (report Appendix B5). Its baseline is the de-duplicated no-flank mean (0.5291): the frozen baseline file repeats
+  three fold rows, which the figure code drops and an audit check pins, so "1 kb retains 8%" matches the report.
 
 ---
 

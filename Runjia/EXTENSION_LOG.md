@@ -377,7 +377,7 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
-*Current state of the audit (20 Nov):* it has grown with each section and now stands at **817 checks, 0 mismatches**,
+*Current state of the audit (20 Nov):* it has grown with each section and now stands at **822 checks, 0 mismatches**,
 covering sections 7-22. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
 modules need and exits non-zero if any quoted number no longer matches its file. Since 22.4 it also checks three things
 about itself: that every module in the package imports and that importing one writes nothing; that four claims which

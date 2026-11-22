@@ -571,6 +571,17 @@ def main():
     chk("every figure has a vector PDF", float(sum((_fd / f"{n_}.pdf").exists() for n_ in man.figure)), 7, 0)
     chk("every figure has a 600 dpi PNG", float(sum((_fd / f"{n_}.png").exists() for n_ in man.figure)), 7, 0)
 
+    print("figure 2: the shift null, against a de-duplicated baseline")
+    _sh = pd.read_csv(config.RESULTS / "shift_null.csv").sort_values("shift_bp")
+    _bl_raw = pd.read_csv(config.RESULTS / "folds_shift_baseline.csv")
+    _bl = _bl_raw.drop_duplicates(["seed", "fold"])
+    _g = _sh.spearman.to_numpy() - float(_bl.spearman.mean())
+    chk("figure 2: repeated fold rows in the frozen baseline file", float(len(_bl_raw) - len(_bl)), 3, 0)
+    chk("figure 2: aligned gain over the de-duplicated no-flank baseline", float(_g[0]), 0.0769, 4)
+    chk("figure 2: gain at 1 kb", float(_g[1]), 0.0061, 4)
+    chk("figure 2: gain at 10 kb", float(_g[2]), -0.0132, 4)
+    chk("figure 2: share of the gain left at 1 kb, percent (report: 8%)", float(_g[1] / _g[0] * 100), 8.0, 0)
+
     print("8. what the geometry columns are (geom_importance)")
     gi = pd.read_csv(OUT / "geom_importance.csv").set_index("column")
     xt = gi[gi.index.str.startswith("xtwist.")]

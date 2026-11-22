@@ -19,7 +19,7 @@ folds → R² 0.2937 ± 0.0015, Spearman 0.5278, Pearson 0.5424 on Noshay's 13,8
 guides — kept because reproducing it to four decimal places is how this pipeline
 is checked, not because it is the current baseline.
 
-**Where to start.** [`CODE_OVERVIEW.md`](CODE_OVERVIEW.md) is the twelve-block tour of the code that matters, written for a reader who has not seen the project; [`CODE_MAP.md`](CODE_MAP.md) says what every module is and which section of the report it supports (generated from the
+**Where to start.** [`CODE_OVERVIEW.md`](CODE_OVERVIEW.md) is the eleven-block tour of the code that matters, written for a reader who has not seen the project; [`CODE_MAP.md`](CODE_MAP.md) says what every module is and which section of the report it supports (generated from the
 code and checked by the audit); [`REMOVED.md`](REMOVED.md) says what was deleted and why, and what was brought in; `PROGRESS_REPORT.md` is the
 claims, `EXTENSION_LOG.md` the working record, and `./run_audit.sh` recomputes every number the report quotes.
 
@@ -71,7 +71,7 @@ produced the two results worth knowing about before reading anything else:
 
 **Where the open questions are.** All of them are in one place — the **open-questions register**, `PROGRESS_REPORT.md`
 Part 4. Ten remain open and each says what would settle it; six were closed on 20 November. The tenth — what a clone of the repository can verify — was added on 22 November.
-`./run_audit.sh` recomputes every post-freeze number (817 checks), checks that four documents agree on that count, that
+`./run_audit.sh` recomputes every post-freeze number (822 checks), checks that four documents agree on that count, that
 four claims later work made false have not returned, and that every module in the package imports without writing
 anything.
 
@@ -124,23 +124,11 @@ not a better model. Details and all four conditions: Part 6 (the head-to-head) o
 (The source paper this extends reports Pearson 0.502 / R² 0.249 on the same
 feature set.)
 
-**The effect is larger with cleavage, and the label's ceiling is now measured.**
-In a dCas9 **CRISPRi** screen — the last external dataset never used for
-anything here — family A adds **−0.009**, against **+0.157** on the cutting
-screen under the same whole-gene-holdout protocol. That screen-wide figure is an
-average over a cohort 85% of which is non-essential genes, where knockdown barely
-moves growth; restricted to its essential genes family A reads **+0.268**, and
-that +0.268 is the screen's own strand rule — a single strand indicator scores
-ρ 0.662 there on its own, and given it family A adds **+0.007 to +0.025** to the
-pooled ranking, on Cui and on a second screen (Rousset) this project had never
-used. The pooled ranking hides what happens *inside* genes: among coding-strand
-guides family A adds **+0.102 / +0.114** to the within-gene ranking on the two
-dCas9 screens, against **+0.085** on the cutting screen measured the same way,
-which is 13–14% of the attainable gain against 26%. So the flanking-context effect
-does not need a break; it is two to three times larger with one (Finding 3). Separately, the ceiling
+**The label's ceiling is now measured.** The ceiling
 for the label we train on is **0.946 [0.944, 0.948]**, derived from crisprHAL's
 own published per-replicate counts rather than inherited from a different label,
-leaving ~0.22 ρ unaccounted for.
+leaving ~0.22 ρ unaccounted for. (A test of whether the flank effect needs a break, on dCas9 CRISPRi screens, did not settle
+the question and is demoted to Appendix B5 of the report; nothing above rests on it.)
 
 **It is the DNA, not the enzyme — and it is what makes a model portable.**
 Transfer, one variable at a time: *transferred* is an imported model with no
@@ -153,10 +141,9 @@ column is how much of the transferred ρ the flank features supply.
 | nuclease + organism | *E. coli* → *C. rodentium* | 0.698 | 0.766 | 91% | +0.072 |
 | the same, reversed | *C. rodentium* → *E. coli* | 0.628 | 0.708 | 89% | **+0.150** |
 | kingdom | *E. coli* → human | −0.039 | 0.508 | 0% | — |
-| assay | cleavage → dCas9 silencing | 0.061 | 0.458 | 13% | — |
 
 **Changing the nuclease or the host costs about a tenth of the performance;
-changing the kingdom or the assay costs all of it.** In the hardest bacterial
+changing the kingdom costs all of it.** In the hardest bacterial
 direction — a model imported from a 236 kb *C. rodentium* screen into the
 *E. coli* genome — the flanks carry +0.150 of the 0.628 that arrives. Decomposed
 further, it is the **long-range windows** that do it (+0.107 of the +0.150), so
@@ -169,12 +156,14 @@ et al.'s human matrix on the **6,216 shared columns**, transfer is **−0.039
 [−0.054, −0.024]** going to human and **−0.006 [−0.023, +0.011]**, which is zero,
 coming back: useless in both directions, with the human model fitted to the human
 matrix rather than to *E. coli*'s hyperparameters. That distinction is worth the
-extra run — the human signal is far less additive than *E. coli*'s (ridge reaches
-64% of boosting's ρ against 96%), so our champion is the wrong shape for it by
-0.10 ρ. But the shared columns carry **no flanking context on the human side**,
+extra run (an earlier reading of it, that the human signal is far less additive than *E. coli*'s
+and that our champion is the wrong shape for it by 0.10 ρ, is withdrawn: it was measured on folds that
+split duplicate guides, and with them kept together ridge reaches 88.8% of boosting's ρ against 95.6%).
+But the shared columns carry **no flanking context on the human side**,
 because family A needs guides located on a genome and that arm never was. Jacky
 has since built it there, and with flanks on both sides transfer **flips
-positive** — +0.022 and +0.017, flanks alone +0.042 and +0.108. So the wall
+positive** — +0.022 and +0.017, flanks alone +0.042 and +0.108 (measured on the same row-wise human folds, so
+not yet re-run under duplicate-aware ones). So the wall
 belongs to the guide-derived half of the representation; the genomic-context half
 crosses. The GC association still inverts (−0.20 in *E. coli*, +0.02 in human),
 and every *model* here is still a bacterial one.
