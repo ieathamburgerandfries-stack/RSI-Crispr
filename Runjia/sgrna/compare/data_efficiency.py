@@ -22,8 +22,8 @@ from sgrna import config
 from sgrna.cohorts.curated_ablation import _base, _block
 from sgrna.harness.run_ablation import _impute, make_selector
 
-from ..post_freeze.tuning import tune_ecoli as T
-from ..post_freeze.common import MAIN_RESULTS, OUT
+from ..tuning import tune_ecoli as T
+from ..common import MAIN_RESULTS, OUT
 
 SIZES = (4000, 8000, 13880, 20000, 26853)
 

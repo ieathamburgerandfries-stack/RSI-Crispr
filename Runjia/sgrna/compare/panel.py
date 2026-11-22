@@ -134,7 +134,7 @@ def _slicer_oof(tuned: bool, seed: int = 41, n_splits: int = 5,
 
     from .headtohead import _assemble
     from ..harness.run_ablation import _impute, make_selector
-    from ..harness.tune import DEFAULT, RESULTS_PATH as TUNE_PATH
+    from ..tuning.tune import DEFAULT, RESULTS_PATH as TUNE_PATH
 
     X, y, names = _assemble("curated_flank", verbose=verbose)
     best = None

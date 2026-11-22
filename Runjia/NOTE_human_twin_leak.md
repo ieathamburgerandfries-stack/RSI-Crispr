@@ -21,7 +21,7 @@ decoded table lines up row-for-row with the matrix is an assertion in the script
 
 ## What it does to the baseline
 
-Re-running with folds that keep identical protospacers together (`sgrna/post_freeze/human/human_twin_check.py`, 3 seeds × 5 folds):
+Re-running with folds that keep identical protospacers together (`sgrna/compare/human_twin_check.py`, 3 seeds × 5 folds):
 
 | arm | row-wise folds | twin-grouped folds |
 |---|---:|---:|
@@ -60,7 +60,7 @@ The additivity claim had a second supposedly independent instrument — `max_dep
 against +0.0063 in *E. coli* — but depth is a memorisation knob, so that corroboration is not independent of the
 leak; it is the leak's signature.
 
-**I have now re-run it** (`sgrna/post_freeze/human/human_additivity_twin.py`), both fold schemes in one job with the same columns and
+**I have now re-run it** (`sgrna/compare/human_additivity_twin.py`), both fold schemes in one job with the same columns and
 seeds, keeping the row-wise arms as a positive control. **The control is exact — every row-wise number reproduces the
 published figure to four decimals** — so the only thing that differs between the columns is the folds:
 
@@ -101,8 +101,8 @@ Full write-up: `EXTENSION_LOG.md` §16.2; results in `results/ext/human_additivi
 
 ```bash
 cd RSI-Crispr-fork/Runjia
-./run_ext.sh sgrna.post_freeze.human.human_twin_check          # the table above
-./run_ext.sh sgrna.post_freeze.human.human_additivity_twin     # ridge + knob sweep, both fold schemes
+./run_ext.sh sgrna.compare.human_twin_check          # the table above
+./run_ext.sh sgrna.compare.human_additivity_twin     # ridge + knob sweep, both fold schemes
 ```
 
 Background and the duplicate-count derivation: `EXTENSION_LOG.md` §10, and `PROGRESS_REPORT.md` Appendix B.4

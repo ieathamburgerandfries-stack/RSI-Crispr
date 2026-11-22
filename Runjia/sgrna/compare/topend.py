@@ -26,8 +26,8 @@ from scipy.stats import rankdata, spearmanr
 
 from sgrna.harness.run_ablation import _impute
 
-from ..post_freeze.tuning import tune_ecoli as T
-from ..post_freeze.common import OUT
+from ..tuning import tune_ecoli as T
+from ..common import OUT
 
 
 def topmetrics(y, p):

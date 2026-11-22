@@ -11,7 +11,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 from . import panel_vs_hal as P
-from ..post_freeze.common import OUT
+from ..common import OUT
 
 
 def _z(p):

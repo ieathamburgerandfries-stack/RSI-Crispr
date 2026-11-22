@@ -16,7 +16,7 @@ from scipy.stats import rankdata
 
 from . import panel_vs_hal as P
 from . import vs_crisprhal as V
-from ..post_freeze.common import OUT
+from ..common import OUT
 
 
 def topk(y, p):

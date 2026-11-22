@@ -17,9 +17,9 @@ freeze still means what it says: no model, feature or hyperparameter choice was 
 curated five-fold split. Findings 1–3 and 5–6 are unchanged by the later work except where a
 subsection says otherwise in so many words; **Finding 4 was re-framed** by it (the tuning gain
 turns out to be evidence *for* its claim, not against it) and **Finding 6 gained a second half**
-(the field's version of the ceiling is mis-derived, Part 6). The boundary is visible in the layout —
-`sgrna/post_freeze/` and `results/post_freeze/` hold everything measured after 11 October, and
-`./run_audit.sh` recomputes every number those sections quote. The fork
+(the field's version of the ceiling is mis-derived, Part 6). The boundary is visible in the results —
+`results/post_freeze/` holds everything measured after 11 October (the code is organised by function under `sgrna/`,
+not by date), and `./run_audit.sh` recomputes every number those sections quote. The fork
 (`github.com/ieathamburgerandfries-stack/RSI-Crispr`) is kept as the archive of the commit-by-commit
 history.
 
@@ -116,7 +116,7 @@ experiment and the numbers it produced. It is **not** a second copy of this repo
 what was tried, in what order, what was expected before the run, and which expectations
 were wrong. Where a finding cites a §, that is the working, not a load-bearing part of the
 claim. `./run_audit.sh` recomputes every post-freeze number quoted in this document from
-the files that produced it (822 checks as of 22 November) and exits non-zero on any
+the files that produced it (823 checks as of 22 November) and exits non-zero on any
 mismatch — including a check that the four documents quoting that count all quote the same
 one, so it cannot drift again, and a check that the package still imports without writing
 anything (`EXTENSION_LOG.md` §22.4).
@@ -1581,7 +1581,7 @@ rigid-body 3D reconstruction of the helical path in a frame attached to the cut,
 they recover up to 90% of family A alone and add −0.0008 to +0.0006 on top of it; the earlier null for
 shape was not an artefact of the scalar summary. *Nuclease information* was also tried, on a public nine-nuclease
 sheet, and removed as having no substance for this project (`REMOVED.md`). Both ran outside the frozen pipeline
-(`sgrna/post_freeze/`, `EXTENSION_LOG.md`), on a fork, and neither changes a number in Findings 1–6; the revision of
+(results in `results/post_freeze/`, `EXTENSION_LOG.md`), on a fork, and neither changes a number in Findings 1–6; the revision of
 the dCas9 conclusion (now Appendix B5) comes from the within-gene analysis, not from these ideas. **A
 third deferred question was also answered, and it did change the picture:** what the flanking
 signal is physically made of — GC rather than composition in general, side-symmetric, one length
@@ -2322,7 +2322,7 @@ composition does not hold. What was *not* tested: the same descriptors restricte
 
 **After the post-freeze retuning this is no longer the strongest true sentence, and
 the one the paper should use is the following** (every number from the two
-subsections above, audited in `sgrna/post_freeze/paper/verify_numbers.py`):
+subsections above, audited in `sgrna/paper/verify_numbers.py`):
 
 > With its hyperparameters chosen on 70% of the genes and confirmed on the other 30%,
 > SLICER leads crisprHAL 2 by +0.0286 ρ [+0.0239, +0.0331] on its authors' eSpCas9
@@ -4617,7 +4617,7 @@ artefact rather than an interpretation.
 
 *(Formerly Finding 8. A null, moved here because a list of things that did not work is not a finding; it is kept in full because it is the evidence that the earlier shape null was not an artefact of the scalar summary.)*
 
-*Run in a fork, outside the freeze (`sgrna/post_freeze/`, `EXTENSION_LOG.md`).* Part 3 left one representation idea
+*Run in a fork, outside the freeze (results in `results/post_freeze/`, `EXTENSION_LOG.md`).* Part 3 left one representation idea
 deferred: every column in the matrix is a scalar, while DNA shape is a vector per step with direction, so the
 earlier null for shape (`i_shape`, +0.0007 over family A) might have been about the *scalar summary* rather
 than the *information*. This finding runs it.

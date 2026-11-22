@@ -5,4 +5,4 @@
 #   ./run_audit.sh              # all checks
 #   ./run_audit.sh | tail -5    # just the total
 set -euo pipefail
-exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/run_ext.sh" sgrna.post_freeze.paper.verify_numbers "$@"
+exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/run_ext.sh" sgrna.paper.verify_numbers "$@"

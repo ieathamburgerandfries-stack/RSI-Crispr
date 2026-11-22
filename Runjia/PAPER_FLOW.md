@@ -116,13 +116,13 @@ field. C becomes one short section, honestly scoped.
 - Follow crisprHAL 2's order: Datasets → Data processing → Features → Model → Metrics → Splits.
 - **Splits section must carry**: gene-grouped and 100 kb-block CV; the train/test Hamming statistic
   (min 3, no identical guides) — both comparators report this and reviewers will look for it.
-- Reproducibility: `run_audit.sh`, 822 checks; `import_check.py` for the code itself.
+- Reproducibility: `run_audit.sh`, 823 checks; `import_check.py` for the code itself.
 
 ---
 
 ## Figures and tables
 
-**The figures exist** (`results/post_freeze/figures/`, built by `sgrna/post_freeze/paper/figures.py`,
+**The figures exist** (`results/post_freeze/figures/`, built by `sgrna/paper/figures.py`,
 vector PDF + 600 dpi PNG each, geometry and completeness checked by the audit). One table, so the
 plan and the built set cannot disagree:
 

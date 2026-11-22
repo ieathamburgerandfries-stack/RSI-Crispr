@@ -85,7 +85,7 @@ def slicer(sizes=SIZES, seeds=(41, 42), folds=(1, 2, 3, 4, 5), verbose: bool = T
 
     from .headtohead import _assemble
     from ..harness.run_ablation import _impute, make_selector
-    from ..harness.tune import DEFAULT
+    from ..tuning.tune import DEFAULT
 
     X, y, names = _assemble("curated_flank", verbose=verbose)
     done = set()

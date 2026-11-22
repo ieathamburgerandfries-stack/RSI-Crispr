@@ -19,7 +19,7 @@ from scipy.stats import kendalltau, spearmanr
 from sgrna import config
 
 from . import vs_crisprhal as V
-from ..post_freeze.common import INTERIM, OUT
+from ..common import INTERIM, OUT
 
 DIR = INTERIM / "panel"
 DIR.mkdir(parents=True, exist_ok=True)

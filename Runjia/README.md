@@ -23,7 +23,7 @@ is checked, not because it is the current baseline.
 code and checked by the audit); [`REMOVED.md`](REMOVED.md) says what was deleted and why, and what was brought in; `PROGRESS_REPORT.md` is the
 claims, `EXTENSION_LOG.md` the working record, and `./run_audit.sh` recomputes every number the report quotes.
 
-**Extension (this fork only).** Work outside the frozen pipeline (`sgrna/post_freeze/`, `EXTENSION_LOG.md`).
+**Extension (this fork only).** Work outside the frozen pipeline (results in `results/post_freeze/`, the working in `EXTENSION_LOG.md`).
 A representation idea the freeze deferred, the flank's shape and 3D structure, adds nothing to its composition
 (Appendix B4); a second, nuclease conditioning, was tried and removed as having no substance (`REMOVED.md`). Then, from 9 November,
 **a joint hyperparameter search that changes the headline** (`EXTENSION_LOG.md` §11–15): +0.014 ρ on genes it never
@@ -71,7 +71,7 @@ produced the two results worth knowing about before reading anything else:
 
 **Where the open questions are.** All of them are in one place — the **open-questions register**, `PROGRESS_REPORT.md`
 Part 4. Ten remain open and each says what would settle it; six were closed on 20 November. The tenth — what a clone of the repository can verify — was added on 22 November.
-`./run_audit.sh` recomputes every post-freeze number (822 checks), checks that four documents agree on that count, that
+`./run_audit.sh` recomputes every post-freeze number (823 checks), checks that four documents agree on that count, that
 four claims later work made false have not returned, and that every module in the package imports without writing
 anything.
 
@@ -541,7 +541,7 @@ therefore a replication of a published null, which is worth a paragraph in the
 paper rather than another round of tuning.
 
 Measured here on the curated cohort, that null splits three ways
-(`python -m sgrna.strand.txn_interactions`,
+(`python -m sgrna.cohorts.txn_interactions`,
 [`results/txn_interactions.csv`](results/txn_interactions.csv)): **essentiality
 is exactly nothing** (+0.00004 as a lone column, confirming Guo), **expression is
 not** (+0.0213), and the largest part of `g_transcription`'s +0.058 is **gene

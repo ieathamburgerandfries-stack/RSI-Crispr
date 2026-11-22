@@ -1,4 +1,4 @@
-# `sgrna` — the analysis pipeline behind `docs/PROGRESS_REPORT.md`
+# `sgrna` — the analysis pipeline behind `PROGRESS_REPORT.md`
 
 Every number in that report comes from this package. Committed as one unit
 because the modules import each other; individual files will not run on their
@@ -6,39 +6,42 @@ own.
 
 ## Layout
 
-Reorganised 20 November 2026: the package had 76 modules in one flat directory. Nothing was
-rewritten, only moved, and the report cites modules by bare filename so every citation still
-resolves. `config.py` and `io_utils.py` stay at the top because almost every module imports them
-and `config.py` locates the project root from its own path.
+Organised **by function, not by date**. Until 22 November 2026 the modules written after the 11 October freeze lived in a
+`post_freeze/` folder of their own, and the strand work in `strand/`; the same kind of module (a tuner, a benchmark, a
+shape descriptor) sat in two places depending on when it was written. They were moved into the package that says what they
+are for, with `git mv`, so history follows each file. `config.py`, `io_utils.py` and `common.py` stay at the top because
+almost every module imports them. **[`../CODE_MAP.md`](../CODE_MAP.md) is the map of every module, generated from the code
+and checked by the audit; [`../CODE_OVERVIEW.md`](../CODE_OVERVIEW.md) is the short tour of the code the claims depend on.**
 
-| folder | what is in it | n |
-|---|---|---|
-| `build/` | turning sequence into columns: the feature matrix, the guide index, the genome and quantum-chemical tables, the published-matrix decoder | 10 |
-| `harness/` | the shared fit-and-score machinery every result goes through: `run_ablation`, folds, the tuner, the model zoo | 7 |
-| `cohorts/` | the curated and published cohorts, their ablations, ceilings and label variance | 9 |
-| `compare/` | every comparison with something else, which is Part 6 of the report: crisprHAL 2 (re-runs, the head-to-heads, the tuned model's metric panel and data efficiency), the inherited baseline, and other screens, assays and kingdoms (Cui, Rousset/Wang, cross-organism, the human baseline). Merged from `screens/` and the post-freeze `vs_crisprhal/` on 22 Nov 2026 | 24 |
-| `controls/` | nulls and audits — shifted-flank, no-information, Chi sites, the sealed holdout, the selector audit | 11 |
-| `interpret/` | importance, attribution, faithfulness, redescription, the reduced representation | 12 |
-| `strand/` | the strand and within-gene decompositions Finding 3 rests on | 5 |
-| `cost/` | wall-clock, CPU and inference benchmarks | 3 |
-| `features/` | the eleven feature families, one module each (unchanged) | 12 |
-| `post_freeze/` | **work done after the 11 October freeze**, in themed folders — the tuning, the shape null (Appendix B4), the human arm, the mechanism work, the fast featurisers, the paper tooling. Was `ext/`. Nothing here edits the frozen pipeline; it imports it | 30 |
+| folder | what is in it | modules |
+|---|---|---:|
+| `build/` | turning sequence into columns: the feature matrix, the guide index, the genome and quantum-chemical tables, the published-matrix decoder, and the array featurisers that score a guide in tens of microseconds | 13 |
+| `features/` | the eleven feature families, one module each, and the shape / 3D descriptors that Appendix B4 tested against family A | 14 |
+| `harness/` | the shared fit-and-score machinery every result goes through: `run_ablation`, folds, `evaluate`, the CNN baseline | 5 |
+| `tuning/` | hyperparameter search and model mixing: the joint search on development genes, its replication on a second split, the blend of model families, and the knobs no search had touched | 8 |
+| `cohorts/` | the curated and published cohorts, their ablations, ceilings and label variance, and the shape ablations | 15 |
+| `controls/` | nulls and audits: shifted flank, no-information, Chi sites, the sealed holdout, the selector audit, leakage distance, and the check that the fast featurisers equal the originals | 12 |
+| `interpret/` | importance, attribution, faithfulness, redescription, redundancy, the mechanism work of Finding 7, and what the tuned settings say | 16 |
+| `compare/` | every comparison with something else (Part 6 of the report): crisprHAL 2, the inherited baseline, other organisms and the human matrix, and other assays, including the dCas9 boundary experiment of Appendix B5 | 34 |
+| `cost/` | wall-clock, CPU, memory and inference benchmarks | 5 |
+| `paper/` | the audit, the figures, the import and reference guards, the code-map generator | 5 |
 
-Results split the same way: `results/` holds the frozen numbers, `results/post_freeze/` the ones from
-after the freeze. `./run_ext.sh <module>` runs anything in `post_freeze` with the three environment
-variables it needs; `./run_audit.sh` recomputes every post-freeze number the report quotes.
+Results are the one place the date shows: `results/` holds the numbers from before the freeze and `results/post_freeze/` those
+from after it. `./run_ext.sh <module>` runs any module with the three environment variables it needs (below), and
+`./run_audit.sh` recomputes every post-freeze number the report quotes.
 
-**If you move a module,** run the import check and the audit:
+**Use `../run_ext.sh`, which sets all of this for you** — `./run_ext.sh sgrna.paper.verify_numbers`. Three variables have to be
+right together, and getting one wrong fails with a `FileNotFoundError` that does not say which: `sgrna/config.py` finds the
+root by walking up from `src/sgrna/`, which guesses wrong from this fork's `Runjia/sgrna/` layout, so `RSI09_ROOT` must name
+the folder that actually holds `data/` and `external_data/`; `EXT_OUT` must name `<fork>/Runjia/results/post_freeze`; and
+`PYTHONPATH` must include `<fork>/Runjia`. The interpreter also lives outside both repositories (override with `PY=...`).
+Done by hand:
 
-```
-RSI09_ROOT=<project> PYTHONPATH=$PWD python -c "
-import importlib, pkgutil, sgrna
-[importlib.import_module(m.name) for m in pkgutil.walk_packages(sgrna.__path__, 'sgrna.')]"
-./run_audit.sh
-```
+    RSI09_ROOT=<project with data/> EXT_OUT=<fork>/Runjia/results/post_freeze PYTHONPATH=<fork>/Runjia python -m sgrna.<package>.<module>
 
-Note that a few `post_freeze` modules execute on import and rewrite their own result file, so the
-import check is not side-effect free — `featuriser_equivalence.csv` is the one to watch.
+**If you move a module,** use `git mv`, then run the three guards: `./run_ext.sh sgrna.paper.import_check` (every module still
+imports, and importing writes nothing), `./run_ext.sh sgrna.paper.doc_refs` (every document and docstring that names a module or
+path still resolves) and `./run_audit.sh`. Regenerate the map with `./run_ext.sh sgrna.paper.code_map`.
 
 ## It needs a data layout that is not in this repo
 
@@ -64,100 +67,6 @@ away from reproducing.
 `features/dinucleotide_shape_scales.tsv` is the one exception: a small
 parameter table that belongs with the code. In the working folder it lives at
 `data/reference/`, which is where `i_shape.py` reads it from.
-
-## What is where
-
-Sixty-six modules, grouped by what they are for. Audited on 8 November 2026
-against the maintained documents, the import graph and the result files each
-one writes: **every module is reachable from a live claim**, so nothing here is
-dead code. Two notes from that audit are recorded at the bottom.
-
-### The pipeline proper — run in this order
-
-| module | what it does |
-|---|---|
-| `config.py` | all paths and model settings in one place, including `SELECTOR` |
-| `genome.py`, `io_utils.py`, `qct.py` | genome access, caching conventions, the recovered quantum tables |
-| `decode_v_columns.py` | works out what the 5,888 anonymous `V####` columns are |
-| `featurise.py`, `expand.py` | regenerate 6,169 of the 6,232 published columns from any 20-mer, and lift the 13,880-row cap onto the curated cohort |
-| `build_guide_index.py` | locate each guide in NC_000913.2 with the right PAM |
-| `build_features.py`, `build_curated_features.py` | build feature families, on the published rows and on the curated ones |
-| `build_matrix.py` | assemble a model-ready matrix from base + blocks |
-| `run_ablation.py` | the ablation harness: grouped CV, permutation controls, the selector, checkpoint-resume |
-| `notebook.py` | thin wrappers so a Colab cell stays short |
-
-### Feature families
-
-| module | what it does |
-|---|---|
-| `features/` | the eleven feature families, one module each. Appendix C of the report describes what each actually captures; `a_flank` carries the one large effect |
-| `make_diagnostic_blocks.py` | decompose the positional families into their parts — this is what caught `d_supercoiling` |
-| `no_information.py` | split `d_mechanics` into the 22 columns that restate the guide and the 8 that read flanking DNA |
-
-### The effect, and the controls on it
-
-| module | what it does |
-|---|---|
-| `curated_ablation.py`, `curated_joint.py` | family ablations on the curated cohort, and how much the eleven gains overlap |
-| `shiftnull.py` | the texture-preserving null: shift the chromosome, keep its statistics, break the correspondence |
-| `gcstrata.py` | is the flank effect target GC wearing a different hat? (no — conditioning raises it) |
-| `window_robustness.py` | would a different set of flank windows have answered differently? (no) |
-| `asymmetry.py` | is the downstream flank's advantage a transcription effect? |
-| `chi_sites.py` | is it a *repair* effect? RecBCD attenuation at Chi, against a GC-matched octamer null |
-| `txn_interactions.py` | family G's own rule — an interaction must beat both its parents |
-| `cui_screen.py` | the dCas9 CRISPRi screen: the cross-assay test, its essentiality split, and the strand and position controls that say what that split measures |
-
-### Is the representation redundant, and does re-description pay?
-
-| module | what it does |
-|---|---|
-| `diagnose.py` | why doesn't adding features help — redundancy, headroom, residual correlation |
-| `representation.py` | how few published columns the model needs; **412** are portable and land 0.00003 ρ from all 6,232 on the published matrix, though no reduced *representation* holds on the curated cohort (Finding 1) |
-| `handnamed_split.py` | the 63 hand-named columns, split into the computable and the rest |
-| `curated_ladder.py` | the same ladder on the curated cohort, with no selection in any arm |
-| `portability.py` | can the 427-column representation be rebuilt for a guide never seen before? |
-| `redescription.py` | does a deterministic function of the guide have to *mean* something? Random tables, random non-linear functions, real and shuffled folds |
-| `base_enrichment.py` | is the curated family table inflated because its base carries no dense summaries? |
-
-### Interpretability
-
-| module | what it does |
-|---|---|
-| `importance.py` | at what granularity is "importance" a property of the data rather than of the fit |
-| `importance_models.py` | seven model families × three importance methods — why SHAP survives a change of model and split gain does not |
-| `attribution.py` | two models pick different columns and score the same: are they disagreeing about biology, or is the matrix redundant? This is the test behind Finding 5's explanation |
-| `faithfulness.py` | drop what the ranking points at and refit — and why that is uninterpretable on a redundant matrix |
-
-### The comparison against the state of the art
-
-| module | what it does |
-|---|---|
-| `headtohead.py`, `crisprhal_rerun.py` | the like-for-like comparison, including re-running their model on our rows and folds |
-| `crisprhal_tune.py` | a hyperparameter search for crisprHAL 2, so it is not tuned-against-untuned |
-| `heldout_compare.py` | paired on guides rather than on folds |
-| `final_eval.py` | both models on crisprHAL's own eSpCas9 split, against their shipped weights |
-| `data_ablation.py` | hold the architecture fixed and change only the training data |
-| `sample_complexity.py` | guides needed to reach a given accuracy — the one cost measure independent of architecture |
-| `panel.py` | the nine-metric comparison: ranking, calibration, NDCG, pick-percentile, within-gene |
-| `noshay_replicate.py` | the inherited paper's own iRF model, run here |
-| `seqnet.py` | a convolutional net on raw sequence, as the in-house comparison |
-| `evaluate.py`, `bench.py`, `cost.py`, `complexity.py` | scoring, peak memory, CPU-seconds, FLOPs, and what a boosted ensemble's "parameter count" even means |
-
-### Ceilings, transfer and the honesty checks
-
-| module | what it does |
-|---|---|
-| `curated_ceiling.py`, `ceiling2.py` | the label's reliability ceiling from replicate agreement, and whether two screens' disagreement is noise or biology |
-| `transfer.py` | cross-enzyme, cross-organism and hybrid experiments |
-| `kingdom_transfer.py`, `human_baseline.py` | the human arm, fitted properly rather than at *E. coli* settings |
-| `cui_final_exam.py` | both models on a screen neither trained on |
-| `sealed_holdout.py` | seal 20% of genes by gene and measure the adaptive-overfitting component |
-| `cohort_groups.py` | does grouped CV still mean the same thing after the cohort moved? |
-| `curation_variance.py`, `why_inflation.py` | why every family's gain rose when the baseline rose too — the four candidate causes, then the mechanism |
-| `floors.py` | per-family permutation floors, paired fold by fold |
-| `curated_models.py`, `tune.py`, `xgb_knobs.py` | does model class matter once the representation is right; the search; and the eleven knobs no search ever touched |
-| *(`numcheck.py`, removed 22 Nov 2026)* | it checked that each number in the documents exists somewhere in `results/`. Replaced by `./run_audit.sh` from `Runjia/`, which checks each quoted number against a named file with a stated tolerance; run that before committing a document change. See `REMOVED.md` |
-| `rederive.py` | re-derives the result files whose producer was lost, and checks they agree |
 
 ## Two settings worth knowing before changing anything
 
@@ -194,19 +103,3 @@ session — and is also how a cached result once got replayed into a control arm
 that had never run, because two different arms were given the same tag. If you
 add an arm, make sure its tag is unique for every distinguishing parameter, not
 just its first word. `cui_screen._slug` is there for exactly this reason.
-
-## Notes from the November audit
-
-**Nothing here is dead, but one module was invisible.** `attribution.py` is
-cited by no maintained document and imported by nothing, which is how a module
-usually earns deletion. It is in fact the test behind Finding 5's central
-explanation — that the instability of feature importance on this matrix is
-redundancy rather than two models finding different biology — and it writes four
-result files. It is now listed above and named in the report.
-
-**This file had no source.** It existed only in the published mirror at
-`RSI-Crispr/Runjia/sgrna/README.md`, which `sync_to_shared.sh` writes and never
-reads, so it was unmaintained by construction and had gone stale. Restored here,
-where it is the source of truth; the sync copies it across. If you find another
-file that exists only in the mirror, that is the same bug — the sync never
-deletes, so a source file removed here leaves its mirror copy behind for ever.

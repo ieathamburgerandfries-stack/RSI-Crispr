@@ -70,7 +70,7 @@ written to disk as it finishes. Every claim in the report is a paired difference
 
 ### 4. The controls: why +0.164 is not an artefact *(Finding 2; Appendix A)*
 `sgrna/controls/shiftnull.py`, `sgrna/controls/sealed_holdout.py`, `sgrna/controls/selector_audit.py`, `sgrna/controls/floors.py`,
-`sgrna/interpret/gcstrata.py`, `sgrna/post_freeze/human/fold_distance.py`
+`sgrna/interpret/gcstrata.py`, `sgrna/controls/fold_distance.py`
 
 Each of these is an attack on the result, not a confirmation of it.
 - **Circular-shift null.** Re-assign each guide the flanks of a position offset around the chromosome. Composition, smoothness and every column's distribution are preserved
@@ -83,7 +83,7 @@ Each of these is an attack on the result, not a confirmation of it.
   duplicate-guide leak in the human matrix at 39.1%, which is the positive control.
 
 ### 5. The model against crisprHAL 2 *(Part 6, the head-to-head)*
-`sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/post_freeze/tuning/tune_ecoli.py`, `sgrna/compare/vs_crisprhal.py`
+`sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/tuning/tune_ecoli.py`, `sgrna/compare/vs_crisprhal.py`
 
 The comparison is run under four conditions, because the answer depends on which is held equal. On our folds, with both models tuned here, SLICER leads by +0.0172. On crisprHAL 2's own splits with its shipped weights, the frozen model is
 statistically equivalent (Δρ +0.0021, 95% CI [−0.0031, +0.0072]) at about 150× less CPU time to fit. On a different assay neither model was trained on (a boundary of the claim, not a like-for-like comparison), crisprHAL 2 leads by +0.026.
@@ -91,7 +91,7 @@ The tuning is designed so that it cannot fool itself: genes are split once into 
 giving **+0.014 ρ**, which replicates on a second split. After tuning, the lead over crisprHAL 2 is **+0.023 to +0.029 ρ** on both of its published splits, measured against its shipped weights.
 
 ### 6. Speed: 1.41 ms, then 0.093 ms, then 0.036 ms per guide *(Part 6, the cost half of the head-to-head)*
-`sgrna/post_freeze/speed/a_flank_fast.py`, `sgrna/post_freeze/speed/base_fast.py`, `sgrna/post_freeze/speed/flank_locus.py`, `sgrna/post_freeze/speed/e2e_bench.py`
+`sgrna/build/a_flank_fast.py`, `sgrna/build/base_fast.py`, `sgrna/build/flank_locus.py`, `sgrna/cost/e2e_bench.py`
 
 The original featuriser walked every nucleotide in Python, which was 1.33 ms of the 1.41 ms it cost to score a guide. The array rewrite produces the same 348 columns, identical on all
 33,567 guides. The per-locus version goes further. Neighbouring guides read almost the same DNA, so it scans a stretch of chromosome once into cumulative tracks; every window statistic then
@@ -107,7 +107,7 @@ SHAP agrees at 0.496 (0.800 per block), so the project reports SHAP, at block le
 family A existed*, which is its positive control.
 
 ### 8. The ceiling: how much can be predicted at all *(Finding 6)*
-`sgrna/cohorts/curated_ceiling.py`, `sgrna/post_freeze/signal/ceiling_table.py`
+`sgrna/cohorts/curated_ceiling.py`, `sgrna/cohorts/ceiling_table.py`
 
 crisprHAL publishes its per-replicate counts. Pairing each Cas9 replicate with its matched dead-nuclease control gives two independent estimates of the same quantity, which agree at ρ 0.8097;
 Spearman–Brown gives the released score's reliability (0.8948), and its square root is the highest ρ any predictor can reach: **0.946** [0.944, 0.948]. The field's "~0.7 upper limit" drops both the square
@@ -115,7 +115,7 @@ root and the averaging step; corrected, its own numbers give 0.91 to 0.93, so mo
 for any replicate agreement.
 
 ### 9. What the signal is made of *(Finding 7, after the freeze)*
-`sgrna/post_freeze/signal/mechanism.py`, `sgrna/post_freeze/signal/novel_followups.py`
+`sgrna/interpret/mechanism.py`, `sgrna/interpret/novel_followups.py`
 
 Because model importance is unreliable here (block 7), nothing in this block reads importance off the model. The code uses partial correlations computed from sequence and label directly, a resolution ablation,
 and a depth-2 model whose splits are the pairs. **Results:** the effect is GC, not purine; it is side-symmetric (the two sides agree to within 0.026); it has a single length scale of 250 to 500 nt with no structure
@@ -123,7 +123,7 @@ finer than about 250 nt, so four columns (GC and purine over the whole kilobase 
 *E. coli* and human (ρ = −0.052), and 15 of 27 jointly significant cells invert.
 
 ### 10. Ideas that were tested and failed, and why that counts *(Appendix B4)*
-`sgrna/post_freeze/shape/geom.py`, `sgrna/post_freeze/shape/shape_ablate.py`, `sgrna/post_freeze/shape/local_sequence_bound.py`, `sgrna/post_freeze/signal/lit_followups.py`
+`sgrna/features/geom.py`, `sgrna/cohorts/shape_ablate.py`, `sgrna/cohorts/local_sequence_bound.py`, `sgrna/compare/lit_followups.py`
 
 DNA shape and 3D structure were tested in the form an earlier null had left open: vectors with direction, including a rigid-body reconstruction of the helical path from the six step parameters. They add −0.0008 to +0.0006 ρ over family A,
 and their standalone gains are composition (shuffling the flank keeps them). `local_sequence_bound.py` closes the question for any local shape predictor by handing the model the inner ±50 nt directly: it adds
@@ -131,7 +131,7 @@ and their standalone gains are composition (shuffling the flank keeps them). `lo
 binarised classifier, were also null, each with a mechanism. The shape null was re-run at larger model capacity and against shuffled-flank controls before being believed.
 
 ### 11. The audit: how every quoted number is checked *(throughout)*
-`sgrna/post_freeze/paper/verify_numbers.py`, `sgrna/post_freeze/paper/figures.py`, `sgrna/post_freeze/paper/import_check.py`, `sgrna/post_freeze/paper/doc_refs.py`, `sgrna/post_freeze/paper/code_map.py`
+`sgrna/paper/verify_numbers.py`, `sgrna/paper/figures.py`, `sgrna/paper/import_check.py`, `sgrna/paper/doc_refs.py`, `sgrna/paper/code_map.py`
 
 `verify_numbers.py` recomputes each number the report quotes from the result file that produced it and compares at the precision quoted; it exits non-zero on any mismatch (more than nine hundred checks). It has repeatedly caught the authors' own
 transcription and rounding errors. Four smaller guards sit beside it: every module imports and importing writes nothing (`import_check.py`); every module, path and script a
@@ -144,8 +144,8 @@ These read the stored results and the genome, so they need no GPU and no re-trai
 
 ```bash
 ./run_audit.sh                                          # re-compute every number the report quotes from its file (about 2 seconds)
-./run_ext.sh sgrna.post_freeze.speed.a_flank_fast       # the fast featuriser equals the original on 300 guides (under 1 second)
-./run_ext.sh sgrna.post_freeze.signal.ceiling_table     # the ceiling correction, as arithmetic (about 1 second)
+./run_ext.sh sgrna.build.a_flank_fast       # the fast featuriser equals the original on 300 guides (under 1 second)
+./run_ext.sh sgrna.cohorts.ceiling_table     # the ceiling correction, as arithmetic (about 1 second)
 ```
 
 ## What this code does not show

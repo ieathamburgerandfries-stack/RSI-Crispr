@@ -20,9 +20,9 @@ from sklearn.model_selection import KFold
 
 from sgrna.cohorts.curated_ablation import _base, _groups
 
-from ..post_freeze.tuning import tune_ecoli as T
+from ..tuning import tune_ecoli as T
 from . import vs_crisprhal as V
-from ..post_freeze.common import OUT, stored
+from ..common import OUT, stored
 
 
 def run(n_boot=2000, seed=0, seeds=(41, 42, 43)):
