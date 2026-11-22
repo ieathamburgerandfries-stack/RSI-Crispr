@@ -65,7 +65,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Finding 2 | The DNA around the cut site predicts cutting — the one large effect, and it is local and compositional | 3 | 632 | 6 | controls, harness, interpret |
 | Finding 3 | The effect belongs to the DNA, and transfers | 3 | 1,680 | 26 | compare, harness |
 | Finding 4 | The model is out of *material*, and the tuning gain is evidence for it | 4 | 1,351 | 16 | controls, interpret, tuning |
-| Finding 5 | On a redundant matrix, importance and faithfulness are both uninterpretable | 6 | 1,574 | 22 | interpret |
+| Finding 5 | On a redundant matrix, per-column importance is unstable across fits, but SHAP at block level and edit tests are faithful | 6 | 1,574 | 22 | interpret |
 | Finding 6 | The label's ceiling is 0.946, measured from crisprHAL's own replicates | 1 | 122 | 1 | cohorts |
 | Finding 7 | What the signal is made of: GC over a few hundred bases, a seed region that inverts between kingdoms, and the two coupled | 4 | 1,226 | 32 | compare, interpret |
 | Part 2 | Contributions | 3 | 434 | 16 | compare |

@@ -95,7 +95,7 @@ Within a group the order is alphabetical.
 | `representation_headroom.csv` | 1937.3 | audited | `representation` | arm, column, group, rho_with_residual |
 | `representation_residual.csv` | 0.3 | receipt | `representation` | arm, n_columns, spearman, spearman_sd, r2, complete |
 
-### Finding 5 — On a redundant matrix, importance and faithfulness are both uninterpretable
+### Finding 5 — On a redundant matrix, per-column importance is unstable across fits, but SHAP at block level and edit tests are faithful
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
