@@ -7,8 +7,10 @@ state of the art — on crisprHAL 2's **own two published splits**, scored again
 +0.0021, 95% CI [−0.0031, +0.0072] on eSpCas9, about 150× less CPU time to fit). It scores a guide 13–21× faster end to
 end (34× when designing across a locus) and reaches crisprHAL 2's accuracy on about a third of the labelled guides.
 
-**The lead is against crisprHAL 2 as released.** It has not been re-tuned on its own splits (a Colab script for that is
-written and not yet run), so the honest claim is that a tuned boosted tree beats the released model, not its architecture.
+**Both models are compared as released**, which is how they are used in practice: SLICER as shipped, with settings chosen on
+held-out genes, against crisprHAL 2's published weights. That is a claim about the two models, not about their architectures:
+SLICER's settings were searched and crisprHAL 2's were not, and a Colab script that gives crisprHAL 2 a search of its own is
+written and not yet run.
 On our own curated five folds the margin is larger (0.7218 against 0.7051, paired +0.0161, five of five folds) but the two
 models were not searched with equal effort there, so that is not the headline; and on a screen neither model trained on
 (a dCas9 CRISPRi screen) **theirs** transfers better.

@@ -85,10 +85,9 @@ Each of these is an attack on the result, not a confirmation of it.
 ### 5. The model against crisprHAL 2: accuracy, then cost *(Part 5, the head-to-head)*
 `sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/tuning/tune_ecoli.py`, `sgrna/compare/vs_crisprhal.py`; for the cost half, `sgrna/build/a_flank_fast.py`, `sgrna/build/base_fast.py`, `sgrna/build/flank_locus.py`, `sgrna/cost/e2e_bench.py`
 
-**Accuracy.** The comparison is run under four conditions, because the answer depends on which is held equal. On our folds, with both models tuned here, SLICER leads by +0.0172. On crisprHAL 2's own splits with its shipped weights, the frozen model is
-statistically equivalent (Δρ +0.0021, 95% CI [−0.0031, +0.0072]) at about 150× less CPU time to fit. On a different assay neither model was trained on (a boundary of the claim, not a like-for-like comparison), crisprHAL 2 leads by +0.026.
+**Accuracy.** The final SLICER model, as shipped, leads crisprHAL 2, as released, by **+0.023 to +0.029 ρ** on both of crisprHAL 2's own splits. The comparison is run under four conditions, because the answer depends on which is held equal. On our folds, with both models tuned here, SLICER leads by +0.0172. On a different assay neither model was trained on (a boundary of the claim, not a like-for-like comparison), crisprHAL 2 leads by +0.026.
 The tuning is designed so that it cannot fool itself: genes are split once into DEV (70%) and CONFIRM (30%), a random search runs on DEV only, and the winners are scored on genes never used to choose anything,
-giving **+0.014 ρ**, which replicates on a second split. After tuning, the lead over crisprHAL 2 is **+0.023 to +0.029 ρ** on both of its published splits, measured against its shipped weights.
+giving **+0.014 ρ**, which replicates on a second split. Before tuning, the same model was statistically equivalent to crisprHAL 2's released weights (Δρ +0.0021, 95% CI [−0.0031, +0.0072]) at about 150× less CPU time to fit.
 
 **Cost: 1.41 ms, then 0.093 ms, then 0.036 ms per guide.** The original featuriser walked every nucleotide in Python, which was 1.33 ms of the 1.41 ms it cost to score a guide. The array rewrite produces the same 348 columns, identical on all
 33,567 guides. The per-locus version goes further. Neighbouring guides read almost the same DNA, so it scans a stretch of chromosome once into cumulative tracks; every window statistic then
@@ -149,7 +148,7 @@ These read the stored results and the genome, so they need no GPU and no re-trai
 
 ## What this code does not show
 
-- The lead over crisprHAL 2 is against the model **as shipped**. It was never retuned on its own splits (about 40 GPU-hours), so the honest claim is that a tuned boosted tree beats the released model, not its architecture.
+- The lead over crisprHAL 2 is a statement about the two models **as shipped**, which is how both are used in practice. Whether boosted trees beat its architecture under equal tuning is a separate question that has not been tested (the Colab script `colab/crisprhal_retune_own_splits.py` is written, not run).
 - No untouched external cutting dataset remains at the same loci. The adaptive-overfitting component is measured (+0.0087) and small, and the tuned settings' benefit survives a genome no choice ever saw (+0.0172); what cannot be undone is the choice of cohort and of family A, both made on *E. coli*.
 - Whether the flank effect needs a double-strand break is **not** established. dCas9 CRISPRi screens were tried and could not separate cutting from binding (Appendix B5); their code is not in this tour, and no claim rests on it.
 - One organism and two relatives; the human arm was stopped, and its rules are uncorrelated with *E. coli*'s.

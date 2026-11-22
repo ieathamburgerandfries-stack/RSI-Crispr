@@ -388,13 +388,13 @@ Within a group the order is alphabetical.
 | `grouped_retention.csv` | 0.8 | cited | — | family, random, gene, retained_pct, reach, excess_loss_pp |
 | `human_transfer.csv` | 0.7 | cited | — | arm, rho, sd, n_train, n_test, seed |
 | `inference_t4.csv` | 0.8 | cited | — | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
-| `interpretability.csv` | 1.3 | cited | `evaluate` | model, importance, stability_kuncheva, importance_rank_agreement, method_agreement, faithfulness, direction_consistency … |
+| `interpretability.csv` | 1.3 | receipt | `evaluate` | model, importance, stability_kuncheva, importance_rank_agreement, method_agreement, faithfulness, direction_consistency … |
 | `kmer_order_noselect.csv` | 0.6 | cited | — | arm, n_columns, spearman, sd |
 | `learning_curve.csv` | 0.3 | cited | `expand` | , r2, r2, spearman, spearman, pearson, pearson |
 | `matched_search_folds.csv` | 0.5 | cited | — | fold, slicer_tuned, slicer_untuned, hal_default, hal_single_split, hal_matched, d_matched |
 | `memory_comparison.csv` | 0.5 | cited | `bench` | config, columns, peak_gb_median, peak_gb_min, peak_gb_max, select_s_median, rho … |
 | `memory_comparison_runs.csv` | 1.2 | receipt | `bench` | config, peak_gb, rep, columns, select_s, rho |
-| `model_comparison.csv` | 30.7 | cited | `evaluate` | model, seed, fold, r2, spearman, pearson, top_decile_precision … |
+| `model_comparison.csv` | 30.7 | receipt | `evaluate` | model, seed, fold, r2, spearman, pearson, top_decile_precision … |
 | `net_cost.csv` | 0.1 | receipt | `bench` | config, columns, params, train_s, rho, peak_gb |
 | `portability_364.csv` | 0.1 | cited | — | arm, n_columns, spearman, spearman_sd |
 | `post_freeze/cut_within_gene_summary.csv` | 0.7 | audited | — | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |

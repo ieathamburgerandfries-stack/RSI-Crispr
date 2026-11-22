@@ -1,588 +1,160 @@
-# RSI09 — Enhancing sgRNA efficiency in CRISPR-Cas9 genome editing
+# Runjia/: folder guide
 
-Feature engineering for predicting sgRNA cutting efficiency in *E. coli*,
-extending the quantum chemical tensor (QCT) feature set of
-[Noshay et al. 2023, NAR 51:10147](https://doi.org/10.1093/nar/gkad736).
+SLICER predicts how efficiently a Cas9 guide cuts in *E. coli*. It extends the quantum chemical tensor (QCT) feature set of
+[Noshay et al. 2023, NAR 51:10147](https://doi.org/10.1093/nar/gkad736), which describes the 20-nt guide, with descriptors of the DNA
+around the target, and fits a small gradient-boosted model to them. This folder holds the pipeline (`sgrna/`), the GPU scripts
+(`colab/`), every result file the pipeline wrote (`results/`) and the documents that state and defend what was found.
 
-**The project pivoted cohorts on 13 October 2026.** Everything is now measured on
-crisprHAL 2's **curated 33,567-guide** release of the same Guo screen, with
-**crisprHAL 2 as the baseline to beat**; Noshay et al.'s 13,880-row published
-matrix and its iRF are provenance, not the comparator. Both frames appear below
-and **every number belongs to one of them** — they are not interchangeable, least
-of all the labels (`cut.score` runs 0 to 48 with no negatives; the curated score
-runs −9.05 to +6.21 and is 47.5% negative, agreeing with it in rank at ρ 0.945 on
-the 8,617 guides both contain). What the pivot re-opened, and what is closed
-again, is tabulated in Part 4 of the progress report.
+**The current headline is not repeated here.** The final SLICER model as shipped, against crisprHAL 2 as shipped, is stated in the
+top-level [`README.md`](../README.md) of the repository and in [`PROGRESS_REPORT.md`](PROGRESS_REPORT.md) (Summary and Part 5).
+Where this guide and either of them differ, this guide is stale.
 
-**Harness anchor (published frame):** XGBoost, top-300 features, 5 seeds × 5
-folds → R² 0.2937 ± 0.0015, Spearman 0.5278, Pearson 0.5424 on Noshay's 13,880
-guides — kept because reproducing it to four decimal places is how this pipeline
-is checked, not because it is the current baseline.
+## Which document to read for what
 
-**Where to start.** [`CODE_OVERVIEW.md`](CODE_OVERVIEW.md) is the ten-block tour of the code that matters, written for a reader who has not seen the project; [`CODE_MAP.md`](CODE_MAP.md) says what every module is and which section of the report it supports (generated from the
-code and checked by the audit); [`REMOVED.md`](REMOVED.md) says what was deleted and why, and what was brought in; `PROGRESS_REPORT.md` is the
-claims, `EXTENSION_LOG.md` the working record, and `./run_audit.sh` recomputes every number the report quotes.
-
-**Extension (this fork only).** Work outside the frozen pipeline (results in `results/post_freeze/`, the working in `EXTENSION_LOG.md`).
-A representation idea the freeze deferred, the flank's shape and 3D structure, adds nothing to its composition
-(Appendix B4); a second, nuclease conditioning, was tried and removed as having no substance (`REMOVED.md`). Then, from 9 November,
-**a joint hyperparameter search that changes the headline** (`EXTENSION_LOG.md` §11–15): +0.014 ρ on genes it never
-saw, which turns the parity below into a **lead of +0.023 to +0.029 ρ** on both of crisprHAL 2's own splits, with
-about **three times fewer labels** to match it and **13–21× faster** end-to-end scoring once the flank featuriser is
-computed on arrays. Four of six metrics are clear; the two top-end metrics are tied. crisprHAL 2 was **not** retuned
-on its own splits, so the lead is against their released model. Everything quoted for the extension is recomputed from
-its result files by `./run_audit.sh`.
-
-**Then, on 19 November, a review of the whole project against its own files** (`EXTENSION_LOG.md` §16–17), which
-produced the two results worth knowing about before reading anything else:
-
-* **The tuning gain is the flank columns, not the learner.** Family A's increment is **+0.1563** at the champion's
-  settings and **+0.1697** at the tuned ones — it *grows* when the model improves — while the same hyperparameter
-  change is worth **+0.0162** with those columns present and only **+0.0028** without them. So Finding 4's "the model
-  is out of material" is strengthened rather than refuted by the retuning (§16.1).
-* **A contribution-level claim was withdrawn.** "The two kingdoms differ in interaction order" rested on the human
-  matrix, where **49% of rows repeat a guide that appears elsewhere**. Under folds that keep duplicates together the
-  ridge/boosting ratio goes 63.7% → **88.8%** and the corroborating depth effect changes sign (+0.0585 → **−0.0062**).
-  Withdrawn, not rescoped; the row-wise arms reproduce every published figure to four decimals in the same run, as a
-  positive control (§16.2).
-
-* **The tuning payoff replicates on a second gene split.** A fresh 40-draw search on a different 70% of the genes gives
-  **+0.0121 [+0.0092, +0.0152]** on genes it never saw, against +0.0143 on the first split, with a *different* winning
-  configuration in the same region of the space. It also showed the thing one split cannot: the champion's absolute ρ
-  moves **0.026** between two random gene partitions — twice the tuning gain — so differences between arms replicate and
-  levels do not (§16.3).
-
-**Then, on 20 November** (`EXTENSION_LOG.md` §18–22), four things that change what the paper leads with:
-
-* **Finding 7 — what the flank signal is physically made of.** It is GC, not purine; side-symmetric, so not
-  directional; it has one length scale of 250–500 nt and **no structure below ~250 nt**; and its strongest interaction
-  is with the seed region. The position × base design rules **do not transfer between kingdoms** (ρ = −0.052 between
-  *E. coli* and human, 15 of 27 cells invert, position-20 G inverts) — which is why mammalian predictors fail here.
-* **The field's performance ceiling is mis-derived, and that is this project's strongest contribution to the field.**
-  Replicate agreement is a *reliability*, not a ceiling: restoring the square root and the Spearman–Brown step moves the
-  stated ~0.7 upper limit to **0.91–0.93**, so everyone — us included — sits at about three-quarters of attainable with
-  roughly three times more headroom than the standard frame says. Now tabulated parametrically, so it does not depend on
-  recovering anyone's replicate counts (§22.2).
-* **Seven publication figures** to ACS specification (`results/post_freeze/figures/`, vector PDF + 600 dpi PNG), and a
-  paper-flow skeleton in `PAPER_FLOW.md` — a flow, not a draft.
-* **The design path is 34× faster than crisprHAL 2, not 13×** (§22.1). Scanning a locus once into cumulative tracks
-  makes the flank block a table lookup: 0.093 → **0.036 ms per guide**, with columns identical to 4.6 × 10⁻¹², so no
-  result moves.
-
-**Where the open questions are.** All of them are in one place — the **open-questions register**, `PROGRESS_REPORT.md`
-Part 4. Ten remain open and each says what would settle it; six were closed on 20 November. The tenth — what a clone of the repository can verify — was added on 22 November.
-`./run_audit.sh` recomputes every post-freeze number (1027 checks), checks that four documents agree on that count, that
-four claims later work made false have not returned, and that every module in the package imports without writing
-anything.
-
-**Part 5 of the report** now compares this work with the field — what each published predictor reads, how it validates,
-and where this project is novel (the kilobase reach) and explicitly is not (boosted trees matching a deep model, which
-BoostMEC did first).
-
-**Working figures (curated frame).** Frozen champion: base + family A, ρ **0.7218** on the curated
-five folds; **0.6985** on crisprHAL 2's own held-out partition against the
-**0.695** Browne et al. report for it. Tuned (fork): **0.7314** on the whole cohort under the standard
-gene-grouped protocol, **0.7215** on held-out genes, **0.8107** and **0.7172** on crisprHAL 2's two splits.
-
-**Against the state of the art, before retuning: parity at a fraction of the cost.** On
-crisprHAL 2's **own two published splits**, evaluated against their own published
-weights, SLICER is statistically equivalent to it — Δρ **+0.0021**, 95% CI
-[−0.0031, +0.0072] on eSpCas9 — equivalence at any margin from 0.0072 up, with no
-margin needing to be declared — and +0.005 on
-SpCas9 — while reaching a given accuracy on about **half the labelled guides**.
-Our five folds take **69 s of wall-clock** against **105 min** for their
-CNN–BiGRU on the same machine — **92×**, or **~150×** counted in CPU-seconds
-(65.8 s per fold against ~10,000), which is the figure to lead with because they
-parallelise better than we do and wall-clock understates it. Comparable memory
-either way (3.76 GB against 4.55 GB peak), and ~190× with a LightGBM selector
-(`results/RESULTS_archive_2026-10-10.md` §15a).
-
-**And against the model this project extends, on its own data, it is not close.**
-Our reimplementation of Noshay et al.'s iRF scores ρ **0.4785** on their 13,880
-guides (reproducing their published Pearson 0.502 / R² 0.249 at 0.488 / 0.235);
-SLICER on the identical rows and label reaches **0.6060** — **+0.128**, of which
-+0.049 is the model class and **+0.078 is the flank features**. So the two
-comparisons say different things and both are real: Noshay's model is beaten
-decisively, crisprHAL 2 is matched by the frozen champion and led by the tuned one.
-
-**On size**, crisprHAL 2 holds **790,533** trainable parameters across 37 layers;
-SLICER stores **6,348 leaf values** over 400 trees, or 18,244 numbers counting
-each node's feature index and threshold — 125× fewer fitted values, the same
-order as the compute ratio.
-
-On **our own** curated five folds we lead by more — base + family A reach
-**0.7218** against their **0.7051** at their best known configuration, paired
-**+0.0161** over 33,567 out-of-fold predictions, five of five folds — but that
-comparison is not symmetric in search effort and the report says so. A nested
-search of their own (free Colab T4, 16 October) found **nothing better than their
-published configuration**, which won four of five inner searches. And on a screen
-neither model trained on, **their** model transfers better (\|ρ\| 0.0867 against
-0.0609). The claim that survives every condition is parity plus data efficiency,
-not a better model. Details and all four conditions: Part 5 (the head-to-head) of
-[`docs/PROGRESS_REPORT.md`](PROGRESS_REPORT.md).
-
-(The source paper this extends reports Pearson 0.502 / R² 0.249 on the same
-feature set.)
-
-**The label's ceiling is now measured.** The ceiling
-for the label we train on is **0.946 [0.944, 0.948]**, derived from crisprHAL's
-own published per-replicate counts rather than inherited from a different label,
-leaving ~0.22 ρ unaccounted for. (A test of whether the flank effect needs a break, on dCas9 CRISPRi screens, did not settle
-the question and is demoted to Appendix B5 of the report; nothing above rests on it.)
-
-**It is the DNA, not the enzyme — and it is what makes a model portable.**
-Transfer, one variable at a time: *transferred* is an imported model with no
-retraining, *local* is the same architecture trained on the target, and the last
-column is how much of the transferred ρ the flank features supply.
-
-| changed | from → to | transferred | local | retained | of which family A |
-|---|---|---:|---:|---:|---:|
-| nuclease | SpCas9 → eSpCas9 | 0.689 | 0.784 | 88% | +0.098 |
-| nuclease + organism | *E. coli* → *C. rodentium* | 0.698 | 0.766 | 91% | +0.072 |
-| the same, reversed | *C. rodentium* → *E. coli* | 0.628 | 0.708 | 89% | **+0.150** |
-| kingdom | *E. coli* → human | −0.039 | 0.508 | 0% | — |
-
-**Changing the nuclease or the host costs about a tenth of the performance;
-changing the kingdom costs all of it.** In the hardest bacterial
-direction — a model imported from a 236 kb *C. rodentium* screen into the
-*E. coli* genome — the flanks carry +0.150 of the 0.628 that arrives. Decomposed
-further, it is the **long-range windows** that do it (+0.107 of the +0.150), so
-the gradient holds in both organisms even though *C. rodentium*'s own screen is
-too narrow for a correlation to reveal it
-(`results/RESULTS_archive_2026-10-10.md` §15).
-
-**And where it stops — which is further out than we thought.** Carried to Noshay
-et al.'s human matrix on the **6,216 shared columns**, transfer is **−0.039
-[−0.054, −0.024]** going to human and **−0.006 [−0.023, +0.011]**, which is zero,
-coming back: useless in both directions, with the human model fitted to the human
-matrix rather than to *E. coli*'s hyperparameters. That distinction is worth the
-extra run (an earlier reading of it, that the human signal is far less additive than *E. coli*'s
-and that our champion is the wrong shape for it by 0.10 ρ, is withdrawn: it was measured on folds that
-split duplicate guides, and with them kept together ridge reaches 88.8% of boosting's ρ against 95.6%).
-But the shared columns carry **no flanking context on the human side**,
-because family A needs guides located on a genome and that arm never was. Jacky
-has since built it there, and with flanks on both sides transfer **flips
-positive** — +0.022 and +0.017, flanks alone +0.042 and +0.108 (measured on the same row-wise human folds, so
-not yet re-run under duplicate-aware ones). So the wall
-belongs to the guide-derived half of the representation; the genomic-context half
-crosses. The GC association still inverts (−0.20 in *E. coli*, +0.02 in human),
-and every *model* here is still a bacterial one.
-
-The contribution is not the prediction, though. It is decoding the published
-matrix so it can be computed for any guide, showing which feature families
-*could not* have helped and why, and finding that the surrounding-DNA effect is
-a **smooth compositional gradient rather than a motif** — which is why the cheap
-model keeps up. Full assessment, written for someone outside the project, in
-[`docs/PROGRESS_REPORT.md`](PROGRESS_REPORT.md).
-
-Everything in `src/` exists to answer one question: *what moves `cut.score`
-that the quantum descriptors do not already capture?* The reasoning and the
-literature behind each family is in `lit_review/beyond_QCT_literature_review.md`
-(local only); the first-pass answer is in [`results/RESULTS.md`](results/RESULTS.md),
-and Appendix C of the report describes what each family actually captures.
-
-**Ablation, 5 seeds** (each family alone against a baseline reproduced to four
-decimal places). `arc` holds out one of five contiguous chromosome arcs, which
-is the honest test for anything positional. Full tables and caveats in
-[`results/RESULTS.md`](results/RESULTS.md).
-
-| family | ΔR² random-row | ΔR² arc CV |
-|---|---:|---:|
-| A `a_flank` — sequence + QCT outside the 20-mer | **+0.087** | **+0.087** |
-| D2 `d_supercoiling` — chromosomal read density | — | +0.046 |
-| D1 `d_mechanics` — duplex thermodynamics | +0.020 | — |
-| C `c_folding` | +0.007 | — |
-| B `b_energy` — CRISPRoff ΔG | +0.007 | — |
-| F `f_methylation` | +0.004 | — |
-| H `h_offtarget` | +0.000 | — |
-| I `i_shape` — flank bendability / stiffness | +0.038* | — |
-| **A + D2 + D1 together** | — | **+0.105** |
-
-Under 100 kb-blocked CV: `e_nucleoid` +0.017, `g_transcription` +0.016.
-Permutation floors run −0.002 to +0.001.
-
-**All eleven families have now been re-measured on the 33,567-row curated
-cohort** (`python -m sgrna.cohorts.curated_ablation --all`,
-[`results/ablation_curated.csv`](results/ablation_curated.csv)). The ranking
-transfers almost exactly — rank ρ 0.97 against the published table — while every
-family inflates, median 3.3×. **The inflation is not noise removal and not the
-base representation**: measured directly, the per-unit effect of flank GC on the
-score is **2.96× steeper** in the guides crisprHAL adds, and splitting those by
-host gene shows the weak relationship belongs to Noshay's 1,222-gene panel rather
-than to the particular guides in it (β +5.4 inside the panel, +17.0 outside).
-Guo's panel is a part of the genome where the flank effect is weak, so +0.080 is
-the right figure for that panel and +0.164 the right one genome-wide — neither
-is an attenuated version of the other (`python -m sgrna.cohorts.curation_variance`).
-
-Family A +0.164 (**+0.156 on sealed genes** — see the adaptive-overfitting
-caveat below), `d_supercoiling` +0.139, `i_shape`
-+0.120, `d_mechanics` +0.099, `g_transcription` +0.058 ρ. Appendix B3 of the
-progress report has the caveats, which matter: these are single-family
-increments over a base starved of dense continuous columns, not estimates of
-biological contribution.
-
-*Family I is starred because the standalone number misleads: added on top of
-family A it is worth **+0.0007**, so the physical shape of the flanks is a
-reparameterisation of their letter composition rather than new information.
-
-Two findings that change how these read: the `d_supercoiling` gain is **DNA
-read density, not supercoiling** (the untagged no-antibody control predicts as
-well as the ChIP), and the positional families are **one variable measured
-three ways**. [`results/RESULTS.md`](results/RESULTS.md) has the evidence, and the shared
-repository's git history is the record of what was believed when.
-
-**The 13,880-row cap is lifted.** 5,853 of the 5,887 opaque `V####` columns
-were identified as (position, k-mer) indicators (100% verification), so with
-the recovered QCT tables **99% of the published feature matrix regenerates from
-a 20 nt protospacer** — any bacterial Cas9 screen can now be featurised the
-same way. `python -m sgrna.build.expand --build` does it for all 33,567 curated Guo
-guides.
-
-**Four improvement levers, measured not assumed:** a cleaner label +0.003,
-double the rows +0.010 (saturating at ~20k), a larger feature cap +0.001,
-wider flanks saturate at 250–500 nt. Only sequence context outside the 20-mer
-paid, at +0.080.
-
-**All eleven families together on the curated cohort: ρ 0.7475, Δ +0.2030**
-(`python -m sgrna.cohorts.curated_joint`,
-[`results/curated_joint.csv`](results/curated_joint.csv)). Adding up the eleven
-single-family gains would claim **+0.7046** — so the families realise **29%** of
-their own sum and the family table must never be read as a budget. The overlap is
-not uniform: `a_flank+d_supercoiling` realises 62% of its pair sum, and the three
-guide-only families are the most additive at **70%**, because they meet only
-through the 20-mer. On the older 13,880-row cohort the comparable figure was nine
-families at ρ 0.641, +0.114 over the published baseline (random-row CV; the
-honest contiguous-arc figure for A + D2 + D1 is ρ 0.615).
-
-**Why six of the eight families could not have helped much.** The published
-matrix turns out to be a *lossless* encoding of the 20 nt protospacer — every
-position carries at least three of its four mononucleotide indicators — so any
-feature that is a deterministic function of the guide adds **zero information**.
-Measured, by linear regression on position-specific k-mer indicators: CRISPRoff
-ΔG is 98% recoverable from the 20-mer, nearest-neighbour thermodynamics 85%.
-
-**Zero information is not zero performance, and the distinction is the whole
-point.** Re-describing the guide in better coordinates is worth **+0.011 to
-+0.019** ρ to a depth-limited tree, on **two** independent guide-only
-measurements (`b_energy`'s and `c_folding`'s shares of it are the same spacer
-fold energy filed in two folders, Pearson 0.9993) — small, real, and not
-nothing: Noshay's 316 quantum columns beat every k-mer
-encoding of the same 20 bases by **+0.0114**, and of the 63 hand-named summary
-columns the 46 computable from the guide carry **+0.0065** while the 17 that need
-annotation carry **−0.0007**. So the families sort by **reach**, not by a
-delivered/undelivered line: **nothing confined to the 20-mer clears +0.019, and
-nothing worth more than +0.05 is confined to it.** That ordering is about what
-the model cannot already compute, not about what the phenotype depends on — set
-the increments beside each family's strongest *marginal* association and the
-latter is nearly flat, 0.12 to 0.18, with the single strongest column in the
-whole matrix being a guide-determined hybridisation energy at 0.184 (report,
-Part 2, inference 2; Appendix B). Three more measurements close off the alternatives — the
-champion has no feature left with residual correlation above 0.035, sixteen
-model classes span only 0.116 Spearman, and a CNN reading raw bases *ties* the
-engineered matrix on the guide (ρ 0.498 vs 0.527) while losing badly on the
-flanks (+0.019 vs +0.080). Two independent screens of the same library agree at
-ρ 0.810, putting the ceiling for **Noshay's** label at ~0.90, so the assay is not
-the constraint either. (The curated crisprHAL label we now train on has its own,
-higher ceiling of 0.946 — measured, not inherited; the two numbers belong to two
-different quantities and are not interchangeable.)
-`results/RESULTS_archive_2026-10-10.md` §13 has the full argument; `python -m sgrna.controls.diagnose
---what all` reproduces it.
-
-**Model class, measured on identical folds and identical selected features.**
-Eight predictors, 3 seeds × 5 folds (`results/model_comparison.csv`):
-
-| model | R² | ρ | top-decile precision | pick percentile |
-|---|---:|---:|---:|---:|
-| **LightGBM** | **0.382** | **0.609** | 0.261 | **72.1** |
-| XGBoost | 0.381 | 0.608 | 0.260 | 72.1 |
-| CatBoost | 0.362 | 0.601 | **0.268** | 72.0 |
-| Ridge | 0.341 | 0.577 | 0.247 | 71.2 |
-| random forest | 0.292 | 0.550 | 0.236 | 70.2 |
-
-Model choice spans 0.09 R² but only **1.8 percentile points on the guide you
-actually pick**, and a linear model gets within 0.03 ρ of boosting — so most of
-the signal is additive. On the interpretability side
-(`results/interpretability.csv`), **XGBoost's two importance methods rank its
-top features independently (ρ −0.02)** while LightGBM's agree (+0.44) at the
-same accuracy and 1.5× the selection stability. **The champion is therefore
-LightGBM**; the frozen XGBoost numbers above stay as the historical baseline.
-`results/RESULTS_archive_2026-10-10.md` §11–12 defines every metric and gives the full tables.
-
----
-
-## Which document to read
-
-| file | what it is for |
+| file | read it for |
 |---|---|
-| [`docs/PROGRESS_REPORT.md`](PROGRESS_REPORT.md) | **start here** — the whole project for an outside reader: the seven findings and the evidence for each, how it compares to published work, what is original rather than imported, where it stops, and the controls in the appendices, with a glossary and a guide to reading the statistics |
-| [`results/RESULTS.md`](results/RESULTS.md) | **claim → evidence index**: for every claim the report makes, the file that backs it and the command that produced it, including the thirteen files whose producer is no longer in the repo |
-| [`results/RESULTS_archive_2026-10-10.md`](results/RESULTS_archive_2026-10-10.md) | the long-form commentary as it stood on 10 October 2026, kept verbatim — nulls, tangents and all |
-| `docs/qna_archive.md` | *(local only)* questions asked, answered and closed without moving a number — kept for conference Q&A, deliberately not in the report |
-| `docs/FINDINGS_LOG.md` | *(local only)* the chronological record — every result as it was first believed, every withdrawal where it happened, every bug. Git history is the authority; this is the reading copy |
-| `lit_review/beyond_QCT_literature_review.md` | *(local only)* working notes on other people's papers — why each feature family was tried in the first place. Appendix C of the report carries the part a reader needs |
-| `local/MISCONCEPTIONS.md` | *(local only, gitignored)* every claim we withdrew, why it was wrong and how it was caught |
+| [`PROGRESS_REPORT.md`](PROGRESS_REPORT.md) | **the claims**: seven findings with the evidence and limit of each; contributions (Part 2); limits (3); validation and the open-questions register (4); the field (5); controls and nulls (Appendix A); methods (B); data sources (C); versions, seeds, protocol (C0) |
+| [`CODE_OVERVIEW.md`](CODE_OVERVIEW.md) | a tour of the ten blocks of code the claims depend on, for a reader who has not seen the project |
+| [`CODE_MAP.md`](CODE_MAP.md) | every module: what it is for and which section of the report it supports (generated from the code, checked by the audit) |
+| [`results/INDEX.md`](results/INDEX.md) | every result file grouped by the section it is evidence for, with the module that wrote it (generated) |
+| [`results/RESULTS.md`](results/RESULTS.md) | claim to evidence: for each claim, the file that backs it and the command that produced it |
+| [`results/RESULTS_archive_2026-10-10.md`](results/RESULTS_archive_2026-10-10.md) | the long-form commentary as it stood at the freeze, kept verbatim, nulls and tangents included |
+| [`REMOVED.md`](REMOVED.md) | what was deleted or moved, what was brought in, why, and how to restore each item from git |
+| [`EXTENSION_LOG.md`](EXTENSION_LOG.md) | the working record of the post-freeze experiments: what was tried, in what order, with what expectation |
+| [`PAPER_FLOW.md`](PAPER_FLOW.md) | the paper outline: what each section must establish and which result and figure goes where; a flow, not a draft |
+| `./run_audit.sh` | recomputes every post-freeze number the report quotes from the file that produced it; exits non-zero on any mismatch; also checks that every module imports and that importing writes nothing |
+| `./run_ext.sh <module> [args]` | runs any module of `sgrna` with the environment it needs (see "Running it") |
 
----
+## Two cohorts, one anchor
+
+* **Published matrix:** Noshay et al.'s 13,880 guides by 6,232 columns, label `cut.score` (0 to 48, no negatives). It is the
+  provenance of the representation (Finding 1) and of the harness check below; its iRF is the inherited model, not the comparator.
+* **Curated cohort:** crisprHAL 2's curated 33,567 guides from the same screen, label the ALDEx2 score (−9.05 to +6.21, 47.5% negative).
+  It is the working cohort, with crisprHAL 2 as the baseline to beat. The labels agree in rank at ρ 0.945 on the 8,617 guides both
+  contain, but they are different quantities.
+
+**Every number belongs to one of these frames and is not comparable across them.** The report and the result files say which.
+
+**Harness anchor (published matrix):** XGBoost, top-300 features, 5 seeds × 5 folds: R² 0.2937 ± 0.0015, Spearman 0.5278, Pearson 0.5424 (`config.BASELINE`). Reproducing it to four decimals is how a change to the pipeline is checked. It is not a headline.
 
 ## Folder map
 
 ```
-RSI09/
-├── data/
-│   ├── raw/            ecoli_feature_matrix.csv  (Noshay Supp. Table 2, untouched)
-│   ├── reference/      NC_000913.2 genome + gene coordinates
-│   ├── interim/        guide index, QCT lookup tables, cached arrays
-│   │   └── features/   one CSV per feature family
-│   └── processed/      merged model-ready matrices (only if you export them)
-├── external_data/      downloaded datasets — see its own README
-├── lit_review/         papers + the review that motivates each family (local)
-├── src/sgrna/          the pipeline (imported by the notebooks)
-├── results/            335 result files + RESULTS.md (claim → evidence index)
-├── notebooks/          ← start here
-│   ├── RSI09_pipeline.ipynb    the full walkthrough, step by step
-│   └── RSI09_quickstart.ipynb  three cells, if you just want it running
-├── docs/               PROGRESS_REPORT.md + qna_archive.md, FINDINGS_LOG.md (local)
-├── colab/              scripts that need a GPU — run on free Colab, not here
-├── archive/            earlier one-off scripts, kept for reference
-├── sync_to_shared.sh   publishes the documents, code and cited results below
-└── RSI-Crispr/         the team's shared git repo
-    └── Runjia/         **a build artefact, not a second copy to maintain.**
-                        Edit the sources above and run `./sync_to_shared.sh`;
-                        `--check` reports drift without changing anything
+Runjia/                 the documents above, run_audit.sh, run_ext.sh
+├── baseline_ecoli_sgRNA_model_swappable.py   five-seed baseline, MODEL_NAME switch (xgboost, lightgbm, catboost, random_forest, ridge);
+│                                             selector stays XGBoost; for a local Colab runtime, edit DATA_PATH
+├── sync_to_shared.sh   copies documents from the author's working folder into a nested shared repository; not used in this fork
+├── sgrna/              the pipeline, organised by function (sgrna/README.md has the layout notes)
+│   ├── config.py  io_utils.py  common.py   paths, constants, shared helpers; almost every module imports them
+│   ├── build/       sequence to columns: published-matrix decoder, guide index, genome and QCT tables, feature matrix, array featurisers
+│   ├── features/    the eleven families a_flank to j_periodicity, one module each, and the shape / 3D descriptors
+│   ├── harness/     fit-and-score machinery every result goes through: run_ablation, folds, evaluate, notebook, CNN baseline
+│   ├── tuning/      hyperparameter search, its replication on a second gene split, model mixing, untuned knobs
+│   ├── cohorts/     ablations, ceilings and label variance on the curated and published cohorts
+│   ├── controls/    nulls and audits: shifted flank, no-information, sealed holdout, selector audit, fast-featuriser equality
+│   ├── interpret/   importance, attribution, faithfulness, redescription, the mechanism work
+│   ├── compare/     every comparison with something else: crisprHAL 2, Noshay's iRF, other organisms, human, other assays
+│   ├── cost/        wall-clock, CPU, memory and inference benchmarks
+│   └── paper/       the audit (verify_numbers), figures, import and reference guards, the code-map generator
+├── colab/           scripts that need a GPU or a fresh Colab instance: crisprHAL 2 re-tuning, wide window, sample complexity, inference timing
+└── results/         named for when a file was made, not what it shows (INDEX.md gives that); the code addresses files by name; .npy caches are gitignored
+    ├── *.csv        the analysis frozen on 11 October 2026 (Findings 1 to 6, Appendices A to C); not regenerated since
+    ├── post_freeze/ everything measured after the freeze; figures/ holds the seven publication figures (PDF and 600 dpi PNG)
+    └── rederived/   re-derivations of seven result files whose producing code was lost (sgrna/controls/rederive.py)
 ```
 
-**On there being two of some files.** The shared repo sits *inside* this folder,
-so anything teammates read has to exist in both places. Those pairs are
-generated, not maintained: `sync_to_shared.sh` is the only thing that should
-ever write to `RSI-Crispr/Runjia/`, and it rewrites the one link that differs
-between the two locations (this README's pointer to the report, which is in
-`docs/` here and a sibling there). Four things are deliberately *not* published:
-`docs/qna_archive.md`, `docs/FINDINGS_LOG.md`, the 19 MB Colab input, and the
-255 result files no claim cites.
+## Running it
 
----
+**The data layout that is not in this repository.** `sgrna/config.py` resolves every path from a project folder holding:
 
-## Running it — Colab on a local runtime
+```
+<project>/
+├── data/raw/        ecoli_feature_matrix.csv, human_feature_matrix.csv
+├── data/reference/  NC_000913.2.fasta, genes_NC_000913.2.tsv, dinucleotide_shape_scales.tsv
+├── data/interim/    caches the code writes (several GB): guide index, QCT tables, one CSV per family in features/
+├── external_data/   crisprHAL, crisproff, GapR-seq, E_coli_analysis (Hi-C), RegulonDB, precise1k, CRISPRBact, C_rodentium, ...
+└── results/         the pre-freeze result files
+```
 
-The pipeline reads a 198 MB matrix and several GB of external data from your own
-disk, so it runs on a **local runtime**: Colab's interface, your computer's CPU
-and filesystem. Nothing is uploaded.
+These inputs are several GB of other people's published data and are not committed (`external_data/README.md` in the project folder
+records where each came from), so a clone imports but does not run end to end. `features/dinucleotide_shape_scales.tsv` is the one input that
+ships with the code; `i_shape.py` reads it from `data/reference/`.
 
-In a terminal:
+**From a terminal, with `./run_ext.sh`.** Three variables must be right together, and a wrong one fails with a `FileNotFoundError` that does
+not say which: `RSI09_ROOT` (the project folder above; `config.py` guesses wrong from this fork's layout), `EXT_OUT` (`Runjia/results/post_freeze`)
+and `PYTHONPATH` (includes `Runjia`). `run_ext.sh` sets all three, taking the folder above the fork as the project and
+`<project>/.venv/bin/python` as interpreter unless `PY=...` is set:
+
+```bash
+./run_ext.sh sgrna.build.build_guide_index                              # step 0
+./run_ext.sh sgrna.build.build_features --all                           # step 1
+./run_ext.sh sgrna.harness.run_ablation --families a_flank --permute    # step 3
+./run_ext.sh sgrna.build.expand --build                                 # featurise all 33,567 curated guides; any module, same pattern
+```
+
+**Colab on a local runtime.** The pipeline reads a 198 MB matrix and several GB of external data from local disk, so it runs on a local
+runtime: Colab's interface on the computer's own CPU and filesystem, nothing uploaded.
 
 ```bash
 pip install jupyter
-jupyter notebook \
-  --NotebookApp.allow_origin='https://colab.research.google.com' \
-  --port=8888 \
-  --NotebookApp.port_retries=0 \
-  --NotebookApp.allow_credentials=True
+jupyter notebook --NotebookApp.allow_origin='https://colab.research.google.com' --port=8888 \
+  --NotebookApp.port_retries=0 --NotebookApp.allow_credentials=True
 ```
 
-Copy the `http://localhost:8888/?token=…` URL it prints. In Colab, click the
-**Connect** dropdown → **Connect to a local runtime** → paste it. Then open
-`notebooks/RSI09_pipeline.ipynb` through that local Jupyter server, so its
-working directory is inside the project and the setup cell finds everything
-with no paths to edit.
-
-The whole pipeline is four calls:
+Copy the printed `http://localhost:8888/?token=...` URL; in Colab choose **Connect**, **Connect to a local runtime** and paste it. Open a notebook
+through that server from inside the project folder. The walkthrough notebooks are in the author's working copy, not in this
+repository; against this layout a notebook starts with the cells below. `nb.setup()` puts `<project>/src` on the path, so if the package is
+in `Runjia/` instead, start Jupyter with `PYTHONPATH` set to it. On hosted Colab, `nb.setup(root='/content/drive/MyDrive/RSI09')` works, but
+the external data must be in Drive too, which is slow.
 
 ```python
 import sgrna.harness.notebook as nb
-nb.setup()                    # find the project, install what is missing
-nb.build_index()              # ~3 min once: locate all 13,880 guides
-nb.build_features("all")      # ~25 min once: all eleven families
-nb.cache_matrix()             # ~1 min once
-nb.ablate(["c_folding"])      # ~2 min per family
+nb.setup()                    # finds the project; installs pandas numpy scipy scikit-learn xgboost viennarna biopython if missing
+nb.build_index()              # step 0, ~3 min once
+nb.build_features("all")      # step 1, ~25 min once
+nb.cache_matrix()             # step 2, ~1 min once (float32 .npy); nb.export_csv([...]) writes a merged CSV for notebooks that read DATA_PATH
+nb.ablate(["c_folding"])      # step 3, ~2 min per family
 ```
 
-`nb.status()` shows what has been built already; every step skips work it has
-done before. Requirements (`pandas numpy scipy scikit-learn xgboost viennarna
-biopython`) are installed by `nb.setup()`.
+`nb.status()` shows what exists; every step skips work already done. Package versions used for the report: Appendix C0.
+* **Step 0, locate the guides.** The published matrix names guides by ID and stores no sequence. QCT descriptors are a pure function of the
+  nucleotide at each position, so the protospacer is decoded from the columns and confirmed against NC_000913.2; the same step inverts the QCT
+  columns into k-mer lookup tables. Writes `data/interim/guide_index.csv` and `qct_lookup_tables.json`. Evidence: Finding 1.
+* **Step 1, build the families.** One module and one CSV per family, independent of each other; a family whose external data is missing is
+  skipped with a message. No external dataset needed (`nb.build_features("self-contained")`): `a_flank`, `c_folding` (ViennaRNA), `d_mechanics`,
+  `f_methylation`, `h_offtarget`, `i_shape`, `j_periodicity`. One needed: `b_energy` (CRISPRoff repository), `d_supercoiling` (GapR-seq,
+  GSE152880), `e_nucleoid` (Hi-C, Lioy et al. 2018), `g_transcription` (RegulonDB, PRECISE-1K).
+* **Step 3, ablate.** The frozen protocol: seeds 41 to 45, 5 folds, top-300 columns, 400-tree champion, with imputation, ranking and selection
+  fitted inside the training split. Read `d_spearman` against the baseline in the same run, not a published number; a gain inside the permuted
+  floor (`permute=True`) is not a gain; use grouped folds (`group=`). `selected_from_family` is context only, since permuted columns still get
+  selected. Runs append to `results/ablation_<tag>.csv` and skip what is recorded, so a sweep survives a dropped session.
 
-> **Hosted Colab instead?** Put the folder in Drive and call
-> `nb.setup(root='/content/drive/MyDrive/RSI09')`. It works, but the external
-> datasets have to live in Drive too, which is slow.
+## Settings and caveats for anyone changing code
 
-> **Terminal instead?** Every step also has a CLI: `python -m
-> sgrna.build.build_guide_index`, `python -m sgrna.build.build_features --all`,
-> `python -m sgrna.harness.run_ablation --families a_flank --permute`, and so on.
+* **Importance is SHAP, not split gain.** `interpret/importance.shap_importance` is what `attribution.py` and `evaluate.py` call; both accept
+  `--importance native` for the historical gain figures. Across seven model families gain-based rankings agree at ρ 0.05 per column against
+  0.50 for SHAP, and gain credits a column for being binary. No gain plot belongs in a paper from here.
+* **`config.SELECTOR`** picks the model that ranks columns before the champion is fitted. The default `"xgboost"` is the frozen baseline's
+  choice; `"lightgbm"` is 3x faster and ranks as well, but moves the anchor from R² 0.2937 / ρ 0.5278 to 0.2897 / 0.5251. Exploratory sweeps only.
+* **Two configurations, two libraries.** The 13,880-row anchor uses XGBoost as predictor, which reproduces Noshay et al.'s figure. The curated
+  head-to-head modules default to LightGBM as predictor (`--model lightgbm`) with XGBoost still selecting, and the main hyperparameter search in
+  `tuning/` ran on LightGBM. They agree within 0.001 wherever both were run, but a number from one is not a number from the other.
+* **Grouped cross-validation is not optional for positional features.** About 20 guides sit in every gene, so plain `KFold` lets a model score by
+  recognising a locus. Report anything positional (D2, E, G) under `arc5` or a blocked scheme (`run_ablation.GROUP_CHOICES`, `load_groups`).
+* **A family's gain is an increment over a base, not a contribution.** Test each family alone, stacked and against permuted columns, or a gain
+  may re-parameterise something already in the matrix (Appendix B3).
+* **`cross_validate` resumes from `results/folds_<tag>.csv`.** A recorded fold is skipped, which lets a long run survive a dropped session and
+  is also how a cached result was once replayed into a control arm that never ran. Give every arm a tag unique in every distinguishing parameter,
+  not just its first word (`cui_screen._slug`).
+* **Coordinates.** RegulonDB reports positions on U00096.3; the genome here, the GapR-seq tracks and the Bikard screen use U00096.2, up to ~2 kb
+  apart. `g_transcription` re-locates each promoter by its 80-nt RegulonDB sequence instead of lifting over. Do not mix the two.
+* **After moving or editing a module:** `git mv`, then `./run_ext.sh sgrna.paper.import_check`, `./run_ext.sh sgrna.paper.doc_refs` and
+  `./run_audit.sh`, and regenerate the map with `./run_ext.sh sgrna.paper.code_map`. `CODE_MAP.md` and `results/INDEX.md` are generated; the
+  audit fails if they omit a module or result file.
 
----
+## Where the rest is
 
-## The pipeline, step by step
-
-### Step 0 — `nb.build_index()`
-
-The published matrix identifies each guide only as `aaeAb3241_107_Cas9`. It
-never stores the sequence, and without a genomic coordinate five of the eight
-feature families are impossible. This step recovers both.
-
-The trick is that the QCT descriptors are a pure function of the nucleotide at
-each position. `p{i}monomer.No.electronsraw` takes exactly four values across
-all 13,880 guides — 42, 48, 50, 56 — which are the **valence-electron counts**
-of cytosine, thymine, adenine and guanine. So the protospacer can be read
-straight back out of the matrix, one position at a time.
-
-Every decoded guide is then confirmed against the genome rather than trusted:
-
-| check | result |
-|---|---|
-| decoded from QCT columns | 13,879 / 13,880 (one row has a missing descriptor) |
-| found in NC_000913.2 | 13,879 |
-| NGG PAM immediately 3′ | 13,879 |
-| single-copy in the genome | 13,877 |
-| GC-skew origin vs annotated *oriC* | 3,923,620 vs ~3,923,800 |
-
-The same step inverts every QCT column into a k-mer → value lookup table. All
-4 monomers, 16 dimers, 64 trimers and 256 tetramers appear in the data, with
-no conflicts, so **the paper's quantum parameterisation is recovered exactly**
-and can be applied to sequence the paper never encoded.
-
-Outputs: `data/interim/guide_index.csv`, `data/interim/qct_lookup_tables.json`.
-
-### Step 1 — `nb.build_features("all")`
-
-| Family | Module | Adds | Needs |
-|---|---|---|---|
-| A | `a_flank` | sequence **and QCT tensors** outside the 20-mer | genome only |
-| B | `b_energy` | CRISPRoff ΔG decomposition (ΔG_H, ΔG_O, ΔG_U, ΔG_B) | crisproff repo |
-| C | `c_folding` | spacer MFE, spacer:scaffold duplex, seed accessibility | ViennaRNA |
-| D1 | `d_mechanics` | nearest-neighbour duplex stability, melting profile | genome only |
-| D2 | `d_supercoiling` | GapR-seq positive-supercoiling density | GSE152880 |
-| E | `e_nucleoid` | Hi-C 3D crowding, NAP dependence | Lioy et al. 2018 |
-| F | `f_methylation` | Dam `GATC` / Dcm `CCWGG` at PAM and seed | genome only |
-| H | `h_offtarget` | target copy number, near-cognate burden | genome only |
-| G | `g_transcription` | TSS distance, template strand, expression | RegulonDB + PRECISE-1K |
-
-Families are independent. One whose external dataset is missing is skipped
-with a message; it never takes the run down. Build a subset with
-`nb.build_features(["a_flank", "c_folding"])`, or
-`nb.build_features("self-contained")` for the ones that need no external data.
-
-### Step 2 — `nb.cache_matrix()`
-
-Caches the 198 MB published matrix as a float32 `.npy` so later steps load in
-seconds instead of a minute. `nb.export_csv([...])` writes a merged CSV in the
-original shape (title row included) if you want to point one of the team's
-existing notebooks at it by changing `DATA_PATH`.
-
-### Step 3 — `nb.ablate(...)`
-
-Reproduces the frozen protocol — seeds 41–45, 5 folds, top-300 by XGBoost
-gain, 400-tree champion — with imputation, ranking and selection all fitted
-**inside the training split**. A validation fold that helped choose the
-features is not a validation fold.
-
-```python
-nb.ablate(["a_flank", "b_energy", "c_folding"], permute=True)
-nb.ablate(["d_supercoiling"], group="bin100k", tag="grouped")
-nb.summary("notebook")
-```
-
-Four things decide whether a family earned its place:
-
-- **`d_spearman`** — change against the baseline in the same run, not against
-  the number in the paper.
-- **`permute=True`** — the same columns with their rows shuffled.
-  This is the noise floor. A gain inside the permuted band is not a gain.
-- **`group="bin100k"`** — hold out whole 100 kb blocks of chromosome instead
-  of random rows. The library puts ~20 guides in every gene and neighbouring
-  genes share supercoiling domains, so a positional feature can identify the
-  locus and get rewarded for memorising its mean score. **Any positional
-  family (D2, E, G) must be reported grouped.** In this project's first pass
-  that cost `e_nucleoid` 42% of its apparent gain and `g_transcription` 36%,
-  while `a_flank` and `d_supercoiling` survived nearly intact.
-- **`selected_from_family`** — how many of the family's columns survived into
-  the top 300. Useful context, but on its own it proves nothing: 24.7
-  *permuted* `a_flank` columns still got selected.
-
-Runs append to `results/ablation_<tag>.csv` and skip experiments already
-recorded, so a sweep can be built up one cell at a time and survives a
-dropped Colab session — re-running the cell picks up where it stopped.
-
----
-
-## Where each family came from
-
-Short version; the full argument and citations are in the review.
-
-- **A** is first because it is the largest documented gain for bacterial Cas9
-  (+0.143 Spearman on this exact screen, Browne et al. 2025) and the cheapest
-  to obtain. Extending the recovered QCT tables into the flanks turns the
-  project's claim from *quantum descriptors of the protospacer* into *quantum
-  descriptors of the target locus*.
-- **B** and **C** are the two established biophysical families. B is computed
-  by importing the CRISPRoff authors' own pipeline and parameters, with only
-  the folding call redirected to the ViennaRNA API for speed. C folds the
-  transcript E. coli actually makes — spacer **plus scaffold**, which is the
-  usual reason this family gets wrongly written off.
-- **D2** and **E** address the "unknown chromosomal factors" Guo et al. named
-  but could not explain. Neither had been tested against bacterial sgRNA
-  efficiency before, which made them the highest-risk, highest-novelty part
-  of the project. D2 pays (+0.139 on the curated cohort) but **not for the stated
-  reason**: the untagged no-antibody control predicts as well as the GapR ChIP, so
-  what the family measures is DNA read density, not supercoiling.
-- **F** is a regex with a mechanism attached, and two 2026 papers behind it.
-- **G** was deliberately constrained on the reasoning that Guo et al. had already
-  reported the marginal effects as null, so only the interaction terms were worth
-  arguing about. **Measured, that is backwards** — the interactions add +0.0004
-  over their parents and the marginals carry the family's +0.058, almost all of it
-  gene geometry rather than transcription (see "Known nulls" below).
-- **H** is not about Cas9 at all — it is about the half of `cut.score` that
-  measures whether the cell survived the cut.
-
-## Known nulls — don't spend another iteration here
-
-Guo et al. tested **gene essentiality**, **chromosome position** and **target
-gene expression** against this exact label and reported no meaningful
-correlation. The Keio essentiality experiment in `RSI-Crispr/Jacky/` is
-therefore a replication of a published null, which is worth a paragraph in the
-paper rather than another round of tuning.
-
-Measured here on the curated cohort, that null splits three ways
-(`python -m sgrna.cohorts.txn_interactions`,
-[`results/txn_interactions.csv`](results/txn_interactions.csv)): **essentiality
-is exactly nothing** (+0.00004 as a lone column, confirming Guo), **expression is
-not** (+0.0213), and the largest part of `g_transcription`'s +0.058 is **gene
-geometry** — distance and orientation to the nearest gene and promoter, worth
-+0.0393 with every expression column removed. The family's own stated rationale,
-that transcription matters through *interactions* with local DNA, is the part that
-fails: the four interaction terms add **+0.0004** over their parents. So
-`g_transcription` is kept, and read as a positional family rather than a
-transcriptional one.
-
-## Three caveats worth writing into the methods
-
-1. **Coordinate systems.** RegulonDB reports positions on U00096.3; the genome
-   here, the GapR-seq wiggles and the Bikard screen all use U00096.2, and the
-   two differ by up to ~2 kb. Rather than lift over, `g_transcription`
-   re-locates each promoter by searching for the 80 nt sequence RegulonDB
-   ships with it and reading the TSS off the single upper-case base — exact,
-   offline, and self-checking (3,964 promoters anchor successfully).
-
-2. **Collinearity with QCT.** Nearest-neighbour thermodynamics and hydrogen-
-   bond/stacking tensors encode overlapping physics. Test every family both
-   alone and stacked on the baseline, or a reported gain may just be a
-   re-parameterisation of something already in the matrix.
-
-3. **Adaptive overfitting, and the size of it.** Many choices here were made
-   against the same curated five folds, so those figures carry an inflation
-   component that no amount of cross-validation removes. The analysis is frozen
-   as of 11 October 2026, and the component is **measured**: sealing 20% of genes
-   by whole gene, re-deriving selection and hyperparameters inside the
-   development pool only, and differencing against a reference arm chosen
-   elsewhere puts the automatable part at **+0.0087 ρ [+0.0020, +0.0153]** over
-   **fifteen** sealing draws — 12 of 15 positive, t = 2.56, p = 0.022
-   (`python -m sgrna.controls.sealed_holdout --seal-seeds ...`). **It lands on the
-   differences, not the levels**: absolute scores do not move detectably
-   (0.7043 in pool CV against 0.7077 sealed), while **family A's gain reads
-   +0.164 in cross-validation and +0.156 on genes the pipeline never saw**.
-   Treat that as a *lower* bound, since no re-derivation reaches the human
-   choices, and expect the margin over crisprHAL 2 on our own folds to carry it
-   too — our configuration was chosen on those rows and theirs was not, so it
-   does not cancel. **For the settings chosen after the freeze it is not an
-   issue**: their benefit survives a genome no choice ever saw (the *C. rodentium*
-   screen, +0.0172 over the frozen champion; report Part 4). An earlier three-draw version reported +0.0005 ± 0.016 and
-   "no inflation detectable"; three draws could not resolve a 0.009 effect
-   against a reference arm whose own gap swings ±0.015.
+* **Family provenance** (why each was tried, what it carries and needs): report Appendix C, and B2 for why the imported families failed.
+* **Known nulls** (essentiality, `d_supercoiling`, `i_shape`, `j_periodicity`, `f_methylation`, `h_offtarget`): Appendix A and C. Read why before
+  spending another iteration on one.
+* **Ablation tables** per family on the curated cohort, with their caveats: Appendix B3. **Adaptive overfitting**, measured: Part 4.

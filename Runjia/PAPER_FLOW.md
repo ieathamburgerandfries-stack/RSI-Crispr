@@ -33,7 +33,7 @@ Browne et al. can, because the model *is* their contribution. Ours is not (Part 
 |---|---|---|---|
 | **A** | **Determinants** — what decides whether a guide cuts, and how much is knowable | the flanking-DNA effect and what it is made of | reviewers ask for the predictor anyway |
 | B | Method/measurement — the field's headroom is mis-measured | the ceiling correction | thin as a standalone; better as a section |
-| C | Model — a better bacterial predictor | the +0.023–0.029 lead | weakest. The lead is over a *shipped* model, the architecture claim is not novel (BoostMEC), and the search asymmetry is on our side |
+| C | Model — a better bacterial predictor | the +0.023–0.029 lead | the lead is a product-level claim (both models as shipped, which is how benchmarks of published predictors are made); the architecture claim is not novel (BoostMEC) and is not made, since SLICER's settings were searched and crisprHAL 2's were not |
 
 **Recommend A, with B as a full Results section.** A carries the two largest novel results (the
 flank effect's characterisation; the cross-kingdom inversion) and B reframes every number in the
@@ -96,11 +96,11 @@ field. C becomes one short section, honestly scoped.
 - Caveat in text: exact for Pearson, approximate for Spearman.
 
 ### Results 6 — "A compact model reaches this with far fewer labels" (report Part 5, the head-to-head, scoped)
-- Short and honest. Parity for the frozen model; +0.023–0.029 once tuned; ~3× fewer labels; 13–21× faster,
+- Short and honest. The final model leads by +0.023–0.029 (equivalent before tuning); ~3× fewer labels; 13–21× faster,
   34× on the design path — and say why that ratio is fair (95% of crisprHAL 2's cost is its forward pass,
   so the same precompute could take at most 4.7% off it).
-- **Say in the text**: measured against crisprHAL 2 *as shipped*, not retuned on its own splits; the
-  architecture claim is not novel (cite BoostMEC).
+- **Say in the text**: the final SLICER model as shipped against crisprHAL 2 as released; this is a claim about the two
+  models as used, not about the architecture (equal tuning is untested); the architecture claim is not novel (cite BoostMEC).
 - Top-end metrics tied, and four objectives aimed at the top end all failed.
 - **Table 2**: metric panel on both of their splits + the data-efficiency curve.
 

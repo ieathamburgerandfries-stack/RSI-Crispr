@@ -3,10 +3,10 @@
 #   -- run in Google Colab on a GPU runtime (Runtime -> Change runtime type -> T4)
 #   -- paste the whole file into one cell; set ENZYME below; run SMOKE=1 first (3 minutes)
 #
-# WHY. Our lead over crisprHAL 2 on its authors' own splits (+0.0286 rho on eSpCas9, +0.0226 on WT-SpCas9) is a lead over
-# their RELEASED WEIGHTS. Those were never re-tuned on these splits by us, while our side has had a 200-draw joint search.
-# The honest form of the claim today is "a tuned boosted tree beats the released model", not "beats the architecture". This
-# script is the missing arm: it gives their architecture a search of its own, chosen without ever touching their test file.
+# WHY. The final SLICER model, as shipped, leads crisprHAL 2, as released, on its authors' own splits (+0.0286 rho on eSpCas9,
+# +0.0226 on WT-SpCas9). That is a claim about the two models as used. It is not a claim about the architectures: our settings had
+# a 200-draw joint search and theirs are the released weights. This script is the arm that would let it be one: it gives their
+# architecture a search of its own, chosen without ever touching their test file.
 #
 # WHAT IT DOES (every step resumes from the CSVs it writes, so a dropped session loses one fit, not the run)
 #   stage 1  N_DRAWS random configurations of THEIR OWN hyperparameters (the 11 arguments of models.__init__ plus epochs and
@@ -28,7 +28,7 @@
 # of five) on the WT test file and 0.8107 / 0.8104 on the eSp test file. Compare the tuned 5-seed ensemble to the published
 # 5-seed ensemble (what tuning bought) and to those figures (what is left of the lead):
 #   * gain over the published ensemble <= ~0.005 (about the seed-to-seed spread) -> tuning buys them nothing; the lead stands
-#     and the sentence becomes "a tuned boosted tree beats their architecture, not only their release".
+#     and the as-shipped claim also holds against their architecture, tuned.
 #   * tuned ensemble lands between the published ensemble and SLICER                 -> the lead narrows by the gain; quote it.
 #   * tuned ensemble reaches SLICER's figure                                         -> the lead was a tuning-effort artefact
 #     and the honest result on their splits is parity. Say it plainly.
