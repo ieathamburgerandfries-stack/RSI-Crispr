@@ -23,7 +23,7 @@ and `config.py` locates the project root from its own path.
 | `screens/` | other screens and transfer: Cui, Rousset/Wang, cross-organism, cross-kingdom, the human baseline | 7 |
 | `cost/` | wall-clock, CPU and inference benchmarks | 3 |
 | `features/` | the eleven feature families, one module each (unchanged) | 12 |
-| `post_freeze/` | **everything measured after the 11 October freeze** — Findings 8–9, the tuning, the crisprHAL 2 re-comparison, the literature-driven work. Was `ext/`. Nothing here edits the frozen pipeline; it imports it | 45 |
+| `post_freeze/` | **everything measured after the 11 October freeze** — Appendix B4, the tuning, the crisprHAL 2 re-comparison, the literature-driven work. Was `ext/`. Nothing here edits the frozen pipeline; it imports it | 45 |
 
 Results split the same way: `results/` holds the frozen numbers, `results/post_freeze/` the ones from
 after the freeze. `./run_ext.sh <module>` runs anything in `post_freeze` with the three environment

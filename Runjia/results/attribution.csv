@@ -1,0 +1,37 @@
+picked_by,column,kind,closest_in_other_set,abs_corr
+xgboost only,sgRNA.tempsgRNA.raw,target: other published column,sgRNA.gcsgRNA.raw,1.000001072883606
+xgboost only,V1109.xsgRNA.raw,target: position/k-mer indicator,p19dimer.HLgap.eVEraw,0.23150594532489777
+xgboost only,V1110.xsgRNA.raw,target: position/k-mer indicator,p20basepair.Hbond.energyraw,0.14611653983592987
+xgboost only,V1115.xsgRNA.raw,target: position/k-mer indicator,p18dimer.Hbond.stackingraw,0.1353675127029419
+xgboost only,V1119.xsgRNA.raw,target: position/k-mer indicator,p18dimer.Hbond.stackingraw,0.40210506319999695
+xgboost only,V1121.xsgRNA.raw,target: position/k-mer indicator,V305.xsgRNA.raw,0.642610490322113
+xgboost only,V1125.xsgRNA.raw,target: position/k-mer indicator,p19dimer.HLgap.eVEraw,0.15770278871059418
+xgboost only,V215.xsgRNA.raw,target: position/k-mer indicator,CCsgRNA.raw,0.23530547320842743
+xgboost only,V274.xsgRNA.raw,target: position/k-mer indicator,p18trimer.Hbond.energyraw,0.33761242032051086
+xgboost only,V275.xsgRNA.raw,target: position/k-mer indicator,p18basepair.Hbond.energyraw,0.24638287723064423
+xgboost only,V278.xsgRNA.raw,target: position/k-mer indicator,p18basepair.Hbond.energyraw,0.3125654458999634
+xgboost only,V279.xsgRNA.raw,target: position/k-mer indicator,p18trimer.Hbond.energyraw,0.2860942780971527
+xgboost only,V284.xsgRNA.raw,target: position/k-mer indicator,p18trimer.Hbond.energyraw,0.29600703716278076
+xgboost only,V291.xsgRNA.raw,target: position/k-mer indicator,p20basepair.Hbond.energyraw,0.25805214047431946
+xgboost only,V296.xsgRNA.raw,target: position/k-mer indicator,p19dimer.HLgap.eVEraw,0.25303518772125244
+xgboost only,V303.xsgRNA.raw,target: position/k-mer indicator,p19dimer.Hbond.energyraw,0.3975182771682739
+xgboost only,V3878sgRNA.raw,target: position/k-mer indicator,V244.xsgRNA.raw,0.328452467918396
+xgboost only,V56.xsgRNA.raw,target: position/k-mer indicator,p11tetramer.Hbond.energyraw,0.3072701394557953
+xgboost only,V59.xsgRNA.raw,target: position/k-mer indicator,V231.xsgRNA.raw,0.44180306792259216
+xgboost only,V67.xsgRNA.raw,target: position/k-mer indicator,p17trimer.Hbond.stackingraw,0.48552706837654114
+xgboost only,V72.xsgRNA.raw,target: position/k-mer indicator,p18basepair.Hbond.energyraw,0.5944896340370178
+xgboost only,V73.xsgRNA.raw,target: position/k-mer indicator,p18basepair.Hbond.energyraw,0.5345597267150879
+xgboost only,V77.xsgRNA.raw,target: position/k-mer indicator,p18dimer.Hbond.stackingraw,0.7233095169067383
+xgboost only,p13trimer.Hbond.energyraw,target: quantum descriptor,p11tetramer.Hbond.energyraw,0.5794487595558167
+xgboost only,p17basepair.Hbond.energyraw,target: other published column,p16trimer.Hbond.energyraw,0.6183388233184814
+xgboost only,p17basepair.Hlgap.eVEraw,target: other published column,p16trimer.Hbond.energyraw,0.6183391809463501
+xgboost only,p17monomer.HLgap.eVraw,target: quantum descriptor,p17trimer.Hbond.stackingraw,0.46956387162208557
+xgboost only,p18basepair.Hlgap.eVEraw,target: other published column,p18basepair.Hbond.energyraw,1.0000030994415283
+xgboost only,p18dimer.Hbond.energyraw,target: quantum descriptor,p18trimer.Hbond.energyraw,0.819926917552948
+xgboost only,p18monomer.No.electronsraw,target: quantum descriptor,p18dimer.Hbond.stackingraw,0.5443834662437439
+xgboost only,p18trimer.Hbond.stackingraw,target: quantum descriptor,p17tetramer.Hbond.stackingraw,0.7441798448562622
+xgboost only,p19dimer.Hbond.stackingraw,target: quantum descriptor,p17tetramer.Hbond.stackingraw,0.5328037738800049
+xgboost only,p20basepair.Hlgap.eVEraw,target: other published column,p20basepair.Hbond.energyraw,0.9999985694885254
+xgboost only,eng.flank.seq.pamN.C,"flank, nearest 10 nt",p19dimer.Hbond.energyraw,0.09673203527927399
+xgboost only,eng.flank.comp.dn500.gc,flank window (dnstream),eng.flank.win.dn500.monomer.HLgapeV.sd,0.8641588687896729
+xgboost only,eng.flank.win.dn1000.tetramer.Hbondstacking.mean,flank window (dnstream),eng.flank.comp.dn1000.gc,0.9804410338401794

@@ -1,0 +1,3 @@
+config,columns,params,train_s,rho,peak_gb
+"dense net, all columns",6517,1685121,6.1,0.6413,3.72
+"dense net, reduced columns",712,199041,1.4,0.6401,2.83

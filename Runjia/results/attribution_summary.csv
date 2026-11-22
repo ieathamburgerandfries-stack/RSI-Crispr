@@ -1,0 +1,7 @@
+kind,xgboost_share,lightgbm_share,difference
+flank window (dnstream),0.0446,0.1382,-0.0936
+flank window (upstream),0.0425,0.1163,-0.0738
+"flank, nearest 10 nt",0.108,0.1729,-0.0649
+target: other published column,0.1209,0.0619,0.059
+target: position/k-mer indicator,0.4901,0.1803,0.3098
+target: quantum descriptor,0.1938,0.3304,-0.1366

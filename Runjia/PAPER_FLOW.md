@@ -68,7 +68,7 @@ field. C becomes one short section, honestly scoped.
 - Cut vs bind: 2–3× larger with a break (two dCas9 screens, strand controlled).
 - **Fig 2**: Δρ vs shift distance (the autocorrelation measurement) + the cut/bind comparison.
 
-### Results 3 — "The effect is GC over a few hundred bases, and it is coupled to the seed" (Finding 10)
+### Results 3 — "The effect is GC over a few hundred bases, and it is coupled to the seed" (Finding 7)
 - **This is the paper's centre of gravity under Frame A.**
 - GC not purine (the partial-correlation table).
 - Side-symmetric → not directional → separate from the orientation effect.
@@ -76,7 +76,7 @@ field. C becomes one short section, honestly scoped.
 - The flank × seed interaction (depth-2 pairs).
 - **Fig 3**: four panels — distance profile by side; resolution curve; purine-vs-GC null; interaction heatmap.
 
-### Results 4 — "Guide design rules do not transfer between kingdoms" (Finding 10, second half)
+### Results 4 — "Guide design rules do not transfer between kingdoms" (Finding 7, second half)
 - Position × base matrix, *E. coli*.
 - Same estimator on the human matrix; ρ = −0.052; 15 of 27 cells invert; position-20 G.
 - Tie back to the Introduction's gap: this is *why* mammalian predictors fail here.
@@ -92,7 +92,7 @@ field. C becomes one short section, honestly scoped.
 - **Fig 5** carries the same thing as a picture; use one or the other, not both.
 - Caveat in text: exact for Pearson, approximate for Spearman.
 
-### Results 6 — "A compact model reaches this with far fewer labels" (Finding 7, scoped)
+### Results 6 — "A compact model reaches this with far fewer labels" (report Part 6, the head-to-head, scoped)
 - Short and honest. Parity for the frozen model; +0.023–0.029 once tuned; ~3× fewer labels; 13–21× faster,
   34× on the design path — and say why that ratio is fair (95% of crisprHAL 2's cost is its forward pass,
   so the same precompute could take at most 4.7% off it).
@@ -115,7 +115,7 @@ field. C becomes one short section, honestly scoped.
 - Follow crisprHAL 2's order: Datasets → Data processing → Features → Model → Metrics → Splits.
 - **Splits section must carry**: gene-grouped and 100 kb-block CV; the train/test Hamming statistic
   (min 3, no identical guides) — both comparators report this and reviewers will look for it.
-- Reproducibility: `run_audit.sh`, 941 checks; `import_check.py` for the code itself.
+- Reproducibility: `run_audit.sh`, 817 checks; `import_check.py` for the code itself.
 
 ---
 
@@ -129,14 +129,14 @@ plan and the built set cannot disagree:
 |---|---|---|---|---|---|
 | Fig 1 | `fig1_representation` | 7.00 × 1.85 | decoding + the 412-column equivalence; a schematic, deliberately not a plot — see below | Finding 1 | Results 1 |
 | Fig 2 | `fig2_locality_cut_vs_bind` | 7.00 × 2.35 | (a) Δρ vs shift distance, (b) cut vs bind as a dumbbell by screen | Findings 2–3 | Results 2 |
-| Fig 3 | `fig3_what_the_signal_is` | 7.00 × 4.60 | (a) GC distance profile by side, (b) the purine null on the same scale, (c) the resolution curve, (d) interaction pairs | Finding 10 | Results 3 |
-| Fig 4 | `fig4_design_rules_by_kingdom` | 4.73 × 3.50 | position × base heatmaps, *E. coli* vs human | Finding 10 | Results 4 |
+| Fig 3 | `fig3_what_the_signal_is` | 7.00 × 4.60 | (a) GC distance profile by side, (b) the purine null on the same scale, (c) the resolution curve, (d) interaction pairs | Finding 7 | Results 3 |
+| Fig 4 | `fig4_design_rules_by_kingdom` | 4.73 × 3.50 | position × base heatmaps, *E. coli* vs human | Finding 7 | Results 4 |
 | Fig 5 | `fig5_attainable_ceiling` | 3.33 × 2.60 | the corrected ceiling, single column | Finding 6 | Results 5 |
-| Fig 6 | `fig6_flank_windows_schematic` | 7.00 × 2.15 | what family A actually reads | Findings 2, 10 | Methods or Results 2 |
+| Fig 6 | `fig6_flank_windows_schematic` | 7.00 × 2.15 | what family A actually reads | Findings 2, 7 | Methods or Results 2 |
 | Fig 7 | `fig7_pipeline` | 7.00 × 2.50 | how a ρ in this paper is produced, with the two leakage controls | Part 4 | Methods |
 | Table 1 | — | — | the ceiling correction, now parametric in *r* and *k* (`ceiling_parametric.csv`) | Finding 6 | Results 5 |
-| Table 2 | — | — | metric panel on both splits + data efficiency + the design-path cost | Finding 7 | Results 6 |
-| Supp | — | — | family ablations, adaptive-overfitting draws, nuclease and shape nulls (Findings 8–9), the local-sequence bound | Appendices | Supplementary |
+| Table 2 | — | — | metric panel on both splits + data efficiency + the design-path cost | report Part 6 | Results 6 |
+| Supp | — | — | family ablations, adaptive-overfitting draws, the shape null (Appendix B4), the local-sequence bound | Appendices | Supplementary |
 
 ACS applied: ≤ 3.33 in single column and ≤ 7 in double, ≤ 9.167 in depth, Helvetica at ≥ 7 pt
 (the floor is 4.5 pt but ACS pages disagree, so everything clears every variant), no rule thinner
@@ -160,8 +160,8 @@ throughout — marker shape and line style carry identity too, so each figure su
 ## Things to decide, not assume
 
 - **Venue** sets order (Methods before or after Results) and length. Not assumed here.
-- **Findings 8–9** (shape/3D, nuclease descriptors) are nulls. Supplementary under Frame A, unless a
-  reviewer asks.
+- **The shape/3D null** (Appendix B4) is supplementary under Frame A, unless a reviewer asks. The nuclease
+  work was removed (`REMOVED.md`).
 - **Jacky's orientation result and the human arm** are his; agree authorship and which figures are
   shared before drafting.
 - **The three withdrawn claims** must not reappear. The report lists them once, at the top.

@@ -1,0 +1,12 @@
+family,n_cols,max_abs_rho_with_strand,n_proxy_cols,strongest
+a_flank,348,0.5587480648313644,18,eng.flank.win.up1000.monomer.HLgapeV.mean
+b_energy,10,0.14493004010312482,0,eng.dg.opening_over_hyb
+c_folding,9,0.09920616191653803,0,eng.fold.full_mfe
+d_mechanics,30,0.045284725139866006,0,eng.mech.proto.dG37
+d_supercoiling,26,0.5698134694822027,1,eng.sc.torsion.gradient.w2000
+e_nucleoid,20,0.024071017863508685,0,eng.nuc.contacts.short
+f_methylation,17,0.06843878296563605,0,eng.meth.dam.in_pam
+g_transcription,19,1.0000000000000002,2,eng.txn.gene.template_strand
+h_offtarget,13,0.053006569876438155,0,eng.offt.weighted_burden
+i_shape,152,0.06229711127433921,0,eng.shape.bend_minor.dn10.mean
+j_periodicity,24,0.6194165264699408,6,eng.per.skew.up1000

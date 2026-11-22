@@ -1,7 +1,7 @@
 """Training cost is the wrong clock for a guide-design tool. This is the other one.
 
 `cost.py` measures what it takes to *fit* each model -- CPU-seconds, FLOPs,
-bytes moved, peak memory -- and Finding 7 quotes the ~150x from it. That is the
+bytes moved, peak memory -- and Part 6 quotes the ~150x from it. That is the
 right number for "can I afford to rebuild this", and the wrong one for the thing
 a user actually does, which is fit once and then score every candidate guide for
 every target they care about. A genome-wide design run is tens of thousands to

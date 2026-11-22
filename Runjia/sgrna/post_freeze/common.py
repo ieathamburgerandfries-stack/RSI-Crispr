@@ -44,4 +44,3 @@ def stored(pattern: str) -> list[Path]:
 
 MAIN_RESULTS = _main_results()
 EXTERNAL = config.ROOT / "external_data"
-KIM_CSV = EXTERNAL / "kim2020_cas9_variants" / "kim2020_training_test.csv"

@@ -1,11 +1,11 @@
 # `sgrna.post_freeze` — the extension, by theme
 
-Everything done after the freeze of 11 October 2026: Findings 8-10 of `PROGRESS_REPORT.md`, the hyperparameter search, the comparison with crisprHAL 2,
+Everything done after the freeze of 11 October 2026: Finding 7, Appendix B4 and the head-to-head (Part 6) of `PROGRESS_REPORT.md`, the hyperparameter search, the comparison with crisprHAL 2,
 the figures and the audit, recorded in `EXTENSION_LOG.md`. Nothing in the frozen pipeline is edited; these modules import it. Results go to
 `results/post_freeze/`. **`../../CODE_MAP.md` is the map of the whole package, generated from the code and checked by the audit; this file adds the
 hand-written context for the extension.**
 
-Eight folders, each a theme. The import graph clusters this way on its own: the shape modules import each other, the nuclease modules
+Seven folders, each a theme. The import graph clusters this way on its own: the shape modules import each other, the vs_crisprhal modules
 import each other, and `tuning/tune_ecoli.py` (the cohort and model loader) is imported from most of the rest.
 
 
@@ -57,18 +57,7 @@ lives outside both repositories (override with `PY=...`). Done by hand:
 | `esp_replicate.py` | the same comparison on crisprHAL's eSpCas9 screen (independent cohort) |
 | `local_sequence_bound.py` | an upper bound on what any local shape or stiffness predictor (Deep DNAshape included) can add: hand the model the inner +-50 nt one-hot and see whether it buys anything; +0.0002 rho (section 22.3) |
 
-## `nuclease/` — Nuclease descriptors, leave-one-nuclease-out, and PAM-profile learning.
-
-| module | what it does |
-|---|---|
-| `nuclease_desc.py` | nuclease descriptor groups: substitutions, 5F9R structure distances, PAM profile, activity scale |
-| `nuclease_model.py` | the Kim et al. 2020 experiments (`--stage 1` … `9`) |
-| `lono_summary.py` | leave-one-nuclease-out summaries with bootstrap over nuclease and PAM-class decomposition |
-| `pam_variants.py`, `pam_learn.py`, `pam_analyze.py` | 770 SpCas9 PI-domain variants (Silverstein 2025): descriptor groups (identity, composition, structure x composition, structure alone), leave-one-campaign-out and random folds, three model classes, within-fold metrics, bootstrap summaries |
-| `pam_predict.py` | the PAM profile of each Kim nuclease predicted from its six PI residues, in the layout of `nuclease_desc.pam_group` (used by `nuclease_model --stage 10`) |
-| `enzyme_contacts.py` | position-resolved contact profiles of each enzyme (substituted residues mapped through 5F9R onto target positions), the exact-permutation pairing test, whole-protein composition distances |
-
-## `human/` — The human matrix with its genomic flanks: Finding 8 on human, the twin-leak, fold distance.
+## `human/` — The human matrix with its genomic flanks: Appendix B4 on human, the twin-leak, fold distance.
 
 | module | what it does |
 |---|---|
@@ -81,8 +70,8 @@ lives outside both repositories (override with `PY=...`). Done by hand:
 | module | what it does |
 |---|---|
 | `cut_within_gene.py` | the cutting-screen within-gene decomposition (uses `sgrna.strand.strand_within_gene.run`) |
-| `mechanism.py` | biology out of the model by estimators that do not depend on it: GC not purine, side-symmetry, the 250-500 nt length scale, position x base design rules and their inversion between kingdoms (Finding 10) |
-| `novel_followups.py` | species-relative composition (a null) and the resolution curve of the flank (Finding 10) |
+| `mechanism.py` | biology out of the model by estimators that do not depend on it: GC not purine, side-symmetry, the 250-500 nt length scale, position x base design rules and their inversion between kingdoms (Finding 7) |
+| `novel_followups.py` | species-relative composition (a null) and the resolution curve of the flank (Finding 7) |
 | `lit_followups.py` | two ideas taken from the published predictors, both nulls: a back-fitted mixed-effect model and a binarised classifier (section 18) |
 | `ceiling_table.py` | the corrected ceiling as a function of replicate agreement and replicate count (Finding 6, section 22.2) |
 

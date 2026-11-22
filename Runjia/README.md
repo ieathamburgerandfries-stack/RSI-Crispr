@@ -24,8 +24,8 @@ code and checked by the audit); [`REMOVED.md`](REMOVED.md) says what was deleted
 claims, `EXTENSION_LOG.md` the working record, and `./run_audit.sh` recomputes every number the report quotes.
 
 **Extension (this fork only).** Work outside the frozen pipeline (`sgrna/post_freeze/`, `EXTENSION_LOG.md`).
-Two representation ideas the freeze deferred, as Findings 8–9: the flank's shape and 3D structure add nothing to
-its composition, and nuclease descriptors carry an unseen enzyme's PAM usage and little else. Then, from 9 November,
+A representation idea the freeze deferred, the flank's shape and 3D structure, adds nothing to its composition
+(Appendix B4); a second, nuclease conditioning, was tried and removed as having no substance (`REMOVED.md`). Then, from 9 November,
 **a joint hyperparameter search that changes the headline** (`EXTENSION_LOG.md` §11–15): +0.014 ρ on genes it never
 saw, which turns the parity below into a **lead of +0.023 to +0.029 ρ** on both of crisprHAL 2's own splits, with
 about **three times fewer labels** to match it and **13–21× faster** end-to-end scoring once the flank featuriser is
@@ -54,7 +54,7 @@ produced the two results worth knowing about before reading anything else:
 
 **Then, on 20 November** (`EXTENSION_LOG.md` §18–22), four things that change what the paper leads with:
 
-* **Finding 10 — what the flank signal is physically made of.** It is GC, not purine; side-symmetric, so not
+* **Finding 7 — what the flank signal is physically made of.** It is GC, not purine; side-symmetric, so not
   directional; it has one length scale of 250–500 nt and **no structure below ~250 nt**; and its strongest interaction
   is with the seed region. The position × base design rules **do not transfer between kingdoms** (ρ = −0.052 between
   *E. coli* and human, 15 of 27 cells invert, position-20 G inverts) — which is why mammalian predictors fail here.
@@ -71,7 +71,7 @@ produced the two results worth knowing about before reading anything else:
 
 **Where the open questions are.** All of them are in one place — the **open-questions register**, `PROGRESS_REPORT.md`
 Part 4. Ten remain open and each says what would settle it; six were closed on 20 November. The tenth — what a clone of the repository can verify — was added on 22 November.
-`./run_audit.sh` recomputes every post-freeze number (941 checks), checks that four documents agree on that count, that
+`./run_audit.sh` recomputes every post-freeze number (817 checks), checks that four documents agree on that count, that
 four claims later work made false have not returned, and that every module in the package imports without writing
 anything.
 
@@ -118,7 +118,7 @@ search of their own (free Colab T4, 16 October) found **nothing better than thei
 published configuration**, which won four of five inner searches. And on a screen
 neither model trained on, **their** model transfers better (\|ρ\| 0.0867 against
 0.0609). The claim that survives every condition is parity plus data efficiency,
-not a better model. Details and all four conditions: Finding 7 of
+not a better model. Details and all four conditions: Part 6 (the head-to-head) of
 [`docs/PROGRESS_REPORT.md`](PROGRESS_REPORT.md).
 
 (The source paper this extends reports Pearson 0.502 / R² 0.249 on the same

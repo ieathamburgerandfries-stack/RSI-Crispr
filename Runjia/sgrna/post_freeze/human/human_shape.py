@@ -1,4 +1,4 @@
-"""Finding 8 on human: do the shape / 3D descriptors add to family A on the human cutting matrix?
+"""Appendix B4 on human: do the shape / 3D descriptors add to family A on the human cutting matrix?
 
 Cohort: the guides of the Noshay et al. 2023 human matrix that locate to a single NGG-flanked copy on hg38
 (`human_flank.py`). Representation, selector, model and folds are those of the E. coli runs: the regenerated base

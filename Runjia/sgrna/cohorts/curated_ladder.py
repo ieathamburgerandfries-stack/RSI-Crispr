@@ -63,7 +63,7 @@ def run(seeds=SEEDS, n_splits=None, verbose: bool = True):
     arms = {
         "mono": (X[:, mono], sel(mono)),
         "mono_di": (X[:, mono_di], sel(mono_di)),
-        # Finding 7 says higher-order k-mers help once selection is removed, and
+        # Finding 4 says higher-order k-mers help once selection is removed, and
         # that was measured on the published matrix. These two arms re-ask it
         # here, where no arm selects: trimers add 1,146 columns and tetramers a
         # further 4,343, so if the trimer step pays and the tetramer step does
@@ -72,7 +72,7 @@ def run(seeds=SEEDS, n_splits=None, verbose: bool = True):
         # The step from mono_di_tri to base_full adds two different things at
         # once -- 4,343 tetramer indicators and 316 quantum-table columns -- so
         # a gain there cannot be attributed to either. This arm is the k-mers
-        # without the quantum columns, which is what Finding 7's "the usable
+        # without the quantum columns, which is what Finding 4's "the usable
         # order stops at three" is actually a claim about.
         "all_kmers": (X[:, all_kmers], sel(all_kmers)),
         "base_full": (X, names),

@@ -90,7 +90,7 @@ binding or accessibility, not cutting. The code runs the same ablation on those 
 composition), and splits each gain into a between-gene part and a within-gene part. **Result:** the effect is present on binding, but **two to three times
 as large when Cas9 cuts**.
 
-### 6. The model against crisprHAL 2 *(Finding 7)*
+### 6. The model against crisprHAL 2 *(Part 6, the head-to-head)*
 `sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/post_freeze/tuning/tune_ecoli.py`, `sgrna/post_freeze/vs_crisprhal/vs_crisprhal.py`
 
 The comparison is run under four conditions, because the answer depends on which is held equal. On our folds, with both models tuned here, SLICER leads by +0.0172. On crisprHAL 2's own splits with its shipped weights, the frozen model is
@@ -98,7 +98,7 @@ statistically equivalent (Δρ +0.0021, 95% CI [−0.0031, +0.0072]) at about 15
 The tuning is designed so that it cannot fool itself: genes are split once into DEV (70%) and CONFIRM (30%), a random search runs on DEV only, and the winners are scored on genes never used to choose anything,
 giving **+0.014 ρ**, which replicates on a second split. After tuning, the lead over crisprHAL 2 is **+0.023 to +0.029 ρ** on both of its published splits, measured against its shipped weights.
 
-### 7. Speed: 1.41 ms, then 0.093 ms, then 0.036 ms per guide *(Finding 7)*
+### 7. Speed: 1.41 ms, then 0.093 ms, then 0.036 ms per guide *(Part 6, the cost half of the head-to-head)*
 `sgrna/post_freeze/speed/a_flank_fast.py`, `sgrna/post_freeze/speed/base_fast.py`, `sgrna/post_freeze/speed/flank_locus.py`, `sgrna/post_freeze/speed/e2e_bench.py`
 
 The original featuriser walked every nucleotide in Python, which was 1.33 ms of the 1.41 ms it cost to score a guide. The array rewrite produces the same 348 columns, identical on all
@@ -122,7 +122,7 @@ Spearman–Brown gives the released score's reliability (0.8948), and its square
 root and the averaging step; corrected, its own numbers give 0.91 to 0.93, so models at ρ ≈ 0.70 are at about 75 to 77% of what is attainable, not at the top. `ceiling_table.py` tabulates the correction
 for any replicate agreement.
 
-### 10. What the signal is made of *(Finding 10, after the freeze)*
+### 10. What the signal is made of *(Finding 7, after the freeze)*
 `sgrna/post_freeze/signal/mechanism.py`, `sgrna/post_freeze/signal/novel_followups.py`
 
 Because model importance is unreliable here (block 8), nothing in this block reads importance off the model. The code uses partial correlations computed from sequence and label directly, a resolution ablation,
@@ -130,13 +130,13 @@ and a depth-2 model whose splits are the pairs. **Results:** the effect is GC, n
 finer than about 250 nt, so four columns (GC and purine over the whole kilobase on each side) carry about three quarters of it; and it interacts with the PAM-proximal seed. Separately, the guide's own position-by-base preferences are uncorrelated between
 *E. coli* and human (ρ = −0.052), and 15 of 27 jointly significant cells invert.
 
-### 11. Ideas that were tested and failed, and why that counts *(Findings 8 and 9)*
-`sgrna/post_freeze/shape/geom.py`, `sgrna/post_freeze/shape/shape_ablate.py`, `sgrna/post_freeze/shape/local_sequence_bound.py`, `sgrna/post_freeze/nuclease/nuclease_model.py`, `sgrna/post_freeze/signal/lit_followups.py`
+### 11. Ideas that were tested and failed, and why that counts *(Appendix B4)*
+`sgrna/post_freeze/shape/geom.py`, `sgrna/post_freeze/shape/shape_ablate.py`, `sgrna/post_freeze/shape/local_sequence_bound.py`, `sgrna/post_freeze/signal/lit_followups.py`
 
 DNA shape and 3D structure were tested in the form an earlier null had left open: vectors with direction, including a rigid-body reconstruction of the helical path from the six step parameters. They add −0.0008 to +0.0006 ρ over family A,
 and their standalone gains are composition (shuffling the flank keeps them). `local_sequence_bound.py` closes the question for any local shape predictor by handing the model the inner ±50 nt directly: it adds
-+0.0002 ρ. Nuclease descriptors gain nothing in distribution, but for an unseen enzyme they recover which PAM classes it can use (ρ 0.857 to 0.903). Two methods taken from the published literature, a mixed-effect model and a
-binarised classifier, were also null, each with a mechanism. The shape and nuclease nulls were each re-run at larger model capacity, and the shape null also against shuffled-flank controls, before being believed.
++0.0002 ρ. Two methods taken from the published literature, a mixed-effect model and a
+binarised classifier, were also null, each with a mechanism. The shape null was re-run at larger model capacity and against shuffled-flank controls before being believed.
 
 ### 12. The audit: how every quoted number is checked *(throughout)*
 `sgrna/post_freeze/paper/verify_numbers.py`, `sgrna/post_freeze/paper/figures.py`, `sgrna/post_freeze/paper/import_check.py`, `sgrna/post_freeze/paper/doc_refs.py`, `sgrna/post_freeze/paper/code_map.py`

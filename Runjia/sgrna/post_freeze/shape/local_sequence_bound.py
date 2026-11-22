@@ -2,7 +2,7 @@
 
 The gap this closes
 -------------------
-Finding 8 tested tabulated DNA shape (DNAshapeR's pentamer table, 5 bp of context) and found nothing on top of family A.
+Appendix B4 tested tabulated DNA shape (DNAshapeR's pentamer table, 5 bp of context) and found nothing on top of family A.
 Deep DNAshape, which reads up to **7 bp** of context, was cloned but never run: the sandbox refuses to execute third-party
 model code, and it is not prudent to run a downloaded model anyway. So the report has to say "the wider context is what was
 not tested", which leaves the finding open to the obvious objection that the next shape predictor along might work.
@@ -20,7 +20,7 @@ can gain anything either. That is the bound measured here:
 
 If `loc50` lands on `base+A`, then every deterministic function of the sequence in +-50 nt -- Deep DNAshape, any k<=7-mer
 shape or stiffness table, any local physical model -- is bounded by that same difference. What the bound does *not* cover is
-the wide windows, where a shape predictor would enter as a window average; Finding 8 covers that case directly and measured
+the wide windows, where a shape predictor would enter as a window average; Appendix B4 covers that case directly and measured
 rho 0.998 between window tensor means and flank GC, so averaging collapses them onto composition.
 
 Protocol is the project's standard, and deliberately identical to `family_a_at_tuned` so the numbers line up with it:

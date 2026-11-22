@@ -11,7 +11,7 @@ windows predicts it out of fold (gene-grouped). Three predictors, because they a
                    minus a constant per base pair, which is *linear* in dinucleotide counts, so if the finding
                    "excess twist is a weighted dinucleotide count" is what it says, a linear model must recover it.
 
-The dinucleotide figure (R2 0.963, quoted in the report's Finding 8) was originally computed in a session whose
+The dinucleotide figure (R2 0.963, quoted in the report's Appendix B4) was originally computed in a session whose
 code was not kept, so it had no producer and no audit check; this module is now that producer.
 """
 from __future__ import annotations

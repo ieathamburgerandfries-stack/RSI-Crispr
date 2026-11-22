@@ -1,4 +1,4 @@
-"""Human guides with their genomic flanks, for running Finding 8 (shape / 3D versus family A) on human.
+"""Human guides with their genomic flanks, for running Appendix B4 (shape / 3D versus family A) on human.
 
 The project's human matrix (Noshay et al. 2023, Supplementary Table 3, 17,422 guides) describes only the 20-nt
 protospacer. The protospacer is decoded from the monomer electron-count columns (C 42, T 48, A 50, G 56), then located

@@ -181,7 +181,7 @@ def fig2():
 
 # ---------------------------------------------------------------- Fig 3: what the signal is made of
 def fig3():
-    """Finding 10: GC not purine, side-symmetric, one length scale, coupled to the seed."""
+    """Finding 7: GC not purine, side-symmetric, one length scale, coupled to the seed."""
     fig = plt.figure(figsize=(DOUBLE, 4.6))
     gs = fig.add_gridspec(2, 2, hspace=0.46, wspace=0.26)
     dp = pd.read_csv(OUT / "mechanism_distance_profile.csv")
@@ -262,7 +262,7 @@ def fig3():
 
 # ---------------------------------------------------------------- Fig 4: design rules by kingdom
 def fig4():
-    """Finding 10: position x base preferences, and that they do not transfer between kingdoms."""
+    """Finding 7: position x base preferences, and that they do not transfer between kingdoms."""
     ec = pd.read_csv(OUT / "mechanism_position_base.csv")
     hu = pd.read_csv(OUT / "mechanism_position_base_human.csv")
     cmp_ = pd.read_csv(OUT / "mechanism_position_base_compare.csv")
