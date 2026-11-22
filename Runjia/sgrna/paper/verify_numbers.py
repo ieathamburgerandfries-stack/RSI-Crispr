@@ -655,7 +655,7 @@ def main():
 
     print("22.4 the package imports, and importing it writes nothing")
     ic = json.loads((OUT / "import_check.json").read_text())
-    chk("22.4 modules swept", float(ic["n_modules"]), 140, 0)
+    chk("22.4 modules swept", float(ic["n_modules"]), 142, 0)
     chk("22.4 modules excluded by name", float(ic["n_skipped"]), 1, 0)
     chk("22.4 modules that fail to import", float(len(ic["fails"])), 0, 0)
     chk("22.4 files under results/", float(ic["files_in_results"]), 675, 0)
@@ -734,6 +734,70 @@ def main():
     chk("sgrna: packages, by function", float(sum(1 for d in _sg.iterdir() if d.is_dir() and (d / "__init__.py").exists())), 10, 0)
     chk("sgrna: folders left over from the old layouts (post_freeze, strand, screens, ext)",
         float(sum((_sg / n_).exists() for n_ in ("post_freeze", "strand", "screens", "ext"))), 0, 0)
+
+    print("Finding 7, the response curve and the hypotheses (hypotheses.py)")
+    h1s = pd.read_csv(OUT / "hypotheses_h1_strata.csv").set_index(["position", "base"])
+    for (pos_, b_), (rho_, ols_) in {(20, "A"): (0.219, 21.2), (20, "T"): (0.184, 19.6), (20, "C"): (0.169, 16.4), (20, "G"): (0.118, 12.5),
+                                    (18, "A"): (0.214, 20.3), (18, "T"): (0.202, 19.8), (18, "C"): (0.137, 14.7), (18, "G"): (0.115, 13.1)}.items():
+        chk(f"H1 rho of label on flank GC, position {pos_} base {b_}", float(h1s.loc[(pos_, b_), "rho"]), rho_, 3)
+        chk(f"H1 OLS slope, position {pos_} base {b_}", float(h1s.loc[(pos_, b_), "ols_slope"]), ols_, 1)
+    h1c = pd.read_csv(OUT / "hypotheses_h1_contrasts.csv"); h1c = h1c[h1c.steepest == "T minus G"].set_index("position")
+    chk("H1 T minus G at position 20", float(h1c.loc[20, "difference"]), 0.066, 3); chk("H1 T minus G at position 20, lower bound", float(h1c.loc[20, "lo"]), 0.029, 3)
+    chk("H1 T minus G at position 20, upper bound", float(h1c.loc[20, "hi"]), 0.102, 3); chk("H1 T minus G at position 18", float(h1c.loc[18, "difference"]), 0.087, 3)
+    h2 = pd.read_csv(OUT / "hypotheses_h2_thirds.csv").set_index("kind")
+    chk("H2 pooled low-third slope", float(h2.loc["pooled", "slope_low_third"]), 41.9, 1); chk("H2 pooled high-third slope", float(h2.loc["pooled", "slope_high_third"]), -5.6, 1)
+    chk("H2 pooled difference", float(h2.loc["pooled", "low_minus_high"]), 47.6, 1); chk("H2 pooled difference, lower bound", float(h2.loc["pooled", "lo_diff"]), 43.0, 1)
+    chk("H2 within-gene low-third slope", float(h2.loc["within genes", "slope_low_third"]), 19.3, 1); chk("H2 within-gene high-third slope", float(h2.loc["within genes", "slope_high_third"]), 13.8, 1)
+    chk("H2 within-gene difference", float(h2.loc["within genes", "low_minus_high"]), 5.4, 1); chk("H2 within-gene difference, lower bound", float(h2.loc["within genes", "lo_diff"]), 0.6, 1)
+    cv = pd.read_csv(OUT / "hypotheses_h2_curve.csv"); cv = cv[cv.kind == "pooled"].sort_values("bin")
+    for k_, v_ in enumerate((-3.09, -0.40, 0.11, 0.01, 0.05, 0.07, 0.14, 0.14, 0.02, -0.05)):
+        chk(f"H2 pooled decile {k_ + 1} mean label", float(cv.mean_label.iloc[k_]), v_, 2)
+    hg = pd.read_csv(OUT / "hypotheses_followup_hinge.csv").set_index("quantile")
+    chk("follow-up: rho within the lowest 10% of flank GC", float(hg.loc[0.10, "rho_below"]), 0.485, 3); chk("follow-up: rho within the other 90%", float(hg.loc[0.10, "rho_above"]), 0.021, 3)
+    chk("follow-up: rho within the lowest 15%", float(hg.loc[0.15, "rho_below"]), 0.488, 3); chk("follow-up: rho within the other 85%", float(hg.loc[0.15, "rho_above"]), 0.003, 3)
+    chk("follow-up: rho over the whole range", float(hg.loc[0.10, "rho_full"]), 0.158, 3); chk("follow-up: guides in the lowest decile", float(hg.loc[0.10, "n_below"]), 3086, 0)
+    cc = pd.read_csv(OUT / "hypotheses_followup_concentration.csv").iloc[0]
+    chk("follow-up: lowest-decile deficit", float(cc.deficit), -3.10, 2); chk("follow-up: deficit lower bound", float(cc.lo), -3.37, 2); chk("follow-up: deficit upper bound", float(cc.hi), -2.78, 2)
+    chk("follow-up: genes in the lowest decile", float(cc.genes_in_lowest_decile), 857, 0); chk("follow-up: share held by the ten largest genes", float(cc.top10_genes_share), 0.044, 3)
+    chk("follow-up: deficit without those ten genes", float(cc.deficit_without_top10_genes), -2.97, 2)
+    rp = pd.read_csv(OUT / "hypotheses_followup_replication.csv")
+    for k_, v_, lo_, hi_ in ((0, -3.29, -3.76, -2.84), (1, -2.15, -2.43, -1.86), (2, -0.57, -0.75, 0.14)):
+        chk(f"follow-up: replication row {k_} deficit", float(rp.deficit.iloc[k_]), v_, 2); chk(f"follow-up: replication row {k_} lower", float(rp.lo.iloc[k_]), lo_, 2)
+        chk(f"follow-up: replication row {k_} upper", float(rp.hi.iloc[k_]), hi_, 2)
+    ab = pd.read_csv(OUT / "hypotheses_followup_absolute.csv").iloc[0]
+    chk("follow-up: C. rodentium guides below the absolute threshold", float(ab.n_below), 653, 0); chk("follow-up: their deficit", float(ab.deficit), -1.97, 2)
+    chk("follow-up: their deficit, upper bound", float(ab.hi), 1.10, 2)
+    ex = pd.read_csv(OUT / "hypotheses_followup_expression.csv").set_index("stratum")
+    for s_, v_ in (("low expression", -3.79), ("middle", -2.80), ("high expression", -1.77)):
+        chk(f"follow-up: deficit in the {s_} stratum", float(ex.loc[s_, "deficit"]), v_, 2)
+    ep = pd.read_csv(OUT / "hypotheses_followup_expression_partial.csv").iloc[0]
+    chk("follow-up: flank GC against expression", float(ep.rho_gc_expression), -0.003, 3); chk("follow-up: flank GC against label, marginal", float(ep.gc_label_marginal), 0.153, 3)
+    chk("follow-up: flank GC against label, given expression", float(ep.gc_label_given_expression), 0.154, 3)
+    wi = pd.read_csv(OUT / "hypotheses_followup_within.csv").set_index("excluded_lowest_share")
+    chk("follow-up: within-gene rho above the lowest 10%", float(wi.loc[0.10, "rho_within_genes"]), 0.066, 3); chk("follow-up: within-gene rho above the lowest 20%", float(wi.loc[0.20, "rho_within_genes"]), 0.056, 3)
+    h3 = pd.read_csv(OUT / "hypotheses_h3_pam_density.csv").iloc[0]
+    chk("H3 PAM density given GC", float(h3.pam_given_gc), 0.022, 3); chk("H3 percentile among GC-matched sums", float(h3.percentile_of_pam), 52, 0)
+    chk("H3 null mean", float(h3.null_mean), 0.005, 3); chk("H3 null sd", float(h3.null_sd), 0.040, 3); chk("H3 null 97.5th percentile", float(h3.null_p97_5), 0.060, 3)
+    chk("H3 GC given PAM density", float(h3.gc_given_pam), 0.092, 3); chk("H3 GC marginal", float(h3.marginal_gc), 0.158, 3); chk("H3 correlation of the two densities", float(h3.corr_pam_gc), 0.733, 3)
+
+    print("the sealed organism (sealed_organism.py)")
+    so = pd.read_csv(OUT / "sealed_organism.csv").set_index("arm")
+    chk("sealed organism: champion rho, mean of seeds", float(so.loc["champion", "rho_seed_mean"]), 0.6986, 4)
+    chk("sealed organism: champion rho, sd of seeds", float(so.loc["champion", "rho_seed_sd"]), 0.0038, 4)
+    chk("sealed organism: tuned rho, mean of seeds", float(so.loc["tuned XGBoost (d099x)", "rho_seed_mean"]), 0.7160, 4)
+    chk("sealed organism: tuned minus champion", float(so.loc["tuned XGBoost (d099x)", "minus_champion"]), 0.0172, 4)
+    chk("sealed organism: tuned minus champion, lower", float(so.loc["tuned XGBoost (d099x)", "lo"]), 0.0162, 4)
+    chk("sealed organism: tuned minus champion, upper", float(so.loc["tuned XGBoost (d099x)", "hi"]), 0.0206, 4)
+    chk("sealed organism: average of five, mean of seeds", float(so.loc["XGBoost average of 5", "rho_seed_mean"]), 0.7170, 4)
+    chk("sealed organism: average of five minus champion", float(so.loc["XGBoost average of 5", "minus_champion"]), 0.0165, 4)
+
+    print("results/: every tracked file is in the generated index, and no two are the same file")
+    import hashlib, subprocess
+    _tracked = [f for f in subprocess.check_output(["git", "ls-files", "results"], text=True, cwd=_sg.parent).split("\n") if f and f != "results/INDEX.md"]
+    _idx = (_sg.parent / "results" / "INDEX.md").read_text()
+    chk("results/INDEX.md: tracked files the index does not list", float(sum(1 for f in _tracked if f"| `{f.removeprefix('results/')}` |" not in _idx)), 0, 0)
+    _sha = [hashlib.sha1((_sg.parent / f).read_bytes()).hexdigest() for f in _tracked]
+    chk("results/: files whose bytes duplicate another tracked file", float(len(_sha) - len(set(_sha))), 0, 0)
 
     print("the overview for judges: every number in it appears in the project's own documents")
     _ov = (_sg.parent / "CODE_OVERVIEW.md").read_text()

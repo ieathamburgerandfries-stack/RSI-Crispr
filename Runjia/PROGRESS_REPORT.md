@@ -40,7 +40,7 @@ deterministic functions of the guide the matrix already encodes losslessly
 (Finding 1). **The signal the matrix lacks is outside the guide: DNA
 composition in windows of 50–1,000 nt around the cut site, worth +0.164 ρ on the
 curated cohort** — the largest effect in the project, a smooth compositional
-gradient rather than a motif, local to within a kilobase (Findings 2–3). The part that decides the
+effect rather than a motif (pooled across the genome, mostly a step at the AT-rich end: Finding 7), local to within a kilobase (Findings 2–3). The part that decides the
 comparison with the state of the art is its **range**: inside the ±189/166 nt
 span crisprHAL 2 already reads, its convolutions beat our windowed composition,
 and our advantage comes entirely from the 250–1,000 nt its input never reaches —
@@ -116,7 +116,7 @@ experiment and the numbers it produced. It is **not** a second copy of this repo
 what was tried, in what order, what was expected before the run, and which expectations
 were wrong. Where a finding cites a §, that is the working, not a load-bearing part of the
 claim. `./run_audit.sh` recomputes every post-freeze number quoted in this document from
-the files that produced it (823 checks as of 22 November) and exits non-zero on any
+the files that produced it (911 checks as of 22 November) and exits non-zero on any
 mismatch — including a check that the four documents quoting that count all quote the same
 one, so it cannot drift again, and a check that the package still imports without writing
 anything (`EXTENSION_LOG.md` §22.4).
@@ -483,6 +483,8 @@ not be read as quantitative support for the duplex-opening account.
 
 
 **It is a gradient, not a motif**
+
+*Gradient in space, not in composition: Finding 7's last subsection shows that the pooled response to flank GC is mostly a step at the AT-rich end.*
 
 A convolutional network of the same architecture family as the best published
 competitor, given raw DNA on the same rows and folds:
@@ -963,7 +965,8 @@ well for roughly-normal data and is not exact.
 
 ### 7. What the signal is made of: GC over a few hundred bases, a seed region that inverts between kingdoms, and the two coupled
 
-**Claim.** The flanking effect of Findings 2–3 is carried by **GC specifically**, is **side-symmetric**, has a single
+**Claim.** The flanking effect of Findings 2–3 is carried by **GC specifically** (and, as a function of composition, pooled across the genome it is
+mostly a **step at the AT-rich end** rather than a graded slope; see the last subsection), is **side-symmetric**, has a single
 characteristic length of **250–500 nt** with **no structure finer than ~250 nt**, and **interacts with the PAM-proximal
 seed** rather than adding to it. Separately, the guide's own position-specific base preferences are confined to the
 seed and are **uncorrelated between *E. coli* and human** — the strongest one inverts. Run after the freeze
@@ -985,7 +988,8 @@ fixed (33,567 guides, no model involved):
 | purine, downstream | −0.007 | −0.018 | −0.014 | −0.000 |
 
 Purine fraction is flat everywhere, within ±0.018 of zero, while GC runs +0.15 to +0.20. That excludes any mechanism
-keyed to purine/pyrimidine asymmetry and points at GC-specific physics — stacking, duplex stability, melting. Same
+keyed to purine/pyrimidine asymmetry and points at GC-specific physics. Which physics is the last subsection's question: the pooled response is a
+step at the AT-rich end, which a bulk melting reading does not predict. Same
 direction as two independent results: the effect tracks **absolute** composition rather than enrichment against the
 genome's own background (§20.1, which also retires Part 3's species-portability item), and DNA-shape descriptors are a
 reparameterisation of composition rather than a second channel (Appendix B4).
@@ -1066,6 +1070,94 @@ the inversion. So **how much the surrounding composition matters depends on what
 coupling is diffuse: no block pair above 5.8%, no column pair above 1.9%, which is what a smooth gradient rather than a
 discrete rule predicts.
 
+**What the response curve says, and the hypotheses it supports.** (`hypotheses.py`; `EXTENSION_LOG.md` §24.) Everything above is about
+*where* the signal lives and *which* composition carries it. None of it says what the response to that composition looks like, and
+that turned out to matter. Three predictions were written into the module's docstring before it was run (H1–H3), with decision rules;
+a second set of checks was designed after one of them failed and is exploratory, so it is reported as description. All of it is
+marginal or stratified statistics on the 30,203 genic guides, bootstrapped over whole genes; no feature was added to a model.
+
+*H2 failed, and it was the informative one.* The prediction was a roughly linear dependence on flank GC (probability about 0.6). The
+response is not linear. Mean label by decile of flank GC (250 nt each side averaged, 30,203 genic guides):
+
+| decile of flank GC | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| mean flank GC | 0.406 | 0.460 | 0.483 | 0.498 | 0.510 | 0.520 | 0.530 | 0.541 | 0.554 | 0.579 |
+| mean label | **−3.09** | **−0.40** | +0.11 | +0.01 | +0.05 | +0.07 | +0.14 | +0.14 | +0.02 | −0.05 |
+
+**Pooled across the genome, the association is the AT-rich tail and nothing else.** The Spearman correlation of label with flank GC is
+**+0.485** among the lowest 10% of guides by flank GC (below 44.4% GC, 3,086 guides) and **+0.021** among the other 27,117; at the 15th
+percentile it is +0.488 against +0.003, and over the whole range +0.158. Guides in the lowest decile sit **3.10 label units lower
+[−3.37, −2.78], 0.95 SD**, than the rest, and it is not a few genes: the decile spans 857 genes, the ten largest contributors hold 4.4%
+of it, and without them the gap is −2.97. The low-versus-high-third slope contrast is 47.6 label units per unit GC [43.0, 51.7].
+
+**Within genes the picture is different.** With both variables centred on the gene mean the dependence is graded (decile means −0.58
+rising to +0.50), the low- and high-third slopes are 19.3 and 13.8 (difference 5.4 [0.6, 10.4]), and a within-gene association of
+**+0.066** survives setting the lowest 10% of guides aside (+0.056 setting aside 20%). So there are **two components**: a penalty for
+guides in AT-rich regions, which is a step of about one SD and is mostly *between* genes, and a gentler graded gradient *within*
+genes (the +0.061 inside genes of Finding 3). Two earlier puzzles follow from it. The flank effect looks strongest among GC-poor
+targets (Finding 2, +0.425 against +0.068) because that is where AT-rich flanks concentrate; and the between-gene share of the
+gain exceeds the within-gene share because the step is a between-region property.
+
+| robustness of the step (lowest decile of flank GC against the rest; deficit in label units) | n | deficit [95% interval] | in SD |
+|---|---:|---|---:|
+| *E. coli*, WT SpCas9, all guides (bootstrap over 100 kb blocks) | 33,567 | −3.29 [−3.76, −2.84] | −1.00 |
+| *E. coli*, eSpCas9, a different enzyme at the **same loci** (not independent of the row above) | 59,489 | −2.15 [−2.43, −1.86] | −0.80 |
+| *C. rodentium*, TevSpCas9, at its own decile edge (GC 50.8%) | 25,210 | −0.57 [−0.75, +0.14] | −0.21 |
+| the same genome with *E. coli*'s absolute threshold (44.4% GC): 653 guides, 2.6% | 653 | −1.97 [−2.04, +1.10] | |
+| *E. coli*, by expression of the gene: low / middle / high tertile | 9,710 / 9,690 / 9,697 | −3.79 / −2.80 / −1.77 | |
+
+The step replicates across an enzyme on the same genome and is **not established in a second genome**: in *C. rodentium* it is
+weak, and with the absolute threshold the interval is wide, skewed and includes zero because only a few blocks supply those 653
+guides. Expression does not explain it: flank GC and gene expression are uncorrelated (ρ −0.003), the flank-GC association is
+unchanged given expression (0.153 marginal, 0.154 given), and the deficit is present in the highest-expressed third (−1.77), though
+it is more than twice as large in the lowest (−3.79).
+
+*What the tail is, by name.* The genes with most guides in the lowest decile include `wbbJ`, `waaL`, `glf` and `waaO` (O-antigen and
+core-LPS biosynthesis), `alpA`, `trkG`, `lit` and `mcrC` (prophage-associated) and `casA`, which are what I recognise as horizontally
+acquired, AT-rich regions. That is a reading of the names and not an annotation the data carry; nothing here tests it.
+
+*H1 held: the flank and the seed are synergistic, not compensating.* The prediction was that the flank's slope is steeper where the
+position-20 base is favourable. Spearman of label on flank GC within each base at position 20, with gene-bootstrap intervals:
+
+| base at position 20 | A | T | C | G |
+|---|---:|---:|---:|---:|
+| that base's own effect on the label (Finding 7, SD) | +0.193 | +0.348 | −0.142 | −0.322 |
+| ρ of label on flank GC | **0.219** [0.188, 0.242] | 0.184 [0.154, 0.217] | 0.169 [0.144, 0.192] | **0.118** [0.090, 0.147] |
+| OLS slope, label units per unit GC | 21.2 | 19.6 | 16.4 | 12.5 |
+
+T minus G is **+0.066 [+0.029, +0.102]**; at position 18 the same contrast is +0.087 [+0.051, +0.122] (A 0.214, T 0.202, C 0.137, G
+0.115). The slope is shallowest where the seed base is the most disfavoured. Read as a gate, a guide needs a competent seed *and* an
+open region, and the region matters little if the seed has already made the guide ineffective. The data cannot separate that from a
+floor effect (guides with an unfavourable seed pile up near the bottom of the label, where there is less to rank).
+
+*H3 held: PAM density is not what the GC effect is.* GC-rich DNA is dense in NGG and CCN, and a Cas9 that samples PAMs and rebinds
+nearby would look like a GC effect. Holding flank GC fixed, PAM-site density (NGG plus CCN, both flanks, 250 nt) has a partial Spearman
+of **+0.022** with the label, at the **52nd percentile** of 5,000 random sums of four of the 32 strand-collapsed trimer classes
+(null mean +0.005, sd 0.040, 97.5th percentile +0.060); the partial of GC holding PAM density fixed is +0.092 against its marginal
++0.158 (ρ between the two densities 0.733). It is the same kind of null as the Chi-site test, and removes a second explanation that
+predicted the same length scale.
+
+**Hypotheses these results support, and what would test each.** The first is the one worth a real experiment.
+
+| hypothesis | what supports it | what is against it or missing | a test, with its prediction |
+|---|---|---|---|
+| **1. AT-rich regions are less accessible to Cas9**, plausibly because nucleoid proteins that bind AT-rich DNA (H-NS above all, which silences horizontally acquired DNA) shield them | the effect is a step at the AT-rich end; it is mostly between regions; the lowest decile is 857 genes and, by name, prophage and surface-polysaccharide clusters; it persists in highly expressed genes; it replicates with a second enzyme | not shown in a second genome; no occupancy data on disk (register item 2); the shift null says the effect is local to under a kilobase, which sits uneasily with silenced domains that are usually described as longer | take a published H-NS ChIP track: guides inside bound regions should carry the deficit, and the flank-GC step should shrink toward zero once occupancy is conditioned on. A Δ*hns* strain should lose it. |
+| **2. Duplex melting is not what limits cutting at the flank.** The simplest physical reading, that GC-rich flanks are harder to unwind, has the wrong sign and the wrong shape: efficiency is flat above ~45% GC and the effect is positive | the sign; the flat upper range (ρ +0.003 to +0.021) | the within-gene gradient is graded and could still be bulk physics | an effect from melting should be graded across the whole range, so it would show above 45% GC within genes: it does (+0.066), at about a third of the size of the step. Treat the two components separately |
+| **3. The flank and the seed act as a gate**, so the flank's contribution scales with the seed's competence | H1: slope falls from 21.2 to 12.5 across seed bases, ordered by each base's own effect | a floor effect on the label gives the same pattern | on a probability scale a gate is multiplicative: fit the flank term as a multiplier of the seed term and as an addend, on gene-grouped folds, and compare. Prediction: the multiplicative form wins |
+| **4. The step is why a depth-4 tree over four numbers keeps up with a CNN–BiGRU.** A threshold on one composition number is cheap for a tree and costly for a convolutional net | four numbers carry 75.7% of the signal; the response is mostly a threshold | untested | give crisprHAL 2 an extra input, the hinge `min(flank GC, 0.46)`, and retrain; prediction: it closes part of the 250–1,000 nt gap its window cannot reach. Replace our four numbers with their linear form; prediction: it loses most of the flank gain |
+| **Excluded: PAM density, and a few outlier genes.** | H3; the ten largest contributors hold 4.4% | | |
+
+*A published hypothesis about the other half of Finding 7.* Moreb and Lynch (2021) analysed 44 published gRNA datasets across species and Cas9 variants
+(read from the abstract only), report that prediction algorithms do not carry between species, and propose that a guide's sequence acts mainly
+through the time Cas9 takes to find its target, in a way that depends on the genome. That is a candidate for *why* the guide's own rules invert
+between kingdoms (Finding 7), which is a separate question from the flank effect. Family H carries genome-wide seed-match counts and is a null
+here (+0.000), though the cohort keeps only uniquely targeting guides, which removes most of their variation, so this cohort cannot rule it in or out.
+
+*Limits.* H2 and everything after it were found in one screen, and the follow-ups were designed after the result they follow, so they
+describe the data and do not test a prediction. The second-genome evidence is weak and the whole account rests on *E. coli* K-12. The
+H-NS reading is a hypothesis that fits the shape and the gene names; no occupancy, expression-perturbation or knockout data bear on it.
+H1's synergy reading is confounded with a label floor.
+
 **Limits.** (i) The length scale is a measurement; the persistence-length reading is a hypothesis and nothing here
 tests the physics. (ii) The cross-kingdom comparison is between two different assays — survival after cutting against
 an indel/knockout score — so it compares *design rules*, not mechanisms, and says nothing about why they invert; the
@@ -1144,7 +1236,8 @@ mechanism.
    measured autocorrelation length (8% of the effect survives a 1 kb shift, none
    survives 10 kb) and no dependence on where the window edges are put (+0.1634
    against +0.1638 at four widths sharing no value with the originals). There is
-   no motif to find.
+   no motif to find. (Smooth in space; as a function of composition the pooled response is a step at the
+   AT-rich end rather than a slope, which Finding 7's last subsection shows.)
 2. **It is a local property of the target, not a property of its gene.** Asked
    entirely inside genes, where gene identity is constant, the flanks are still
    worth **+0.061**, and the whole effect survives holding out whole genes.
@@ -1479,8 +1572,7 @@ biology paper.
   human signal is less additive (biology claim 4, Part 2), and the 63.7% ratio.
   **What the human matrix is actually like:** noisier and harder than the bacterial one, best
   honest figure **0.3377** against 0.7314 here, and in need of deduplication before any
-  model-based claim is made on it. A note for Jacky, whose number this is, is in
-  `NOTE_human_twin_leak.md`.
+  model-based claim is made on it.
 - **One organism and two relatives.** No genome-wide Cas9-cutting screen exists
   outside *Enterobacteriaceae*; what exists elsewhere is CRISPRi, a different
   measured quantity. Closing this needs wet-lab work.
@@ -1571,7 +1663,7 @@ three kinds, and only one kind is worth more compute.
 | **~0.21 ρ of real, repeatable variance is unexplained** | the ceiling is 0.946 and the best model reaches 0.7314 after the post-freeze tuning (0.7218 before). Eleven feature families from the genome, thermodynamics, ChIP-seq and quantum chemistry have not closed it | not more features of the kinds tried, **and not a better learner either** — which is now measured rather than assumed: the tuning worth +0.016 with family A present is worth **+0.003** on the base representation alone (Finding 4), so the gap is not capacity. The sequence-derived candidates with a mechanism attached are *excluded* rather than unexamined — shape and 3D path (Appendix B4), periodicity, Chi, supercoiling — which makes this a measurement problem rather than a modelling one |
 | The long-range mechanism is unidentified | the dCas9 screens do not settle whether it needs a break (Appendix B5); the candidate routes that read 500 nt are excluded | an intervention rather than an observation: a designed library that varies flank composition at a **fixed guide**. Nothing in a pooled screen can do this, because guide and locus are confounded by construction in every existing dataset |
 | One organism and two relatives | no genome-wide Cas9 *cutting* screen exists outside *Enterobacteriaceae*; what exists elsewhere is CRISPRi, a different measured quantity | wet lab. This is the single largest external-validity gap |
-| No untouched external set remains **for the cutting claims** | eSpCas9 turned out to be confirmatory rather than untouched, and Cui's screen has been spent | permanent on the cutting side. Rousset and Wang are untouched by this project but are CRISPRi screens, so they cannot serve as a cutting test (Appendix B5). The automatable adaptive component is still bounded at **+0.0087**; the human part is unquantified above it and the cohort choice is unquantifiable by design |
+| No untouched external set remains **for the cutting claims at the same loci** | eSpCas9 turned out to be confirmatory rather than untouched, and Cui's screen has been spent | permanent on the cutting side. Rousset and Wang are untouched by this project but are CRISPRi screens, so they cannot serve as a cutting test (Appendix B5). The automatable adaptive component is still bounded at **+0.0087**; the human part is unquantified above it and the cohort choice is unquantifiable by design |
 | Nothing here speaks to specificity | six of `h_offtarget`'s thirteen columns are constant zero because the cohort keeps only uniquely-targeting guides | a cohort that retains multi-targeting guides. The question was filtered out before the measurement, so no re-analysis reaches it |
 | Nothing here speaks to nickase editors | base and prime editors bind and nick rather than cut, which puts them between cutting and binding-only assays | it needs an editing outcome readout, and nothing here extrapolates to it |
 
@@ -1608,7 +1700,8 @@ two CV schemes (`results/transfer.csv`), with a flank gain of **+0.104 under
 `arc5`** quoted in `RESULTS.md` (now `RESULTS_archive_2026-10-10.md`). Nothing was ever *selected* on it, so it is
 confirmatory rather than contaminated, but "evaluated once" was never
 available, and the last genuinely unused dataset (Cui's CRISPRi screen) has now
-been spent too. **For the cutting claims, no untouched external set remains.**
+been spent too. **For the cutting claims, no untouched external set remains at the same loci**; a different genome
+(*C. rodentium*) was never chosen on and now carries a sealed check ("Which datasets could have been sealed", below).
 Rousset and Wang were pulled in on 8 November; they are untouched *by this project*, which is what the
 phrase has always meant here, but they are CRISPRi, so they bear on the boundary
 experiment of Appendix B5 and on nothing else.
@@ -1809,6 +1902,47 @@ cohort on 13 October, before the pivot, rather than on 16 October after it. That
 lesson worth carrying to the next organism — seal first, and seal by gene.
 
 
+### Which datasets could have been sealed, and the one that now is
+
+*Added 22 November 2026, after the user asked whether every dataset was strictly needed, and whether some could have been left out of
+the training process altogether to check adaptive overfitting against them.* Seven kinds of data were used, and what each was used for
+decides whether it could have been sealed:
+
+| data | what it is | used for | was anything chosen on it? | at loci the E. coli cohort does not hold? | strictly required? |
+|---|---|---|---|---|---|
+| Noshay's published matrix, 13,880 guides | the 2023 resource this began from; the same screen as the curated cohort (label ρ 0.945 on 8,617 shared guides) | Finding 1, the 412-column result, the harness anchor, family A's design and window sweep | **yes**: family A's existence and its windows | no | for Finding 1 and the anchor, not for the model |
+| crisprHAL curated WT-SpCas9, 33,567 guides | the working cohort | everything since 13 October | **yes**: the cohort itself, the hyperparameters (on 70% of its genes) | | yes |
+| eSpCas9, 59,489 guides (their split 47,591 / 11,898) | the same library at the same loci under another nuclease | transfer, the head-to-head on their split, an "external check" during tuning | nothing selected, but its scores were visible, so confirmatory | **no** | for the head-to-head against their weights |
+| *C. rodentium* TevSpCas9, 25,210 guides | another genome (5.35 Mb), another enzyme | the frozen champion's transfer test, the sealed check below, one replication attempt | **no** | **yes** | for Finding 3's transfer and the check |
+| human matrix, 17,421 rows (13,138 distinct) | another kingdom and another assay (an indel score) | kingdom transfer, the design-rule inversion (Finding 7) | human-specific analyses only; its row-wise folds leaked duplicates | yes | for Finding 7's inversion |
+| three *E. coli* CRISPRi screens (Cui, Rousset, Wang) | silencing, a different phenotype | Appendix B5 only | no model or setting | partly | **no**: no claim rests on them |
+| replicate counts and external tracks (GapR-seq, Hi-C, RegulonDB, RNA-seq) | not cohorts: the label ceiling, and the feature families D, E and G | Finding 6; those families | every family is reported, nulls included | | per family |
+
+Two things follow. First, **not all of it was needed**: the CRISPRi screens underpin no claim and could have stayed unopened, and
+they cannot seal a cutting claim anyway, because they measure another quantity. Second, and more important, **the first three rows are
+one screen at one set of loci**, so holding one out as a *dataset* leaves the loci in, and flank composition is a deterministic function
+of locus. The seal that counts in *E. coli* is by gene and by block, and that was done (sealed genes: +0.0087 of adaptive component;
+1,204 untouched CONFIRM genes: a lead of +0.0324). That leaves exactly one dataset that is independent of the loci and was never
+chosen on: *C. rodentium*.
+
+**The sealed check.** Train on all 33,567 *E. coli* guides, score the 25,210 *C. rodentium* guides zero-shot, with the same protocol for
+the frozen champion, the tuned XGBoost and the average of five (`sealed_organism.py`; three seeds; 16 blocks of 100 kb resampled for the
+interval). The prediction was written first: tuned at least as good as the champion, by less than within *E. coli* (+0.014 to +0.026). Only the first half held.
+
+| arm | ρ on *C. rodentium*, mean of 3 seeds (sd) | minus champion, seed-averaged predictions [95% over blocks] |
+|---|---:|---|
+| frozen champion | 0.6986 (0.0038) | |
+| tuned XGBoost (d099x) | **0.7160** (0.0014) | **+0.0172 [+0.0162, +0.0206]** |
+| XGBoost average of 5 | 0.7170 (0.0012) | +0.0165 [+0.0154, +0.0195] |
+
+**The tuning's benefit survives a genome the settings were never chosen on, at the same size as inside *E. coli*** (+0.014 on genes it never
+saw, +0.019 and +0.026 on crisprHAL 2's two splits), so on this evidence the settings are not specific to the data they were chosen on, and the expected shrinkage
+did not appear. The champion's 0.6986 reproduces the transfer figure of Finding 3 (0.698), which says the protocol is the same one.
+What it does not reach: the cohort choice and family A's design (both made on *E. coli*, and the transfer shows the effect crosses to
+another genome, not that the choice was unbiased); the asymmetry with crisprHAL 2 (its search is a separate question); and the
+opposite direction, which would score the genes the settings were chosen on. The lesson for the next organism is the one already
+written, with a second clause: **seal first, seal by gene, and keep a whole genome back.**
+
 ### The open-questions register
 
 *Added 20 November 2026, after a sweep of the whole project for loose ends.* Open questions were
@@ -1826,7 +1960,7 @@ forgotten.
 | 2 | **Does measured nucleoid-protein occupancy add anything beyond family A?** (H-NS/Fis ChIP, GSE24991; IHF/HU, SRP008538; IPOD-HR, GSE164796) | one processed track mapped to the 33,567 loci, plus a single ablation arm | no processed track was fetched. **Bounded, not measured:** Hi-C-derived family E is already null; Finding 7 shows the flank effect has no structure below ~250 nt, so a track can only enter through its coarse average; and the coarse average of NAP occupancy is AT-driven, which family A's composition columns already carry. That is an argument, and it is labelled as one |
 | 3 | **Would a *measured* DNA shape, or a stiffness matrix, differ from the tabulated pentamer means?** | ABC/muABC tetranucleotide stiffness (Pasi et al. 2014), for which no download page was found | not obtained. The *local-predictor* half of this is now closed by measurement (`EXTENSION_LOG.md` §22.3); what remains open is specifically a non-sequence-derived, measured quantity |
 | 4 | **How much of the unexplained ρ is repair rather than cutting?** — P(repair) and P(the break is unsurvivable) | an assay that separates cutting from survival for the same guide | no pooled survival screen can provide it. This is the honest form of the 0.215 ρ gap |
-| 5 | **Does the lead hold on an untouched cutting screen?** | a new, never-used *E. coli* cutting screen | none remains; both the eSpCas9 split and Cui's CRISPRi screen are spent. The single dimension on which this project is furthest behind the field |
+| 5 | **Does the lead hold on an untouched cutting screen?** | a new, never-used *E. coli* cutting screen | none remains at the same loci; both the eSpCas9 split and Cui's CRISPRi screen are spent. A different genome, *C. rodentium*, was never chosen on and carries a sealed check on the tuned settings (+0.0172 survives). The single dimension on which this project is furthest behind the field |
 | 6 | **Why do the 1,222 panel genes differ from the rest?** | per-guide read counts, to separate dynamic range from different biology | the counts were not used here. The essentiality explanation is argued against (family G's essentiality column is worth +0.00004) |
 | 7 | **Does the human arm's shape result (+0.018 on top of family A, where *E. coli* gives zero) mean anything?** | the human family A rebuilt on our own hg38 flanks rather than a teammate's | the human arm was stopped on request on 9 November; flagged for whoever picks it up |
 | 8 | **Does `PAPER_FLOW.md` agree with the shared Google Doc?** | the document, which I cannot read | needs the user. If the Doc already has an outline, reconcile rather than replace |
@@ -3998,7 +4132,7 @@ underneath. It is a mechanism with a measurement attached, not a law.
 >
 > What survives: the human matrix is noisier and harder than the bacterial one (best honest
 > figure 0.3377 against 0.7314), and the GC inversion, which is a marginal association and needs
-> no model. A note for the teammate whose number this was is in `NOTE_human_twin_leak.md`.
+> no model.
 
 *The original subsection is kept below because the reasoning is instructive and because the
 row-wise figures are still the correct description of what row-wise folds give.*
@@ -5472,6 +5606,14 @@ explainable-AI driven feature engineering. *Nucleic Acids Research*, *51*(19),
 10147–10161. https://doi.org/10.1093/nar/gkad736
 — the feature matrix decoded here; their iRF re-runs in our harness at Pearson
 0.4881 against their reported 0.5019, on a third of their rows.
+
+Moreb, E. A., & Lynch, M. D. (2021). Genome dependent Cas9/gRNA search time
+underlies sequence dependent gRNA activity. *Nature Communications*, *12*, 5034.
+https://doi.org/10.1038/s41467-021-25339-3
+— a retrospective analysis of 44 published gRNA datasets across species; read from its abstract
+only. It reports that prediction algorithms do not carry between species and proposes that
+sequence acts mainly through the time Cas9 takes to find its target, in a genome-dependent way
+(Finding 7, the hypotheses table).
 
 Orro, A., Consiglio, A., Curci, M. I., Scichilone, M., Hasin, F., Minervini, M.,
 Mencar, C., De Bellis, G., Cocola, C., Pelucchi, P., & Selmi, T. (2026). Machine

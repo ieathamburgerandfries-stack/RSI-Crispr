@@ -74,7 +74,8 @@ field. C becomes one short section, honestly scoped.
 - GC not purine (the partial-correlation table).
 - Side-symmetric → not directional → separate from the orientation effect.
 - One length scale, 250–500 nt; the resolution curve saturating and turning over.
-- The flank × seed interaction (depth-2 pairs).
+- The flank × seed interaction (depth-2 pairs), and its form: synergy, not compensation (the flank's slope is steeper beside a favourable seed base).
+- **The shape of the response, which changes how the effect is described:** pooled, it is a step at the AT-rich end (lowest tenth of guides, below 44.4% GC), with a gentler graded component inside genes. Decide whether the paper leads with "gradient" or with "AT-rich penalty"; the report now argues the latter. Four hypotheses with tests are in Finding 7's last subsection.
 - **Fig 3**: four panels — distance profile by side; resolution curve; purine-vs-GC null; interaction heatmap.
 
 ### Results 4 — "Guide design rules do not transfer between kingdoms" (Finding 7, second half)
@@ -116,7 +117,7 @@ field. C becomes one short section, honestly scoped.
 - Follow crisprHAL 2's order: Datasets → Data processing → Features → Model → Metrics → Splits.
 - **Splits section must carry**: gene-grouped and 100 kb-block CV; the train/test Hamming statistic
   (min 3, no identical guides) — both comparators report this and reviewers will look for it.
-- Reproducibility: `run_audit.sh`, 823 checks; `import_check.py` for the code itself.
+- Reproducibility: `run_audit.sh`, 911 checks; `import_check.py` for the code itself.
 
 ---
 

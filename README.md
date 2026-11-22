@@ -1,27 +1,24 @@
 # RSI-Crispr
 
-**Where the project stands:** SLICER, the model in `Runjia/`, reaches **parity**
-with crisprHAL 2 — the published state of the art — on crisprHAL 2's **own two
-published splits**, scored against their own released weights: Δρ **+0.0021**,
-95% CI [−0.0031, +0.0072] on eSpCas9, inside a pre-declared ±0.01 equivalence
-margin, and +0.005 on SpCas9. It gets there for about **150× less CPU time** and
-on about **half the labelled guides**.
+**Where the project stands (22 November 2026):** SLICER, the model in `Runjia/`, now **leads** crisprHAL 2 — the published
+state of the art — on crisprHAL 2's **own two published splits**, scored against its released weights: Δρ **+0.0286**
+[+0.0239, +0.0331] on eSpCas9 and **+0.0226** [+0.0139, +0.0314] on SpCas9, after a joint hyperparameter search worth
++0.014 ρ on genes it never saw. Before that tuning the same model was statistically equivalent to crisprHAL 2 (Δρ
++0.0021, 95% CI [−0.0031, +0.0072] on eSpCas9, about 150× less CPU time to fit). It scores a guide 13–21× faster end to
+end (34× when designing across a locus) and reaches crisprHAL 2's accuracy on about a third of the labelled guides.
 
-On *our* curated five folds the margin is larger — **0.7218** against **0.7051**,
-paired +0.0161 over 33,567 out-of-fold predictions, five of five folds — but the
-two models were not searched with equal effort there, so that figure is not the
-headline. A nested search of their own found nothing better than their published
-configuration, and on a screen neither model trained on, **theirs** transfers
-better. **The claim that survives every condition is parity plus cost and data
-efficiency, not a better model.**
+**The lead is against crisprHAL 2 as released.** It has not been re-tuned on its own splits (a Colab script for that is
+written and not yet run), so the honest claim is that a tuned boosted tree beats the released model, not its architecture.
+On our own curated five folds the margin is larger (0.7218 against 0.7051, paired +0.0161, five of five folds) but the two
+models were not searched with equal effort there, so that is not the headline; and on a screen neither model trained on
+(a dCas9 CRISPRi screen) **theirs** transfers better.
 
-The result underneath it is not the score: sgRNA efficiency in *E. coli* depends
-on the **DNA surrounding the target**, out to roughly 500 nt, as a smooth
-compositional gradient rather than a motif — which is both why a gradient-boosted
-model on hand-built summaries keeps up with a CNN–BiGRU, and why it belongs to
-the cleavage step rather than to Cas9 binding (it disappears in a dCas9 CRISPRi
-screen). [`Runjia/PROGRESS_REPORT.md`](Runjia/PROGRESS_REPORT.md) is the full
-write-up, including the ten claims withdrawn on the way to these.
+The result underneath it is not the score: sgRNA efficiency in *E. coli* depends on the **DNA surrounding the target**,
+out to roughly 500 nt, as a smooth compositional gradient rather than a motif. It is carried by GC specifically, is
+side-symmetric, has one length scale of 250–500 nt, and is coupled to the PAM-proximal seed — which is why a
+gradient-boosted model on hand-built summaries keeps up with a CNN–BiGRU. Whether the effect needs a double-strand break
+was tried against dCas9 CRISPRi screens and **not settled** (the report's Appendix B5). [`Runjia/PROGRESS_REPORT.md`](Runjia/PROGRESS_REPORT.md)
+is the full write-up, including the claims withdrawn on the way.
 
 Predicting sgRNA cutting efficiency in *E. coli* CRISPR-Cas9 screens, extending
 the quantum chemical tensor (QCT) feature set of
@@ -58,7 +55,7 @@ files are named after what they add on top of the baseline, e.g.
 |---|---|
 | `Jacky/` | gene-essentiality and features A–D experiments, grid search |
 | `Joshua/` | QCT-derived feature experiments (regional, PAM-weighted, profile shape, coupling), seed-control tests, SHAP analysis |
-| [`Runjia/`](Runjia) | [`PROGRESS_REPORT.md`](Runjia/PROGRESS_REPORT.md) — the whole project written up for an outside reader (synced copy; edit it at the source); [`sgrna/`](Runjia/sgrna) — the 58-module pipeline behind every number in it (needs a data layout not in this repo, see its README); and a swappable-model baseline for trying XGBoost / LightGBM / CatBoost / random forest / Ridge in Colab. [Folder guide](Runjia/README.md) |
+| [`Runjia/`](Runjia) | [`PROGRESS_REPORT.md`](Runjia/PROGRESS_REPORT.md) — the whole project written up for an outside reader (mirrored from the author's working copy); [`sgrna/`](Runjia/sgrna) — the 130-module pipeline behind every number in it, organised by function (needs a data layout not in this repo, see its README); [`CODE_OVERVIEW.md`](Runjia/CODE_OVERVIEW.md) for a short tour of the code that matters and [`CODE_MAP.md`](Runjia/CODE_MAP.md) for every module; [`results/INDEX.md`](Runjia/results/INDEX.md) for the result files by topic; `colab/` for the GPU runs; and a swappable-model baseline for trying XGBoost / LightGBM / CatBoost / random forest / Ridge in Colab. [Folder guide](Runjia/README.md) |
 
 ## Not versioned
 

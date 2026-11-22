@@ -1,7 +1,7 @@
 # Code overview: what the important code does, and why it matters
 
 *For a reader who has not seen the project, such as a judge or reviewer. This documents the code in `Runjia/`; it is not paper text. It
-covers the eleven blocks that the report's claims depend on (about a third of the modules). Every other module is a control, a null or an
+covers the ten blocks that the report's claims depend on (about a third of the modules). Every other module is a control, a null or an
 appendix check, and is indexed in [`CODE_MAP.md`](CODE_MAP.md). Every number below appears in the project's own documents (a check in `./run_audit.sh` enforces that), and the numbers from after the freeze are
 also re-computed from their result files by the same audit.*
 
@@ -31,16 +31,15 @@ published matrix: 6,232 columns, no sequences
         v
 +348 flank-composition columns  --->  3. leakage-safe cross-validation harness   sgrna/harness
                                           |
-              4. controls (is it real?)   |   5. model vs crisprHAL 2
-              6. speed   7. explanation   |   8. ceiling   9. what the signal is
-              10. ideas that failed       |
+              4. controls (is it real?)   |   5. model vs crisprHAL 2 (accuracy and cost)
+              6. explanation  7. ceiling |   8. what the signal is  9. ideas that failed
                                           v
-              11. an audit re-computes every number the report quotes
+              10. an audit re-computes every number the report quotes
 ```
 
 The pipeline is drawn as a figure in `results/post_freeze/figures/fig7_pipeline.png`.
 
-## The eleven blocks
+## The ten blocks
 
 ### 1. The decoder: an opaque matrix back into DNA *(Finding 1)*
 `sgrna/build/qct.py`, `sgrna/build/decode_v_columns.py`, `sgrna/build/featurise.py`, `sgrna/build/build_guide_index.py`, `sgrna/build/genome.py`
@@ -70,7 +69,7 @@ written to disk as it finishes. Every claim in the report is a paired difference
 
 ### 4. The controls: why +0.164 is not an artefact *(Finding 2; Appendix A)*
 `sgrna/controls/shiftnull.py`, `sgrna/controls/sealed_holdout.py`, `sgrna/controls/selector_audit.py`, `sgrna/controls/floors.py`,
-`sgrna/interpret/gcstrata.py`, `sgrna/controls/fold_distance.py`
+`sgrna/interpret/gcstrata.py`, `sgrna/controls/fold_distance.py`, `sgrna/compare/sealed_organism.py`
 
 Each of these is an attack on the result, not a confirmation of it.
 - **Circular-shift null.** Re-assign each guide the flanks of a position offset around the chromosome. Composition, smoothness and every column's distribution are preserved
@@ -81,24 +80,22 @@ Each of these is an attack on the result, not a confirmation of it.
 - **Target-GC strata.** Conditioning on the target's own GC raises the effect (+0.044 to +0.082 on the published matrix), so it is not target GC in disguise.
 - **Sequence distance.** The minimum Hamming distance between any validation and training guide is 3, with no identical guide across any split. The same statistic recovers a known
   duplicate-guide leak in the human matrix at 39.1%, which is the positive control.
+- **A sealed organism.** The tuned settings were chosen on *E. coli* genes; trained on all of *E. coli* and scored zero-shot on the *C. rodentium* screen, which no choice ever saw, the tuned model still beats the frozen champion by +0.0172 (0.7160 against 0.6986).
 
-### 5. The model against crisprHAL 2 *(Part 6, the head-to-head)*
-`sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/tuning/tune_ecoli.py`, `sgrna/compare/vs_crisprhal.py`
+### 5. The model against crisprHAL 2: accuracy, then cost *(Part 6, the head-to-head)*
+`sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/tuning/tune_ecoli.py`, `sgrna/compare/vs_crisprhal.py`; for the cost half, `sgrna/build/a_flank_fast.py`, `sgrna/build/base_fast.py`, `sgrna/build/flank_locus.py`, `sgrna/cost/e2e_bench.py`
 
-The comparison is run under four conditions, because the answer depends on which is held equal. On our folds, with both models tuned here, SLICER leads by +0.0172. On crisprHAL 2's own splits with its shipped weights, the frozen model is
+**Accuracy.** The comparison is run under four conditions, because the answer depends on which is held equal. On our folds, with both models tuned here, SLICER leads by +0.0172. On crisprHAL 2's own splits with its shipped weights, the frozen model is
 statistically equivalent (Δρ +0.0021, 95% CI [−0.0031, +0.0072]) at about 150× less CPU time to fit. On a different assay neither model was trained on (a boundary of the claim, not a like-for-like comparison), crisprHAL 2 leads by +0.026.
 The tuning is designed so that it cannot fool itself: genes are split once into DEV (70%) and CONFIRM (30%), a random search runs on DEV only, and the winners are scored on genes never used to choose anything,
 giving **+0.014 ρ**, which replicates on a second split. After tuning, the lead over crisprHAL 2 is **+0.023 to +0.029 ρ** on both of its published splits, measured against its shipped weights.
 
-### 6. Speed: 1.41 ms, then 0.093 ms, then 0.036 ms per guide *(Part 6, the cost half of the head-to-head)*
-`sgrna/build/a_flank_fast.py`, `sgrna/build/base_fast.py`, `sgrna/build/flank_locus.py`, `sgrna/cost/e2e_bench.py`
-
-The original featuriser walked every nucleotide in Python, which was 1.33 ms of the 1.41 ms it cost to score a guide. The array rewrite produces the same 348 columns, identical on all
+**Cost: 1.41 ms, then 0.093 ms, then 0.036 ms per guide.** The original featuriser walked every nucleotide in Python, which was 1.33 ms of the 1.41 ms it cost to score a guide. The array rewrite produces the same 348 columns, identical on all
 33,567 guides. The per-locus version goes further. Neighbouring guides read almost the same DNA, so it scans a stretch of chromosome once into cumulative tracks; every window statistic then
 becomes a subtraction, and the one column that is not a sum (the longest homopolymer run) becomes two lookups in a sparse table. It matches the rewrite to 4.6 × 10⁻¹². End to end the model scores a guide in
 0.093 ms, and 0.036 ms when designing across a locus, which is **13 to 21×** and **34×** faster than crisprHAL 2.
 
-### 7. Can the model be explained? Redundancy, importance and headroom *(Findings 4 and 5)*
+### 6. Can the model be explained? Redundancy, importance and headroom *(Findings 4 and 5)*
 `sgrna/interpret/importance.py`, `sgrna/interpret/importance_models.py`, `sgrna/interpret/faithfulness.py`, `sgrna/interpret/representation.py`
 
 Because 99% of the columns restate the same 20-mer, which column a model credits is close to arbitrary. Across model families the library-default importance agrees between models at only **0.050** per column;
@@ -106,7 +103,7 @@ SHAP agrees at 0.496 (0.800 per block), so the project reports SHAP, at block le
 −0.00003 ρ), and that the model is **out of material**: no column it was given correlates with its residuals above 0.028, while family A, held back, correlated at 0.147. The test flagged family A *before
 family A existed*, which is its positive control.
 
-### 8. The ceiling: how much can be predicted at all *(Finding 6)*
+### 7. The ceiling: how much can be predicted at all *(Finding 6)*
 `sgrna/cohorts/curated_ceiling.py`, `sgrna/cohorts/ceiling_table.py`
 
 crisprHAL publishes its per-replicate counts. Pairing each Cas9 replicate with its matched dead-nuclease control gives two independent estimates of the same quantity, which agree at ρ 0.8097;
@@ -114,15 +111,17 @@ Spearman–Brown gives the released score's reliability (0.8948), and its square
 root and the averaging step; corrected, its own numbers give 0.91 to 0.93, so models at ρ ≈ 0.70 are at about 75 to 77% of what is attainable, not at the top. `ceiling_table.py` tabulates the correction
 for any replicate agreement.
 
-### 9. What the signal is made of *(Finding 7, after the freeze)*
-`sgrna/interpret/mechanism.py`, `sgrna/interpret/novel_followups.py`
+### 8. What the signal is made of *(Finding 7, after the freeze)*
+`sgrna/interpret/mechanism.py`, `sgrna/interpret/novel_followups.py`, `sgrna/interpret/hypotheses.py`
 
-Because model importance is unreliable here (block 7), nothing in this block reads importance off the model. The code uses partial correlations computed from sequence and label directly, a resolution ablation,
+Because model importance is unreliable here (block 6), nothing in this block reads importance off the model. The code uses partial correlations computed from sequence and label directly, a resolution ablation,
 and a depth-2 model whose splits are the pairs. **Results:** the effect is GC, not purine; it is side-symmetric (the two sides agree to within 0.026); it has a single length scale of 250 to 500 nt with no structure
 finer than about 250 nt, so four columns (GC and purine over the whole kilobase on each side) carry about three quarters of it; and it interacts with the PAM-proximal seed. Separately, the guide's own position-by-base preferences are uncorrelated between
 *E. coli* and human (ρ = −0.052), and 15 of 27 jointly significant cells invert.
 
-### 10. Ideas that were tested and failed, and why that counts *(Appendix B4)*
+`hypotheses.py` then asks what the *response* to that composition looks like, with each prediction written into the file before it was run. Of three, two held (the flank's effect is steeper beside a favourable seed base, and PAM density does not carry it) and one failed, which was the informative one: pooled across the genome the response to flank GC is not a slope but a **step at the AT-rich end** (the lowest tenth of guides, below 44.4% GC, sit 3.10 label units lower, and nothing varies above it), with a gentler graded component inside genes. The report turns this into four hypotheses with the test that would settle each; the leading one is that nucleoid proteins shield AT-rich DNA, which needs an occupancy track that is not on disk.
+
+### 9. Ideas that were tested and failed, and why that counts *(Appendix B4)*
 `sgrna/features/geom.py`, `sgrna/cohorts/shape_ablate.py`, `sgrna/cohorts/local_sequence_bound.py`, `sgrna/compare/lit_followups.py`
 
 DNA shape and 3D structure were tested in the form an earlier null had left open: vectors with direction, including a rigid-body reconstruction of the helical path from the six step parameters. They add −0.0008 to +0.0006 ρ over family A,
@@ -130,7 +129,7 @@ and their standalone gains are composition (shuffling the flank keeps them). `lo
 +0.0002 ρ. Two methods taken from the published literature, a mixed-effect model and a
 binarised classifier, were also null, each with a mechanism. The shape null was re-run at larger model capacity and against shuffled-flank controls before being believed.
 
-### 11. The audit: how every quoted number is checked *(throughout)*
+### 10. The audit: how every quoted number is checked *(throughout)*
 `sgrna/paper/verify_numbers.py`, `sgrna/paper/figures.py`, `sgrna/paper/import_check.py`, `sgrna/paper/doc_refs.py`, `sgrna/paper/code_map.py`
 
 `verify_numbers.py` recomputes each number the report quotes from the result file that produced it and compares at the precision quoted; it exits non-zero on any mismatch (more than nine hundred checks). It has repeatedly caught the authors' own
@@ -155,4 +154,4 @@ These read the stored results and the genome, so they need no GPU and no re-trai
 - Whether the flank effect needs a double-strand break is **not** established. dCas9 CRISPRi screens were tried and could not separate cutting from binding (Appendix B5); their code is not in this tour, and no claim rests on it.
 - One organism and two relatives; the human arm was stopped, and its rules are uncorrelated with *E. coli*'s.
 - The physical reading of the signal (a bulk property over a few hundred bases) is a hypothesis, not a result.
-- A design tool built on this model is not yet built. Block 6 is the groundwork for it.
+- A design tool built on this model is not yet built. The cost half of block 5 is the groundwork for it.

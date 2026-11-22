@@ -377,7 +377,7 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
-*Current state of the audit (20 Nov):* it has grown with each section and now stands at **823 checks, 0 mismatches**,
+*Current state of the audit (20 Nov):* it has grown with each section and now stands at **911 checks, 0 mismatches**,
 covering sections 7-22. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
 modules need and exits non-zero if any quoted number no longer matches its file. Since 22.4 it also checks three things
 about itself: that every module in the package imports and that importing one writes nothing; that four claims which
@@ -1630,3 +1630,45 @@ by-section table in `CODE_MAP.md` is the price list.
 Two mistakes of mine, corrected on the way: a sentence in 22.2 and in `ceiling_table.py` said `ceiling2` "tests directly" the
 replicate-independence assumption, when comparing two *different enzymes* cannot; and the first draft of `REMOVED.md` said the human fold
 files' means matched the report beyond chance, which held for only about half of them.
+
+### 23.4 Later on 22 November (recorded here because they were done after 23.2 and 23.3 were written)
+
+* **The dCas9 / CRISPRi experiment was demoted** from the second half of Finding 3 to **Appendix B5**. Its reading changed over four
+  rounds and ended weakly identified, and the screens differ in assay, library, laboratory and phenotype at once, so no mechanism
+  follows from it. The strand lesson stays as a method note; Figure 2 lost its cut-versus-bind panel.
+* **`sgrna/` was reorganised by function**: `post_freeze/` and `strand/` were dissolved into `tuning`, `build`, `features`, `cohorts`,
+  `controls`, `interpret`, `compare`, `cost` and `paper` (46 modules, `git mv`, imports rewritten from the AST).
+* **`NOTE_human_twin_leak.md` was removed** at the user's word that the hand-off was done; `results/INDEX.md` was added (generated and
+  audited), the top-level `README.md` was brought up to date, and the speed block of `CODE_OVERVIEW.md` was merged into the head-to-head.
+* **`colab/crisprhal_retune_own_splits.py`** was written for the missing arm of the head-to-head (not yet run on a GPU).
+* Two errors of mine found on the way: Figure 2's baseline averaged three repeated fold rows from the frozen file (so it read "1 kb
+  retains 6%" where the report says 8%), and two shift-table cells had been rounded from rounded values.
+
+## 24. What the response curve says: three predictions, one failure, and the hypotheses that follow (22 Nov; the user asked to expand the interpretation, "to extract more insight or at least make some hypotheses that they support")
+
+**Why these three.** Finding 7 says what the flank signal is made of and leaves "why" open. Three of the open readings could be turned
+into statistics the cohort can answer without a model, so I wrote each prediction and its decision rule into the docstring of
+`sgrna/interpret/hypotheses.py` *before running anything*, with a stated probability where I had one.
+
+| | prediction (written first) | outcome |
+|---|---|---|
+| H1 the form of the flank x position-20 coupling | synergy: steeper flank slope where the seed base is favourable | **held**: T minus G +0.066 [+0.029, +0.102] at position 20, +0.087 at 18 |
+| H2 the shape of the dependence on flank GC | roughly linear (probability ~0.6) | **failed**: a step at the AT-rich end pooled, graded within genes |
+| H3 PAM density rather than GC | composition only (probability ~0.8) | **held**: PAM density at the 52nd percentile of a GC-matched null |
+
+**What H2 led to.** The failure was the useful result. Pooled, Spearman of the label with flank GC is +0.485 inside the lowest 10% of
+guides and +0.021 in the rest; the lowest decile sits 3.10 label units lower (0.95 SD) and spans 857 genes. I then ran follow-ups that
+were designed after seeing it, so they are exploratory and the report calls them descriptions: robustness to dropping the ten biggest
+contributing genes (a gap of −2.97 remains), replication with another enzyme at the same loci (−2.15, replicates) and in another
+genome (not established), the effect by expression tertile (present in all three, larger in the lowest), and a within-gene check that
+shows a second, graded component (+0.066 once the tail is set aside).
+
+**What I got wrong along the way.** The first version of the hinge check clipped flank GC at a threshold and took the Spearman of the
+clipped variable. Clipping ties most of the sample, so it overstated the tail's share (it gave 0.268 against a full-range 0.158);
+the table in the report is Spearman *inside* each part of the range, which is the right statistic.
+
+**What it changes in the report.** "A smooth compositional gradient" is true in space (the shift null) and not in composition, so Finding 2's
+subsection, Part 2 and the Finding 7 claim now say so. The "duplex stability, melting" reading of the GC specificity is weakened,
+because the sign and the shape are wrong for it, and a hypothesis about access (nucleoid proteins on AT-rich, horizontally acquired
+DNA) is stated with the test that would settle it, which needs a published H-NS occupancy track that is not on disk (register item 2).
+
