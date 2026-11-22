@@ -68,7 +68,8 @@ single characteristic length of **250–500 nt** with no spatial structure below
 numbers per guide carry three quarters of it, and describing it more finely eventually costs. The
 guide's own position-specific preferences sit entirely in the PAM-proximal seed, and measured with
 the same estimator on a human matrix they are **uncorrelated between kingdoms (ρ = −0.052), with the
-strongest one inverting** — G immediately 5′ of the PAM is the most disfavoured base here and a
+strongest one inverting** — and the inversion is bacteria against eukaryotes: mouse and zebrafish go the same way as human, and a model trained
+on human guides scores mouse at 73% of mouse's own cross-validated ρ — G immediately 5′ of the PAM is the most disfavoured base here and a
 favoured one in human. The two halves are **coupled rather than additive**: the largest pairwise
 interaction in the model is 250 nt flank GC against position 20. **And the field's performance
 ceiling is mis-derived.** The standard frame takes a replicate-to-replicate correlation of 0.71–0.77
@@ -116,7 +117,7 @@ experiment and the numbers it produced. It is **not** a second copy of this repo
 what was tried, in what order, what was expected before the run, and which expectations
 were wrong. Where a finding cites a §, that is the working, not a load-bearing part of the
 claim. `./run_audit.sh` recomputes every post-freeze number quoted in this document from
-the files that produced it (911 checks as of 22 November) and exits non-zero on any
+the files that produced it (1027 checks as of 22 November) and exits non-zero on any
 mismatch — including a check that the four documents quoting that count all quote the same
 one, so it cannot drift again, and a check that the package still imports without writing
 anything (`EXTENSION_LOG.md` §22.4).
@@ -1070,10 +1071,72 @@ the inversion. So **how much the surrounding composition matters depends on what
 coupling is diffuse: no block pair above 5.8%, no column pair above 1.9%, which is what a smooth gradient rather than a
 discrete rule predicts.
 
-**What the response curve says, and the hypotheses it supports.** (`hypotheses.py`; `EXTENSION_LOG.md` §24.) Everything above is about
+**Is the inversion bacteria against eukaryotes, or *E. coli* against human? Eleven datasets from three eukaryotes.** (`eukaryote_rules.py`;
+`EXTENSION_LOG.md` §25.) The −0.052 above is one cohort against one cohort, so it cannot say. The same estimators were put on the public
+efficiency tables of the CRISPOR benchmark collection (23 tables, plain text, about 7 MB, in `external_data/crispor_effdata/`; each row a guide
+with its efficiency, genome and 100 nt of context). The inclusion rule was fixed before any result was looked at: **at least 300 guides** for the
+map and transfer comparisons, which leaves eight human datasets (from six libraries), two mouse and one zebrafish; the twelve smaller ones (rat,
+fly, worm and small mouse, human and zebrafish sets) enter only a position-20 contrast and are marked underpowered. Scores differ in direction
+(a depletion screen reports a log fold change, where lower means more active), so each dataset is oriented by the sign of its median Spearman
+correlation with six published activity predictors, used for the sign only. All six agree in sign for all eleven; the weakest anchor is
+Wang 2015 at −0.10, and the orientation table is in `eukaryote_orientation.csv`. Each map is the 80-cell position × base effect in SD units, as
+above; its split-half reliability is 0.66–0.95, which bounds how well any two maps can agree.
+
+Predictions were written into the module's docstring first. **P1** (mammalian maps agree, corrected correlation at least 0.4 for every pair)
+held in the median and failed in the tails; **P2** (*E. coli* unrelated to every eukaryote, and opposite in the position-20 contrast) held;
+**P3** (zebrafish agrees with mammals less than they agree with each other) held, more strongly than predicted; **P4** (mammal-to-mammal
+transfer keeps at least 60% of the target's own cross-validated ρ) held; **P5** (no AT-rich step in mammals) partly failed, below.
+
+| pair of datasets (different libraries) | pairs | median ρ between the 80-cell maps | range | corrected for reliability |
+|---|---:|---:|---|---:|
+| human – human | 26 | +0.456 | −0.047 to +0.711 | +0.59 |
+| human – mouse | 16 | +0.443 | +0.101 to +0.695 | +0.56 |
+| mouse – mouse | 1 | +0.415 | | +0.58 |
+| human – zebrafish | 8 | +0.221 | −0.239 to +0.381 | +0.28 |
+| mouse – zebrafish | 2 | +0.048 | −0.123 to +0.219 | +0.07 |
+| ***E. coli* – human** | 8 | **−0.140** | −0.276 to +0.078 | −0.16 |
+| ***E. coli* – mouse** | 2 | −0.013 | −0.103 to +0.078 | −0.02 |
+| ***E. coli* – zebrafish** | 1 | −0.209 | | −0.25 |
+
+**Mouse and human share their guide rules, to the same degree two human libraries do (corrected +0.56 against +0.59); *E. coli* shares none of
+them.** The position-20 contrast says the same thing in one number. G minus the mean of A and C at position 20 (in SD units, defined for every
+library; two of them, Hart's, contain no T there, so G minus T is not):
+
+| | *E. coli* | human, pooled (21,567 guides) | mouse, pooled (2,239) | zebrafish, pooled (1,233) | worm (50) | fly (114) |
+|---|---:|---:|---:|---:|---:|---:|
+| G minus mean(A, C) at position 20 | **−0.333** [−0.359, −0.308] | **+0.277** [+0.248, +0.306] | **+0.398** [+0.308, +0.482] | **+0.430** [+0.303, +0.548] | +1.05 [+0.56, +1.57] | +0.03 [−0.38, +0.54] |
+
+Every one of the eleven datasets with at least 300 guides has the *eukaryotic* sign (the smallest, Wang 2015, +0.08 [−0.004, +0.160], is
+indistinguishable from zero); the worm set (50 guides) agrees, the fly set is inconclusive, and the rat sets (23 guides) cannot say. So the inversion of
+Finding 7 is **bacteria against eukaryotes**, not *E. coli* against one human cohort.
+
+The same models answer the transferability question directly. Trained on one dataset and scored zero-shot on another (label rank only; the
+SLICER base representation with the champion settings, and a ridge on one-hot plus dinucleotides, which agree), against the target's own
+five-fold cross-validated ρ, which is 0.18–0.55:
+
+| trained → scored (different libraries) | pairs | median ρ (ridge) | range | share of the target's own ρ retained (ridge) |
+|---|---:|---|---|---|
+| human → human | 52 | +0.263 (+0.278) | +0.103 to +0.473 | 70% (72%) |
+| **human → mouse** | 16 | **+0.342** (+0.283) | +0.125 to +0.482 | **73%** (65%) |
+| **mouse → human** | 16 | **+0.261** (+0.269) | +0.070 to +0.472 | **70%** (66%) |
+| zebrafish ↔ mammal | 20 | +0.115 (+0.099) | +0.033 to +0.238 | 34% (30%) |
+| ***E. coli* → eukaryote** | 11 | **−0.041** (−0.056) | −0.238 to +0.108 | −13% (−14%) |
+
+A model trained on human guides keeps about 70% of what a model trained on the mouse guides themselves achieves, and the reverse; one trained on *E. coli*
+scores zero or below, and below by the most on zebrafish (−0.24). That is a transferability claim between mouse and human, restricted to the guide's
+own sequence, on labels that are not the same quantity in the two (indel frequency or depletion, depending on the table).
+
+*What this does not show.* Why. A published analysis of 44 datasets (Moreb and Lynch, below) attributes cross-species failure to a genome-dependent
+search time, which would put the cause in what the genome presents to Cas9 and not in the protein; these data cannot distinguish that from other
+explanations. Zebrafish is the outlier: it agrees with mammals least (the weakest pairs involve zebrafish, Wang 2015 or Doench 2016), and it differs in system
+(injected embryos). Datasets that score one guide library in two cell lines (the two Hart screens, the two Xu human screens) are flagged
+`same_library` and are left out of the pair table. Labels are depletion screens in some tables, where gene-level effects ride on the guide rules, and
+no table has gene identifiers, so none of this is gene-grouped. Fly, worm and rat are too small for maps.
+
+**What the response curve says, and what follows from it.** (`hypotheses.py`; `EXTENSION_LOG.md` §24.) Everything above is about
 *where* the signal lives and *which* composition carries it. None of it says what the response to that composition looks like, and
 that turned out to matter. Three predictions were written into the module's docstring before it was run (H1–H3), with decision rules;
-a second set of checks was designed after one of them failed and is exploratory, so it is reported as description. All of it is
+a second set of checks was designed after one of them failed, and a third after the first draft of the section was challenged; both are exploratory, so they are reported as description. All of it is
 marginal or stratified statistics on the 30,203 genic guides, bootstrapped over whole genes; no feature was added to a model.
 
 *H2 failed, and it was the informative one.* The prediction was a roughly linear dependence on flank GC (probability about 0.6). The
@@ -1137,15 +1200,46 @@ of **+0.022** with the label, at the **52nd percentile** of 5,000 random sums of
 +0.158 (ρ between the two densities 0.733). It is the same kind of null as the Chi-site test, and removes a second explanation that
 predicted the same length scale.
 
-**Hypotheses these results support, and what would test each.** The first is the one worth a real experiment.
+*Does the AT-rich step exist in eukaryotes?* This was the third falsifier of the candidate explanation below (P5 of `eukaryote_rules.py`). The
+context in those tables is 30 nt before the guide and 47 after the PAM, so the check is at a 77 nt scale; at that scale *E. coli*'s lowest
+decile sits **−0.70 SD** [−0.73, −0.66] below the rest, with ρ **+0.33** inside the tail (it is −0.95 SD and +0.49 at 250 nt). In the eleven
+eukaryotic datasets the gap is smaller and inconsistent: five have an interval that excludes zero (Chari 293T −0.27, Doench 2016 −0.45, Wang 2015
+−0.32, Xu HL60 −0.16 and Xu mouse ES −0.34 SD) and six do not (both Hart screens, Doench 2014 human and mouse, Xu KBM7, zebrafish), and ρ inside the
+tail never exceeds 0.20. In Doench 2016 the relation is graded upward (ρ −0.03 inside the tail, +0.26 above it) rather than a step. So **a weaker,
+inconsistent AT-rich penalty appears in about half of the mammalian datasets and not in zebrafish**. That counts against a *bacteria-specific*
+protein as the only cause and for something more generic, and no further: the tables carry no gene identifiers (so between and within genes
+cannot be separated), depletion screens carry gene effects, and mammalian GC content tracks chromatin state.
 
-| hypothesis | what supports it | what is against it or missing | a test, with its prediction |
-|---|---|---|---|
-| **1. AT-rich regions are less accessible to Cas9**, plausibly because nucleoid proteins that bind AT-rich DNA (H-NS above all, which silences horizontally acquired DNA) shield them | the effect is a step at the AT-rich end; it is mostly between regions; the lowest decile is 857 genes and, by name, prophage and surface-polysaccharide clusters; it persists in highly expressed genes; it replicates with a second enzyme | not shown in a second genome; no occupancy data on disk (register item 2); the shift null says the effect is local to under a kilobase, which sits uneasily with silenced domains that are usually described as longer | take a published H-NS ChIP track: guides inside bound regions should carry the deficit, and the flank-GC step should shrink toward zero once occupancy is conditioned on. A Δ*hns* strain should lose it. |
-| **2. Duplex melting is not what limits cutting at the flank.** The simplest physical reading, that GC-rich flanks are harder to unwind, has the wrong sign and the wrong shape: efficiency is flat above ~45% GC and the effect is positive | the sign; the flat upper range (ρ +0.003 to +0.021) | the within-gene gradient is graded and could still be bulk physics | an effect from melting should be graded across the whole range, so it would show above 45% GC within genes: it does (+0.066), at about a third of the size of the step. Treat the two components separately |
-| **3. The flank and the seed act as a gate**, so the flank's contribution scales with the seed's competence | H1: slope falls from 21.2 to 12.5 across seed bases, ordered by each base's own effect | a floor effect on the label gives the same pattern | on a probability scale a gate is multiplicative: fit the flank term as a multiplier of the seed term and as an addend, on gene-grouped folds, and compare. Prediction: the multiplicative form wins |
-| **4. The step is why a depth-4 tree over four numbers keeps up with a CNN–BiGRU.** A threshold on one composition number is cheap for a tree and costly for a convolutional net | four numbers carry 75.7% of the signal; the response is mostly a threshold | untested | give crisprHAL 2 an extra input, the hinge `min(flank GC, 0.46)`, and retrain; prediction: it closes part of the 250–1,000 nt gap its window cannot reach. Replace our four numbers with their linear form; prediction: it loses most of the flank gain |
-| **Excluded: PAM density, and a few outlier genes.** | H3; the ten largest contributors hold 4.4% | | |
+**What follows, graded by how much the findings support it.** An earlier draft of this subsection listed four "hypotheses". Two did not
+follow from anything measured here (a mechanism borrowed from outside the data, and a claim about why a tree matches a CNN), so they are
+gone, and what is left is sorted by evidence.
+
+*Established by these results.* (O1) Pooled, flank GC acts as a step at the AT-rich end. (O2) Inside genes there is a separate, graded
+component. (O3) The flank's slope depends on the seed base, in the order of that base's own effect. (O4) None of it is PAM density,
+gene expression, or a few outlier genes. (O5) The step is sharpest at the 250–500 nt scale. It replicates with a second enzyme at the same
+loci and is not established in a second genome.
+
+*Inferences that follow, each with what would show it wrong.*
+
+| inference | what supports it | what would show it wrong |
+|---|---|---|
+| **I1. Melting-limited unwinding is not the main driver of the flank effect.** Both components have the sign opposite to it: more GC means *more* cutting, in the tail and inside genes, where a melting-limited step predicts that AT-rich flanks unwind more easily and cut better | the sign of O1 and O2 | a locus-matched design in which AT-rich flanks cut better; or a within-gene gradient that reverses once another covariate is held fixed |
+| **I2. The flank and the seed act as a gate, not as compensation.** The flank's slope is steepest beside favourable seed bases (A 0.219, T 0.184) and shallowest beside the most disfavoured (G 0.118). It is not a compressed label: the label's spread is the same in all four strata (SD 3.08–3.20), and the ordering survives dropping the lowest quartile of the label (A 0.084, T 0.083, C 0.060, G 0.030). Only the share of guides in that lowest quartile differs (G 35%, C 29%, A 19%, T 15%), which is the seed's own effect | O3; the two checks above | a multiplicative term for flank × seed that fits no better than an additive one on gene-grouped folds; or the order reversing on another screen |
+| **I3. The AT-rich penalty belongs to regions a few hundred nucleotides wide**, not to single sites and not to kilobase domains: the lowest-decile gap is −0.76 SD at 50 nt, **−0.95 at 250**, −0.92 at 500 and −0.78 at 1,000 nt (ρ inside the tail 0.435, **0.485**, 0.416, 0.389) | O5 | the gap growing toward a kilobase when measured on a wider window or in another strain |
+
+*A candidate explanation, and the weakest-supported thing in this section.* AT-rich DNA may be less accessible to Cas9. What supports it
+is the pattern alone (O1 and O4: a step at the AT-rich end, between regions, not expression, not outlier genes). What does **not**
+support it is any particular accessibility mechanism. Naming a nucleoid protein such as H-NS, which binds AT-rich DNA and silences
+horizontally acquired regions, is a guess from outside the data: nothing here distinguishes it from another AT-rich-DNA-binding factor,
+from AT-rich DNA being more flexible or bent, or from an effect on the cell (copy number, replication timing). The scale check (I3) fits
+a local property better than a silenced domain, which argues against the domain version. By-name readings of the lowest-decile genes
+(`wbbJ`, `waaL`, `glf`, `waaO`, `alpA`, `trkG`, `lit`, `mcrC`, `casA`) as prophage and surface-polysaccharide clusters are my
+recollection and no annotation in the data, so they are not evidence. It **is** falsifiable, in three ways: a published occupancy track
+for an AT-binding protein (guides inside bound regions should carry the deficit, and the flank-GC step should shrink once occupancy is
+conditioned on; an equal deficit inside and outside bound regions kills the protein version); a Δ*hns*-type strain that keeps the
+deficit; and a eukaryotic screen, where a step would mean the cause is generic accessibility rather than a bacterial protein. The last
+was run (above): a weaker, inconsistent step appears in about half of eleven mammalian and fish datasets, so the protein version is not required,
+and a generic accessibility effect is neither shown nor excluded.
 
 *A published hypothesis about the other half of Finding 7.* Moreb and Lynch (2021) analysed 44 published gRNA datasets across species and Cas9 variants
 (read from the abstract only), report that prediction algorithms do not carry between species, and propose that a guide's sequence acts mainly
@@ -1153,10 +1247,9 @@ through the time Cas9 takes to find its target, in a way that depends on the gen
 between kingdoms (Finding 7), which is a separate question from the flank effect. Family H carries genome-wide seed-match counts and is a null
 here (+0.000), though the cohort keeps only uniquely targeting guides, which removes most of their variation, so this cohort cannot rule it in or out.
 
-*Limits.* H2 and everything after it were found in one screen, and the follow-ups were designed after the result they follow, so they
-describe the data and do not test a prediction. The second-genome evidence is weak and the whole account rests on *E. coli* K-12. The
-H-NS reading is a hypothesis that fits the shape and the gene names; no occupancy, expression-perturbation or knockout data bear on it.
-H1's synergy reading is confounded with a label floor.
+*Limits.* H2 and everything after it were found in one screen, and the follow-ups and the two checks were designed after the result they
+follow, so they describe the data and do not test a prediction. The second-genome evidence is weak and the whole account rests on *E. coli*
+K-12 until the eukaryote section.
 
 **Limits.** (i) The length scale is a measurement; the persistence-length reading is a hypothesis and nothing here
 tests the physics. (ii) The cross-kingdom comparison is between two different assays — survival after cutting against
@@ -1203,7 +1296,7 @@ is **side-symmetric** — so whatever carries it is not directional, which separ
 orientation effect — and it has **one characteristic length of 250–500 nt** with no structure below
 about 250 nt: four numbers per guide carry three quarters of it and finer descriptions eventually
 cost. The guide's own preferences sit entirely in the PAM-proximal seed and are **uncorrelated
-between *E. coli* and human (ρ = −0.052)**, with the strongest inverting: G immediately 5′ of the
+between *E. coli* and human (ρ = −0.052)** (and between *E. coli* and mouse or zebrafish, while human and mouse agree), with the strongest inverting: G immediately 5′ of the
 PAM is the most disfavoured base here and a favoured one in human. The two halves are **coupled**,
 the largest pairwise interaction being 250 nt flank GC against position 20 (Finding 7). This is the
 project's positive mechanistic result, and it arrived late because Finding 5 had correctly ruled out
@@ -1626,9 +1719,11 @@ biology paper.
   small, real, and a *lower* bound, since no re-derivation reaches the human
   choices. It lands on the **differences**, not the levels: family A's gain is
   **+0.164 in cross-validation and +0.156 on genes the pipeline never saw**,
-  while the absolute figures do not move detectably. The margin over crisprHAL 2
-  on our own folds should be read the same way; the parity claim on their splits
-  is untouched (Part 4).
+  while the absolute figures do not move detectably. A sealed genome (*C. rodentium*, never
+  chosen on) then showed the **tuned settings' benefit intact, +0.0172** over the frozen champion, so
+  for the tuned arm this is no longer an open caveat but a small, measured one. The margin over
+  crisprHAL 2 on our own folds should be read the same way; the parity claim on their splits is
+  untouched (Part 4).
 
 ### What limits this now, and which limits can be moved
 
@@ -1724,6 +1819,9 @@ about +0.009 ρ** [+0.0020, +0.0153] from the automatable part, measured below,
 with the human part unquantified above it. It falls on the arm-to-arm
 differences rather than on the levels — family A reads +0.164 in CV and +0.156
 on sealed genes — and the paper should quote the sealed figure or both.
+**For the settings chosen after the freeze it is not an issue**: their benefit holds on 1,204 genes
+untouched by any search, on a second gene split, and on a genome no choice ever saw (+0.0172,
+"Which datasets could have been sealed", below). What stays unquantifiable is the cohort choice.
 
 Remaining before submission:
 
@@ -1753,9 +1851,9 @@ screen against **+0.157** on the cutting screen; restricted to the essential
 genes where knockdown has a phenotype at all it reads **+0.268**, and that +0.268
 turns out to be the screen's own strand rule, leaving **+0.007 to +0.025** once a
 strand indicator is supplied — and a weaker within-gene effect whose cause the data
-cannot identify (Appendix B5). The answer is not cutting or binding; it is that the screens cannot say. **No untouched dataset remains**, so the
-adaptive-overfitting caveat below is permanent rather than pending, and further
-external validation needs new data.
+cannot identify (Appendix B5). The answer is not cutting or binding; it is that the screens cannot say. **No untouched dataset remains at the same loci**, so
+the adaptive-overfitting question was answered another way, with a sealed genome (below), on which the
+tuned settings' benefit held.
 
 
 * for the frozen champion the headline comparison is **parity, not a win** — +0.005
@@ -1767,9 +1865,10 @@ external validation needs new data.
   top-end metrics — top-decile precision and the pick percentile of the ten
   best-scoring guides — remain **tied**, which is the metric a guide picker actually
   uses, and no objective aimed at the top end improved it;
-* the curated five-fold figures carry an **unknown adaptive-overfitting
-  component**, because eSpCas9 turned out to be confirmatory rather than
-  untouched and nothing fully clean is left;
+* the curated five-fold figures carry a **measured, small adaptive component**
+  (+0.0087 ρ on sealed genes), and the tuned settings' benefit survives a sealed genome
+  (+0.0172), so it is no longer an open caveat; what stays unquantifiable is the cohort
+  choice, which was made on *E. coli* and cannot be undone;
 * the 412-column reduction is a **published-matrix result under a 300-column
   budget** and does not transfer to the curated cohort;
 * the ceiling for the label we train on is **0.946 [0.944, 0.948]**, measured;
@@ -1845,7 +1944,8 @@ p = 0.015, sign test p = 0.035, and a 20,000-draw bootstrap gives
 and +0.0106, so it does not rest on one sealing. **The curated five-fold figures
 are optimistic by about 0.009 ρ from the automatable part alone**, and that is a
 *lower* bound on total adaptivity, because no re-derivation reaches the human
-choices — building family A at all, the window set, the cohort.
+choices — building family A at all, the window set, the cohort. (The sealed-genome check
+below reaches the settings but not these.)
 
 *This supersedes the three-draw result, and the way it failed is the lesson.*
 The first three draws gave **+0.0005 ± 0.016**, which was reported as "no
@@ -2878,8 +2978,9 @@ whole model on ±190 nt and searched the length themselves.
    warning about every coverage-derived feature in this field, including the chromatin tracks CRISPRon uses.
 6. **The duplicate-guide result.** 49% of a widely-used published human matrix's rows repeat a guide; under folds that
    keep them together the best-looking configuration is 0.08 *worse* than the default one (§16.2).
-7. **The adaptive-overfitting measurement.** +0.0087 ρ from the automatable part, over fifteen sealed-gene draws. We have
-   not found another guide-prediction paper that measures its own selection bias.
+7. **The adaptive-overfitting measurement.** +0.0087 ρ from the automatable part, over fifteen sealed-gene draws, and a sealed genome
+   on which the tuned settings' benefit survives (+0.0172). We have not found another guide-prediction paper that measures its own
+   selection bias.
 8. **Finding 7, which is the positive mechanistic half and arrived last.** The flank effect is **GC specifically** —
    purine is flat at every window and side — **side-symmetric** to within 0.026, and has **one length scale of
    250–500 nt with no structure below ~250 nt** (four columns carry 76% of it; 200 columns score below 32). It is
@@ -5480,6 +5581,12 @@ density (Appendix B3).
 `d_supercoiling` share a letter and have nothing to do with each other: one is
 duplex thermodynamics computed from sequence, the other is a ChIP track. They
 were D1 and D2 of one plan that stopped being one plan.
+
+### Data added after the freeze
+
+| data | source | size | used for |
+|---|---|---|---|
+| 23 efficiency tables for human, mouse, zebrafish, rat, fly and worm (`*.scores.tab`, plain text; read as data, never executed) | the CRISPOR benchmark collection, github.com/maximilianh/crisporPaper, `effData/`, which redistributes the supplementary tables of the original papers (Doench 2014 and 2016, Chari 2015, Xu 2015, Wang 2015, Hart 2016, Moreno-Mateos 2015 and others) | about 7 MB, in `external_data/crispor_effdata/` (not committed) | Finding 7, the eukaryote comparison (`eukaryote_rules.py`) |
 
 ### Are the nulls worth keeping? Five yes, one no
 

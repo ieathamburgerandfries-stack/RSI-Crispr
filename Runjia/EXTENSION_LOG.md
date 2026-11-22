@@ -377,7 +377,7 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
-*Current state of the audit (20 Nov):* it has grown with each section and now stands at **911 checks, 0 mismatches**,
+*Current state of the audit (20 Nov):* it has grown with each section and now stands at **1027 checks, 0 mismatches**,
 covering sections 7-22. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
 modules need and exits non-zero if any quoted number no longer matches its file. Since 22.4 it also checks three things
 about itself: that every module in the package imports and that importing one writes nothing; that four claims which
@@ -1671,4 +1671,36 @@ the table in the report is Spearman *inside* each part of the range, which is th
 subsection, Part 2 and the Finding 7 claim now say so. The "duplex stability, melting" reading of the GC specificity is weakened,
 because the sign and the shape are wrong for it, and a hypothesis about access (nucleoid proteins on AT-rich, horizontally acquired
 DNA) is stated with the test that would settle it, which needs a published H-NS occupancy track that is not on disk (register item 2).
+
+**A correction to the first draft of this section (same day).** The first draft listed four "hypotheses" and presented H-NS as the leading one.
+Challenged on whether they followed from the findings or were unfalsifiable, I graded them and cut two. The H-NS reading came from outside the data:
+the findings support a pattern (an AT-rich penalty, between regions, not expression, not outlier genes) and say nothing about which factor causes it,
+and my by-name reading of the lowest-decile genes was recollection and not annotation. The tree-versus-CNN idea had no support at all. The gate
+reading had a plausible alternative (a compressed label) that I had listed and not checked; I checked it (equal label spread, ordering survives
+dropping the lowest quartile). I also ran the one check that bears on the protein reading, the scale of the step, which peaks at 250 nt and
+softens toward a kilobase, so it argues against the domain-scale version. What is left is sorted into established results, inferences with what
+would falsify each, and one candidate explanation, with its three falsifiers.
+
+## 25. Eukaryotes: the guide's rules and the flank step across human, mouse and zebrafish (22 Nov; the user asked to compare different eukaryotes, "since we essentially have the whole pipeline down")
+
+**What the pipeline did and did not make easy.** The guide-intrinsic part is organism-agnostic by construction (any 20-mer goes through the base
+representation), so the maps, the contrast and the transfer matrix were cheap. The flank part is not: it needs a genome and coordinates, and the public
+tables carry only 77 nt of context (30 before the guide, 47 after the PAM), so the flank check is at that scale and not at 250 nt. The hard part was
+the data, not the code: 23 plain-text tables from the CRISPOR benchmark collection (github.com/maximilianh/crisporPaper, `effData/`), about 7 MB, into
+`external_data/crispor_effdata/`, read as data and never executed.
+
+**Predictions, written into `sgrna/compare/eukaryote_rules.py` before the run, and what happened.**
+
+| | prediction | outcome |
+|---|---|---|
+| P1 | mammalian maps agree, corrected correlation at least 0.4 for every pair; mouse-human no lower than human-human by more than 0.2 | **median held** (human-human +0.59, human-mouse +0.56) **tails failed**: human-human ranges from −0.05 to +0.71 raw, the weak pairs involve Wang 2015, Doench 2016 and zebrafish |
+| P2 | E. coli unrelated to every eukaryote (|rho| at most 0.2) and opposite in the position-20 contrast | **held**: median −0.14, two pairs beyond 0.2 (Doench 2016 −0.28, zebrafish −0.21); contrast opposite in all eleven |
+| P3 | zebrafish agrees with mammals less than they agree with each other (0.2 to 0.5) | **held, more strongly**: human-zebrafish +0.28 corrected, mouse-zebrafish +0.07 |
+| P4 | mammal-to-mammal transfer keeps 60% of the target's own cross-validated rho; E. coli to eukaryote within 0.05 of zero | **held for mammals** (70-73%); **E. coli median −0.04 but down to −0.24** (zebrafish), so not within 0.05 everywhere |
+| P5 | no AT-rich step in mammals (probability 0.7) | **partly failed**: a weaker step in five of eleven datasets (−0.16 to −0.45 SD against −0.70 in E. coli at the same scale), none in the other six |
+
+**What I had to be careful about.** Scores run in opposite directions, so each dataset was oriented by a consensus of six published predictors used
+for the sign only; the weakest anchor (Wang 2015, −0.10) is printed. The two Hart libraries contain no T at position 20, so G minus T is undefined
+there and the contrast was changed to G minus the mean of A and C, which is defined everywhere. A first summary of the transfer matrix pooled both models
+and printed identical rows for each; I caught it because they were identical to three decimals, and the numbers in the report are per model.
 

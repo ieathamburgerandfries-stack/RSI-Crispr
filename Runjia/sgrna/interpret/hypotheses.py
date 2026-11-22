@@ -66,10 +66,10 @@ def _data():
     g, ok = _groups("gene", protos)
     idx = load_index(verbose=False).set_index(config.ID_COL).reindex(protos)
     col = {n: A[:, i] for i, n in enumerate(an)}
-    gc = {w: (col[f"eng.flank.comp.up{w}.gc"] + col[f"eng.flank.comp.dn{w}.gc"]) / 2 for w in (250, 500)}
+    gc = {w: (col[f"eng.flank.comp.up{w}.gc"] + col[f"eng.flank.comp.dn{w}.gc"]) / 2 for w in (50, 250, 500, 1000)}
     p = np.frombuffer("".join(protos).encode(), np.uint8).reshape(len(protos), 20)
     seq = {w: (idx["upstream"].str[-w:] + idx["downstream"].str[:w]).to_numpy() for w in (250, 500)}
-    return dict(y=y[ok], gc=gc[250][ok], gc500=gc[500][ok], b20=p[ok, 19], b18=p[ok, 17], gene=g[ok], seq250=seq[250][ok], protos=protos[ok])
+    return dict(y=y[ok], gc=gc[250][ok], gc500=gc[500][ok], gc50=gc[50][ok], gc1000=gc[1000][ok], b20=p[ok, 19], b18=p[ok, 17], gene=g[ok], seq250=seq[250][ok], protos=protos[ok])
 
 
 def _boot_index(gene, rng):
@@ -348,9 +348,42 @@ def followups(d, rng):
 
 
 
+# ------------------------------------------------------------------------------- audit of the readings (exploratory)
+def audit(d, rng):
+    """Two checks made to see how far two readings of H1/H2 are actually supported, designed after the fact.
+
+    (a) the scale of the step: the 'accessibility of AT-rich regions' reading, and in particular a nucleoid-protein reading, is about
+        regions, so it predicts the step is at least as sharp when flank GC is measured over a kilobase as over 50 nt. A purely local
+        reading predicts the opposite.
+    (b) the 'gate' reading of H1: the shallower flank slope beside an unfavourable seed base could be a compressed label (a floor) rather
+        than a gate. Compare the spread of the label by seed base, and the slope among guides above the global lower quartile of the label.
+    """
+    y = d["y"]
+    rows = []
+    for w, key in ((50, "gc50"), (250, "gc"), (500, "gc500"), (1000, "gc1000")):
+        x = d[key]
+        c = float(np.quantile(x, 0.10)); lo = x <= c
+        rows.append(dict(window_nt=w, flank_gc_at_decile_edge=c, deficit=float(y[lo].mean() - y[~lo].mean()), deficit_in_sd=float((y[lo].mean() - y[~lo].mean()) / y.std()),
+                         rho_below=_spear(x[lo], y[lo]), rho_above=_spear(x[~lo], y[~lo]), rho_full=_spear(x, y)))
+    scale = pd.DataFrame(rows)
+    scale.to_csv(OUT / "hypotheses_audit_scale.csv", index=False)
+    q25 = float(np.quantile(y, 0.25))
+    rows = []
+    for b in "ACGT":
+        m = d["b20"] == ord(b)
+        up = m & (y > q25)
+        rows.append(dict(base_at_20=b, n=int(m.sum()), label_sd=float(y[m].std()), share_in_lowest_quartile=float((y[m] <= q25).mean()),
+                         rho_all=_spear(d["gc"][m], y[m]), rho_above_global_q25=_spear(d["gc"][up], y[up]), n_above=int(up.sum())))
+    gate = pd.DataFrame(rows)
+    gate.to_csv(OUT / "hypotheses_audit_gate.csv", index=False)
+    print("\nAUDIT (a) the step at four scales of flank GC"); print(scale.round(3).to_string(index=False))
+    print("AUDIT (b) is the shallower slope beside a bad seed base a compressed label?"); print(gate.round(3).to_string(index=False))
+    return scale, gate
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--test", default="all", choices=["all", "h1", "h2", "h3", "followups"])
+    ap.add_argument("--test", default="all", choices=["all", "h1", "h2", "h3", "followups", "audit"])
     a = ap.parse_args(argv)
     d = _data()
     print(f"{len(d['y']):,} genic guides in {len(set(d['gene'].astype(str))):,} genes; label SD {d['y'].std():.3f}")
@@ -359,6 +392,8 @@ def main(argv=None):
             fn(d, np.random.default_rng(41))
     if a.test in ("all", "followups"):
         followups(d, np.random.default_rng(41))
+    if a.test in ("all", "audit"):
+        audit(d, np.random.default_rng(41))
 
 
 if __name__ == "__main__":

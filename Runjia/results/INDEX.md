@@ -19,7 +19,7 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**297 files** in 21 groups.
+**305 files** in 21 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
@@ -71,7 +71,7 @@ Within a group the order is alphabetical.
 | `folds_humangc_base_plus_gc_gc2.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape` | experiment, seed, fold, r2, spearman, pearson, mse … |
 | `folds_humangc_only.csv` | 0.5 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape` | experiment, seed, fold, r2, spearman, pearson, mse … |
 | `hybrid.csv` | 4.8 | receipt | `transfer` | source, target, arm, fold, cv, seed, spearman … |
-| `transfer.csv` | 17.5 | cited | `transfer` | dataset, arm, model, seed, fold, n_rows, n_cols … |
+| `transfer.csv` | 17.5 | audited | `transfer` | dataset, arm, model, seed, fold, n_rows, n_cols … |
 | `transfer_model.csv` | 4.8 | cited | `transfer` | source, target, arm, model, seed, n_train, n_test … |
 
 ### Finding 4 — The model is out of *material* — and the post-freeze tuning gain is the sharpest evidence for it
@@ -124,6 +124,14 @@ Within a group the order is alphabetical.
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
+| `post_freeze/eukaryote_contrast_g_minus_t.csv` | 5.9 | audited | `eukaryote_rules` | group, n, species, underpowered, g_minus_t_pos20, pos20_lo, pos20_hi … |
+| `post_freeze/eukaryote_flank_step.csv` | 2.3 | audited | `eukaryote_rules` | dataset, species, n, flank_gc_at_decile_edge, gap_sd, lo, hi … |
+| `post_freeze/eukaryote_map_pairs.csv` | 10.9 | audited | `eukaryote_rules` | a, b, species_a, species_b, same_library, rho, lo … |
+| `post_freeze/eukaryote_maps.csv` | 61.9 | receipt | `eukaryote_rules` | dataset, position, base, effect_sd |
+| `post_freeze/eukaryote_orientation.csv` | 4.1 | audited | `eukaryote_rules` | dataset, species, library, n, sign, median_tool_rho, tools_agreeing … |
+| `post_freeze/eukaryote_transfer.csv` | 30.0 | audited | `eukaryote_rules` | model, trained_on, scored_on, rho, within, species_trained, species_scored … |
+| `post_freeze/hypotheses_audit_gate.csv` | 0.4 | audited | `hypotheses` | base_at_20, n, label_sd, share_in_lowest_quartile, rho_all, rho_above_global_q25, n_above |
+| `post_freeze/hypotheses_audit_scale.csv` | 0.6 | audited | `hypotheses` | window_nt, flank_gc_at_decile_edge, deficit, deficit_in_sd, rho_below, rho_above, rho_full |
 | `post_freeze/hypotheses_followup_absolute.csv` | 0.2 | audited | `hypotheses` | dataset, absolute_threshold_gc, n_below, share_below, deficit, lo, hi |
 | `post_freeze/hypotheses_followup_concentration.csv` | 0.2 | audited | `hypotheses` | deficit, lo, hi, flank_gc_at_decile_edge, n_lowest_decile, genes_in_lowest_decile, top10_genes_share … |
 | `post_freeze/hypotheses_followup_curve20.csv` | 2.0 | receipt | `hypotheses` | window, bin, flank_gc, mean_label, n |

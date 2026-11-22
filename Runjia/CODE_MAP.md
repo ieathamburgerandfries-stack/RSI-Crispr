@@ -55,7 +55,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 
 <!-- generated:begin -->
 
-**132 modules, 28,029 lines** of Python in 11 folders (not counting the `__init__.py` markers).
+**133 modules, 28,435 lines** of Python in 11 folders (not counting the `__init__.py` markers).
 
 #### By the report section each module supports
 
@@ -67,7 +67,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Finding 4 | The model is out of *material* — and the post-freeze tuning gain is the sharpest evidence for it | 2 | 516 | 9 | tuning |
 | Finding 5 | On a redundant matrix, importance and faithfulness are both uninterpretable | 6 | 1,574 | 22 | interpret |
 | Finding 6 | The label's ceiling is 0.946, measured from crisprHAL's own replicates | 1 | 122 | 1 | cohorts |
-| Finding 7 | What the signal is made of: GC over a few hundred bases, a seed region that inverts between kingdoms, and the two coupled | 3 | 882 | 24 | interpret |
+| Finding 7 | What the signal is made of: GC over a few hundred bases, a seed region that inverts between kingdoms, and the two coupled | 4 | 1,226 | 32 | compare, interpret |
 | Part 2 | Contributions | 3 | 434 | 16 | compare |
 | Part 3 | Where this stops | 1 | 179 | 2 | compare |
 | Part 4 | The freeze, and what remains | 5 | 1,282 | 9 | build, compare, controls, interpret |
@@ -80,7 +80,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Appendix B4 | The flank's shape and 3D structure add nothing that its composition does not already hold | 11 | 1,584 | 21 | build, cohorts, features, interpret |
 | Appendix B5 | A boundary experiment, demoted: the dCas9 / CRISPRi screens | 10 | 2,059 | 22 | cohorts, compare, controls, features |
 | Appendix C0 | Reproducibility: versions, seeds and protocol | 1 | 199 | 0 | (top) |
-| tooling | the audit, the figures, the guards and this map | 5 | 1,955 | 0 | paper |
+| tooling | the audit, the figures, the guards and this map | 5 | 2,017 | 0 | paper |
 | library | shared code the experiments are built on | 10 | 2,060 | 4 | (top), build, harness |
 | — | no section of the report points at it | 2 | 556 | 5 | cost, interpret |
 
@@ -211,7 +211,7 @@ The adversarial phase: nulls, shuffles, floors, selector and leakage audits, and
 | `why_inflation` | 104 | Why did every family's Δρ roughly triple when the cohort moved? | Appendix B2a | `why_inflation.csv` |
 | `window_robustness` | 114 | Would a different set of flank windows have given the same answer? | Appendix B5 | `ablation_curated.csv`, `window_robustness.csv` |
 
-### `sgrna/interpret/`  —  17 modules, 4,477 lines
+### `sgrna/interpret/`  —  17 modules, 4,512 lines
 
 What the model uses and what the signal is made of: importance, attribution, redundancy, the mechanism work of Finding 7, and what the tuned settings say.
 
@@ -224,7 +224,7 @@ What the model uses and what the signal is made of: importance, attribution, red
 | `faithfulness` | 270 | Dropping a model's top columns costs nothing. | Finding 5 | `faithfulness_clusters.csv`, `faithfulness_clusters_reduced.csv` +2 |
 | `gcstrata` | 210 | Is the flanking-context effect just target GC wearing a different hat? | Finding 2 | `gc_strata_ablation.csv`, `gc_strata_corr.csv` +1 |
 | `geom_importance` | 81 | Which geometry columns does the model use, and are they re-expressions of composition? | Appendix B4 | `geom_importance.csv` |
-| `hypotheses` | 366 | Three tests of what the flank effect might physically be, each with its prediction written down before it was run. | Finding 7 | `hypotheses_followup_absolute.csv`, `hypotheses_followup_concentration.csv` +13 |
+| `hypotheses` | 401 | Three tests of what the flank effect might physically be, each with its prediction written down before it was run. | Finding 7 | `hypotheses_audit_gate.csv`, `hypotheses_audit_scale.csv` +15 |
 | `importance` | 293 | At what granularity is "feature importance" actually a property of the data? | Finding 5 | `importance_agreement.csv`, `importance_blocks.csv` |
 | `importance_models` | 297 | Is "feature importance" a property of the data, or of the model asked? | Finding 5 | `importance_model_blocks.csv`, `importance_model_methods.csv` +1 |
 | `interp_extra` | 301 | Three interpretability tests the report listed as not yet run. | Finding 5 | `interp_counterfactual.csv`, `interp_interaction_blocks.csv` +3 |
@@ -235,7 +235,7 @@ What the model uses and what the signal is made of: importance, attribution, red
 | `representation` | 406 | Does the model need all 6,232 published columns, or one spelling of the 20-mer? | Part 4 | `representation.csv`, `representation_depth.csv` +2 |
 | `tuned_settings` | 199 | What the tuned hyperparameters say about the signal: four tests, each answering a question the choice of settings raises. | Finding 5 | `interpret_data_scaling.csv`, `interpret_depth.csv` +4 |
 
-### `sgrna/compare/`  —  35 modules, 6,520 lines
+### `sgrna/compare/`  —  36 modules, 6,829 lines
 
 Every comparison with something else (Part 6 of the report): crisprHAL 2, the inherited baseline, other organisms and the human matrix, and other assays (the dCas9 boundary experiment of Appendix B5).
 
@@ -250,6 +250,7 @@ Every comparison with something else (Part 6 of the report): crisprHAL 2, the in
 | `cui_screen` | 593 | The last untouched test: does the flanking-context effect appear in a CRISPRi screen? | Appendix B5 | `cui_essential_marginals.csv`, `cui_essential_position.csv` +4 |
 | `cut_within_gene` | 36 | The cutting-screen figure on the within-gene definition used for the dCas9 screens. | Appendix B5 | `cut_within_gene.csv` |
 | `data_efficiency` | 67 | The data-efficiency curve again, with the tuned model against the stored crisprHAL 2 curve. | Part 6 | `data_efficiency.csv`, `sample_complexity.csv` +1 |
+| `eukaryote_rules` | 309 | Do the guide's own design rules, and the flank effect, carry between eukaryotes, and how do they differ from E. coli's? | Finding 7 | `eukaryote_contrast_g_minus_t.csv`, `eukaryote_flank_step.csv` +4 |
 | `final_eval` | 247 | The designated final evaluation: both models on crisprHAL's eSpCas9 split. | Part 6 | `final_eval_espcas9.csv` |
 | `handnamed_split` | 122 | Split the 63 hand-named columns into the computable and the rest, and test both. | Finding 1 | `handnamed_split.csv`, `portability_audit.csv` |
 | `headtohead` | 303 | The like-for-like comparison against crisprHAL 2. | Part 6 | `headtohead.csv` |
@@ -289,7 +290,7 @@ What each model costs to train and to run, measured rather than estimated.
 | `e2e_bench` | 175 | End-to-end scoring cost per guide, one thread: featurisation + column selection + imputation + model, against crisprHAL 2 with its input encoding. | Part 6 | `e2e_crisprhal.csv`, `e2e_slicer.csv` +3 |
 | `inference_cost` | 141 | Training cost is the wrong clock for a guide-design tool. | Part 6 | `inference_cost.csv` |
 
-### `sgrna/paper/`  —  5 modules, 1,955 lines
+### `sgrna/paper/`  —  5 modules, 2,017 lines
 
 The tooling the paper rests on: the audit, the figures, the import and reference guards, and the code map.
 
@@ -299,7 +300,7 @@ The tooling the paper rests on: the audit, the figures, the import and reference
 | `doc_refs` | 165 | Every module, path and Colab script that a document or a docstring names still exists. | tooling | — |
 | `figures` | 427 | Publication figures, to ACS graphics specifications, generated from the result files. | tooling | — |
 | `import_check` | 106 | Every module in the package imports, and importing it writes nothing. | tooling | — |
-| `verify_numbers` | 837 | Audit: recompute every headline number of Appendix B4 and the Finding 3 addendum from the result files and compare with the value typed into the report. | tooling | — |
+| `verify_numbers` | 899 | Audit: recompute every headline number of Appendix B4 and the Finding 3 addendum from the result files and compare with the value typed into the report. | tooling | — |
 
 #### Old paths, for documents written before the reorganisations
 

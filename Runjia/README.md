@@ -71,7 +71,7 @@ produced the two results worth knowing about before reading anything else:
 
 **Where the open questions are.** All of them are in one place — the **open-questions register**, `PROGRESS_REPORT.md`
 Part 4. Ten remain open and each says what would settle it; six were closed on 20 November. The tenth — what a clone of the repository can verify — was added on 22 November.
-`./run_audit.sh` recomputes every post-freeze number (911 checks), checks that four documents agree on that count, that
+`./run_audit.sh` recomputes every post-freeze number (1027 checks), checks that four documents agree on that count, that
 four claims later work made false have not returned, and that every module in the package imports without writing
 anything.
 
@@ -581,6 +581,8 @@ transcriptional one.
    Treat that as a *lower* bound, since no re-derivation reaches the human
    choices, and expect the margin over crisprHAL 2 on our own folds to carry it
    too — our configuration was chosen on those rows and theirs was not, so it
-   does not cancel. An earlier three-draw version reported +0.0005 ± 0.016 and
+   does not cancel. **For the settings chosen after the freeze it is not an
+   issue**: their benefit survives a genome no choice ever saw (the *C. rodentium*
+   screen, +0.0172 over the frozen champion; report Part 4). An earlier three-draw version reported +0.0005 ± 0.016 and
    "no inflation detectable"; three draws could not resolve a 0.009 effect
    against a reference arm whose own gap swings ±0.015.

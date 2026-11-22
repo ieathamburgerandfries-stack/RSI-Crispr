@@ -75,7 +75,7 @@ Each of these is an attack on the result, not a confirmation of it.
 - **Circular-shift null.** Re-assign each guide the flanks of a position offset around the chromosome. Composition, smoothness and every column's distribution are preserved
   exactly; only the correspondence to the guide is broken. A single offset would be ambiguous, because chromosome-scale GC structure could survive a short one, so the code sweeps
   the offset and reads off how fast the gain decays: a 1 kb shift retains 8% and shifts of 10 kb or more retain none. The effect is local to about a kilobase.
-- **Sealed-gene hold-out.** Re-derive every mechanisable choice on a development pool only, then score once on genes no step ever saw. The adaptive-overfitting component is **+0.0087**.
+- **Sealed-gene hold-out.** Re-derive every mechanisable choice on a development pool only, then score once on genes no step ever saw. The adaptive-overfitting component is **+0.0087**, small and measured.
 - **Permutation floor.** Shuffled flank rows (the harness's `--permute` arm, summarised by `floors.py`) score 0.5264 against a 0.5272 baseline, so the floor is zero.
 - **Target-GC strata.** Conditioning on the target's own GC raises the effect (+0.044 to +0.082 on the published matrix), so it is not target GC in disguise.
 - **Sequence distance.** The minimum Hamming distance between any validation and training guide is 3, with no identical guide across any split. The same statistic recovers a known
@@ -117,7 +117,7 @@ for any replicate agreement.
 Because model importance is unreliable here (block 6), nothing in this block reads importance off the model. The code uses partial correlations computed from sequence and label directly, a resolution ablation,
 and a depth-2 model whose splits are the pairs. **Results:** the effect is GC, not purine; it is side-symmetric (the two sides agree to within 0.026); it has a single length scale of 250 to 500 nt with no structure
 finer than about 250 nt, so four columns (GC and purine over the whole kilobase on each side) carry about three quarters of it; and it interacts with the PAM-proximal seed. Separately, the guide's own position-by-base preferences are uncorrelated between
-*E. coli* and human (ρ = −0.052), and 15 of 27 jointly significant cells invert.
+*E. coli* and human (ρ = −0.052), and 15 of 27 jointly significant cells invert. `eukaryote_rules.py` repeats the comparison on eleven public datasets from human, mouse and zebrafish: the inversion is **bacteria against eukaryotes** (mouse and human maps agree at +0.56, *E. coli*'s agree with none of them), and a model trained on human guides keeps about 70% of its accuracy on mouse guides.
 
 `hypotheses.py` then asks what the *response* to that composition looks like, with each prediction written into the file before it was run. Of three, two held (the flank's effect is steeper beside a favourable seed base, and PAM density does not carry it) and one failed, which was the informative one: pooled across the genome the response to flank GC is not a slope but a **step at the AT-rich end** (the lowest tenth of guides, below 44.4% GC, sit 3.10 label units lower, and nothing varies above it), with a gentler graded component inside genes. The report turns this into four hypotheses with the test that would settle each; the leading one is that nucleoid proteins shield AT-rich DNA, which needs an occupancy track that is not on disk.
 
@@ -150,7 +150,7 @@ These read the stored results and the genome, so they need no GPU and no re-trai
 ## What this code does not show
 
 - The lead over crisprHAL 2 is against the model **as shipped**. It was never retuned on its own splits (about 40 GPU-hours), so the honest claim is that a tuned boosted tree beats the released model, not its architecture.
-- No untouched external cutting dataset remains, so the adaptive-overfitting component is measured at +0.0087 rather than eliminated.
+- No untouched external cutting dataset remains at the same loci. The adaptive-overfitting component is measured (+0.0087) and small, and the tuned settings' benefit survives a genome no choice ever saw (+0.0172); what cannot be undone is the choice of cohort and of family A, both made on *E. coli*.
 - Whether the flank effect needs a double-strand break is **not** established. dCas9 CRISPRi screens were tried and could not separate cutting from binding (Appendix B5); their code is not in this tour, and no claim rests on it.
 - One organism and two relatives; the human arm was stopped, and its rules are uncorrelated with *E. coli*'s.
 - The physical reading of the signal (a bulk property over a few hundred bases) is a hypothesis, not a result.

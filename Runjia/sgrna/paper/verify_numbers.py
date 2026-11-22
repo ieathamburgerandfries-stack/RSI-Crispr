@@ -655,7 +655,7 @@ def main():
 
     print("22.4 the package imports, and importing it writes nothing")
     ic = json.loads((OUT / "import_check.json").read_text())
-    chk("22.4 modules swept", float(ic["n_modules"]), 142, 0)
+    chk("22.4 modules swept", float(ic["n_modules"]), 143, 0)
     chk("22.4 modules excluded by name", float(ic["n_skipped"]), 1, 0)
     chk("22.4 modules that fail to import", float(len(ic["fails"])), 0, 0)
     chk("22.4 files under results/", float(ic["files_in_results"]), 675, 0)
@@ -790,6 +790,68 @@ def main():
     chk("sealed organism: tuned minus champion, upper", float(so.loc["tuned XGBoost (d099x)", "hi"]), 0.0206, 4)
     chk("sealed organism: average of five, mean of seeds", float(so.loc["XGBoost average of 5", "rho_seed_mean"]), 0.7170, 4)
     chk("sealed organism: average of five minus champion", float(so.loc["XGBoost average of 5", "minus_champion"]), 0.0165, 4)
+
+    sc = pd.read_csv(OUT / "hypotheses_audit_scale.csv").set_index("window_nt")
+    for w_, dsd_, rb_ in ((50, -0.76, 0.435), (250, -0.95, 0.485), (500, -0.92, 0.416), (1000, -0.78, 0.389)):
+        chk(f"audit: lowest-decile gap in SD at {w_} nt", float(sc.loc[w_, "deficit_in_sd"]), dsd_, 2)
+        chk(f"audit: rho inside the tail at {w_} nt", float(sc.loc[w_, "rho_below"]), rb_, 3)
+    gt = pd.read_csv(OUT / "hypotheses_audit_gate.csv").set_index("base_at_20")
+    for b_, lo_sd, share_, rq_ in (("A", 3.12, 0.187, 0.084), ("T", 3.08, 0.151, 0.083), ("C", 3.20, 0.288, 0.060), ("G", 3.15, 0.353, 0.030)):
+        chk(f"audit: label SD in the {b_} stratum", float(gt.loc[b_, "label_sd"]), lo_sd, 2)
+        chk(f"audit: share in the lowest label quartile, {b_}", float(gt.loc[b_, "share_in_lowest_quartile"]), share_, 3)
+        chk(f"audit: flank slope above the lowest quartile, {b_}", float(gt.loc[b_, "rho_above_global_q25"]), rq_, 3)
+
+    print("eukaryotes (eukaryote_rules.py)")
+    pr = pd.read_csv(OUT / "eukaryote_map_pairs.csv"); pr = pr[~pr.same_library.astype(bool)].copy()
+    pr["kind"] = [" - ".join(sorted([a_, b_])) for a_, b_ in zip(pr.species_a, pr.species_b)]
+    for kind_, n_, med_, lo_, hi_, cor_ in (("human - human", 26, 0.456, -0.047, 0.711, 0.59), ("human - mouse", 16, 0.443, 0.101, 0.695, 0.56),
+                                             ("human - zebrafish", 8, 0.221, -0.239, 0.381, 0.28), ("mouse - zebrafish", 2, 0.048, -0.123, 0.219, 0.07),
+                                             ("E. coli - human", 8, -0.140, -0.276, 0.078, -0.16), ("E. coli - mouse", 2, -0.013, -0.103, 0.078, -0.02)):
+        g_ = pr[pr.kind == kind_]
+        chk(f"eukaryotes: pairs, {kind_}", float(len(g_)), n_, 0); chk(f"eukaryotes: median map rho, {kind_}", float(g_.rho.median()), med_, 3)
+        chk(f"eukaryotes: lowest map rho, {kind_}", float(g_.rho.min()), lo_, 3); chk(f"eukaryotes: highest map rho, {kind_}", float(g_.rho.max()), hi_, 3)
+        chk(f"eukaryotes: corrected median, {kind_}", float(g_.rho_corrected.median()), cor_, 2)
+    g_ = pr[pr.kind == "mouse - mouse"]; chk("eukaryotes: mouse - mouse map rho", float(g_.rho.iloc[0]), 0.415, 3)
+    g_ = pr[pr.kind == "E. coli - zebrafish"]; chk("eukaryotes: E. coli - zebrafish map rho", float(g_.rho.iloc[0]), -0.209, 3)
+    ct = pd.read_csv(OUT / "eukaryote_contrast_g_minus_t.csv").set_index("group")
+    for grp_, v_, lo_, hi_ in (("E. coli", -0.333, -0.359, -0.308), ("human (pooled)", 0.277, 0.248, 0.306), ("mouse (pooled)", 0.398, 0.308, 0.482),
+                               ("zebrafish (pooled)", 0.430, 0.303, 0.548), ("worm (pooled)", 1.048, 0.562, 1.568), ("fly (pooled)", 0.029, -0.377, 0.544)):
+        chk(f"eukaryotes: G minus mean(A,C) at position 20, {grp_}", float(ct.loc[grp_, "g_minus_ac_pos20"]), v_, 3)
+        chk(f"eukaryotes: ... lower bound, {grp_}", float(ct.loc[grp_, "g_minus_ac_lo"]), lo_, 3); chk(f"eukaryotes: ... upper bound, {grp_}", float(ct.loc[grp_, "g_minus_ac_hi"]), hi_, 3)
+    big_ = ["chari2015Train293T", "doench2014-Hs", "doench2016_hg19", "hart2016-HelaLib1Avg", "hart2016-Hct1161lib1Avg", "wang2015_hg19", "xu2015TrainHl60",
+            "xu2015TrainKbm7", "doench2014-Mm", "xu2015TrainMEsc", "morenoMateos2015"]
+    chk("eukaryotes: datasets with at least 300 guides whose G-minus-A/C contrast has the eukaryotic sign", float((ct.loc[big_, "g_minus_ac_pos20"] > 0).sum()), 11, 0)
+    chk("eukaryotes: smallest of them (Wang 2015)", float(ct.loc["wang2015_hg19", "g_minus_ac_pos20"]), 0.082, 3)
+    ori = pd.read_csv(OUT / "eukaryote_orientation.csv").set_index("dataset")
+    chk("eukaryotes: datasets of the eleven where all six predictors agree with the orientation", float((ori.loc[big_, "tools_agreeing"] == 6).sum()), 11, 0)
+    chk("eukaryotes: weakest orientation anchor (Wang 2015)", float(ori.loc["wang2015_hg19", "median_tool_rho"]), -0.103, 3)
+    fs = pd.read_csv(OUT / "eukaryote_flank_step.csv").set_index("dataset")
+    for d_, g_, lo_, hi_ in (("E. coli", -0.70, -0.73, -0.66), ("chari2015Train293T", -0.27, -0.43, -0.10), ("doench2016_hg19", -0.45, -0.52, -0.38), ("wang2015_hg19", -0.32, -0.45, -0.22),
+                             ("xu2015TrainHl60", -0.16, -0.29, -0.02), ("xu2015TrainMEsc", -0.34, -0.58, -0.15)):
+        chk(f"eukaryotes: lowest-decile gap at 77 nt, {d_}", float(fs.loc[d_, "gap_sd"]), g_, 2); chk(f"eukaryotes: ... upper bound, {d_}", float(fs.loc[d_, "hi"]), hi_, 2)
+    chk("eukaryotes: eukaryotic datasets whose lowest-decile interval excludes zero", float(((fs.drop("E. coli").hi < 0) | (fs.drop("E. coli").lo > 0)).sum()), 5, 0)
+    chk("eukaryotes: largest rho inside the tail among them", float(fs.drop("E. coli").rho_below.max()), 0.200, 3); chk("eukaryotes: E. coli rho inside the tail at 77 nt", float(fs.loc["E. coli", "rho_below"]), 0.326, 3)
+    tr_ = pd.read_csv(OUT / "eukaryote_transfer.csv")
+    within_ = tr_[tr_.within.astype(bool)].set_index(["model", "scored_on"]).rho
+    tr_ = tr_[~tr_.within.astype(bool)].copy()
+    tr_["ret"] = [r_.rho / within_[(r_.model, r_.scored_on)] for r_ in tr_.itertuples()]
+    def _cat(r_):
+        a_, b_ = r_.species_trained, r_.species_scored
+        if a_ == "E. coli": return "E. coli -> eukaryote"
+        if a_ == "human" and b_ == "human": return "human -> human" if not r_.same_library else "same library"
+        if (a_, b_) in (("human", "mouse"), ("mouse", "human")): return f"{a_} -> {b_}"
+        if "zebrafish" in (a_, b_): return "zebrafish <-> mammal"
+        return "other"
+    tr_["cat"] = [_cat(r_) for r_ in tr_.itertuples()]
+    pm_, rm_ = "pipeline (SLICER base, champion settings)", "ridge on one-hot + dinucleotides"
+    for cat_, n_, mp_, mr_, rp_, rr_ in (("human -> human", 52, 0.263, 0.278, 0.70, 0.72), ("human -> mouse", 16, 0.342, 0.283, 0.73, 0.65), ("mouse -> human", 16, 0.261, 0.269, 0.70, 0.66),
+                                          ("zebrafish <-> mammal", 20, 0.115, 0.099, 0.34, 0.30), ("E. coli -> eukaryote", 11, -0.041, -0.056, -0.13, -0.14)):
+        a_, b_ = tr_[(tr_.cat == cat_) & (tr_.model == pm_)], tr_[(tr_.cat == cat_) & (tr_.model == rm_)]
+        chk(f"eukaryotes transfer: pairs, {cat_}", float(len(a_)), n_, 0)
+        chk(f"eukaryotes transfer: median rho, {cat_}, pipeline", float(a_.rho.median()), mp_, 3); chk(f"eukaryotes transfer: median rho, {cat_}, ridge", float(b_.rho.median()), mr_, 3)
+        chk(f"eukaryotes transfer: share retained, {cat_}, pipeline", float(a_.ret.median()), rp_, 2); chk(f"eukaryotes transfer: share retained, {cat_}, ridge", float(b_.ret.median()), rr_, 2)
+    e_ = tr_[(tr_.cat == "E. coli -> eukaryote") & (tr_.model == pm_)]
+    chk("eukaryotes transfer: E. coli-trained, lowest rho (zebrafish)", float(e_.rho.min()), -0.238, 3); chk("eukaryotes transfer: E. coli-trained, highest rho", float(e_.rho.max()), 0.108, 3)
 
     print("results/: every tracked file is in the generated index, and no two are the same file")
     import hashlib, subprocess

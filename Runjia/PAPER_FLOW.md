@@ -79,6 +79,7 @@ field. C becomes one short section, honestly scoped.
 - **Fig 3**: four panels — distance profile by side; resolution curve; purine-vs-GC null; interaction heatmap.
 
 ### Results 4 — "Guide design rules do not transfer between kingdoms" (Finding 7, second half)
+- **Extended to eleven eukaryotic datasets (human, mouse, zebrafish):** the inversion is bacteria against eukaryotes, not *E. coli* against one human cohort. Mouse and human maps agree (+0.56) as human libraries do (+0.59); a human-trained model keeps ~70% of its accuracy on mouse guides, an *E. coli*-trained one scores below zero. Zebrafish is the outlier; fly and worm are too small.
 - Position × base matrix, *E. coli*.
 - Same estimator on the human matrix; ρ = −0.052; 15 of 27 cells invert; position-20 G.
 - Tie back to the Introduction's gap: this is *why* mammalian predictors fail here.
@@ -111,13 +112,13 @@ field. C becomes one short section, honestly scoped.
 - The ~0.21 ρ that is real, repeatable and unexplained — and that closing it needs an experiment in
   which guide and locus are not confounded, which no pooled screen can provide.
 - Limitations: one organism plus two relatives; survival not cutting; the curated label is a fitted
-  procedure; no untouched external set remains for the cutting claims; adaptive component +0.0087.
+  procedure; no untouched external set remains at the same loci; adaptive component +0.0087, small and measured, and the tuned settings' benefit survives a sealed genome (+0.0172).
 
 ### Methods
 - Follow crisprHAL 2's order: Datasets → Data processing → Features → Model → Metrics → Splits.
 - **Splits section must carry**: gene-grouped and 100 kb-block CV; the train/test Hamming statistic
   (min 3, no identical guides) — both comparators report this and reviewers will look for it.
-- Reproducibility: `run_audit.sh`, 911 checks; `import_check.py` for the code itself.
+- Reproducibility: `run_audit.sh`, 1027 checks; `import_check.py` for the code itself.
 
 ---
 
