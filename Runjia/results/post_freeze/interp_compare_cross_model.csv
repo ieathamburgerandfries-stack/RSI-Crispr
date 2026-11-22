@@ -1,0 +1,7 @@
+a,b,spearman
+crisprHAL 2,SLICER (shipped),0.9740975152367558
+crisprHAL 2,SLICER-104,0.9683075480543836
+SLICER (shipped),SLICER-104,0.9850445382090953
+crisprHAL 2,model-free map (Finding 7),0.78314580403188
+SLICER (shipped),model-free map (Finding 7),0.8098921706516644
+SLICER-104,model-free map (Finding 7),0.8530942334739803

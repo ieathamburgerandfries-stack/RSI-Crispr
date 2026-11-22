@@ -655,8 +655,8 @@ def main():
 
     print("22.4 the package imports, and importing it writes nothing")
     ic = json.loads((OUT / "import_check.json").read_text())
-    chk("22.4 modules swept", float(ic["n_modules"]), 144, 0)
-    chk("22.4 modules excluded by name", float(ic["n_skipped"]), 1, 0)
+    chk("22.4 modules swept", float(ic["n_modules"]), 146, 0)
+    chk("22.4 modules excluded by name", float(ic["n_skipped"]), 2, 0)
     chk("22.4 modules that fail to import", float(len(ic["fails"])), 0, 0)
     chk("22.4 files under results/", float(ic["files_in_results"]), 675, 0)
     chk("22.4 files changed by importing the package", float(ic["files_changed_by_import"]), 0, 0)
@@ -871,6 +871,76 @@ def main():
     sc = pd.read_csv(OUT / "compact_model_shap_columns.csv").set_index("column").mean_abs_shap
     chk("compact model: mean |SHAP| of flank GC 250 nt upstream", float(sc["eng.flank.comp.up250.gc"]), 0.203, 3); chk("compact model: ... downstream", float(sc["eng.flank.comp.dn250.gc"]), 0.182, 3)
     chk("compact model: the largest column is G at position 20", float(sc.index[0] == "p20.G"), 1, 0)
+
+    print("interpretability against crisprHAL 2 (vs_crisprhal_interpret.py)")
+    fa = pd.read_csv(OUT / "interp_compare_faithfulness.csv"); fa_real = fa[~fa.shuffled_control].set_index(["model", "n"]).pearson
+    for m_, ks_, nb_ in (("crisprHAL 2", None, 25), ("SLICER (shipped)", None, 12), ("SLICER-104", None, 28)):
+        chk(f"interp: blocks the sensitivity-n test draws from, {m_}", float(fa[fa.model == m_].n_blocks.iloc[0]), nb_, 0)
+    chk("interp: sensitivity-n, crisprHAL 2, one block removed", float(fa_real[("crisprHAL 2", 1)]), 0.879, 3); chk("interp: sensitivity-n, crisprHAL 2, lowest over k", float(fa_real["crisprHAL 2"].min()), 0.860, 3)
+    chk("interp: sensitivity-n, crisprHAL 2, highest over k", float(fa_real["crisprHAL 2"].max()), 0.881, 3)
+    chk("interp: sensitivity-n, SLICER shipped, one block removed", float(fa_real[("SLICER (shipped)", 1)]), 0.961, 3); chk("interp: sensitivity-n, SLICER shipped, highest over k", float(fa_real["SLICER (shipped)"].max()), 0.971, 3)
+    chk("interp: sensitivity-n, SLICER-104, lowest over k", float(fa_real["SLICER-104"].min()), 0.953, 3); chk("interp: sensitivity-n, SLICER-104, highest over k", float(fa_real["SLICER-104"].max()), 0.962, 3)
+    chk("interp: sensitivity-n of the shuffled controls, largest absolute value below 0.1", float(fa[fa.shuffled_control].pearson.abs().max() < 0.1), 1, 0)
+    fd_ = pd.read_csv(OUT / "interp_compare_faithfulness_diff.csv").set_index(["model", "n"])
+    chk("interp: SLICER shipped minus crisprHAL 2, one block, difference", float(fd_.loc[("SLICER (shipped)", 1), "diff"]), 0.081, 3); chk("interp: ... lower bound", float(fd_.loc[("SLICER (shipped)", 1), "lo"]), 0.062, 3)
+    chk("interp: ... upper bound", float(fd_.loc[("SLICER (shipped)", 1), "hi"]), 0.100, 3); chk("interp: SLICER shipped minus crisprHAL 2, smallest over k", float(fd_.xs("SLICER (shipped)", level="model")["diff"].min()), 0.081, 3)
+    chk("interp: SLICER shipped minus crisprHAL 2, largest over k", float(fd_.xs("SLICER (shipped)", level="model")["diff"].max()), 0.111, 3)
+    chk("interp: SLICER-104 minus crisprHAL 2, smallest over k", float(fd_.xs("SLICER-104", level="model")["diff"].min()), 0.073, 3); chk("interp: SLICER-104 minus crisprHAL 2, largest over k", float(fd_.xs("SLICER-104", level="model")["diff"].max()), 0.099, 3)
+    dr_ = pd.read_csv(OUT / "interp_hal_cache" / "hal_eg_draws_control.csv").set_index(["n_blocks_removed", "draws"]).pearson
+    chk("interp: expected gradients, 50 draws, one block (control guides)", float(dr_[(1, 50)]), 0.874, 3); chk("interp: expected gradients, 800 draws, one block", float(dr_[(1, 800)]), 0.896, 3)
+    chk("interp: expected gradients, 800 draws, three blocks", float(dr_[(3, 800)]), 0.906, 3); chk("interp: expected gradients, 800 draws, six blocks", float(dr_[(6, 800)]), 0.901, 3)
+    st = pd.read_csv(OUT / "interp_compare_stability.csv").set_index(["model", "unit", "comparison"])
+    S_ = lambda m_, u_, c_: float(st.loc[(m_, u_, c_), "mean"])
+    for m_, u_, a_, b_ in (("crisprHAL 2", "attribution: guide channels (80)", 0.986, 0.957), ("crisprHAL 2", "attribution: blocks (25)", 0.997, 0.992), ("crisprHAL 2", "substitution map (80)", 0.989, 0.981),
+                           ("SLICER (shipped)", "attribution: blocks (12)", 0.995, 0.990), ("SLICER (shipped)", "substitution map (80)", 0.998, 0.972),
+                           ("SLICER (shipped)", "attribution: columns (union of the two fits' selected columns)", 0.578, 0.278),
+                           ("SLICER-104", "attribution: guide channels (80)", 0.989, 0.843), ("SLICER-104", "attribution: blocks (28)", 0.994, 0.941), ("SLICER-104", "substitution map (80)", 0.999, 0.953)):
+        chk(f"interp: refit agreement over seeds, {m_}, {u_[:40]}", S_(m_, u_, "refit seeds"), a_, 3); chk(f"interp: refit agreement over halves, {m_}, {u_[:40]}", S_(m_, u_, "random halves"), b_, 3)
+    chk("interp: noise floor of expected gradients (second draw, 80 channels)", S_("crisprHAL 2", "attribution: guide channels (80)", "same model, second Monte Carlo draw (noise floor)"), 0.999, 3)
+    chk("interp: pairs behind the seed comparison, crisprHAL 2", float(st.loc[("crisprHAL 2", "substitution map (80)", "refit seeds"), "pairs"]), 3, 0); chk("interp: pairs behind the halves comparison, crisprHAL 2", float(st.loc[("crisprHAL 2", "substitution map (80)", "random halves"), "pairs"]), 2, 0)
+    chk("interp: halves, crisprHAL 2 channels lowest pair above SLICER-104 highest pair", float(st.loc[("crisprHAL 2", "attribution: guide channels (80)", "random halves"), "min"] > st.loc[("SLICER-104", "attribution: guide channels (80)", "random halves"), "max"]), 1, 0)
+    chk("interp: seeds, SLICER shipped substitution map lowest pair above crisprHAL 2 highest pair", float(st.loc[("SLICER (shipped)", "substitution map (80)", "refit seeds"), "min"] > st.loc[("crisprHAL 2", "substitution map (80)", "refit seeds"), "max"]), 1, 0)
+    va = pd.read_csv(OUT / "interp_compare_validity.csv"); va = va[va.fit == "shipped"].set_index(["model", "readout"])
+    for m_, r_, rho_, pe_ in (("crisprHAL 2", "substitution map (80)", 0.783, 0.931), ("crisprHAL 2", "attribution-implied map (80)", 0.862, 0.969), ("SLICER (shipped)", "substitution map (80)", 0.810, 0.941),
+                              ("SLICER-104", "substitution map (80)", 0.853, 0.958), ("SLICER-104", "attribution-implied map (80)", 0.857, 0.962)):
+        chk(f"interp: map against the model-free map, {m_}, {r_[:12]}, Spearman", float(va.loc[(m_, r_), "spearman"]), rho_, 3); chk(f"interp: ... Pearson, {m_}, {r_[:12]}", float(va.loc[(m_, r_), "pearson"]), pe_, 3)
+    vd = pd.read_csv(OUT / "interp_compare_validity_diff.csv").set_index("model")
+    chk("interp: SLICER shipped minus crisprHAL 2 on the substitution map", float(vd.loc["SLICER (shipped)", "spearman_minus_crisprhal"]), 0.027, 3); chk("interp: ... lower bound", float(vd.loc["SLICER (shipped)", "lo"]), -0.010, 3); chk("interp: ... upper bound", float(vd.loc["SLICER (shipped)", "hi"]), 0.071, 3)
+    chk("interp: SLICER-104 minus crisprHAL 2 on the substitution map", float(vd.loc["SLICER-104", "spearman_minus_crisprhal"]), 0.070, 3); chk("interp: ... lower bound", float(vd.loc["SLICER-104", "lo"]), 0.033, 3); chk("interp: ... upper bound", float(vd.loc["SLICER-104", "hi"]), 0.122, 3)
+    cm = pd.read_csv(OUT / "interp_compare_cross_model.csv").set_index(["a", "b"]).spearman
+    chk("interp: substitution maps, crisprHAL 2 against SLICER shipped", float(cm[("crisprHAL 2", "SLICER (shipped)")]), 0.974, 3); chk("interp: substitution maps, crisprHAL 2 against SLICER-104", float(cm[("crisprHAL 2", "SLICER-104")]), 0.968, 3)
+    chk("interp: substitution maps, SLICER shipped against SLICER-104", float(cm[("SLICER (shipped)", "SLICER-104")]), 0.985, 3)
+    fe = pd.read_csv(OUT / "interp_compare_flank_edits.csv").set_index(["model", "edit"]).mean_change
+    for e_, hv_, sv_ in (("GC +5 points, both flanks", 0.312, 0.502), ("GC +10 points, both flanks", 0.478, 0.614), ("GC -5 points, both flanks", -0.567, -0.884), ("GC -10 points, both flanks", -1.662, -2.518),
+                         ("order shuffled, composition kept", 0.031, 0.263)):
+        chk(f"interp: flank edit, crisprHAL 2, {e_}", float(fe[("crisprHAL 2", e_)]), hv_, 3); chk(f"interp: flank edit, SLICER shipped, {e_}", float(fe[("SLICER (shipped)", e_)]), sv_, 3)
+    for e_, hv_, sv_ in (("5% of bases swapped, GC kept", -0.002, 0.015), ("20% of bases swapped, GC kept", -0.009, 0.055)):
+        chk(f"interp: flank edit, crisprHAL 2, {e_}", float(fe[("crisprHAL 2", e_)]), hv_, 3); chk(f"interp: flank edit, SLICER shipped, {e_}", float(fe[("SLICER (shipped)", e_)]), sv_, 3)
+    chk("interp: crisprHAL 2 fall (GC -5) over rise (GC +5)", float(fe[("crisprHAL 2", "GC -5 points, both flanks")] / -fe[("crisprHAL 2", "GC +5 points, both flanks")]), 1.8, 1)
+    chk("interp: SLICER fall (GC -5) over rise (GC +5)", float(fe[("SLICER (shipped)", "GC -5 points, both flanks")] / -fe[("SLICER (shipped)", "GC +5 points, both flanks")]), 1.8, 1)
+    chk("interp: crisprHAL 2 response over SLICER's, GC -5", float(fe[("crisprHAL 2", "GC -5 points, both flanks")] / fe[("SLICER (shipped)", "GC -5 points, both flanks")]), 0.64, 2)
+    chk("interp: crisprHAL 2 response over SLICER's, GC +5", float(fe[("crisprHAL 2", "GC +5 points, both flanks")] / fe[("SLICER (shipped)", "GC +5 points, both flanks")]), 0.62, 2)
+    rd = pd.read_csv(OUT / "interp_compare_readable.csv")
+    for pop_, tag_, n_ in (("five curated folds (out-of-fold)", "folds", 30203), ("WT test partition (shipped models)", "WT test", 6057)):
+        chk(f"interp: guides behind the surrogate test, {tag_}", float(rd[rd.population == pop_].n.iloc[0]), n_, 0)
+    R_ = lambda pop_, sur_, mod_, col_: float(rd[(rd.population == pop_) & (rd.surrogate == sur_) & (rd.model == mod_)][col_].iloc[0])
+    F_, W_ = "five curated folds (out-of-fold)", "WT test partition (shipped models)"
+    A_, B_ = "additive (ridge)", "boosted trees (champion settings)"
+    for pop_, nm_, vals_ in ((F_, "folds", ((A_, 0.669, 0.689, 0.020, 0.016, 0.024, 0.710, 0.688, -0.023), (B_, 0.831, 0.871, 0.041, 0.038, 0.044, 0.890, 0.876, -0.015))),
+                             (W_, "WT test", ((A_, 0.669, 0.692, 0.023, 0.014, 0.033, 0.696, 0.679, -0.017), (B_, 0.808, 0.845, 0.037, 0.030, 0.045, 0.848, 0.835, -0.013)))):
+        for sur_, fh_, fs_, dd_, dlo_, dhi_, rh_, rs_, rdd_ in vals_:
+            k_ = f"{nm_}, {sur_[:8]}"
+            chk(f"interp: surrogate fidelity, crisprHAL 2, {k_}", R_(pop_, sur_, "crisprHAL 2", "fidelity"), fh_, 3); chk(f"interp: surrogate fidelity, SLICER, {k_}", R_(pop_, sur_, "SLICER", "fidelity"), fs_, 3)
+            chk(f"interp: fidelity difference, {k_}", R_(pop_, sur_, "SLICER", "fidelity_minus_hal"), dd_, 3); chk(f"interp: ... lower bound, {k_}", R_(pop_, sur_, "SLICER", "fidelity_lo"), dlo_, 3)
+            chk(f"interp: ... upper bound, {k_}", R_(pop_, sur_, "SLICER", "fidelity_hi"), dhi_, 3)
+            chk(f"interp: share of accuracy kept, crisprHAL 2, {k_}", R_(pop_, sur_, "crisprHAL 2", "retained"), rh_, 3); chk(f"interp: share of accuracy kept, SLICER, {k_}", R_(pop_, sur_, "SLICER", "retained"), rs_, 3)
+            chk(f"interp: share kept, difference, {k_}", R_(pop_, sur_, "SLICER", "retained_minus_hal"), rdd_, 3)
+    chk("interp: label rho of the two models on the surrogate population, crisprHAL 2", R_(F_, B_, "crisprHAL 2", "model_rho"), 0.704, 3); chk("interp: label rho of the two models on the surrogate population, SLICER", R_(F_, B_, "SLICER", "model_rho"), 0.733, 3)
+    chk("interp: label rho recovered by the boosted surrogate of the model, crisprHAL 2", R_(F_, B_, "crisprHAL 2", "surrogate_of_model_rho"), 0.627, 3); chk("interp: ... SLICER", R_(F_, B_, "SLICER", "surrogate_of_model_rho"), 0.642, 3)
+    ft = pd.read_csv(OUT / "interp_compare_fits.csv"); ft = ft[ft.fit != "shipped"].set_index(["model", "fit"]).test_rho
+    chk("interp: crisprHAL 2 refits on all rows, test rho, lowest", float(min(ft[("crisprHAL 2", "full1")], ft[("crisprHAL 2", "full2")])), 0.691, 3); chk("interp: crisprHAL 2 refits on all rows, test rho, highest", float(max(ft[("crisprHAL 2", "full1")], ft[("crisprHAL 2", "full2")])), 0.692, 3); chk("interp: crisprHAL 2 refits on half the rows, test rho, lowest", float(ft["crisprHAL 2"][["halfA1", "halfB1", "halfA2", "halfB2"]].min()), 0.662, 3)
+    chk("interp: crisprHAL 2 refits on half the rows, test rho, highest", float(ft["crisprHAL 2"][["halfA1", "halfB1", "halfA2", "halfB2"]].max()), 0.671, 3)
+    chk("interp: SLICER refits on half the rows, test rho, lowest", float(ft["SLICER (shipped)"][["halfA1", "halfB1", "halfA2", "halfB2"]].min()), 0.698, 3); chk("interp: SLICER refits on half the rows, test rho, highest", float(ft["SLICER (shipped)"][["halfA1", "halfB1", "halfA2", "halfB2"]].max()), 0.705, 3)
 
     print("results/: every tracked file is in the generated index, and no two are the same file")
     import hashlib, subprocess

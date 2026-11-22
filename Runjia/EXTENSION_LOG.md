@@ -377,7 +377,7 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
-*Current state of the audit (20 Nov):* it has grown with each section and now stands at **1052 checks, 0 mismatches**,
+*Current state of the audit (20 Nov):* it has grown with each section and now stands at **1178 checks, 0 mismatches**,
 covering sections 7-22. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
 modules need and exits non-zero if any quoted number no longer matches its file. Since 22.4 it also checks three things
 about itself: that every module in the package imports and that importing one writes nothing; that four claims which
@@ -1719,3 +1719,20 @@ columns, with predictions written into the docstring first.
 
 **What it settles.** The redundancy account of Finding 5 holds: with no restated columns the per-column ranking survives a change of model family. The cost is about an eighth of rho, so the readable model is a counterpart and not a replacement.
 
+## 27. Is SLICER more interpretable than crisprHAL 2? (22 Nov; the user: interpretability is a valid claim, the issue is whether SLICER is *more* interpretable)
+
+**Why.** "Interpretable" is not one quantity, so it was split into four questions that either model can be put through unchanged: faithful (sensitivity-n at block level), stable (agreement between independently refitted models), true (agreement with the model-free position x base map of Finding 7) and compressible (how much of the model's output a 104-column readable surrogate reproduces). Both models as released, on crisprHAL 2's own WT-SpCas9 split: its shipped weights, and SLICER (tuned, d099x) fitted on the same training rows, plus SLICER-104 where the question is about positions. Predictions and the decision rule are in the docstring of `sgrna/interpret/vs_crisprhal_interpret.py`, written before any crisprHAL 2 number existed; the decision rule for stability was tightened from "bootstrap over refit pairs" to "the ranges of the five pairs do not overlap" before the run, since five dependent pairs are too few for a bootstrap. One reading needs no attribution method (the substitution map: the model's mean response to setting a guide base to each base) and is the unit common to all three models; the shipped SLICER's edited 20-mer is re-featurised with `base_fast.matrix_fast`, and an assertion checks that re-featurising an unedited 20-mer reproduces the stored matrix exactly.
+
+**Cost.** crisprHAL 2: six refits by their own code and 48 epochs (about 17 minutes on all 26,994 rows, 9 to 11 on halves, on this machine's CPU) plus four to seven minutes of expected-gradient attribution each; SLICER: about 35 seconds per fit.
+
+| | prediction | outcome |
+|---|---|---|
+| P1 | SLICER's block-level sensitivity-n at least 0.9; crisprHAL 2's lower by at least 0.03 (probability about 0.5) | **held**: 0.961-0.971 against 0.860-0.881; 0.896-0.906 for the network at 800 estimator draws, so about a quarter of the gap is Monte Carlo noise |
+| P2 | crisprHAL 2 at 0.8 or more per channel across refits (about 0.7); lower on SLICER's own selected columns (about 0.8) | **held**: 0.986 over seeds and 0.957 over halves; SLICER's columns 0.578 and 0.278. So there is no stability claim at the position x base level, and across data halves the network is steadier |
+| P3 | both read-outs at 0.8 or more against the model-free map, within 0.1 of each other (about 0.7) | **held except one cell**: the network's substitution map 0.783 (its attribution-implied map 0.862); SLICER shipped 0.810, SLICER-104 0.853 |
+| P4 | compressibility within 0.03; crisprHAL 2 the better described (about 0.3) | **did not hold as stated**: fidelity favours SLICER by 0.020 (additive) and 0.041 (boosted); the share of accuracy kept favours crisprHAL 2 by 0.015-0.023. The two disagree because SLICER is the more accurate model |
+| P5 | crisprHAL 2 moves the same way under flank-GC edits, by less than SLICER's -0.88 at GC -5 (about 0.8, 0.7) | **held**: -0.57, and +0.31 against +0.50; the fall is 1.8 times the rise in both |
+
+**What it settles.** SLICER is interpretable and is not more interpretable than crisprHAL 2 by these measures; its attributions are the more faithful and nothing else separates them. Two by-products: the two models' substitution maps agree at rho 0.97, and an independently built network with a 189 and 169 nt window reproduces the asymmetric flank-GC response, which supports Finding 7 and says the effect is not an artefact of SLICER's features.
+
+**What I had to be careful about.** The attribution estimators differ (exact TreeSHAP; expected gradients sampled 50 times), so a control raised the draws to 200 and 800 on the same 100 guides; the block sets differ (12, 28 and 25 blocks), so SLICER-104 (28) is reported beside the shipped model (12). The network's refits on halves use its 48 epochs on half the steps (rho 0.662-0.671 against 0.691-0.692 on all rows). The shipped SLICER's per-column stability is measured over the union of the columns the two fits selected, with zeros for the columns one did not use. Nothing was tuned on these guides in this test, but the tuned settings were chosen on curated folds that contain many of them, which does not affect a comparison of readings. Intermediate readings are tracked in `results/post_freeze/interp_hal_cache/` (the refitted weights are not kept) so the comparison tables rebuild without the 90 minutes of refitting: `./run_ext.sh sgrna.interpret.vs_crisprhal_interpret --step assemble`.

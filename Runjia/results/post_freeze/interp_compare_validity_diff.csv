@@ -1,0 +1,3 @@
+model,readout,fit,spearman_minus_crisprhal,lo,hi
+SLICER (shipped),substitution map (80),shipped,0.026746366619784356,-0.009921781380852696,0.07118763809222464
+SLICER-104,substitution map (80),shipped,0.06994842944210022,0.032622091951021004,0.12194754195172686

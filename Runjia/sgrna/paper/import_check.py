@@ -38,6 +38,7 @@ OUTJSON = OUT / "import_check.json"
 # Modules that cannot be imported, and why. It is a standalone script rather than library code.
 EXCLUDE = {
     "sgrna.compare.vs_crisprhal_wt_hal": "reads sys.argv[1] at the top level and needs the TensorFlow venv",
+    "sgrna.interpret.hal_readout": "reads sys.argv at the top level and needs the TensorFlow venv",
 }
 
 _SWEEP = r"""

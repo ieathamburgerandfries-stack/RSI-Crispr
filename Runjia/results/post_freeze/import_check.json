@@ -1,11 +1,12 @@
 {
- "n_modules": 144,
- "n_skipped": 1,
+ "n_modules": 146,
+ "n_skipped": 2,
  "fails": [],
  "files_in_results": 675,
  "files_changed_by_import": 0,
  "changed": [],
  "excluded": {
-  "sgrna.compare.vs_crisprhal_wt_hal": "reads sys.argv[1] at the top level and needs the TensorFlow venv"
+  "sgrna.compare.vs_crisprhal_wt_hal": "reads sys.argv[1] at the top level and needs the TensorFlow venv",
+  "sgrna.interpret.hal_readout": "reads sys.argv at the top level and needs the TensorFlow venv"
  }
 }

@@ -19,7 +19,7 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**311 files** in 21 groups.
+**355 files** in 21 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
@@ -95,7 +95,7 @@ Within a group the order is alphabetical.
 | `representation_headroom.csv` | 1937.3 | audited | `representation` | arm, column, group, rho_with_residual |
 | `representation_residual.csv` | 0.3 | receipt | `representation` | arm, n_columns, spearman, spearman_sd, r2, complete |
 
-### Finding 5 — On a redundant matrix, per-column importance is unstable across fits, but SHAP at block level and edit tests are faithful
+### Finding 5 — On a redundant matrix, per-column importance is unstable across fits, but SHAP at block level and edit tests are faithful; SLICER is interpretable and not more interpretable than crisprHAL 2
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
@@ -121,12 +121,28 @@ Within a group the order is alphabetical.
 | `post_freeze/compact_model_shap_columns.csv` | 2.3 | audited | `compact_model` | column, mean_abs_shap |
 | `post_freeze/compact_model_shap_vs_model_free.csv` | 3.9 | audited | `compact_model` | position, base, n, shap_effect_sd, effect_sd |
 | `post_freeze/compact_model_stability.csv` | 0.3 | audited | `compact_model` | representation, method, level, agreement, sd_over_splits |
+| `post_freeze/interp_compare_cross_model.csv` | 0.3 | audited | `vs_crisprhal_interpret` | a, b, spearman |
+| `post_freeze/interp_compare_faithfulness.csv` | 2.7 | audited | `vs_crisprhal_interpret` | n, attribution, pearson, se, subsets, rows, model … |
+| `post_freeze/interp_compare_faithfulness_diff.csv` | 1.1 | audited | `vs_crisprhal_interpret` | n, model, pearson, crisprhal, diff, lo, hi |
+| `post_freeze/interp_compare_fits.csv` | 1.0 | audited | `vs_crisprhal_interpret` | model, fit, n_train, test_rho |
+| `post_freeze/interp_compare_flank_edits.csv` | 2.1 | audited | `vs_crisprhal_interpret` | model, edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides … |
+| `post_freeze/interp_compare_readable.csv` | 2.2 | audited | `vs_crisprhal_interpret` | population, surrogate, model, n, model_rho, fidelity, surrogate_of_model_rho … |
+| `post_freeze/interp_compare_stability.csv` | 3.9 | audited | `vs_crisprhal_interpret` | model, unit, comparison, pairs, mean, min, max … |
+| `post_freeze/interp_compare_validity.csv` | 2.9 | audited | `vs_crisprhal_interpret` | model, fit, readout, spearman, pearson, cells |
+| `post_freeze/interp_compare_validity_diff.csv` | 0.3 | audited | `vs_crisprhal_interpret` | model, readout, fit, spearman_minus_crisprhal, lo, hi |
+| `post_freeze/interp_hal_cache/guides_1500.csv` | 56.5 | receipt | `hal_readout`, `vs_crisprhal_interpret` | protospacer, y |
+| `post_freeze/interp_hal_cache/hal_eg_draws_control.csv` | 0.4 | audited | `hal_readout` | n_blocks_removed, draws, pearson, se |
+| `post_freeze/interp_hal_cache/hal_flank_edits.csv` | 1.0 | receipt | `hal_readout`, `vs_crisprhal_interpret` | edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides, label_sd |
+| `post_freeze/interp_hal_cache/hal_sensitivity_n.csv` | 0.9 | receipt | `hal_readout`, `vs_crisprhal_interpret` | unit, n, attribution, pearson, se, subsets, rows |
+| `post_freeze/interp_hal_cache/slicer_compact_sensitivity_n.csv` | 0.9 | receipt | `vs_crisprhal_interpret` | unit, n, n_blocks, attribution, pearson, se, subsets … |
+| `post_freeze/interp_hal_cache/slicer_flank_edits.csv` | 1.1 | receipt | `vs_crisprhal_interpret` | model, edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides … |
+| `post_freeze/interp_hal_cache/slicer_full_sensitivity_n.csv` | 1.0 | receipt | `vs_crisprhal_interpret` | unit, n, n_blocks, attribution, pearson, se, subsets … |
 | `post_freeze/interpret_data_scaling.csv` | 0.7 | audited | `tuned_settings` | fraction, n_train, seed, model, rho |
 | `post_freeze/interpret_depth.csv` | 0.4 | audited | `tuned_settings` | max_depth, learning_rate, best_k, dev_rho, confirm_rho |
 | `post_freeze/interpret_gain_groups.csv` | 2.9 | audited | `tuned_settings` | model, block, n_selected, gain_share |
 | `post_freeze/interpret_position_profile.csv` | 3.4 | audited | `tuned_settings` | model, region, position, gain_share, n_columns |
 | `post_freeze/interpret_within_between.csv` | 0.8 | audited | `tuned_settings` | model, part, rho, lo, hi, d_vs_champion, d_lo … |
-| `post_freeze/mechanism_position_base.csv` | 6.1 | audited | `compact_model`, `mechanism` | position, base, n, effect_sd, lo, hi, clear_of_zero |
+| `post_freeze/mechanism_position_base.csv` | 6.1 | audited | `compact_model`, `mechanism`, `vs_crisprhal_interpret` | position, base, n, effect_sd, lo, hi, clear_of_zero |
 
 ### Finding 6 — The label's ceiling is 0.946, measured from crisprHAL's own replicates
 
@@ -405,7 +421,35 @@ Within a group the order is alphabetical.
 | `portability_364.csv` | 0.1 | cited | — | arm, n_columns, spearman, spearman_sd |
 | `post_freeze/cut_within_gene_summary.csv` | 0.7 | audited | — | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
 | `post_freeze/human_shape_ablation_locus_n900.csv` | 0.9 | audited | — | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
-| `post_freeze/import_check.json` | 0.2 | audited | — |  |
+| `post_freeze/import_check.json` | 0.3 | audited | — |  |
+| `post_freeze/interp_hal_cache/hal_full1.npz` | 348.8 | receipt | — |  |
+| `post_freeze/interp_hal_cache/hal_full1_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_full2.npz` | 349.0 | receipt | — |  |
+| `post_freeze/interp_hal_cache/hal_full2_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_halfA1.npz` | 348.5 | receipt | — |  |
+| `post_freeze/interp_hal_cache/hal_halfA1_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_halfA2.npz` | 348.9 | receipt | — |  |
+| `post_freeze/interp_hal_cache/hal_halfA2_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_halfB1.npz` | 349.0 | receipt | — |  |
+| `post_freeze/interp_hal_cache/hal_halfB1_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_halfB2.npz` | 349.0 | receipt | — |  |
+| `post_freeze/interp_hal_cache/hal_halfB2_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_shipped.npz` | 354.8 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_compact_full1.npz` | 245.9 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_compact_full2.npz` | 247.0 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_compact_halfA1.npz` | 245.9 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_compact_halfA2.npz` | 243.7 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_compact_halfB1.npz` | 245.6 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_compact_halfB2.npz` | 247.0 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_compact_shipped.npz` | 244.8 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_full_full1.npz` | 277.7 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_full_full2.npz` | 277.6 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_full_halfA1.npz` | 277.6 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_full_halfA2.npz` | 277.7 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_full_halfB1.npz` | 277.4 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_full_halfB2.npz` | 277.6 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_full_shipped.npz` | 277.6 | receipt | — |  |
+| `post_freeze/interp_hal_cache/slicer_oof_folds.npz` | 143.2 | receipt | — |  |
 | `post_freeze/mix_cat_stage1.csv` | 31.1 | receipt | — | draw, seed, fold, k, rho |
 | `post_freeze/mix_et_stage1.csv` | 0.5 | receipt | — | draw, seed, fold, k, rho |
 | `post_freeze/mix_lgb_stage1.csv` | 48.5 | receipt | — | draw, seed, fold, k, rho |
