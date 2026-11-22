@@ -29,8 +29,8 @@ would produce a large, entirely spurious family A gain. Both arms are therefore
 run under whole-gene holdout, with the random-KFold version reported beside it
 to show the size of the trap.
 
-    python -m sgrna.screens.cui_screen --build
-    python -m sgrna.screens.cui_screen --run
+    python -m sgrna.compare.cui_screen --build
+    python -m sgrna.compare.cui_screen --run
 """
 
 from __future__ import annotations

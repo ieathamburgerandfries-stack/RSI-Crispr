@@ -11,7 +11,7 @@ Each SLICER arm trains on the training rows only, with column selection fitted i
 Arms: the frozen champion (reproduces the earlier figures), the tuned XGBoost (d099x), the XGBoost average of five, and the
 mixed ensemble chosen on held-out genes in `mix_ecoli.py` (its members are read from `--members`).
 
-    python -m sgrna.post_freeze.vs_crisprhal.vs_crisprhal --condition espcas9 --members d099x,d077x,...
+    python -m sgrna.compare.vs_crisprhal --condition espcas9 --members d099x,d077x,...
 """
 from __future__ import annotations
 
@@ -26,9 +26,9 @@ from scipy.stats import spearmanr
 from sgrna import config
 from sgrna.harness.run_ablation import _impute, make_selector
 
-from ..tuning import mix_ecoli as M
-from ..tuning import tune_ecoli as T
-from ..common import MAIN_RESULTS, OUT, stored
+from ..post_freeze.tuning import mix_ecoli as M
+from ..post_freeze.tuning import tune_ecoli as T
+from ..post_freeze.common import MAIN_RESULTS, OUT, stored
 
 SRC = MAIN_RESULTS                           # the main project's results folder (stored crisprHAL predictions)
 

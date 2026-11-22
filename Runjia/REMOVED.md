@@ -83,6 +83,14 @@ these was **checked against the report text before being copied in**, and is now
 | `results/crisprhal_rerun.csv` | crisprHAL 2's per-fold figures at seed 41 | reproduces exactly |
 | `results/representation_headroom.csv` (2 MB) | Finding 4's headroom table: the model is out of material, with family A flagged at 0.147 *before* family A existed | reproduces all three rows. The table had cited `headroom.csv`, which is a *different* file — a later 6,769-column run whose strongest held-back column is 0.155, not 0.147 — so the citation was corrected and `headroom.csv` was **not** copied, since it would have looked like evidence for a table it does not back. Row 1 was also re-derived from code (`diagnose.headroom(families=(), extra=("a_flank",))`): 0.028 / 0.147, identical |
 
+**A second batch, brought in without being checked one by one (22 Nov, at your direction).** 30 small summary files that existed only in
+the main project's untracked `results/` folder, 773 KB in all, written by 17 frozen-phase modules: `attribution*`, `faithfulness_*`,
+`importance_agreement`/`_blocks`, `interpretability`, `model_comparison`, `representation*`, `redundancy`, `headtohead`, `metric_panel`,
+`permutation_floors`, `strand_*`, `tuning_trace`, `hybrid`, `seqnet`, `net_cost`, `memory_comparison_runs`, `asymmetry_expression`,
+`crisprhal_tuning`, `ceiling.json` and `headroom.csv`. They are now in `results/`, so a clone of the repository holds the evidence the report points at. **One caveat
+that matters:** `headroom.csv` is a *later* 6,769-column run, **not** the source of Finding 4's headroom table (that is
+`representation_headroom.csv`, brought in earlier and audited). It is in the repository because it was asked for, and it is not evidence for that table.
+
 Two citations pointed at nothing and were corrected: `human_ladder.csv` in `results/RESULTS.md` was an aggregate that was never
 saved — the figures it summarised (human base 0.382, with family A 0.434, +0.052) are the means of
 `folds_human_base_cv.csv` and `folds_human_base_a_cv.csv`, which are now cited and audited; and `final_eval.csv` in the report

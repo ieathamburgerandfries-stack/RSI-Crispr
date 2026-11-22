@@ -1,7 +1,7 @@
 # Code overview: what the important code does, and why it matters
 
 *For a reader who has not seen the project, such as a judge or reviewer. This documents the code in `Runjia/`; it is not paper text. It
-covers the twelve blocks that the report's claims depend on (about 40 of the 138 modules). Every other module is a control, a null or an
+covers the twelve blocks that the report's claims depend on (about a third of the modules). Every other module is a control, a null or an
 appendix check, and is indexed in [`CODE_MAP.md`](CODE_MAP.md). Every number below appears in the project's own documents (a check in `./run_audit.sh` enforces that), and the numbers from after the freeze are
 also re-computed from their result files by the same audit.*
 
@@ -60,7 +60,7 @@ homopolymer, mean and spread of four descriptor series) over the nearest 50, 250
 **Result: +0.164 ρ on the curated cohort**, +0.156 measured on genes no step of the pipeline had seen, and +0.080 on the published matrix. It is a smooth
 compositional gradient, not a motif, and it is the largest effect in the project.
 
-### 3. The harness: what every number is measured through *(Findings 2 and 7; Appendix B)*
+### 3. The harness: what every number is measured through *(throughout; Appendix B)*
 `sgrna/harness/run_ablation.py`, `sgrna/cohorts/curated_ablation.py`
 
 One rule governs it: **every fit happens inside the training fold**, including the imputation, the ranking of columns and the choice of the top 300 by
@@ -83,7 +83,7 @@ Each of these is an attack on the result, not a confirmation of it.
   duplicate-guide leak in the human matrix at 39.1%, which is the positive control.
 
 ### 5. Cutting versus binding: a test that could have falsified the mechanism *(Finding 3)*
-`sgrna/screens/cui_screen.py`, `sgrna/screens/crispri_screens.py`, `sgrna/strand/strand_within_gene.py`
+`sgrna/compare/cui_screen.py`, `sgrna/compare/crispri_screens.py`, `sgrna/strand/strand_within_gene.py`
 
 dCas9 CRISPRi screens (Cui et al. 2018 is the principal one) bind but do not cut. If family A still predicted there, the effect would be about
 binding or accessibility, not cutting. The code runs the same ablation on those screens, controls for a strand confound (in CRISPRi only guides on one strand of a gene silence it, and that strand is itself correlated with flank
@@ -91,7 +91,7 @@ composition), and splits each gain into a between-gene part and a within-gene pa
 as large when Cas9 cuts**.
 
 ### 6. The model against crisprHAL 2 *(Part 6, the head-to-head)*
-`sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/post_freeze/tuning/tune_ecoli.py`, `sgrna/post_freeze/vs_crisprhal/vs_crisprhal.py`
+`sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/post_freeze/tuning/tune_ecoli.py`, `sgrna/compare/vs_crisprhal.py`
 
 The comparison is run under four conditions, because the answer depends on which is held equal. On our folds, with both models tuned here, SLICER leads by +0.0172. On crisprHAL 2's own splits with its shipped weights, the frozen model is
 statistically equivalent (Δρ +0.0021, 95% CI [−0.0031, +0.0072]) at about 150× less CPU time to fit. On a different assay neither model was trained on, crisprHAL 2 leads by +0.026.

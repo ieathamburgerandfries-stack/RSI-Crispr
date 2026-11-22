@@ -5,8 +5,8 @@ the figures and the audit, recorded in `EXTENSION_LOG.md`. Nothing in the frozen
 `results/post_freeze/`. **`../../CODE_MAP.md` is the map of the whole package, generated from the code and checked by the audit; this file adds the
 hand-written context for the extension.**
 
-Seven folders, each a theme. The import graph clusters this way on its own: the shape modules import each other, the vs_crisprhal modules
-import each other, and `tuning/tune_ecoli.py` (the cohort and model loader) is imported from most of the rest.
+Six folders, each a theme (the crisprHAL 2 comparison moved to `sgrna/compare/` on 22 Nov, with Part 6 of the report). The import graph clusters this way on its own: the shape modules import each other, the human modules
+import the same human loader, and `tuning/tune_ecoli.py` (the cohort and model loader) is imported from most of the rest.
 
 
 **Use `../run_ext.sh`, which sets all of this for you** — `./run_ext.sh sgrna.post_freeze.paper.verify_numbers`, or `./run_audit.sh`
@@ -27,14 +27,6 @@ lives outside both repositories (override with `PY=...`). Done by hand:
 | `interpret.py` | interaction-order curve, gain by column kind and by position, within- versus between-gene gain, data scaling |
 | `family_a_at_tuned.py` | family A's increment measured at the *tuned* settings as well as the champion's, base-only against base+A under the standard gene-grouped protocol — the project's headline biology number against its headline model (`EXTENSION_LOG.md` section 16) |
 | `tune_split2.py` | a fresh random search on a *second* 70/30 gene split, confirmed on its own held-out genes, so the tuning payoff is replicated rather than resting on one partition (section 16) |
-
-## `vs_crisprhal/` — The tuned model against crisprHAL 2: metric panel, data efficiency, blends, top-end objectives.
-
-| module | what it does |
-|---|---|
-| `vs_crisprhal.py`, `vs_crisprhal_wt_hal.py`, `cost_bench.py` | the tuned and mixed models against crisprHAL 2 on its own splits and on our folds, its WT-SpCas9 weights on its test file, and one-thread cost of every model including featurisation |
-| `panel_vs_hal.py`, `topk_panel.py`, `blend_with_hal.py`, `clean_vs_hal.py` | six-metric panel against crisprHAL 2 on its own splits with raw predictions, smoother top-end metrics and seed stability, blends with its predictions, and the comparison on genes no search touched |
-| `topend.py`, `data_efficiency.py` | top-end objectives (weighted, pairwise, NDCG); the learning curve with the tuned model against the stored crisprHAL 2 curve |
 
 ## `speed/` — Fast featurisers, the per-locus precompute, and the cost benchmarks.
 

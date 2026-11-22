@@ -644,7 +644,7 @@ def main():
 
     print("22.4 the package imports, and importing it writes nothing")
     ic = json.loads((OUT / "import_check.json").read_text())
-    chk("22.4 modules swept", float(ic["n_modules"]), 157, 0)
+    chk("22.4 modules swept", float(ic["n_modules"]), 146, 0)
     chk("22.4 modules excluded by name", float(ic["n_skipped"]), 1, 0)
     chk("22.4 modules that fail to import", float(len(ic["fails"])), 0, 0)
     chk("22.4 files under results/", float(ic["files_in_results"]), 675, 0)
@@ -720,7 +720,7 @@ def main():
     _on_disk = {f.stem for f in (_pf.parent).rglob("*.py") if f.name != "__init__.py"}
     _text = (_pf.parent.parent / "CODE_MAP.md").read_text()
     chk("CODE_MAP.md: modules on disk that the map does not list", float(len([m for m in _on_disk if f"| `{m}` |" not in _text])), 0, 0)
-    chk("post_freeze: themed subpackages", float(sum(1 for d in _pf.iterdir() if d.is_dir() and (d / "__init__.py").exists())), 7, 0)
+    chk("post_freeze: themed subpackages", float(sum(1 for d in _pf.iterdir() if d.is_dir() and (d / "__init__.py").exists())), 6, 0)
 
     print("the overview for judges: every number in it appears in the project's own documents")
     _ov = (_pf.parent.parent / "CODE_OVERVIEW.md").read_text()

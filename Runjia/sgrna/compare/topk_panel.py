@@ -6,7 +6,7 @@ precision of the top 1%, 5% and 10% of predictions against the true top, mean pe
 calibration slope of y on the prediction, and paired bootstrap differences to crisprHAL 2. Seed stability: the tuned model refitted
 with five seeds (selection and trees), rho lead over crisprHAL 2 per seed.
 
-    python -m sgrna.post_freeze.vs_crisprhal.topk_panel
+    python -m sgrna.compare.topk_panel
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from scipy.stats import rankdata
 
 from . import panel_vs_hal as P
 from . import vs_crisprhal as V
-from ..common import OUT
+from ..post_freeze.common import OUT
 
 
 def topk(y, p):

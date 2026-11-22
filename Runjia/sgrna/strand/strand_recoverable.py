@@ -5,7 +5,7 @@ from sklearn.model_selection import GroupKFold
 from sklearn.metrics import roc_auc_score
 import xgboost as xgb
 from sgrna import config
-from sgrna.screens.cui_screen import _essential_frame
+from sgrna.compare.cui_screen import _essential_frame
 from sgrna.strand.strand_families import _blocks, PROXY
 
 def main():

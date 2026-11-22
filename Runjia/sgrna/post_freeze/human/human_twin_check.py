@@ -16,7 +16,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 from sgrna import config
-from sgrna.screens.human_baseline import MATRIX, TARGET, load
+from sgrna.compare.human_baseline import MATRIX, TARGET, load
 from sgrna.harness.run_ablation import _impute, champion_params, grouped_folds, make_selector
 
 from ..common import OUT

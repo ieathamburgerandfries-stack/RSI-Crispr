@@ -89,7 +89,7 @@ def _comp_cols(names):
 
 def relative(seed: int = 41):
     from sgrna.cohorts.curated_ablation import _base, _block
-    from sgrna.screens import transfer
+    from sgrna.compare import transfer
 
     X_ec, y_ec, names, protos = _base()
     A_ec, an = _block("a_flank", protos)

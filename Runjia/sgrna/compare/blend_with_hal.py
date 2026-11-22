@@ -4,14 +4,14 @@ If the two models err differently, averaging them beats both; if the trees alrea
 raw test predictions saved by `panel_vs_hal.py`; z-scored average with weight 1/2 each, plus the Spearman of the correlation between
 the two models' residuals. Paired bootstrap over guides against the better single model.
 
-    python -m sgrna.post_freeze.vs_crisprhal.blend_with_hal
+    python -m sgrna.compare.blend_with_hal
 """
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
 
 from . import panel_vs_hal as P
-from ..common import OUT
+from ..post_freeze.common import OUT
 
 
 def _z(p):

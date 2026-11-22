@@ -7,7 +7,7 @@ scored on CONFIRM genes (stored by `tune_ecoli --confirm`); crisprHAL 2 is its s
 (trained on 80% of all guides by random folds, so on guides from the same genes: an advantage to it, which makes this comparison
 conservative for SLICER). Differences are paired and bootstrapped over genes.
 
-    python -m sgrna.post_freeze.vs_crisprhal.clean_vs_hal
+    python -m sgrna.compare.clean_vs_hal
 """
 from __future__ import annotations
 
@@ -20,9 +20,9 @@ from sklearn.model_selection import KFold
 
 from sgrna.cohorts.curated_ablation import _base, _groups
 
-from ..tuning import tune_ecoli as T
+from ..post_freeze.tuning import tune_ecoli as T
 from . import vs_crisprhal as V
-from ..common import OUT, stored
+from ..post_freeze.common import OUT, stored
 
 
 def run(n_boot=2000, seed=0, seeds=(41, 42, 43)):

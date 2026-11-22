@@ -1550,8 +1550,8 @@ import. Their bodies now live in `main()` behind a `__main__` guard; the audit s
 
 **The guard against it coming back** is `import_check.py`, which asserts two things and is run by the audit:
 
-* every module under `sgrna/` imports without raising -- 150 modules when this was written (157 after the 22 Nov
-  reorganisation, which removed three modules, added eight package markers, a reference checker and a map generator), 2 excluded by name with the reason recorded
+* every module under `sgrna/` imports without raising -- 150 modules when this was written (146 after the 22 Nov
+  reorganisations, which removed modules, added package markers, a reference checker and a map generator, and merged `screens` into `compare`), 2 excluded by name with the reason recorded
   (`vs_crisprhal_wt_hal` reads `sys.argv[1]` at the top level and needs the TensorFlow venv; the second was `controls/numcheck`, a
   document-coverage script pinned to the shared repo's absolute paths, removed on 22 Nov -- see REMOVED.md). This is also the only check in the project that
   the code *loads*, as distinct from the audit's check that the numbers match their files;

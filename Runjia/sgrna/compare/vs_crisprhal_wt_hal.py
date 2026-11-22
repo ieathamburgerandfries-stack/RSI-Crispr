@@ -3,7 +3,7 @@
 The WT model takes a 378-nt context (189 nt upstream, 20-nt protospacer, 3-nt PAM, 166 nt downstream); the protospacer starts at
 offset 189. Guides scored more than once are averaged by protospacer, as in `final_eval.py` for eSpCas9.
 
-    .venv-crisprhal/bin/python sgrna/post_freeze/vs_crisprhal/vs_crisprhal_wt_hal.py <project root>
+    .venv-crisprhal/bin/python sgrna/compare/vs_crisprhal_wt_hal.py <project root>
 """
 import os
 import sys

@@ -5,7 +5,7 @@ raw prediction on the test rows is saved (`data/interim/ext/panel/<split>.npz`),
 metrics are those of `final_eval._metrics` (Spearman, Kendall tau, Pearson, R^2, top-decile precision, expected pick percentile of the
 ten highest-scoring guides). Differences to crisprHAL 2 are paired bootstraps over guides.
 
-    python -m sgrna.post_freeze.vs_crisprhal.panel_vs_hal --split espcas9 --mix "d099x,d077x,d021x,d080x,d000x;lgb011,lgb018;cat015,cat023"
+    python -m sgrna.compare.panel_vs_hal --split espcas9 --mix "d099x,d077x,d021x,d080x,d000x;lgb011,lgb018;cat015,cat023"
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from scipy.stats import kendalltau, spearmanr
 from sgrna import config
 
 from . import vs_crisprhal as V
-from ..common import INTERIM, OUT
+from ..post_freeze.common import INTERIM, OUT
 
 DIR = INTERIM / "panel"
 DIR.mkdir(parents=True, exist_ok=True)

@@ -28,8 +28,8 @@ comparable: base features regenerated from the protospacer by `featurise`,
 family A by the same builder as everywhere else, top-300 selection by XGBoost
 gain fitted inside the training split, LightGBM, 5-fold CV.
 
-    python -m sgrna.screens.transfer --dataset eSpCas9 --build
-    python -m sgrna.screens.transfer --dataset eSpCas9 --run
+    python -m sgrna.compare.transfer --dataset eSpCas9 --build
+    python -m sgrna.compare.transfer --dataset eSpCas9 --run
 """
 
 from __future__ import annotations

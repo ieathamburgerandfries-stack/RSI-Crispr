@@ -103,7 +103,7 @@ def run(label, arms, y, gene, groups, tagpref, out_csv, seeds=SEEDS, n_boot=2000
 
 
 def cui():
-    from ..screens.cui_screen import _essential_frame
+    from ..compare.cui_screen import _essential_frame
     from .strand_families import _blocks
 
     f = _essential_frame()
@@ -125,7 +125,7 @@ def cui():
 def cui_joint():
     """Does family A add within genes once transcription context (which carries the
     guide's relative position in its gene) is already in the model?"""
-    from ..screens.cui_screen import _essential_frame
+    from ..compare.cui_screen import _essential_frame
     from .strand_families import _blocks
 
     f = _essential_frame()
@@ -147,7 +147,7 @@ def cui_joint():
 
 
 def rousset():
-    from ..screens.crispri_screens import build
+    from ..compare.crispri_screens import build
 
     X, meta = build("Rousset", verbose=False)
     X = np.asarray(X, dtype=np.float32); names = list(meta["names"]); nb = int(meta["n_base"])

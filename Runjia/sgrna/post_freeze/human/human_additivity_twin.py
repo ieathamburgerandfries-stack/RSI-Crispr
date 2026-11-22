@@ -37,7 +37,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 from sklearn.model_selection import KFold
 
-from sgrna.screens.human_baseline import load
+from sgrna.compare.human_baseline import load
 from sgrna.harness.run_ablation import _impute, champion_params, grouped_folds, make_selector
 
 from ..common import OUT

@@ -43,7 +43,7 @@ FLANK = 1000
 def index() -> pd.DataFrame:
     """Cui's essential-gene guides as the family builders expect them."""
     from ..build.build_curated_features import augment
-    from ..screens.cui_screen import _essential_frame  # noqa: F401  (ensures cache exists)
+    from ..compare.cui_screen import _essential_frame
 
     meta = json.loads((config.INTERIM / "cui_crispri" / "meta.json").read_text())
     ess = np.asarray([str(e) for e in meta["essential"]], dtype=object) == "True"
@@ -114,7 +114,7 @@ def run(seeds=(41, 42, 43), n_splits=None, verbose: bool = True):
     """Three arms per family: with strand, without, and without its proxy columns."""
     from scipy.stats import spearmanr
 
-    from ..screens.cui_screen import _essential_frame
+    from ..compare.cui_screen import _essential_frame
     from ..harness.run_ablation import cross_validate
 
     f = _essential_frame()
@@ -184,7 +184,7 @@ def run_within(seeds=(41, 42, 43), verbose: bool = True):
     the 2,5xx coding-strand and 2,9xx template-strand guides are modelled separately
     and the family increment is the family arm minus `base` within the same stratum.
     """
-    from ..screens.cui_screen import _essential_frame
+    from ..compare.cui_screen import _essential_frame
     from ..harness.run_ablation import cross_validate
 
     f = _essential_frame()

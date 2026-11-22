@@ -6,7 +6,7 @@ stored curve (`results/sample_complexity.csv`, seed 41) is the comparison. SLICE
 size-scaled variant that keeps the tuned settings but sets the tree count by a 10% inner validation split (early stopping), since 4,000
 trees at a small n may overfit.
 
-    python -m sgrna.post_freeze.vs_crisprhal.data_efficiency
+    python -m sgrna.compare.data_efficiency
 """
 from __future__ import annotations
 
@@ -22,8 +22,8 @@ from sgrna import config
 from sgrna.cohorts.curated_ablation import _base, _block
 from sgrna.harness.run_ablation import _impute, make_selector
 
-from ..tuning import tune_ecoli as T
-from ..common import MAIN_RESULTS, OUT
+from ..post_freeze.tuning import tune_ecoli as T
+from ..post_freeze.common import MAIN_RESULTS, OUT
 
 SIZES = (4000, 8000, 13880, 20000, 26853)
 

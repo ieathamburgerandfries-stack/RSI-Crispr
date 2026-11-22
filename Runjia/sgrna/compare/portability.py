@@ -24,8 +24,8 @@ The test here is the only one that settles the cost: drop the blockers and
 measure. If the reduced-minus-blockers arm is within noise of the 427, the
 representation is portable at no accuracy cost and the pivot is unobstructed.
 
-    python -m sgrna.screens.portability --audit
-    python -m sgrna.screens.portability --run
+    python -m sgrna.compare.portability --audit
+    python -m sgrna.compare.portability --run
 """
 
 from __future__ import annotations

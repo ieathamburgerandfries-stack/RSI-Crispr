@@ -30,14 +30,13 @@ PACKAGES = [
     ("features", "The eleven feature families A-J (family A, the flanking-DNA composition, is the one that matters)."),
     ("harness", "The leakage-safe cross-validation harness every experiment runs through, plus the notebook front end."),
     ("cohorts", "Ablations on the curated cohort and the arguments about what its numbers mean (ceilings, inflation, label noise)."),
-    ("compare", "Head-to-head against crisprHAL 2 and the inherited baseline, as of the freeze."),
+    ("compare", "Every comparison with something else (Part 6 of the report): crisprHAL 2, the inherited baseline, and other screens, assays and kingdoms."),
     ("controls", "The adversarial phase: nulls, shuffles, floors, selector and leakage audits."),
     ("cost", "What each model costs to train and to run, measured rather than estimated."),
-    ("screens", "Other screens and other kingdoms: CRISPRi, the human matrix, transfer between kingdoms."),
     ("strand", "The strand-of-transcription confound in the dCas9 screens, and the controls that remove it."),
     ("interpret", "What the model uses and whether that is the data's property or the model's."),
     ("post_freeze", "Shared paths for the extension work, and the resolver for the main project's untracked results (`common.py`). Everything else is in the themed folders below."),
-    ("post_freeze/tuning", None), ("post_freeze/vs_crisprhal", None), ("post_freeze/speed", None), ("post_freeze/shape", None),
+    ("post_freeze/tuning", None), ("post_freeze/speed", None), ("post_freeze/shape", None),
     ("post_freeze/human", None), ("post_freeze/signal", None), ("post_freeze/paper", None),
 ]
 
@@ -57,6 +56,7 @@ STATED_UNNAMED = {
     "import_check": "Part 4", "doc_refs": "Part 4", "code_map": "Part 4", "verify_numbers": "Part 4",
     "why_inflation": "Appendix B2a", "floors": "Appendix A", "diagnose": "Finding 4", "headtohead": "Part 6", "panel_vs_hal": "Part 6",
     "vs_crisprhal": "Part 6", "vs_crisprhal_wt_hal": "Part 6", "dnashape": "Appendix B4", "importance_models": "Finding 5",
+    "panel": "Part 6", "attribution": "Finding 5", "faithfulness": "Finding 5", "importance": "Finding 5",
 }
 
 
@@ -66,17 +66,28 @@ LIBRARY_PACKAGES = {"", "build", "features", "harness", "post_freeze"}      # us
 
 
 def _doc(tree: ast.Module) -> str:
+    """The first sentence of a module's docstring, whole. Only a very long sentence is shortened, and then at a clause boundary
+    with an explicit ellipsis, never in the middle of a word."""
     d = (ast.get_docstring(tree) or "").strip()
     para = " ".join(d.split("\n\n")[0].split())
+    head = para
     # end of the first sentence, skipping abbreviations and initials ("E. coli", "et al.", "e.g.") that are not sentence ends
     for m in re.finditer(r"[.?!](?=\s|$)", para):
-        head = para[:m.end()]
-        last = re.findall(r"[A-Za-z.]+[.?!]$", head)
+        h = para[:m.end()]
+        last = re.findall(r"[A-Za-z.]+[.?!]$", h)
         word = last[0].rstrip(".?!") if last else ""
         if m.end() < 20 or word in {"E", "e.g", "i.e", "al", "vs", "Fig", "et", "cf", "no", "approx"} or (len(word) == 1 and word.isupper()):
             continue
-        return head[:170].replace("|", "/")
-    return para[:170].replace("|", "/")
+        head = h
+        break
+    head = head.replace("|", "/")
+    LIMIT = 230
+    if len(head) <= LIMIT:
+        return head
+    cut = max(head.rfind(sep, 0, LIMIT) for sep in (", ", "; ", " -- ", " — ", ": ", " ("))
+    if cut < 60:
+        cut = head.rfind(" ", 0, LIMIT)
+    return head[:cut].rstrip(" ,;:-—(") + " …"
 
 
 def _results(tree: ast.Module, existing: set[str]) -> list[str]:
@@ -212,7 +223,7 @@ def by_section(data: dict[str, list[dict]]) -> str:
         pk = sorted({p.replace("post_freeze/", "pf/") for p, _ in L})
         title = TITLES.get(label) or {"—": "no section of the report points at it", "tooling": "the audit, the figures, the guards and this map",
                                        "library": "shared code the experiments are built on"}.get(label, "")
-        lines.append(f"| {label} | {title[:78].replace('|', '/')} | {len(L)} | {sum(i['lines'] for _, i in L):,} | {len(files)} | {', '.join(pk)} |")
+        lines.append(f"| {label} | {title.replace('|', '/')} | {len(L)} | {sum(i['lines'] for _, i in L):,} | {len(files)} | {', '.join(pk)} |")
     return "\n".join(lines)
 
 

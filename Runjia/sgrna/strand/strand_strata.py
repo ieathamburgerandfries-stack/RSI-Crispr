@@ -25,7 +25,7 @@ OUT_F = config.RESULTS / "strand_flip.csv"
 
 
 def rousset(name="Rousset", seeds=(41, 42, 43)):
-    from ..screens.crispri_screens import build
+    from ..compare.crispri_screens import build
     from ..harness.run_ablation import cross_validate
 
     X, meta = build(name, verbose=False)
@@ -83,7 +83,7 @@ def rousset(name="Rousset", seeds=(41, 42, 43)):
 
 def flip(seeds=(41, 42, 43)):
     """Train with the true strand; score held-out genes with the strand wrong."""
-    from ..screens.cui_screen import _essential_frame
+    from ..compare.cui_screen import _essential_frame
     from ..harness.run_ablation import (_impute, champion_params, grouped_folds,
                                make_selector)
 

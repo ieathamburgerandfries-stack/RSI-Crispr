@@ -13,7 +13,7 @@ tool uses the top: the guides it would pick. Arms (all with the tuned configurat
 Metrics on the held-out genes: Spearman, top-decile precision, top-1% precision, and the mean percentile (within the test set) of the
 10 / 50 / 100 highest-scoring guides -- the last three smooth the 10-guide pick percentile, which is very noisy.
 
-    python -m sgrna.post_freeze.vs_crisprhal.topend
+    python -m sgrna.compare.topend
 """
 from __future__ import annotations
 
@@ -26,8 +26,8 @@ from scipy.stats import rankdata, spearmanr
 
 from sgrna.harness.run_ablation import _impute
 
-from ..tuning import tune_ecoli as T
-from ..common import OUT
+from ..post_freeze.tuning import tune_ecoli as T
+from ..post_freeze.common import OUT
 
 
 def topmetrics(y, p):

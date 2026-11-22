@@ -16,14 +16,13 @@ and `config.py` locates the project root from its own path.
 | `build/` | turning sequence into columns: the feature matrix, the guide index, the genome and quantum-chemical tables, the published-matrix decoder | 10 |
 | `harness/` | the shared fit-and-score machinery every result goes through: `run_ablation`, folds, the tuner, the model zoo | 7 |
 | `cohorts/` | the curated and published cohorts, their ablations, ceilings and label variance | 9 |
-| `compare/` | comparisons against other models: crisprHAL 2 re-runs, the final evaluations, the head-to-heads, sample complexity | 9 |
+| `compare/` | every comparison with something else, which is Part 6 of the report: crisprHAL 2 (re-runs, the head-to-heads, the tuned model's metric panel and data efficiency), the inherited baseline, and other screens, assays and kingdoms (Cui, Rousset/Wang, cross-organism, the human baseline). Merged from `screens/` and the post-freeze `vs_crisprhal/` on 22 Nov 2026 | 24 |
 | `controls/` | nulls and audits — shifted-flank, no-information, Chi sites, the sealed holdout, the selector audit | 11 |
 | `interpret/` | importance, attribution, faithfulness, redescription, the reduced representation | 12 |
 | `strand/` | the strand and within-gene decompositions Finding 3 rests on | 5 |
-| `screens/` | other screens and transfer: Cui, Rousset/Wang, cross-organism, cross-kingdom, the human baseline | 7 |
 | `cost/` | wall-clock, CPU and inference benchmarks | 3 |
 | `features/` | the eleven feature families, one module each (unchanged) | 12 |
-| `post_freeze/` | **everything measured after the 11 October freeze** — Appendix B4, the tuning, the crisprHAL 2 re-comparison, the literature-driven work. Was `ext/`. Nothing here edits the frozen pipeline; it imports it | 45 |
+| `post_freeze/` | **work done after the 11 October freeze**, in themed folders — the tuning, the shape null (Appendix B4), the human arm, the mechanism work, the fast featurisers, the paper tooling. Was `ext/`. Nothing here edits the frozen pipeline; it imports it | 30 |
 
 Results split the same way: `results/` holds the frozen numbers, `results/post_freeze/` the ones from
 after the freeze. `./run_ext.sh <module>` runs anything in `post_freeze` with the three environment
