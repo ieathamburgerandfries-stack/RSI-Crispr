@@ -3,7 +3,7 @@
 What the code in this folder is, how it is organised, and which part of the report each module supports.
 The tables between the two markers are **generated from the code** (`./run_ext.sh sgrna.post_freeze.paper.code_map`) and
 the audit fails if a module is missing from them, so they cannot drift from the files. Everything outside the markers is
-hand-written. What was deleted, and why, is in [`REMOVED.md`](REMOVED.md).
+hand-written. For a short tour of only the code the report's claims depend on, read [`CODE_OVERVIEW.md`](CODE_OVERVIEW.md) first. What was deleted, and why, is in [`REMOVED.md`](REMOVED.md).
 
 ## The shape of it
 

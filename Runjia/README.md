@@ -19,7 +19,7 @@ folds → R² 0.2937 ± 0.0015, Spearman 0.5278, Pearson 0.5424 on Noshay's 13,8
 guides — kept because reproducing it to four decimal places is how this pipeline
 is checked, not because it is the current baseline.
 
-**Where to start.** [`CODE_MAP.md`](CODE_MAP.md) says what every module is and which section of the report it supports (generated from the
+**Where to start.** [`CODE_OVERVIEW.md`](CODE_OVERVIEW.md) is the twelve-block tour of the code that matters, written for a reader who has not seen the project; [`CODE_MAP.md`](CODE_MAP.md) says what every module is and which section of the report it supports (generated from the
 code and checked by the audit); [`REMOVED.md`](REMOVED.md) says what was deleted and why, and what was brought in; `PROGRESS_REPORT.md` is the
 claims, `EXTENSION_LOG.md` the working record, and `./run_audit.sh` recomputes every number the report quotes.
 
@@ -71,7 +71,7 @@ produced the two results worth knowing about before reading anything else:
 
 **Where the open questions are.** All of them are in one place — the **open-questions register**, `PROGRESS_REPORT.md`
 Part 4. Ten remain open and each says what would settle it; six were closed on 20 November. The tenth — what a clone of the repository can verify — was added on 22 November.
-`./run_audit.sh` recomputes every post-freeze number (940 checks), checks that four documents agree on that count, that
+`./run_audit.sh` recomputes every post-freeze number (941 checks), checks that four documents agree on that count, that
 four claims later work made false have not returned, and that every module in the package imports without writing
 anything.
 

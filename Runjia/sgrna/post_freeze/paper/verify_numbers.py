@@ -825,6 +825,16 @@ def main():
     chk("CODE_MAP.md: modules on disk that the map does not list", float(len([m for m in _on_disk if f"| `{m}` |" not in _text])), 0, 0)
     chk("post_freeze: themed subpackages", float(sum(1 for d in _pf.iterdir() if d.is_dir() and (d / "__init__.py").exists())), 8, 0)
 
+    print("the overview for judges: every number in it appears in the project's own documents")
+    _ov = (_pf.parent.parent / "CODE_OVERVIEW.md").read_text()
+    _src = "\n".join((_pf.parent.parent / f).read_text() for f in ("PROGRESS_REPORT.md", "results/RESULTS.md", "EXTENSION_LOG.md", "README.md"))
+    _norm = lambda t: t.replace("\u2212", "-")
+    _toks = sorted({m.lstrip("+-") for m in re.findall(r"[+\-]?\d+\.\d{2,}|\d{1,3}(?:,\d{3})+", _norm(_ov))})
+    _missing = [t for t in _toks if not re.search(r"(?<![\d.,])" + re.escape(t) + r"(?![\d])", _norm(_src))]
+    chk("CODE_OVERVIEW.md: numbers quoted that appear in no project document", float(len(_missing)), 0, 0)
+    for t in _missing[:10]:
+        print(f"      not found anywhere: {t}")
+
     print("documents: no stale claim, and one check count")
     _docs = {f.name: f.read_text() for f in (RUNJIA / "PROGRESS_REPORT.md", RUNJIA / "EXTENSION_LOG.md",
                                              RUNJIA / "PAPER_FLOW.md", RUNJIA / "results" / "README.md")}

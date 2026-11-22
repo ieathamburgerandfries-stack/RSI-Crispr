@@ -10,7 +10,7 @@ Every `.csv` the report cites, split by whether it predates the freeze.
   publication figures, and the per-locus featuriser. `EXTENSION_LOG.md` sections 7–22 are the record.
 
 `../run_audit.sh` recomputes every post-freeze number quoted in the report from the files here and
-exits non-zero on any mismatch (940 checks as of 20 November 2026). It also checks that the count in
+exits non-zero on any mismatch (941 checks as of 20 November 2026). It also checks that the count in
 this sentence is the one it actually ran, in this file and in three others, so the four cannot drift
 apart again. `sgrna/post_freeze/paper/import_check.py`, which it runs, asserts separately that every module
 in the package imports and that importing one writes nothing.

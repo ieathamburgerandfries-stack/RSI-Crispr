@@ -14,7 +14,7 @@ subsection says otherwise in so many words; **Finding 4 was re-framed** by it (t
 turns out to be evidence *for* its claim, not against it) and **Finding 6 gained a second half**
 (the field's version of the ceiling is mis-derived). The boundary is visible in the layout —
 `sgrna/post_freeze/` and `results/post_freeze/` hold everything measured after 11 October, and
-`./run_audit.sh` recomputes all 784 numbers those sections quote. The fork
+`./run_audit.sh` recomputes every number those sections quote. The fork
 (`github.com/ieathamburgerandfries-stack/RSI-Crispr`) is kept as the archive of the commit-by-commit
 history.
 
@@ -116,7 +116,7 @@ experiment and the numbers it produced. It is **not** a second copy of this repo
 what was tried, in what order, what was expected before the run, and which expectations
 were wrong. Where a finding cites a §, that is the working, not a load-bearing part of the
 claim. `./run_audit.sh` recomputes every post-freeze number quoted in this document from
-the files that produced it (940 checks as of 20 November) and exits non-zero on any
+the files that produced it (941 checks as of 20 November) and exits non-zero on any
 mismatch — including a check that the four documents quoting that count all quote the same
 one, so it cannot drift again, and a check that the package still imports without writing
 anything (`EXTENSION_LOG.md` §22.4).
