@@ -372,7 +372,7 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
-*Current state of the audit (20 Nov):* it has grown with each section and now stands at **897 checks, 0 mismatches**,
+*Current state of the audit (20 Nov):* it has grown with each section and now stands at **940 checks, 0 mismatches**,
 covering sections 7-22. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
 modules need and exits non-zero if any quoted number no longer matches its file. Since 22.4 it also checks three things
 about itself: that every module in the package imports and that importing one writes nothing; that four claims which
@@ -1478,8 +1478,11 @@ replicate agreement were near 0.5 *and* labels were unaveraged, and the review i
 
 *What the table is not.* Exact for Pearson correlations with independent additive replicate noise; Spearman's rho is a
 rank correlation, so these are close approximations. And both steps assume replicate noise is independent -- shared batch
-effects inflate *r* and so inflate the ceiling, a real systematic difference between replicates deflates it. That is the
-assumption `cohorts/ceiling2.py` tests directly for our own cohort rather than assuming, and the module says so.
+effects inflate *r* and so inflate the ceiling, a real systematic difference between replicates deflates it. That is
+an assumption here as in the field's own derivation, and nothing in this section tests it. (An earlier attempt
+compared the WT and eSpCas9 screens and found 30% of their disagreement predictable from sequence; since those are two
+different enzymes that is expected biology, not evidence about replicate independence -- see REMOVED.md. Finding 6 avoids
+the question by using crisprHAL's released per-replicate counts.)
 
 ### 22.3 An upper bound on every local shape predictor, including the one we could not run (`local_sequence_bound.py`)
 
@@ -1530,9 +1533,9 @@ which no local predictor supplies.
 ### 22.4 Two modules did their work at import, and one of them overwrote its own result file (`import_check.py`)
 
 Found by accident, while writing a script that only meant to check that every module in the package loads. Importing
-`sgrna.post_freeze.equiv_check` refitted two models and **rewrote `featuriser_equivalence.csv`** with timings measured on
+`sgrna.post_freeze.speed.equiv_check` refitted two models and **rewrote `featuriser_equivalence.csv`** with timings measured on
 a machine that happened to be running an experiment, which then made the audit fail on two numbers that had nothing wrong
-with them. Importing `sgrna.post_freeze.verify_numbers` ran the whole audit and raised `SystemExit` **in the importing
+with them. Importing `sgrna.post_freeze.paper.verify_numbers` ran the whole audit and raised `SystemExit` **in the importing
 process**, which is why the sweep never finished and the cause took a moment to find. `strand/strand_recoverable.py` has
 the same shape and writes a results file at import too.
 
@@ -1542,9 +1545,10 @@ import. Their bodies now live in `main()` behind a `__main__` guard; the audit s
 
 **The guard against it coming back** is `import_check.py`, which asserts two things and is run by the audit:
 
-* every module under `sgrna/` imports without raising -- 150 modules, 2 excluded by name with the reason recorded
-  (`vs_crisprhal_wt_hal` reads `sys.argv[1]` at the top level and needs the TensorFlow venv; `controls/numcheck` is a
-  document-coverage script pinned to the shared repo's absolute paths). This is also the only check in the project that
+* every module under `sgrna/` imports without raising -- 150 modules when this was written (157 after the 22 Nov
+  reorganisation, which removed three modules, added eight package markers, a reference checker and a map generator), 2 excluded by name with the reason recorded
+  (`vs_crisprhal_wt_hal` reads `sys.argv[1]` at the top level and needs the TensorFlow venv; the second was `controls/numcheck`, a
+  document-coverage script pinned to the shared repo's absolute paths, removed on 22 Nov -- see REMOVED.md). This is also the only check in the project that
   the code *loads*, as distinct from the audit's check that the numbers match their files;
 * the sweep leaves `results/` byte-identical -- all 675 files hashed before and after, 0 changed.
 
@@ -1565,15 +1569,59 @@ rigorously. What the sweep turned up, in the order it was found:
 | The audit's check count was quoted as **682, 784, 799 and 682** in four documents | drift | all four set to the real count, and the audit now checks its own quoted count in all four, so they cannot separate again |
 | `PAPER_FLOW.md` planned four figures and listed seven built ones in a second table | internal contradiction | one table, with the section each figure belongs to |
 | `fig7_pipeline` had "799 checks" drawn into it | a volatile number inside a vector figure | replaced with "every number recomputed". A figure should not need regenerating when a check is added; `figures.py --fig 7` also no longer truncates the manifest to one row |
-| `PROGRESS_REPORT.md` cited `final_eval.csv`, which does not exist | dangling reference | the file is `final_eval_espcas9.csv`; the numbers it supports (0.7842 against 0.7821) check out |
+| `PROGRESS_REPORT.md` cited a file called final_eval, which does not exist | dangling reference | the file is `final_eval_espcas9.csv`; the numbers it supports (0.7842 against 0.7821) check out |
 | Importing the package ran the audit, exited the process, and overwrote a result file | hazard, and it had already caused two wrong audit lines | 22.4 |
 | "Not done: corrected ceilings for the review's datasets" | an open item that did not need to be | 22.2 |
 | "Deep DNAshape: not run" | an open item that could be bounded instead | 22.3 |
 | "the flank featuriser could be four columns per side" | an open item whose premise had changed | 22.1 |
 | Open questions scattered across two documents in four phrasings | no single list, so staleness was invisible | **the open-questions register**, report Part 4. Nine genuinely open, six closed with where |
 
-**Nine questions remain open and the register says why each one is.** None of them is open through oversight: four need
+**Ten questions remain open and the register says why each one is** (nine when this section was first written; the tenth, on 22 Nov, is in section 23). None of them is open through oversight: four need
 data this project does not have (a retuned crisprHAL 2, a processed occupancy track, a measured stiffness matrix, an
 untouched cutting screen), two need an experiment no pooled screen can provide, one was stopped by the user, one needs
 per-guide read counts, and one needs a document I cannot read. That is the honest end state, and it is now in one place
 where the next person can see it without reading 5,700 lines.
+
+## 23. Consolidation: what the code is, what was removed, and what the sweep found in the evidence (22 Nov)
+
+The user asked for the code to be explained, overlapping or outdated modules combined, results nobody agreed were worth keeping
+removed (with a file listing them), and for the repository to be made readable. Where each part is recorded:
+`CODE_MAP.md` (what everything is, generated from the code), `REMOVED.md` (what went and what was brought in), the report's Part 4
+register (what is still open).
+
+### 23.1 The finding about the size: it is not padded
+
+The test applied to every module and result file: kept if the report names it, the audit reads it, a kept module uses it (including
+through file names built at run time), or a teammate's document cites it. Only three modules and one directory of tracked debris
+failed every test. Across the package only one 8-line function is duplicated. The code is roughly a hundred one-question scripts,
+each the provenance of a sentence in the report; the lever for a smaller repository is the report's scope, not tidying. The
+by-section table in `CODE_MAP.md` is the price list.
+
+### 23.2 What was done
+
+* **Removed** `catboost_info/` (tracked training-log debris), `interpret/decision_scale.py` (never run), `cohorts/ceiling2.py`
+  (superseded by Finding 6; its result -- 30% of the WT-vs-eSp disagreement is predictable -- is recorded in `REMOVED.md`),
+  `controls/numcheck.py` (superseded by the audit), and two superseded Colab drafts folded into `crisprhal_wide_window.py`.
+* **Reorganised** `post_freeze/`'s 52 flat modules into eight themed subpackages (`tuning`, `vs_crisprhal`, `speed`, `shape`,
+  `nuclease`, `human`, `signal`, `paper`) by `git mv`, so history follows. The themes were not imposed: they follow the clusters
+  of the import graph (the shape modules import each other, the nuclease modules import each other, and so on). Verified by import of all 157 modules, by the audit, and by re-running `clean_vs_hal` (three model
+  fits through the `tuning -> vs_crisprhal` chain) into a scratch copy of the results: every cell identical.
+* **Did not merge modules line by line.** There is nothing to deduplicate, every module has its own `main`/`run`, and merging them would
+  make the one-module-one-claim provenance harder to follow. The one real merge was the Colab script.
+
+### 23.3 What the sweep found, in the order it found it
+
+| found | what it was | what was done |
+|---|---|---|
+| the report's **R2 0.963** (excess twist from dinucleotides) had no producer | a number from a session whose code was not kept | `geom_importance` now computes it; it does not reproduce (0.968 ridge, 0.937 boosting; 0.86-0.97 across the five); report and log corrected, audited |
+| **221 stale references in 77 files**, all from my own earlier reorganisation | every frozen module's "how to run" line, `RESULTS.md`, the README | repaired mechanically where a name maps to exactly one module; `paper/doc_refs.py` now fails the audit if one goes stale |
+| `vs_crisprhal`, `data_efficiency` and four modules built on them **could not be re-run as documented** | `ROOT.parent / "results"` assumes a checkout layout that `run_ext.sh` does not produce | one resolver in `common.py` that tries both layouts, does not raise at import, and fails clearly on use |
+| Finding 5's table **cited seven families but is five** | SHAP is undefined for the two linear models | caption corrected; the linear models make the default agreement worse (-0.057), which strengthens the claim |
+| Finding 4's headroom table **cited the wrong file** | `headroom.csv` is a later 6,769-column run (strongest held-back 0.155), not the table's source | cited `representation_headroom.csv`, which reproduces all three rows; row 1 also re-derived from code |
+| four report tables **had their data only outside the repository** | importance (3 files), k-mer order, crisprHAL re-run, representation headroom | each checked against the report, copied in, audited |
+| `RESULTS.md` cited **`human_ladder.csv`, which never existed** | the aggregate was never saved | its figures are the means of two fold files that were already in the repo; now cited and audited |
+| ~30 further small summary files **still exist only outside the repository** | written by frozen-phase modules whose conclusions the report states | **not copied** -- unchecked copies would look like evidence. Listed in `CODE_MAP.md`; open-questions register row 10 |
+
+Two mistakes of mine, corrected on the way: a sentence in 22.2 and in `ceiling_table.py` said `ceiling2` "tests directly" the
+replicate-independence assumption, when comparing two *different enzymes* cannot; and the first draft of `REMOVED.md` said the human fold
+files' means matched the report beyond chance, which held for only about half of them.

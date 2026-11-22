@@ -38,7 +38,7 @@ posterior mean, which already shrinks noisy guides toward the prior. Some of
 this reliability information is therefore spent before we see it, which predicts
 a smaller effect than the spread of disagreement suggests.
 
-    python -m sgrna.replicate_weight
+    python -m sgrna.cohorts.replicate_weight
 """
 
 from __future__ import annotations

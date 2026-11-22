@@ -30,7 +30,7 @@ The interpretations, fixed in advance:
 Run on the published 13,880-row matrix, because that is the only cohort where
 these columns exist.
 
-    python -m sgrna.handnamed_split
+    python -m sgrna.compare.handnamed_split
 """
 
 from __future__ import annotations

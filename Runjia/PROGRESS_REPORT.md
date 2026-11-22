@@ -116,7 +116,7 @@ experiment and the numbers it produced. It is **not** a second copy of this repo
 what was tried, in what order, what was expected before the run, and which expectations
 were wrong. Where a finding cites a §, that is the working, not a load-bearing part of the
 claim. `./run_audit.sh` recomputes every post-freeze number quoted in this document from
-the files that produced it (897 checks as of 20 November) and exits non-zero on any
+the files that produced it (940 checks as of 20 November) and exits non-zero on any
 mismatch — including a check that the four documents quoting that count all quote the same
 one, so it cannot drift again, and a check that the package still imports without writing
 anything (`EXTENSION_LOG.md` §22.4).
@@ -1137,7 +1137,7 @@ wrong answers before that was understood.
 
 Correlating every column against the champion's out-of-fold residuals:
 
-| model (`headroom.csv`) | strongest \|ρ\| among columns it has | among columns held back |
+| model (`representation_headroom.csv`) | strongest \|ρ\| among columns it has | among columns held back |
 |---|---:|---:|
 | all 6,232 | 0.028 | **0.147** — family A |
 | the 427 | 0.022 | **0.146** — family A |
@@ -1199,16 +1199,21 @@ its own; but the margin is not marginal.
 
 ### 5. On a redundant matrix, importance and faithfulness are both uninterpretable
 
-Across seven model families (two boosters, two forests, two linear, CatBoost):
+Across seven model families (two boosters, two forests, two linear, CatBoost; 3 folds,
+`importance_model_pairs.csv`). The table is the **five tree families** — 10 pairs — because SHAP is
+defined only for those; the two linear models are added underneath it:
 
 | method | agreement between models, per column | per block |
 |---|---:|---:|
 | the library default (gain / impurity / coef) | **0.050** | 0.531 |
 | permutation | 0.258 | 0.581 |
 | **SHAP** | **0.496** | **0.800** |
+| *with the two linear models too (all 21 pairs): default* | *−0.057* | *0.522* |
+| *with the two linear models too: permutation* | *0.187* | *0.512* |
 
 The instability is a property of the matrix, not of boosting — it survives bagged
-forests and penalised linear models. But **the "models prefer different kinds of
+forests and penalised linear models, and adding the linear models makes the default
+and permutation agreement *worse*, not better. But **the "models prefer different kinds of
 column" finding was an artefact of split gain**: XGBoost's share on binary
 indicators falls from 57% to 31% under SHAP and lands on LightGBM's 31% exactly.
 The largest between-model gap on any kind of column goes from 31 points to 0.3.
@@ -1782,7 +1787,7 @@ test sets (a bounded comparison: the test subsets differ in size and composition
 
 **After the post-freeze retuning this is no longer the strongest true sentence, and
 the one the paper should use is the following** (every number from the two
-subsections above, audited in `sgrna/post_freeze/verify_numbers.py`):
+subsections above, audited in `sgrna/post_freeze/paper/verify_numbers.py`):
 
 > With its hyperparameters chosen on 70% of the genes and confirmed on the other 30%,
 > SLICER leads crisprHAL 2 by +0.0286 ρ [+0.0239, +0.0331] on its authors' eSpCas9
@@ -3176,6 +3181,7 @@ forgotten.
 | 7 | **Why do the 1,222 panel genes differ from the rest?** | per-guide read counts, to separate dynamic range from different biology | the counts were not used here. The essentiality explanation is argued against (family G's essentiality column is worth +0.00004) |
 | 8 | **Does the human arm's shape result (+0.018 on top of family A, where *E. coli* gives zero) mean anything?** | the human family A rebuilt on our own hg38 flanks rather than a teammate's | the human arm was stopped on request on 9 November; flagged for whoever picks it up |
 | 9 | **Does `PAPER_FLOW.md` agree with the shared Google Doc?** | the document, which I cannot read | needs the user. If the Doc already has an outline, reconcile rather than replace |
+| 10 | **Can a clone of the repository verify every result the report states?** | each of the ~30 small summary files listed in `CODE_MAP.md` ("Result files that exist only outside this repository", 773 KB) checked against the report, then copied in | not done. They live in the main project's untracked `results/` folder, written by frozen-phase modules (attribution, faithfulness, importance, evaluate, diagnose, headtohead, panel, strand and others) whose conclusions the report states. Six such files were checked and brought in on 22 Nov, which corrected two captions and one citation (below); the rest were not, and copying them in unchecked would make them look like evidence. `headroom.csv` is known **not** to back the table that had cited it |
 
 **Closed since 19 November, with where.** Listed because four of these were previously written as
 open and are now not, and a register that only grows is not a register.
@@ -3187,7 +3193,8 @@ open and are now not, and a register that only grows is not a register.
 | Deep DNAshape's 7 bp of context, which the sandbox would not run | **Bounded by measurement instead** (§22.3). Its output over the inner flank is a function of the local sequence; giving the model that sequence explicitly adds nothing |
 | Should the flank featuriser shrink to ~4 columns per side, since it is most of the scoring cost? | **No** (§22.1). The per-locus precompute removes the cost argument — the flank block is now 0.0039 of a 0.0361 ms bill — and the four-column version costs 0.085 ρ |
 | Was the reduced-representation ladder confounded by a fixed 300-column selector budget? | **Re-run with no selection at all**, which is what makes the tetramer and quantum-column results statements about representations (Appendix B) |
-| Can the package be imported safely? | **No, and now yes** (§22.4). Three modules did their work at import and one overwrote its own result file; `import_check.py` asserts that all 150 modules import and that importing them changes nothing under `results/` |
+| Did the report's tables rest on files the repository does not contain? | **Partly, and the part that was checked is fixed** (`REMOVED.md`, "Brought in"). Finding 5's table of agreement between models, Finding 4's k-mer-order table and headroom table, and crisprHAL's per-fold re-run all had their data only in the untracked main-project folder. Each reproduced the report's numbers once found, but three things were wrong around them: Finding 5's caption said seven model families where the table is the five tree families (SHAP is undefined for the linear ones); Finding 4's headroom table cited `headroom.csv`, a different file from the one that backs it (`representation_headroom.csv`); and `RESULTS.md` cited a `human_ladder.csv` that was never saved. All corrected, copied in and audited. Row 10 above is what remains |
+| Can the package be imported safely? | **No, and now yes** (§22.4). Three modules did their work at import and one overwrote its own result file; `paper/import_check.py` asserts that every module in the package imports and that importing them changes nothing under `results/` |
 
 ## Part 5 — What the control phase changed
 
@@ -4145,7 +4152,7 @@ table, not from either dataset's own annotation, so both cohorts are measured th
 same way. On the published rows that assignment agrees with Noshay's own for
 **97.7%** of guides and gives the same share to three decimals (0.843 against
 0.844) — which is the check that the change above is the cohort and not the
-method. `python -m sgrna.cohort_groups`, `results/cohort_groups.csv`.
+method. `python -m sgrna.harness.cohort_groups`, `results/cohort_groups.csv`.
 
 ### Where the published label's 0.937 ceiling came from
 
@@ -5132,7 +5139,7 @@ Every Δρ in Appendix C was measured on the published 13,880-row matrix. The mo
 layer moved to crisprHAL's 33,567 curated guides and the family measurements did
 not follow, so **all eleven families were re-run there**: same design, base
 representation against base + one family, 5 seeds × 5 folds, selection inside
-each training split, `python -m sgrna.curated_ablation --all`.
+each training split, `python -m sgrna.cohorts.curated_ablation --all`.
 
 | family | columns added | published Δρ | **curated Δρ** | ratio |
 |---|---:|---:|---:|---:|

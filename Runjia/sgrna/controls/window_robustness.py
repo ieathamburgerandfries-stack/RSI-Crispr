@@ -21,7 +21,7 @@ Declared before running, as the interpretation: agreement within **±0.005 ρ**
 (the project's non-inferiority margin) counts as the choice not mattering;
 a shortfall beyond that is a winner's curse worth quantifying.
 
-    python -m sgrna.window_robustness
+    python -m sgrna.controls.window_robustness
 """
 
 from __future__ import annotations

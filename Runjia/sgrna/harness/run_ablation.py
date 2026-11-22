@@ -16,10 +16,10 @@ From a notebook cell (the usual way):
 
 or from a terminal:
 
-    python -m sgrna.run_ablation --families a_flank
-    python -m sgrna.run_ablation --families a_flank b_energy --together
-    python -m sgrna.run_ablation --families d_supercoiling --group bin100k --permute
-    python -m sgrna.run_ablation --baseline-only
+    python -m sgrna.harness.run_ablation --families a_flank
+    python -m sgrna.harness.run_ablation --families a_flank b_energy --together
+    python -m sgrna.harness.run_ablation --families d_supercoiling --group bin100k --permute
+    python -m sgrna.harness.run_ablation --baseline-only
 
 Reading the output
 ------------------

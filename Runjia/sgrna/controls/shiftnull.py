@@ -25,7 +25,7 @@ artefact of large-scale chromosome structure does not.
 Grouped CV throughout (100 kb blocks), because a positional feature under random
 KFold can score by locus recognition -- the shifted arms would inherit that too.
 
-    python -m sgrna.shiftnull --run
+    python -m sgrna.controls.shiftnull --run
 """
 
 from __future__ import annotations

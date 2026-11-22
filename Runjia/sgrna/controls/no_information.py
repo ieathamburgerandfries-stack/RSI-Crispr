@@ -19,7 +19,7 @@ This runs the decomposition: the same base, and three arms over it.
     flank_only    8 columns, thermodynamics of DNA outside it
     full         all 30, the arm already reported
 
-    python -m sgrna.no_information
+    python -m sgrna.controls.no_information
 """
 
 from __future__ import annotations

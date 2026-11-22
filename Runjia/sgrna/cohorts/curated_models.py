@@ -10,7 +10,7 @@ Same registry (`evaluate._make`), same folds, curated cohort, every model given
 base + family A. One seed × five folds, because the question is the *spread*
 across classes and not a per-class estimate to three decimals.
 
-    python -m sgrna.curated_models
+    python -m sgrna.cohorts.curated_models
 """
 
 from __future__ import annotations

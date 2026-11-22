@@ -29,8 +29,8 @@ would produce a large, entirely spurious family A gain. Both arms are therefore
 run under whole-gene holdout, with the random-KFold version reported beside it
 to show the size of the trap.
 
-    python -m sgrna.cui_screen --build
-    python -m sgrna.cui_screen --run
+    python -m sgrna.screens.cui_screen --build
+    python -m sgrna.screens.cui_screen --run
 """
 
 from __future__ import annotations
@@ -482,7 +482,7 @@ def main(argv=None) -> int:
 
 # The strand result above was first found with a marginal scan run ad hoc at a
 # shell prompt, and two of its numbers went into the report without a result file
-# behind them -- which `numcheck` caught. This records them properly: the
+# behind them -- which `numcheck` (since replaced by the audit) caught. This records them properly: the
 # marginal association of every flank column with the label inside each subset,
 # and the strand summary that interprets it.
 MARGINALS_OUT = config.RESULTS / "cui_essential_marginals.csv"
@@ -543,7 +543,7 @@ def strand_marginals(verbose: bool = True):
     # The derived statistics that the report quotes about the strand column.
     # They were computed at a shell prompt the first time and went into the text
     # with nothing on disk behind them; percentages and "sd" units fall outside
-    # `numcheck`'s number grammar, so nothing caught it.
+    # `numcheck`'s number grammar (the old checker, since replaced by the audit), so nothing caught it.
     from scipy.stats import mannwhitneyu
     for label, sel in subsets:
         yy = y[sel]

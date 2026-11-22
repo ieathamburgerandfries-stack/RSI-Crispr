@@ -30,7 +30,7 @@ The blocks are chosen to be the granularity at which somebody would actually
 make a claim -- "the seed region matters", "flank composition matters" -- not
 at the granularity of one indicator variable.
 
-    python -m sgrna.importance --run
+    python -m sgrna.interpret.importance --run
 """
 
 from __future__ import annotations

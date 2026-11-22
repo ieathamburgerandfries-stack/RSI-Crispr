@@ -24,8 +24,8 @@ crisprHAL 2's reported *E. coli* SpCas9 5-fold CV Spearman of 0.697
 (PeerJ 2026), which uses a 378 nt input: 189 nt upstream, the 20 nt target,
 3 nt PAM, 166 nt downstream.
 
-    python -m sgrna.headtohead --index     # locate + flank, cached, resumable
-    python -m sgrna.headtohead --run       # the three arms
+    python -m sgrna.compare.headtohead --index     # locate + flank, cached, resumable
+    python -m sgrna.compare.headtohead --run       # the three arms
 """
 
 from __future__ import annotations

@@ -24,7 +24,7 @@ Sign convention: both models predict *activity*, and effective silencing makes
 fitness **more negative**, so transfer appears as a **negative** correlation. The
 magnitude is what matters and the sign is reported as measured.
 
-    python -m sgrna.cui_final_exam --arm slicer
+    python -m sgrna.screens.cui_final_exam --arm slicer
     .venv-crisprhal/bin/python src/sgrna/cui_final_exam.py --arm crisprhal
 """
 

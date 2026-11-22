@@ -15,9 +15,9 @@ They live together here rather than in eleven natural homes because what they
 have in common is provenance, not subject -- and one module is one thing to keep
 working.
 
-    python -m sgrna.rederive                 # everything cheap
-    python -m sgrna.rederive --only grouped_retention selector_control
-    python -m sgrna.rederive --list
+    python -m sgrna.controls.rederive                 # everything cheap
+    python -m sgrna.controls.rederive --only grouped_retention selector_control
+    python -m sgrna.controls.rederive --list
 
 One of the thirteen is not here. `crisprhal_matched_folds.csv` is a GPU
 artefact: `colab/crisprhal_tune_matched.py` now writes it under that exact name

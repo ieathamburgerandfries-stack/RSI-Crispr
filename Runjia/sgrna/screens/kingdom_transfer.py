@@ -18,7 +18,7 @@ So: both directions, at both settings, on the columns the two matrices share by
 name -- no change of representation, which is what makes the comparison a
 statement about kingdoms rather than about feature engineering.
 
-    python -m sgrna.kingdom_transfer
+    python -m sgrna.screens.kingdom_transfer
 """
 
 from __future__ import annotations

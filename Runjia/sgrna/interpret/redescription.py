@@ -31,9 +31,9 @@ tuple size rises -- with out-of-fold recoverability measured per arm so the ones
 genuinely matched to the real fold energy can be named. They are null at every
 order. Difficulty without meaning buys nothing.
 
-    python -m sgrna.redescription --arm random
-    python -m sgrna.redescription --arm taxonomy
-    python -m sgrna.redescription --arm nonlinear
+    python -m sgrna.interpret.redescription --arm random
+    python -m sgrna.interpret.redescription --arm taxonomy
+    python -m sgrna.interpret.redescription --arm nonlinear
 """
 
 from __future__ import annotations

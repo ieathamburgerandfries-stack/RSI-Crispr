@@ -20,7 +20,7 @@ The rule resolves as: interactions pay only if `both` beats `marginals` by more
 than the interaction columns would be expected to add as four arbitrary dense
 columns — so the `interactions`-alone arm is the reference for that, not zero.
 
-    python -m sgrna.txn_interactions
+    python -m sgrna.strand.txn_interactions
 """
 
 from __future__ import annotations

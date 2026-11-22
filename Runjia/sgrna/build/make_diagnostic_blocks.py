@@ -87,7 +87,7 @@ def main() -> int:
     build_all()
     print(
         "\nNow compare them against the same baseline, e.g.\n"
-        "  python -m sgrna.run_ablation --families z_abundance_all "
+        "  python -m sgrna.harness.run_ablation --families z_abundance_all "
         "--group arc5 --tag dissect"
     )
     return 0

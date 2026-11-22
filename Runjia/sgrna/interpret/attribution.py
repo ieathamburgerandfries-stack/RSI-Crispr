@@ -25,7 +25,7 @@ A permuted-column control is included for scale: two selections that genuinely
 share nothing still overlap a little by luck, and the matched-correlate
 statistic needs a null to be read against.
 
-    python -m sgrna.attribution
+    python -m sgrna.interpret.attribution
 """
 
 from __future__ import annotations

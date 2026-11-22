@@ -5,8 +5,8 @@
 `flip`     Tell a trained model the wrong strand at test time, and see what the
            strand column was carrying. Cui, pooled, gene-grouped, three seeds.
 
-    python -m sgrna.strand_strata --rousset
-    python -m sgrna.strand_strata --flip
+    python -m sgrna.strand.strand_strata --rousset
+    python -m sgrna.strand.strand_strata --flip
 """
 from __future__ import annotations
 

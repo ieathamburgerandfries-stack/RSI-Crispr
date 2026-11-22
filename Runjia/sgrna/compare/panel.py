@@ -25,7 +25,7 @@ Metrics, and why each is here:
   pick_pct_within     the same, but candidates drawn from one gene -- the real
                       task is choosing among sites inside *your* target
 
-    python -m sgrna.panel --run
+    python -m sgrna.compare.panel --run
 """
 
 from __future__ import annotations

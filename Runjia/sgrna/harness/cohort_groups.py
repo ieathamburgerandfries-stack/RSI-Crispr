@@ -19,7 +19,7 @@ Noshay's annotation for 97.7% of guides and gives the same variance share to
 three decimals (0.843 against 0.844), which is the check that the change below
 is the cohort and not the method.
 
-    python -m sgrna.cohort_groups
+    python -m sgrna.harness.cohort_groups
 """
 
 from __future__ import annotations

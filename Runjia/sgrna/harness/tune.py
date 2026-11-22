@@ -34,7 +34,7 @@ Protocol, and the reason for it:
     `n_estimators`), how much it subsamples (`feature_fraction`, `bagging`),
     and regularisation (`lambda_l2`).
 
-    python -m sgrna.tune --run --trials 12
+    python -m sgrna.harness.tune --run --trials 12
 """
 
 from __future__ import annotations

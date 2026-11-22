@@ -33,7 +33,7 @@ more than the inherited figure:
     prior, which can only *raise* reliability above a plain log-ratio's. So the
     true ceiling is at least this.
 
-    python -m sgrna.curated_ceiling
+    python -m sgrna.cohorts.curated_ceiling
 """
 
 from __future__ import annotations

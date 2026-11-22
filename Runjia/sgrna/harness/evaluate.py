@@ -40,7 +40,7 @@ on faith:
 Model class changes all of these, and not in the same direction. Run
 `compare()` for prediction and `interpretability()` for the rest.
 
-    python -m sgrna.evaluate --models xgboost lightgbm ridge --families a_flank
+    python -m sgrna.harness.evaluate --models xgboost lightgbm ridge --families a_flank
 """
 
 from __future__ import annotations

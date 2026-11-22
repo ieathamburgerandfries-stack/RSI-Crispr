@@ -157,7 +157,7 @@ dead code. Two notes from that audit are recorded at the bottom.
 | `curation_variance.py`, `why_inflation.py` | why every family's gain rose when the baseline rose too — the four candidate causes, then the mechanism |
 | `floors.py` | per-family permutation floors, paired fold by fold |
 | `curated_models.py`, `tune.py`, `xgb_knobs.py` | does model class matter once the representation is right; the search; and the eleven knobs no search ever touched |
-| `numcheck.py` | checks every number in the maintained documents against the result files. Run it before committing a document change |
+| *(`numcheck.py`, removed 22 Nov 2026)* | it checked that each number in the documents exists somewhere in `results/`. Replaced by `./run_audit.sh` from `Runjia/`, which checks each quoted number against a named file with a stated tolerance; run that before committing a document change. See `REMOVED.md` |
 | `rederive.py` | re-derives the result files whose producer was lost, and checks they agree |
 
 ## Two settings worth knowing before changing anything

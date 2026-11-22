@@ -32,7 +32,7 @@ Why spectral power and not an autocorrelation: power at a band is insensitive to
 where in the window the periodicity starts, and a guide's flank has no
 privileged phase origin.
 
-    python -m sgrna.build_features --families j_periodicity
+    python -m sgrna.build.build_features --families j_periodicity
 """
 
 from __future__ import annotations

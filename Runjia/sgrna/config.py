@@ -2,7 +2,7 @@
 
 Works in three places without edits:
 
-  1. In a notebook, after `sgrna.notebook.setup()` -- which is how this
+  1. In a notebook, after `sgrna.harness.notebook.setup()` -- which is how this
      project is normally driven (see notebooks/RSI09_pipeline.ipynb).
   2. Locally, when you run anything from inside the project folder.
   3. From anywhere else, if you set the environment variable RSI09_ROOT.

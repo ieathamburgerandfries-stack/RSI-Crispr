@@ -27,7 +27,7 @@ Reading them in order separates four things that the single number 0.6997
 conflates: how much is the *label*, how much is *which* rows, how much is *how
 many* rows, and how much is family A.
 
-    python -m sgrna.data_ablation
+    python -m sgrna.cohorts.data_ablation
 """
 
 from __future__ import annotations

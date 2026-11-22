@@ -30,7 +30,7 @@ spelling" framing needs qualifying.
 Note that with 74 columns the top-300 selection step is a no-op, so that arm
 also removes the selector from the pipeline entirely.
 
-    python -m sgrna.representation --run
+    python -m sgrna.interpret.representation --run
 """
 
 from __future__ import annotations

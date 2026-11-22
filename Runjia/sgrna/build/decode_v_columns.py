@@ -34,7 +34,7 @@ With this mapping plus the QCT tables, `featurise.py` can build the complete
 the crisprHAL curated set is 33,567 guides, of which 24,950 are not in this
 matrix.
 
-    python -m sgrna.decode_v_columns
+    python -m sgrna.build.decode_v_columns
 """
 
 from __future__ import annotations
@@ -149,7 +149,7 @@ def load(path=None) -> dict:
     path = path or MAPPING_PATH
     if not path.exists():
         raise FileNotFoundError(
-            f"{path} not found -- run `python -m sgrna.decode_v_columns` first."
+            f"{path} not found -- run `python -m sgrna.build.decode_v_columns` first."
         )
     return json.loads(path.read_text())
 

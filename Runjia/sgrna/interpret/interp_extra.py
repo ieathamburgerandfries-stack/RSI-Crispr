@@ -19,7 +19,7 @@ guides and probed on held-out ones. None refits the model.
             recompute family A and ask what the model's prediction does. The
             edits that preserve composition are the controls.
 
-    python -m sgrna.interp_extra --sens --inter --cf
+    python -m sgrna.interpret.interp_extra --sens --inter --cf
 """
 
 from __future__ import annotations

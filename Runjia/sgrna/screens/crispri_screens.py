@@ -31,8 +31,8 @@ Three things follow that are not accuracy numbers.
    and Wang are untouched *by this project*, which restores for the dCas9 claims
    exactly what eSpCas9 and Cui stopped providing.
 
-    python -m sgrna.crispri_screens --agreement
-    python -m sgrna.crispri_screens --strand
+    python -m sgrna.screens.crispri_screens --agreement
+    python -m sgrna.screens.crispri_screens --strand
 """
 
 from __future__ import annotations

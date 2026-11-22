@@ -12,8 +12,8 @@ From a notebook cell:
 
 or from a terminal:
 
-    python -m sgrna.build_matrix --cache            # build the cache only
-    python -m sgrna.build_matrix --families a_flank --export csv
+    python -m sgrna.build.build_matrix --cache            # build the cache only
+    python -m sgrna.build.build_matrix --families a_flank --export csv
 
 `--export csv` writes a merged CSV in the same shape as the original (title
 row included) so it can be dropped straight into the team's existing Colab
@@ -162,7 +162,7 @@ def export_csv(families, out_path=None, verbose: bool = True):
             print(f"  merged {fam} -> {df.shape[1]:,} columns")
 
     with open(out_path, "w") as fh:
-        fh.write("Engineered feature matrix, built by sgrna.build_matrix"
+        fh.write("Engineered feature matrix, built by sgrna.build.build_matrix"
                  + "," * (df.shape[1] - 1) + "\n")
         df.to_csv(fh, index=False)
     if verbose:

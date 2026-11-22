@@ -20,7 +20,7 @@ Protocol, identical for both models so the curves are comparable:
   * Epochs, settings and architecture are held at each model's published
     defaults. Tuning at every size would measure tuning, not sample complexity.
 
-    python -m sgrna.sample_complexity --model slicer
+    python -m sgrna.compare.sample_complexity --model slicer
     .venv-crisprhal/bin/python src/sgrna/sample_complexity.py --model crisprhal
 """
 

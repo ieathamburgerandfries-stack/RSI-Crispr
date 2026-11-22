@@ -28,7 +28,7 @@ match and beta is comparable. Then:
 Run on the 8,617 guides both cohorts contain against the 24,950 only crisprHAL
 publishes.
 
-    python -m sgrna.curation_variance
+    python -m sgrna.cohorts.curation_variance
 """
 
 from __future__ import annotations

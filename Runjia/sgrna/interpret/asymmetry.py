@@ -18,8 +18,8 @@ is more transcription to do.
 Those give two tests. One of them **cannot be run on this screen**, and finding
 that out is the first thing this module reports; the other can.
 
-    python -m sgrna.asymmetry --audit     # why the orientation test is impossible
-    python -m sgrna.asymmetry --run       # the expression-conditioned test
+    python -m sgrna.interpret.asymmetry --audit     # why the orientation test is impossible
+    python -m sgrna.interpret.asymmetry --run       # the expression-conditioned test
 """
 
 from __future__ import annotations

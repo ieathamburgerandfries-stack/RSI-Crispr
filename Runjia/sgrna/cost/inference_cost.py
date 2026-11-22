@@ -25,7 +25,7 @@ depth` comparisons -- 400 x 4 = 1,600 for the champion, against crisprHAL 2's
 4.2e14 / 26,853 / 3 forward FLOPs per guide. The two are not the same unit of
 work and the comparison is reported as such.
 
-    python -m sgrna.inference_cost
+    python -m sgrna.cost.inference_cost
 """
 
 from __future__ import annotations

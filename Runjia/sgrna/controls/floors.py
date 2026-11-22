@@ -16,7 +16,7 @@ three seeds was being differenced against a baseline run on five -- mixing a
 real effect with the seed-to-seed spread. Here every delta is **paired on
 (seed, fold)**, so the two arms always see identical data.
 
-    python -m sgrna.floors
+    python -m sgrna.controls.floors
 """
 
 from __future__ import annotations

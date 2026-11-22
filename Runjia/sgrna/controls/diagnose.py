@@ -27,7 +27,7 @@ three measurements test that instinct instead of trusting it.
                 much of a cut score is guide-intrinsic and repeatable, and
                 therefore how high any sequence model could ever go.
 
-    python -m sgrna.diagnose --what all
+    python -m sgrna.controls.diagnose --what all
 """
 
 from __future__ import annotations

@@ -14,8 +14,8 @@ predictions. Two kinds of uncertainty are reported, and they are different:
   * sampling: a bootstrap over genes of the within-gene residuals of the seed-averaged
     predictions (2,000 resamples), for the difference arm - base.
 
-    python -m sgrna.strand_within_gene --cui
-    python -m sgrna.strand_within_gene --rousset
+    python -m sgrna.strand.strand_within_gene --cui
+    python -m sgrna.strand.strand_within_gene --rousset
 """
 from __future__ import annotations
 

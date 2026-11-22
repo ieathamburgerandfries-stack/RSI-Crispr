@@ -24,7 +24,7 @@ The arms are chosen to answer specific suspicions rather than to enumerate:
 Everything else matches `curated_ablation`: same base, same folds, same seeds,
 selection fitted inside each training split.
 
-    python -m sgrna.curated_joint
+    python -m sgrna.cohorts.curated_joint
 """
 
 from __future__ import annotations

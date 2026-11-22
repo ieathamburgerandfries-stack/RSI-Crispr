@@ -39,7 +39,7 @@ is approached from one side. So:
      buys the same coefficient, "Chi" is a GC proxy and the mechanism is not
      supported.
 
-    python -m sgrna.chi_sites
+    python -m sgrna.controls.chi_sites
 """
 
 from __future__ import annotations

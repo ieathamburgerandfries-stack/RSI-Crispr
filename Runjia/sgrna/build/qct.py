@@ -246,7 +246,7 @@ def load_tables(path=None) -> dict:
     path = Path(path or config.QCT_TABLES)
     if not path.exists():
         raise FileNotFoundError(
-            f"{path} not found -- run `python -m sgrna.build_guide_index` first."
+            f"{path} not found -- run `python -m sgrna.build.build_guide_index` first."
         )
     return json.loads(path.read_text())
 

@@ -46,7 +46,7 @@ reconstructing `KFold(5, shuffle=True, random_state=41)` and concatenating its
 validation indices in the same order. The `y` column is the check: if the
 alignment is right, the labels must match exactly, guide for guide.
 
-    python -m sgrna.heldout_compare
+    python -m sgrna.compare.heldout_compare
 """
 
 from __future__ import annotations

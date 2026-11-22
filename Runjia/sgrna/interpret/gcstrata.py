@@ -26,8 +26,8 @@ Two arms, cheap then expensive:
 A flank effect that is a target-GC proxy collapses inside the strata. One that
 survives is a property of the surrounding DNA.
 
-    python -m sgrna.gcstrata --corr
-    python -m sgrna.gcstrata --run
+    python -m sgrna.interpret.gcstrata --corr
+    python -m sgrna.interpret.gcstrata --run
 """
 
 from __future__ import annotations

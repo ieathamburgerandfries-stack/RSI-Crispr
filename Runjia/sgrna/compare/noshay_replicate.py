@@ -51,7 +51,7 @@ flat from 78 upward and peaks near half the columns, so the collapse at 20 is a
 starved-tree effect and nothing to do with the reduced basis. Compare iRF across
 column counts at **matched absolute `mtry`**, never at matched sqrt(p).
 
-    python -m sgrna.noshay_replicate --run
+    python -m sgrna.compare.noshay_replicate --run
 """
 
 from __future__ import annotations

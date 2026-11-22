@@ -26,7 +26,7 @@ the base gained *summary shape*, not because it gained *information*.
     base + summaries                 Δ ?
     base + summaries + a_flank       Δ(a_flank | summaries) = ?
 
-    python -m sgrna.base_enrichment
+    python -m sgrna.interpret.base_enrichment
 """
 
 from __future__ import annotations

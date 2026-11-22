@@ -17,8 +17,8 @@ seeds, selection fitted inside each training fold (the pipeline's own CV):
 The increment of a family is its arm minus `base + strand`. All eleven families
 are built here for Cui's guides, because only A existed for this screen.
 
-    python -m sgrna.strand_families --build
-    python -m sgrna.strand_families --run
+    python -m sgrna.strand.strand_families --build
+    python -m sgrna.strand.strand_families --run
 """
 
 from __future__ import annotations

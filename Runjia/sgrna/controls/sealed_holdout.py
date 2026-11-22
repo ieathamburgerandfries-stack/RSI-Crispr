@@ -38,7 +38,7 @@ claims' worth of exploration are all human choices informed by the full data. No
 re-derivation reaches them. **The number below is therefore a lower bound on the
 adaptive component, and it bounds only the automatable part.**
 
-    python -m sgrna.sealed_holdout
+    python -m sgrna.controls.sealed_holdout
 """
 
 from __future__ import annotations

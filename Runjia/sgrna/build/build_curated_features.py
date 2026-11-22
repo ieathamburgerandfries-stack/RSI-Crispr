@@ -17,8 +17,8 @@ Two differences from `build_features`:
     read as a clean negative result. The check below is cheap; the failure it
     catches is silent and would have been reported.
 
-    python -m sgrna.build_curated_features --families b_energy c_folding
-    python -m sgrna.build_curated_features --all
+    python -m sgrna.build.build_curated_features --families b_energy c_folding
+    python -m sgrna.build.build_curated_features --all
 """
 
 from __future__ import annotations

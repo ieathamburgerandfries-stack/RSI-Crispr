@@ -18,8 +18,8 @@ and scored on that same test set. Comparing R2 across differently-sized runs
 would confound "more training data" with "different test distribution"; this
 does not.
 
-    python -m sgrna.expand --build      # featurise, ~2 min, cached
-    python -m sgrna.expand --curve      # the learning curve
+    python -m sgrna.build.expand --build      # featurise, ~2 min, cached
+    python -m sgrna.build.expand --curve      # the learning curve
 """
 
 from __future__ import annotations

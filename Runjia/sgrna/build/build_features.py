@@ -8,9 +8,9 @@ From a notebook cell (the usual way):
 
 or from a terminal:
 
-    python -m sgrna.build_features --all
-    python -m sgrna.build_features --families a_flank c_folding
-    python -m sgrna.build_features --self-contained
+    python -m sgrna.build.build_features --all
+    python -m sgrna.build.build_features --families a_flank c_folding
+    python -m sgrna.build.build_features --self-contained
 
 Each family writes its own CSV into data/interim/features/. They are
 independent: rebuilding one never touches the others, and a family whose

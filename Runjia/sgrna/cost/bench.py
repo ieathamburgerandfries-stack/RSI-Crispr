@@ -18,8 +18,8 @@ Threads are pinned (`OMP_NUM_THREADS=4`) because this machine has 10 cores and
 that belong to the operating system rather than the model. That is the same
 precaution behind `timing_controlled.csv`.
 
-    python -m sgrna.bench --what memory
-    python -m sgrna.bench --what netcost
+    python -m sgrna.cost.bench --what memory
+    python -m sgrna.cost.bench --what netcost
 """
 
 from __future__ import annotations

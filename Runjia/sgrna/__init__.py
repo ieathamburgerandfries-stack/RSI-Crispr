@@ -2,7 +2,7 @@
 
 Normally driven from a notebook -- see notebooks/RSI09_pipeline.ipynb:
 
-    import sgrna.notebook as nb
+    import sgrna.harness.notebook as nb
     nb.setup(); nb.build_index(); nb.build_features("all"); nb.ablate(["c_folding"])
 
 Layout

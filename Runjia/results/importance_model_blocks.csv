@@ -1,0 +1,799 @@
+fold,model,method,block,n_cols,share
+1,xgboost,native,flank: bases within 10 nt,104,0.04702912854965909
+1,xgboost,native,flank: quantum within 10 nt,156,0.08079161325276878
+1,xgboost,native,flank: window composition,24,0.02031856724825988
+1,xgboost,native,flank: window quantum,64,0.06319848366453316
+1,xgboost,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.08648564785167384
+1,xgboost,native,protospacer indicators: pos 16-20 (seed),781,0.19923183794062707
+1,xgboost,native,protospacer indicators: pos 6-15 (middle),3383,0.2536099883047996
+1,xgboost,native,protospacer indicators: unmapped,34,0.004623801965588057
+1,xgboost,native,protospacer quantum: basepair,60,0.03748143993645523
+1,xgboost,native,protospacer quantum: dimer,76,0.06404378112398565
+1,xgboost,native,protospacer quantum: monomer,40,0.03436366872124916
+1,xgboost,native,protospacer quantum: tetramer,68,0.04252588653479389
+1,xgboost,native,protospacer quantum: trimer,72,0.047171514160619425
+1,xgboost,native,published hand-named,29,0.01912464074498695
+1,xgboost,shap,flank: bases within 10 nt,104,0.069267475692914
+1,xgboost,shap,flank: quantum within 10 nt,156,0.13707942854263364
+1,xgboost,shap,flank: window composition,24,0.023655944238643173
+1,xgboost,shap,flank: window quantum,64,0.07024285954153042
+1,xgboost,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.01888076177997009
+1,xgboost,shap,protospacer indicators: pos 16-20 (seed),781,0.1110135889314523
+1,xgboost,shap,protospacer indicators: pos 6-15 (middle),3383,0.10874494506430492
+1,xgboost,shap,protospacer indicators: unmapped,34,0.005623101626920528
+1,xgboost,shap,protospacer quantum: basepair,60,0.08687629979140285
+1,xgboost,shap,protospacer quantum: dimer,76,0.13306826380046455
+1,xgboost,shap,protospacer quantum: monomer,40,0.023410911402340726
+1,xgboost,shap,protospacer quantum: tetramer,68,0.06271799081753379
+1,xgboost,shap,protospacer quantum: trimer,72,0.07420590048737263
+1,xgboost,shap,published hand-named,29,0.07521252828251634
+1,xgboost,permutation,flank: bases within 10 nt,104,0.1217336678821275
+1,xgboost,permutation,flank: quantum within 10 nt,156,0.1165564600287695
+1,xgboost,permutation,flank: window composition,24,0.015215688288264907
+1,xgboost,permutation,flank: window quantum,64,0.003272169909635821
+1,xgboost,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.0021380942350775886
+1,xgboost,permutation,protospacer indicators: pos 16-20 (seed),781,0.15179243917117582
+1,xgboost,permutation,protospacer indicators: pos 6-15 (middle),3383,0.04611514593958259
+1,xgboost,permutation,protospacer indicators: unmapped,34,0.0037125819795647648
+1,xgboost,permutation,protospacer quantum: basepair,60,0.18455568742606734
+1,xgboost,permutation,protospacer quantum: dimer,76,0.18485083580958742
+1,xgboost,permutation,protospacer quantum: monomer,40,0.008559349930571017
+1,xgboost,permutation,protospacer quantum: tetramer,68,0.02198242930512795
+1,xgboost,permutation,protospacer quantum: trimer,72,0.0472352599108401
+1,xgboost,permutation,published hand-named,29,0.09228019018360771
+1,lightgbm,native,flank: bases within 10 nt,104,0.03873239436619718
+1,lightgbm,native,flank: quantum within 10 nt,156,0.1443661971830986
+1,lightgbm,native,flank: window composition,24,0.04014084507042254
+1,lightgbm,native,flank: window quantum,64,0.15774647887323945
+1,lightgbm,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.03051643192488263
+1,lightgbm,native,protospacer indicators: pos 16-20 (seed),781,0.11971830985915492
+1,lightgbm,native,protospacer indicators: pos 6-15 (middle),3383,0.11807511737089202
+1,lightgbm,native,protospacer indicators: unmapped,34,0.006103286384976526
+1,lightgbm,native,protospacer quantum: basepair,60,0.01948356807511737
+1,lightgbm,native,protospacer quantum: dimer,76,0.08685446009389672
+1,lightgbm,native,protospacer quantum: monomer,40,0.011971830985915493
+1,lightgbm,native,protospacer quantum: tetramer,68,0.09999999999999999
+1,lightgbm,native,protospacer quantum: trimer,72,0.0863849765258216
+1,lightgbm,native,published hand-named,29,0.03990610328638498
+1,lightgbm,shap,flank: bases within 10 nt,104,0.07043072947305473
+1,lightgbm,shap,flank: quantum within 10 nt,156,0.14569066419605325
+1,lightgbm,shap,flank: window composition,24,0.022258648440800118
+1,lightgbm,shap,flank: window quantum,64,0.07233640585234702
+1,lightgbm,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.01698187515544779
+1,lightgbm,shap,protospacer indicators: pos 16-20 (seed),781,0.1191692422342666
+1,lightgbm,shap,protospacer indicators: pos 6-15 (middle),3383,0.11039085695657126
+1,lightgbm,shap,protospacer indicators: unmapped,34,0.005424212576025818
+1,lightgbm,shap,protospacer quantum: basepair,60,0.08353144514110242
+1,lightgbm,shap,protospacer quantum: dimer,76,0.13493455040521063
+1,lightgbm,shap,protospacer quantum: monomer,40,0.013676488840227602
+1,lightgbm,shap,protospacer quantum: tetramer,68,0.06375686814424682
+1,lightgbm,shap,protospacer quantum: trimer,72,0.06792385398195354
+1,lightgbm,shap,published hand-named,29,0.07349415860269233
+1,lightgbm,permutation,flank: bases within 10 nt,104,0.10823853649329962
+1,lightgbm,permutation,flank: quantum within 10 nt,156,0.11649424287549262
+1,lightgbm,permutation,flank: window composition,24,0.001020556048654196
+1,lightgbm,permutation,flank: window quantum,64,0.008850968963281337
+1,lightgbm,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.010877462962784745
+1,lightgbm,permutation,protospacer indicators: pos 16-20 (seed),781,0.1757249955711881
+1,lightgbm,permutation,protospacer indicators: pos 6-15 (middle),3383,0.05462518939837531
+1,lightgbm,permutation,protospacer indicators: unmapped,34,0.002610071087870952
+1,lightgbm,permutation,protospacer quantum: basepair,60,0.2012095169466073
+1,lightgbm,permutation,protospacer quantum: dimer,76,0.17455383508047395
+1,lightgbm,permutation,protospacer quantum: monomer,40,-0.0014601376113312068
+1,lightgbm,permutation,protospacer quantum: tetramer,68,0.022852969216838385
+1,lightgbm,permutation,protospacer quantum: trimer,72,0.04090643436108802
+1,lightgbm,permutation,published hand-named,29,0.08349535860537668
+1,random_forest,native,flank: bases within 10 nt,104,0.027243646096510293
+1,random_forest,native,flank: quantum within 10 nt,156,0.1512076406965399
+1,random_forest,native,flank: window composition,24,0.03878095399146681
+1,random_forest,native,flank: window quantum,64,0.16315637375535724
+1,random_forest,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.013636531040632198
+1,random_forest,native,protospacer indicators: pos 16-20 (seed),781,0.07881168600372385
+1,random_forest,native,protospacer indicators: pos 6-15 (middle),3383,0.04288890606428014
+1,random_forest,native,protospacer indicators: unmapped,34,0.003136835047694392
+1,random_forest,native,protospacer quantum: basepair,60,0.03472791269396854
+1,random_forest,native,protospacer quantum: dimer,76,0.11598191750775212
+1,random_forest,native,protospacer quantum: monomer,40,0.048055013043797994
+1,random_forest,native,protospacer quantum: tetramer,68,0.12066017726096295
+1,random_forest,native,protospacer quantum: trimer,72,0.12440276423622675
+1,random_forest,native,published hand-named,29,0.03730964256108681
+1,random_forest,shap,flank: bases within 10 nt,104,0.030356165376254948
+1,random_forest,shap,flank: quantum within 10 nt,156,0.1033534070807341
+1,random_forest,shap,flank: window composition,24,0.024509052193846102
+1,random_forest,shap,flank: window quantum,64,0.09244604356159848
+1,random_forest,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.01402708700911852
+1,random_forest,shap,protospacer indicators: pos 16-20 (seed),781,0.13918906522941699
+1,random_forest,shap,protospacer indicators: pos 6-15 (middle),3383,0.05755367632634738
+1,random_forest,shap,protospacer indicators: unmapped,34,0.004893092180296644
+1,random_forest,shap,protospacer quantum: basepair,60,0.0813297658185235
+1,random_forest,shap,protospacer quantum: dimer,76,0.12840653187504344
+1,random_forest,shap,protospacer quantum: monomer,40,0.07167316897942255
+1,random_forest,shap,protospacer quantum: tetramer,68,0.08771115208039751
+1,random_forest,shap,protospacer quantum: trimer,72,0.10203124306457081
+1,random_forest,shap,published hand-named,29,0.06252054922442907
+1,random_forest,permutation,flank: bases within 10 nt,104,0.0
+1,random_forest,permutation,flank: quantum within 10 nt,156,0.17235112501276226
+1,random_forest,permutation,flank: window composition,24,0.012857720286325064
+1,random_forest,permutation,flank: window quantum,64,-0.04875669576452383
+1,random_forest,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.0
+1,random_forest,permutation,protospacer indicators: pos 16-20 (seed),781,0.1237421038422148
+1,random_forest,permutation,protospacer indicators: pos 6-15 (middle),3383,0.020070383358086648
+1,random_forest,permutation,protospacer indicators: unmapped,34,0.0
+1,random_forest,permutation,protospacer quantum: basepair,60,0.13919130623494366
+1,random_forest,permutation,protospacer quantum: dimer,76,0.12513149639574667
+1,random_forest,permutation,protospacer quantum: monomer,40,0.08909318261602593
+1,random_forest,permutation,protospacer quantum: tetramer,68,0.09932245569124519
+1,random_forest,permutation,protospacer quantum: trimer,72,0.15170518659834947
+1,random_forest,permutation,published hand-named,29,0.11529173572882415
+1,extra_trees,native,flank: bases within 10 nt,104,0.08660380620615275
+1,extra_trees,native,flank: quantum within 10 nt,156,0.10947338968428143
+1,extra_trees,native,flank: window composition,24,0.0164435664439134
+1,extra_trees,native,flank: window quantum,64,0.04844245756964232
+1,extra_trees,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.041801748998244355
+1,extra_trees,native,protospacer indicators: pos 16-20 (seed),781,0.1986172934381559
+1,extra_trees,native,protospacer indicators: pos 6-15 (middle),3383,0.13273929847440905
+1,extra_trees,native,protospacer indicators: unmapped,34,0.010019222132683709
+1,extra_trees,native,protospacer quantum: basepair,60,0.08652774808361416
+1,extra_trees,native,protospacer quantum: dimer,76,0.0717802400312205
+1,extra_trees,native,protospacer quantum: monomer,40,0.062029801731529395
+1,extra_trees,native,protospacer quantum: tetramer,68,0.04458084094940356
+1,extra_trees,native,protospacer quantum: trimer,72,0.05812934406058602
+1,extra_trees,native,published hand-named,29,0.032811242196163486
+1,extra_trees,shap,flank: bases within 10 nt,104,0.06460029749398252
+1,extra_trees,shap,flank: quantum within 10 nt,156,0.07323411969629384
+1,extra_trees,shap,flank: window composition,24,0.010679684158756213
+1,extra_trees,shap,flank: window quantum,64,0.03677458586412776
+1,extra_trees,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.028926834918448278
+1,extra_trees,shap,protospacer indicators: pos 16-20 (seed),781,0.24978635716846762
+1,extra_trees,shap,protospacer indicators: pos 6-15 (middle),3383,0.1273792478608776
+1,extra_trees,shap,protospacer indicators: unmapped,34,0.010168304149403472
+1,extra_trees,shap,protospacer quantum: basepair,60,0.13160607116335227
+1,extra_trees,shap,protospacer quantum: dimer,76,0.0680907627195826
+1,extra_trees,shap,protospacer quantum: monomer,40,0.07226981308131421
+1,extra_trees,shap,protospacer quantum: tetramer,68,0.03804864173962642
+1,extra_trees,shap,protospacer quantum: trimer,72,0.052084762270963814
+1,extra_trees,shap,published hand-named,29,0.03635051771480347
+1,extra_trees,permutation,flank: bases within 10 nt,104,0.29423147352260753
+1,extra_trees,permutation,flank: quantum within 10 nt,156,0.2703781886059042
+1,extra_trees,permutation,flank: window composition,24,0.06404771982461158
+1,extra_trees,permutation,flank: window quantum,64,0.1565549174555808
+1,extra_trees,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.0038466764703560877
+1,extra_trees,permutation,protospacer indicators: pos 16-20 (seed),781,0.18197804012065383
+1,extra_trees,permutation,protospacer indicators: pos 6-15 (middle),3383,0.031503975318661254
+1,extra_trees,permutation,protospacer indicators: unmapped,34,-0.0070533421294117415
+1,extra_trees,permutation,protospacer quantum: basepair,60,0.09750427441887453
+1,extra_trees,permutation,protospacer quantum: dimer,76,-0.08145509158857622
+1,extra_trees,permutation,protospacer quantum: monomer,40,-0.06674240894578905
+1,extra_trees,permutation,protospacer quantum: tetramer,68,-0.01372883281997651
+1,extra_trees,permutation,protospacer quantum: trimer,72,-0.02864791945714254
+1,extra_trees,permutation,published hand-named,29,0.09758232920364622
+1,ridge,native,flank: bases within 10 nt,104,0.016336505922601482
+1,ridge,native,flank: quantum within 10 nt,156,0.058224207802613594
+1,ridge,native,flank: window composition,24,0.0010380344597852203
+1,ridge,native,flank: window quantum,64,0.022452519459071243
+1,ridge,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.1782692242198037
+1,ridge,native,protospacer indicators: pos 16-20 (seed),781,0.13543912351589668
+1,ridge,native,protospacer indicators: pos 6-15 (middle),3383,0.36027668470610674
+1,ridge,native,protospacer indicators: unmapped,34,0.005294935227785306
+1,ridge,native,protospacer quantum: basepair,60,0.02791477657423852
+1,ridge,native,protospacer quantum: dimer,76,0.036003373074875965
+1,ridge,native,protospacer quantum: monomer,40,0.0197198465710024
+1,ridge,native,protospacer quantum: tetramer,68,0.050059461602338685
+1,ridge,native,protospacer quantum: trimer,72,0.06684260368297636
+1,ridge,native,published hand-named,29,0.022128703180904017
+1,ridge,permutation,flank: bases within 10 nt,104,0.004375332802819886
+1,ridge,permutation,flank: quantum within 10 nt,156,0.08107067526780239
+1,ridge,permutation,flank: window composition,24,0.0
+1,ridge,permutation,flank: window quantum,64,0.034318318784199664
+1,ridge,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.0022989658093900745
+1,ridge,permutation,protospacer indicators: pos 16-20 (seed),781,0.04319634987096223
+1,ridge,permutation,protospacer indicators: pos 6-15 (middle),3383,0.004139097336671566
+1,ridge,permutation,protospacer indicators: unmapped,34,4.0042412680587945e-05
+1,ridge,permutation,protospacer quantum: basepair,60,0.12600363165329204
+1,ridge,permutation,protospacer quantum: dimer,76,0.13477436435578788
+1,ridge,permutation,protospacer quantum: monomer,40,0.04834613579752122
+1,ridge,permutation,protospacer quantum: tetramer,68,0.17856224585425906
+1,ridge,permutation,protospacer quantum: trimer,72,0.30130070942789594
+1,ridge,permutation,published hand-named,29,0.04157413062671742
+1,elastic_net,native,flank: bases within 10 nt,104,0.018035527890324508
+1,elastic_net,native,flank: quantum within 10 nt,156,0.07382237686966758
+1,elastic_net,native,flank: window composition,24,0.0011317697811155179
+1,elastic_net,native,flank: window quantum,64,0.03095402137766271
+1,elastic_net,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.19986694353118706
+1,elastic_net,native,protospacer indicators: pos 16-20 (seed),781,0.1594349426394169
+1,elastic_net,native,protospacer indicators: pos 6-15 (middle),3383,0.4036524453959355
+1,elastic_net,native,protospacer indicators: unmapped,34,0.004611321510768247
+1,elastic_net,native,protospacer quantum: basepair,60,0.016730823285426612
+1,elastic_net,native,protospacer quantum: dimer,76,0.010389820029914482
+1,elastic_net,native,protospacer quantum: monomer,40,0.020141289441812742
+1,elastic_net,native,protospacer quantum: tetramer,68,0.018903897423637878
+1,elastic_net,native,protospacer quantum: trimer,72,0.019136340802883265
+1,elastic_net,native,published hand-named,29,0.02318848002024704
+1,elastic_net,permutation,flank: bases within 10 nt,104,0.012499175753287432
+1,elastic_net,permutation,flank: quantum within 10 nt,156,0.17860925688949786
+1,elastic_net,permutation,flank: window composition,24,0.0
+1,elastic_net,permutation,flank: window quantum,64,0.11609783085832369
+1,elastic_net,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.006720725331534226
+1,elastic_net,permutation,protospacer indicators: pos 16-20 (seed),781,0.12868813000333387
+1,elastic_net,permutation,protospacer indicators: pos 6-15 (middle),3383,0.020981556264203637
+1,elastic_net,permutation,protospacer indicators: unmapped,34,0.0012592706771066375
+1,elastic_net,permutation,protospacer quantum: basepair,60,0.11859667855011344
+1,elastic_net,permutation,protospacer quantum: dimer,76,0.06449475144065275
+1,elastic_net,permutation,protospacer quantum: monomer,40,0.08877455827214202
+1,elastic_net,permutation,protospacer quantum: tetramer,68,0.04945094412305309
+1,elastic_net,permutation,protospacer quantum: trimer,72,0.09311653263491516
+1,elastic_net,permutation,published hand-named,29,0.12071058920183635
+1,catboost,native,flank: bases within 10 nt,104,0.03162119643469883
+1,catboost,native,flank: quantum within 10 nt,156,0.10922259221544973
+1,catboost,native,flank: window composition,24,0.028245854723853173
+1,catboost,native,flank: window quantum,64,0.07338043444154393
+1,catboost,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.010330697903831405
+1,catboost,native,protospacer indicators: pos 16-20 (seed),781,0.14083341460285195
+1,catboost,native,protospacer indicators: pos 6-15 (middle),3383,0.08516658972085245
+1,catboost,native,protospacer indicators: unmapped,34,0.0036277865067929605
+1,catboost,native,protospacer quantum: basepair,60,0.1024932603007001
+1,catboost,native,protospacer quantum: dimer,76,0.19997694306165922
+1,catboost,native,protospacer quantum: monomer,40,0.04192077538934106
+1,catboost,native,protospacer quantum: tetramer,68,0.03880796372986651
+1,catboost,native,protospacer quantum: trimer,72,0.05507330419907044
+1,catboost,native,published hand-named,29,0.07929918676948831
+1,catboost,shap,flank: bases within 10 nt,104,0.04663225204510207
+1,catboost,shap,flank: quantum within 10 nt,156,0.15255690883473044
+1,catboost,shap,flank: window composition,24,0.019488912064433348
+1,catboost,shap,flank: window quantum,64,0.05474839720885641
+1,catboost,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.00970258768663751
+1,catboost,shap,protospacer indicators: pos 16-20 (seed),781,0.10538336904936571
+1,catboost,shap,protospacer indicators: pos 6-15 (middle),3383,0.08378676227924246
+1,catboost,shap,protospacer indicators: unmapped,34,0.003918811437557178
+1,catboost,shap,protospacer quantum: basepair,60,0.10324537190970759
+1,catboost,shap,protospacer quantum: dimer,76,0.16264449176855908
+1,catboost,shap,protospacer quantum: monomer,40,0.06041943394363221
+1,catboost,shap,protospacer quantum: tetramer,68,0.049689597009128804
+1,catboost,shap,protospacer quantum: trimer,72,0.05622050483469283
+1,catboost,shap,published hand-named,29,0.09156259992835433
+1,catboost,permutation,flank: bases within 10 nt,104,0.07194525057871902
+1,catboost,permutation,flank: quantum within 10 nt,156,0.1941276542255991
+1,catboost,permutation,flank: window composition,24,0.014192075011689093
+1,catboost,permutation,flank: window quantum,64,0.01687569598643749
+1,catboost,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.007529870612172818
+1,catboost,permutation,protospacer indicators: pos 16-20 (seed),781,0.1800566457560152
+1,catboost,permutation,protospacer indicators: pos 6-15 (middle),3383,0.060294384543699606
+1,catboost,permutation,protospacer indicators: unmapped,34,0.005088571539261133
+1,catboost,permutation,protospacer quantum: basepair,60,0.09938842378509063
+1,catboost,permutation,protospacer quantum: dimer,76,0.18774960054934234
+1,catboost,permutation,protospacer quantum: monomer,40,0.012604240388571442
+1,catboost,permutation,protospacer quantum: tetramer,68,0.01912013218603672
+1,catboost,permutation,protospacer quantum: trimer,72,0.035544972125321296
+1,catboost,permutation,published hand-named,29,0.0954824827120441
+2,xgboost,native,flank: bases within 10 nt,104,0.05123921732616365
+2,xgboost,native,flank: quantum within 10 nt,156,0.09026843966394704
+2,xgboost,native,flank: window composition,24,0.022916505785807992
+2,xgboost,native,flank: window quantum,64,0.06652032570604999
+2,xgboost,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.08718600687965646
+2,xgboost,native,protospacer indicators: pos 16-20 (seed),781,0.18027892277198865
+2,xgboost,native,protospacer indicators: pos 6-15 (middle),3383,0.22788343654657456
+2,xgboost,native,protospacer indicators: unmapped,34,0.010382408907466273
+2,xgboost,native,protospacer quantum: basepair,60,0.041593626181800146
+2,xgboost,native,protospacer quantum: dimer,76,0.07083939505525977
+2,xgboost,native,protospacer quantum: monomer,40,0.03274617707508128
+2,xgboost,native,protospacer quantum: tetramer,68,0.044455598407418834
+2,xgboost,native,protospacer quantum: trimer,72,0.05341174069104072
+2,xgboost,native,published hand-named,29,0.02027819900174465
+2,xgboost,shap,flank: bases within 10 nt,104,0.06934203256444958
+2,xgboost,shap,flank: quantum within 10 nt,156,0.15247568855844237
+2,xgboost,shap,flank: window composition,24,0.027139369380708128
+2,xgboost,shap,flank: window quantum,64,0.07642810669756755
+2,xgboost,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.014106095922018445
+2,xgboost,shap,protospacer indicators: pos 16-20 (seed),781,0.11092485762837771
+2,xgboost,shap,protospacer indicators: pos 6-15 (middle),3383,0.09913158946978368
+2,xgboost,shap,protospacer indicators: unmapped,34,0.003342347485980742
+2,xgboost,shap,protospacer quantum: basepair,60,0.09537307848744828
+2,xgboost,shap,protospacer quantum: dimer,76,0.12523753952931677
+2,xgboost,shap,protospacer quantum: monomer,40,0.021465237322529605
+2,xgboost,shap,protospacer quantum: tetramer,68,0.07246910017282372
+2,xgboost,shap,protospacer quantum: trimer,72,0.06103579817954271
+2,xgboost,shap,published hand-named,29,0.07152915860101071
+2,xgboost,permutation,flank: bases within 10 nt,104,0.10112344859754553
+2,xgboost,permutation,flank: quantum within 10 nt,156,0.08973697753735362
+2,xgboost,permutation,flank: window composition,24,-0.0019506983186716575
+2,xgboost,permutation,flank: window quantum,64,-0.00406431351033461
+2,xgboost,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.012853641463120838
+2,xgboost,permutation,protospacer indicators: pos 16-20 (seed),781,0.17746662771157667
+2,xgboost,permutation,protospacer indicators: pos 6-15 (middle),3383,0.08810596336046163
+2,xgboost,permutation,protospacer indicators: unmapped,34,0.00046565549284252383
+2,xgboost,permutation,protospacer quantum: basepair,60,0.1607469835773114
+2,xgboost,permutation,protospacer quantum: dimer,76,0.18485974469549302
+2,xgboost,permutation,protospacer quantum: monomer,40,0.017282670833118102
+2,xgboost,permutation,protospacer quantum: tetramer,68,0.02773148058077539
+2,xgboost,permutation,protospacer quantum: trimer,72,0.06213399179224564
+2,xgboost,permutation,published hand-named,29,0.0835078261871619
+2,lightgbm,native,flank: bases within 10 nt,104,0.04028648164726947
+2,lightgbm,native,flank: quantum within 10 nt,156,0.14816472694717994
+2,lightgbm,native,flank: window composition,24,0.0436436884512086
+2,lightgbm,native,flank: window quantum,64,0.1611459265890779
+2,lightgbm,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.02820053715308863
+2,lightgbm,native,protospacer indicators: pos 16-20 (seed),781,0.10944494180841541
+2,lightgbm,native,protospacer indicators: pos 6-15 (middle),3383,0.09847806624888093
+2,lightgbm,native,protospacer indicators: unmapped,34,0.0040286481647269475
+2,lightgbm,native,protospacer quantum: basepair,60,0.01812891674127126
+2,lightgbm,native,protospacer quantum: dimer,76,0.07766338406445837
+2,lightgbm,native,protospacer quantum: monomer,40,0.01477170993733214
+2,lightgbm,native,protospacer quantum: tetramer,68,0.11615935541629364
+2,lightgbm,native,protospacer quantum: trimer,72,0.09713518352730528
+2,lightgbm,native,published hand-named,29,0.0427484333034915
+2,lightgbm,shap,flank: bases within 10 nt,104,0.07140049749476722
+2,lightgbm,shap,flank: quantum within 10 nt,156,0.14828697954989378
+2,lightgbm,shap,flank: window composition,24,0.027027273071716016
+2,lightgbm,shap,flank: window quantum,64,0.07684548048174976
+2,lightgbm,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.013164185492890935
+2,lightgbm,shap,protospacer indicators: pos 16-20 (seed),781,0.11288472006806911
+2,lightgbm,shap,protospacer indicators: pos 6-15 (middle),3383,0.09706381000720714
+2,lightgbm,shap,protospacer indicators: unmapped,34,0.003469720289723208
+2,lightgbm,shap,protospacer quantum: basepair,60,0.09777630987930346
+2,lightgbm,shap,protospacer quantum: dimer,76,0.1239122351747028
+2,lightgbm,shap,protospacer quantum: monomer,40,0.017941914448797783
+2,lightgbm,shap,protospacer quantum: tetramer,68,0.0745981217147254
+2,lightgbm,shap,protospacer quantum: trimer,72,0.061110841197675354
+2,lightgbm,shap,published hand-named,29,0.074517911128778
+2,lightgbm,permutation,flank: bases within 10 nt,104,0.10392440258911444
+2,lightgbm,permutation,flank: quantum within 10 nt,156,0.09111023883248633
+2,lightgbm,permutation,flank: window composition,24,1.970442040197282e-05
+2,lightgbm,permutation,flank: window quantum,64,0.0020669412992769197
+2,lightgbm,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.012402906132937519
+2,lightgbm,permutation,protospacer indicators: pos 16-20 (seed),781,0.14442479186024995
+2,lightgbm,permutation,protospacer indicators: pos 6-15 (middle),3383,0.07714685434116458
+2,lightgbm,permutation,protospacer indicators: unmapped,34,0.0
+2,lightgbm,permutation,protospacer quantum: basepair,60,0.18756896278286883
+2,lightgbm,permutation,protospacer quantum: dimer,76,0.18499856547502136
+2,lightgbm,permutation,protospacer quantum: monomer,40,0.000933469303165379
+2,lightgbm,permutation,protospacer quantum: tetramer,68,0.0542662958179069
+2,lightgbm,permutation,protospacer quantum: trimer,72,0.060581550181330567
+2,lightgbm,permutation,published hand-named,29,0.08055531696407527
+2,random_forest,native,flank: bases within 10 nt,104,0.027286906014534512
+2,random_forest,native,flank: quantum within 10 nt,156,0.1553828123299114
+2,random_forest,native,flank: window composition,24,0.040282198554775404
+2,random_forest,native,flank: window quantum,64,0.16242970707890958
+2,random_forest,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.01230433614558906
+2,random_forest,native,protospacer indicators: pos 16-20 (seed),781,0.07426757029068316
+2,random_forest,native,protospacer indicators: pos 6-15 (middle),3383,0.03920173697197559
+2,random_forest,native,protospacer indicators: unmapped,34,0.003103862569299146
+2,random_forest,native,protospacer quantum: basepair,60,0.0360173857418497
+2,random_forest,native,protospacer quantum: dimer,76,0.11824759470036056
+2,random_forest,native,protospacer quantum: monomer,40,0.04427344590448852
+2,random_forest,native,protospacer quantum: tetramer,68,0.12270097255301772
+2,random_forest,native,protospacer quantum: trimer,72,0.12549729466847998
+2,random_forest,native,published hand-named,29,0.03900417647612544
+2,random_forest,shap,flank: bases within 10 nt,104,0.03453242563932753
+2,random_forest,shap,flank: quantum within 10 nt,156,0.1098221652239905
+2,random_forest,shap,flank: window composition,24,0.025268982283822624
+2,random_forest,shap,flank: window quantum,64,0.09281689743731807
+2,random_forest,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.012486336131201961
+2,random_forest,shap,protospacer indicators: pos 16-20 (seed),781,0.13726595447442666
+2,random_forest,shap,protospacer indicators: pos 6-15 (middle),3383,0.04953011940637339
+2,random_forest,shap,protospacer indicators: unmapped,34,0.004284842995381102
+2,random_forest,shap,protospacer quantum: basepair,60,0.08091622874797073
+2,random_forest,shap,protospacer quantum: dimer,76,0.13542310692097512
+2,random_forest,shap,protospacer quantum: monomer,40,0.06030737681568034
+2,random_forest,shap,protospacer quantum: tetramer,68,0.08992337394936267
+2,random_forest,shap,protospacer quantum: trimer,72,0.10277704258339071
+2,random_forest,shap,published hand-named,29,0.06464514739077853
+2,random_forest,permutation,flank: bases within 10 nt,104,0.08848215991589034
+2,random_forest,permutation,flank: quantum within 10 nt,156,0.16677795599548828
+2,random_forest,permutation,flank: window composition,24,-0.023973862735704555
+2,random_forest,permutation,flank: window quantum,64,-0.22310905365055878
+2,random_forest,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.0
+2,random_forest,permutation,protospacer indicators: pos 16-20 (seed),781,0.18288686732766676
+2,random_forest,permutation,protospacer indicators: pos 6-15 (middle),3383,0.035757889154850474
+2,random_forest,permutation,protospacer indicators: unmapped,34,0.0
+2,random_forest,permutation,protospacer quantum: basepair,60,0.07140483819741263
+2,random_forest,permutation,protospacer quantum: dimer,76,0.3263126450964775
+2,random_forest,permutation,protospacer quantum: monomer,40,0.11855421227948297
+2,random_forest,permutation,protospacer quantum: tetramer,68,0.04347301470038864
+2,random_forest,permutation,protospacer quantum: trimer,72,0.15011846018563835
+2,random_forest,permutation,published hand-named,29,0.06331487353296736
+2,extra_trees,native,flank: bases within 10 nt,104,0.08784460717443501
+2,extra_trees,native,flank: quantum within 10 nt,156,0.11220423963041927
+2,extra_trees,native,flank: window composition,24,0.016735088164210443
+2,extra_trees,native,flank: window quantum,64,0.0502610578945361
+2,extra_trees,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.039767652195472444
+2,extra_trees,native,protospacer indicators: pos 16-20 (seed),781,0.19382010697207186
+2,extra_trees,native,protospacer indicators: pos 6-15 (middle),3383,0.12303669887660278
+2,extra_trees,native,protospacer indicators: unmapped,34,0.010079033669422031
+2,extra_trees,native,protospacer quantum: basepair,60,0.09158493357260504
+2,extra_trees,native,protospacer quantum: dimer,76,0.07498731964797095
+2,extra_trees,native,protospacer quantum: monomer,40,0.062052929080028664
+2,extra_trees,native,protospacer quantum: tetramer,68,0.04585660989906262
+2,extra_trees,native,protospacer quantum: trimer,72,0.05828699087784242
+2,extra_trees,native,published hand-named,29,0.033482732345320364
+2,extra_trees,shap,flank: bases within 10 nt,104,0.06901469277601496
+2,extra_trees,shap,flank: quantum within 10 nt,156,0.07732568574006106
+2,extra_trees,shap,flank: window composition,24,0.010978951105189108
+2,extra_trees,shap,flank: window quantum,64,0.03952406996182533
+2,extra_trees,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.02534878826028658
+2,extra_trees,shap,protospacer indicators: pos 16-20 (seed),781,0.2462494293949666
+2,extra_trees,shap,protospacer indicators: pos 6-15 (middle),3383,0.11408104537715077
+2,extra_trees,shap,protospacer indicators: unmapped,34,0.009545812308722992
+2,extra_trees,shap,protospacer quantum: basepair,60,0.1355836985120152
+2,extra_trees,shap,protospacer quantum: dimer,76,0.07366820124426278
+2,extra_trees,shap,protospacer quantum: monomer,40,0.07117460132287623
+2,extra_trees,shap,protospacer quantum: tetramer,68,0.040593806390461916
+2,extra_trees,shap,protospacer quantum: trimer,72,0.050959426407933744
+2,extra_trees,shap,published hand-named,29,0.03595179119823281
+2,extra_trees,permutation,flank: bases within 10 nt,104,0.18486121684046414
+2,extra_trees,permutation,flank: quantum within 10 nt,156,0.17983888790571848
+2,extra_trees,permutation,flank: window composition,24,0.030843334594904463
+2,extra_trees,permutation,flank: window quantum,64,0.10190227678650907
+2,extra_trees,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.0012098139569215345
+2,extra_trees,permutation,protospacer indicators: pos 16-20 (seed),781,0.25551627984278547
+2,extra_trees,permutation,protospacer indicators: pos 6-15 (middle),3383,0.1336928203188064
+2,extra_trees,permutation,protospacer indicators: unmapped,34,0.003440533611692199
+2,extra_trees,permutation,protospacer quantum: basepair,60,-0.002731163051208585
+2,extra_trees,permutation,protospacer quantum: dimer,76,-0.000907152987204812
+2,extra_trees,permutation,protospacer quantum: monomer,40,0.09736545315831888
+2,extra_trees,permutation,protospacer quantum: tetramer,68,-0.015685199491371107
+2,extra_trees,permutation,protospacer quantum: trimer,72,-0.03795731407725497
+2,extra_trees,permutation,published hand-named,29,0.06861021259091885
+2,ridge,native,flank: bases within 10 nt,104,0.012539288771091481
+2,ridge,native,flank: quantum within 10 nt,156,0.061528865791594306
+2,ridge,native,flank: window composition,24,0.0008159307823245375
+2,ridge,native,flank: window quantum,64,0.023762706480602344
+2,ridge,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.1714971499744934
+2,ridge,native,protospacer indicators: pos 16-20 (seed),781,0.12686728784992235
+2,ridge,native,protospacer indicators: pos 6-15 (middle),3383,0.36028701463666235
+2,ridge,native,protospacer indicators: unmapped,34,0.004946536394962778
+2,ridge,native,protospacer quantum: basepair,60,0.031792150913296235
+2,ridge,native,protospacer quantum: dimer,76,0.04264152823682759
+2,ridge,native,protospacer quantum: monomer,40,0.01827566043784135
+2,ridge,native,protospacer quantum: tetramer,68,0.058704569309545984
+2,ridge,native,protospacer quantum: trimer,72,0.06716836671561198
+2,ridge,native,published hand-named,29,0.01917294370522316
+2,ridge,permutation,flank: bases within 10 nt,104,0.002735200713230896
+2,ridge,permutation,flank: quantum within 10 nt,156,0.07723220912535658
+2,ridge,permutation,flank: window composition,24,0.0
+2,ridge,permutation,flank: window quantum,64,0.03484915850251457
+2,ridge,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.0036630545851733345
+2,ridge,permutation,protospacer indicators: pos 16-20 (seed),781,0.042701065708924936
+2,ridge,permutation,protospacer indicators: pos 6-15 (middle),3383,0.007179321662293301
+2,ridge,permutation,protospacer indicators: unmapped,34,-0.00034413539916648467
+2,ridge,permutation,protospacer quantum: basepair,60,0.11424596464873554
+2,ridge,permutation,protospacer quantum: dimer,76,0.15525763376360313
+2,ridge,permutation,protospacer quantum: monomer,40,0.047982003083847174
+2,ridge,permutation,protospacer quantum: tetramer,68,0.2000918407131059
+2,ridge,permutation,protospacer quantum: trimer,72,0.2749546591894202
+2,ridge,permutation,published hand-named,29,0.03945202370296091
+2,elastic_net,native,flank: bases within 10 nt,104,0.013183273510331111
+2,elastic_net,native,flank: quantum within 10 nt,156,0.07241692617500585
+2,elastic_net,native,flank: window composition,24,0.000950521795301525
+2,elastic_net,native,flank: window quantum,64,0.033008762039953767
+2,elastic_net,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.18795665569198364
+2,elastic_net,native,protospacer indicators: pos 16-20 (seed),781,0.14732804290887647
+2,elastic_net,native,protospacer indicators: pos 6-15 (middle),3383,0.40270304751280095
+2,elastic_net,native,protospacer indicators: unmapped,34,0.0038093102786065087
+2,elastic_net,native,protospacer quantum: basepair,60,0.025657032184264635
+2,elastic_net,native,protospacer quantum: dimer,76,0.022299268808582233
+2,elastic_net,native,protospacer quantum: monomer,40,0.020589768243233632
+2,elastic_net,native,protospacer quantum: tetramer,68,0.019935744205261955
+2,elastic_net,native,protospacer quantum: trimer,72,0.02545751500916334
+2,elastic_net,native,published hand-named,29,0.02470413163663447
+2,elastic_net,permutation,flank: bases within 10 nt,104,0.010915801816582355
+2,elastic_net,permutation,flank: quantum within 10 nt,156,0.17220399723143615
+2,elastic_net,permutation,flank: window composition,24,0.0
+2,elastic_net,permutation,flank: window quantum,64,0.08401030611396983
+2,elastic_net,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.010509792418595395
+2,elastic_net,permutation,protospacer indicators: pos 16-20 (seed),781,0.11833245411963848
+2,elastic_net,permutation,protospacer indicators: pos 6-15 (middle),3383,0.027897101192849102
+2,elastic_net,permutation,protospacer indicators: unmapped,34,-4.119264849931729e-05
+2,elastic_net,permutation,protospacer quantum: basepair,60,0.1268316444089955
+2,elastic_net,permutation,protospacer quantum: dimer,76,0.06743305464930335
+2,elastic_net,permutation,protospacer quantum: monomer,40,0.08997990114285034
+2,elastic_net,permutation,protospacer quantum: tetramer,68,0.03704932958903421
+2,elastic_net,permutation,protospacer quantum: trimer,72,0.08877305155220806
+2,elastic_net,permutation,published hand-named,29,0.1661047584130365
+2,catboost,native,flank: bases within 10 nt,104,0.031059228567801463
+2,catboost,native,flank: quantum within 10 nt,156,0.1271910335835867
+2,catboost,native,flank: window composition,24,0.0414950294324881
+2,catboost,native,flank: window quantum,64,0.06671056701521584
+2,catboost,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.006559369471924829
+2,catboost,native,protospacer indicators: pos 16-20 (seed),781,0.13935296014966458
+2,catboost,native,protospacer indicators: pos 6-15 (middle),3383,0.08031582505339745
+2,catboost,native,protospacer indicators: unmapped,34,0.0017301548803785776
+2,catboost,native,protospacer quantum: basepair,60,0.14060641736025295
+2,catboost,native,protospacer quantum: dimer,76,0.16269613565798574
+2,catboost,native,protospacer quantum: monomer,40,0.03320407438349523
+2,catboost,native,protospacer quantum: tetramer,68,0.04189125219235129
+2,catboost,native,protospacer quantum: trimer,72,0.04868381576192908
+2,catboost,native,published hand-named,29,0.07850413648952828
+2,catboost,shap,flank: bases within 10 nt,104,0.04725853397619157
+2,catboost,shap,flank: quantum within 10 nt,156,0.1706997245235386
+2,catboost,shap,flank: window composition,24,0.02657676775739669
+2,catboost,shap,flank: window quantum,64,0.054040389628896526
+2,catboost,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.00344716313590044
+2,catboost,shap,protospacer indicators: pos 16-20 (seed),781,0.11142237580045784
+2,catboost,shap,protospacer indicators: pos 6-15 (middle),3383,0.07857443649120588
+2,catboost,shap,protospacer indicators: unmapped,34,0.0016488503910599892
+2,catboost,shap,protospacer quantum: basepair,60,0.12528260886850268
+2,catboost,shap,protospacer quantum: dimer,76,0.13723697124990059
+2,catboost,shap,protospacer quantum: monomer,40,0.049064605139490125
+2,catboost,shap,protospacer quantum: tetramer,68,0.05218780107935934
+2,catboost,shap,protospacer quantum: trimer,72,0.053051021734003175
+2,catboost,shap,published hand-named,29,0.08950875022409668
+2,catboost,permutation,flank: bases within 10 nt,104,0.031039930735448223
+2,catboost,permutation,flank: quantum within 10 nt,156,0.18797305532204167
+2,catboost,permutation,flank: window composition,24,0.0028146116305809185
+2,catboost,permutation,flank: window quantum,64,-0.013763163164657248
+2,catboost,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.012403659550190932
+2,catboost,permutation,protospacer indicators: pos 16-20 (seed),781,0.22233503450904335
+2,catboost,permutation,protospacer indicators: pos 6-15 (middle),3383,0.09397029896738515
+2,catboost,permutation,protospacer indicators: unmapped,34,0.0006674529759707968
+2,catboost,permutation,protospacer quantum: basepair,60,0.11345350524091433
+2,catboost,permutation,protospacer quantum: dimer,76,0.18521085494439604
+2,catboost,permutation,protospacer quantum: monomer,40,0.023042254755617633
+2,catboost,permutation,protospacer quantum: tetramer,68,0.021390183047774607
+2,catboost,permutation,protospacer quantum: trimer,72,0.06006377547229284
+2,catboost,permutation,published hand-named,29,0.05939854601300078
+3,xgboost,native,flank: bases within 10 nt,104,0.05286730262334065
+3,xgboost,native,flank: quantum within 10 nt,156,0.07877230364687228
+3,xgboost,native,flank: window composition,24,0.020249848017875785
+3,xgboost,native,flank: window quantum,64,0.060510030716715686
+3,xgboost,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.09461809507175882
+3,xgboost,native,protospacer indicators: pos 16-20 (seed),781,0.19134435555594956
+3,xgboost,native,protospacer indicators: pos 6-15 (middle),3383,0.22862929921726877
+3,xgboost,native,protospacer indicators: unmapped,34,0.008081412356051938
+3,xgboost,native,protospacer quantum: basepair,60,0.04842542809030594
+3,xgboost,native,protospacer quantum: dimer,76,0.0689914118402128
+3,xgboost,native,protospacer quantum: monomer,40,0.037298222152742824
+3,xgboost,native,protospacer quantum: tetramer,68,0.04376445428693409
+3,xgboost,native,protospacer quantum: trimer,72,0.04872736832016505
+3,xgboost,native,published hand-named,29,0.017720468103805814
+3,xgboost,shap,flank: bases within 10 nt,104,0.0692845463419771
+3,xgboost,shap,flank: quantum within 10 nt,156,0.1338518837568705
+3,xgboost,shap,flank: window composition,24,0.020214465711796543
+3,xgboost,shap,flank: window quantum,64,0.0743186895900266
+3,xgboost,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.011666830296561556
+3,xgboost,shap,protospacer indicators: pos 16-20 (seed),781,0.13268268577874023
+3,xgboost,shap,protospacer indicators: pos 6-15 (middle),3383,0.10245513019481524
+3,xgboost,shap,protospacer indicators: unmapped,34,0.0035492365325146998
+3,xgboost,shap,protospacer quantum: basepair,60,0.08335218013895407
+3,xgboost,shap,protospacer quantum: dimer,76,0.12219907262578558
+3,xgboost,shap,protospacer quantum: monomer,40,0.024534947680909535
+3,xgboost,shap,protospacer quantum: tetramer,68,0.07429107205857928
+3,xgboost,shap,protospacer quantum: trimer,72,0.057658817199741565
+3,xgboost,shap,published hand-named,29,0.08994044209272758
+3,xgboost,permutation,flank: bases within 10 nt,104,0.12199451159513007
+3,xgboost,permutation,flank: quantum within 10 nt,156,0.10409941363019369
+3,xgboost,permutation,flank: window composition,24,0.01846201418280084
+3,xgboost,permutation,flank: window quantum,64,0.03037030110761455
+3,xgboost,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.005051499522164546
+3,xgboost,permutation,protospacer indicators: pos 16-20 (seed),781,0.18986697999965862
+3,xgboost,permutation,protospacer indicators: pos 6-15 (middle),3383,0.10927953455663017
+3,xgboost,permutation,protospacer indicators: unmapped,34,0.0037311365973695812
+3,xgboost,permutation,protospacer quantum: basepair,60,0.18329304121571754
+3,xgboost,permutation,protospacer quantum: dimer,76,0.10853195446690819
+3,xgboost,permutation,protospacer quantum: monomer,40,0.006959763405729873
+3,xgboost,permutation,protospacer quantum: tetramer,68,0.008004143329080294
+3,xgboost,permutation,protospacer quantum: trimer,72,0.019313790793376338
+3,xgboost,permutation,published hand-named,29,0.09104191559762566
+3,lightgbm,native,flank: bases within 10 nt,104,0.04008293020041465
+3,lightgbm,native,flank: quantum within 10 nt,156,0.14604929739691316
+3,lightgbm,native,flank: window composition,24,0.03271135683022345
+3,lightgbm,native,flank: window quantum,64,0.15065653075328264
+3,lightgbm,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.025109421792213774
+3,lightgbm,native,protospacer indicators: pos 16-20 (seed),781,0.1151808339092375
+3,lightgbm,native,protospacer indicators: pos 6-15 (middle),3383,0.1124164938954158
+3,lightgbm,native,protospacer indicators: unmapped,34,0.00414651002073255
+3,lightgbm,native,protospacer quantum: basepair,60,0.015894955079474776
+3,lightgbm,native,protospacer quantum: dimer,76,0.0792444137295554
+3,lightgbm,native,protospacer quantum: monomer,40,0.011748445058742224
+3,lightgbm,native,protospacer quantum: tetramer,68,0.11748445058742225
+3,lightgbm,native,protospacer quantum: trimer,72,0.1022805805114029
+3,lightgbm,native,published hand-named,29,0.0469937802349689
+3,lightgbm,shap,flank: bases within 10 nt,104,0.06981417215869633
+3,lightgbm,shap,flank: quantum within 10 nt,156,0.14017652475922188
+3,lightgbm,shap,flank: window composition,24,0.02007857971881816
+3,lightgbm,shap,flank: window quantum,64,0.08080299366513494
+3,lightgbm,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.012505188370434205
+3,lightgbm,shap,protospacer indicators: pos 16-20 (seed),781,0.12319537567914787
+3,lightgbm,shap,protospacer indicators: pos 6-15 (middle),3383,0.10040523154411697
+3,lightgbm,shap,protospacer indicators: unmapped,34,0.004302267622184563
+3,lightgbm,shap,protospacer quantum: basepair,60,0.0835577433615714
+3,lightgbm,shap,protospacer quantum: dimer,76,0.12496110146316902
+3,lightgbm,shap,protospacer quantum: monomer,40,0.014464833266166155
+3,lightgbm,shap,protospacer quantum: tetramer,68,0.06751166596273503
+3,lightgbm,shap,protospacer quantum: trimer,72,0.0722281866792303
+3,lightgbm,shap,published hand-named,29,0.08599613574937298
+3,lightgbm,permutation,flank: bases within 10 nt,104,0.09590963049487171
+3,lightgbm,permutation,flank: quantum within 10 nt,156,0.12587400107066493
+3,lightgbm,permutation,flank: window composition,24,0.01993918902360306
+3,lightgbm,permutation,flank: window quantum,64,0.03282369833810355
+3,lightgbm,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.008647435916042468
+3,lightgbm,permutation,protospacer indicators: pos 16-20 (seed),781,0.165599237666773
+3,lightgbm,permutation,protospacer indicators: pos 6-15 (middle),3383,0.10024640637415021
+3,lightgbm,permutation,protospacer indicators: unmapped,34,0.0036365868202044146
+3,lightgbm,permutation,protospacer quantum: basepair,60,0.18537015540035764
+3,lightgbm,permutation,protospacer quantum: dimer,76,0.15570617125639347
+3,lightgbm,permutation,protospacer quantum: monomer,40,0.0038282230367268767
+3,lightgbm,permutation,protospacer quantum: tetramer,68,0.01798470840690007
+3,lightgbm,permutation,protospacer quantum: trimer,72,0.02470283385084171
+3,lightgbm,permutation,published hand-named,29,0.059731722344366855
+3,random_forest,native,flank: bases within 10 nt,104,0.02693096649402397
+3,random_forest,native,flank: quantum within 10 nt,156,0.15470287264986388
+3,random_forest,native,flank: window composition,24,0.037388376754593375
+3,random_forest,native,flank: window quantum,64,0.15932853982307965
+3,random_forest,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.014096884903784645
+3,random_forest,native,protospacer indicators: pos 16-20 (seed),781,0.07265854330428954
+3,random_forest,native,protospacer indicators: pos 6-15 (middle),3383,0.04027347762419208
+3,random_forest,native,protospacer indicators: unmapped,34,0.0032906257849193306
+3,random_forest,native,protospacer quantum: basepair,60,0.03754959792717348
+3,random_forest,native,protospacer quantum: dimer,76,0.11826834694412185
+3,random_forest,native,protospacer quantum: monomer,40,0.044573497107188574
+3,random_forest,native,protospacer quantum: tetramer,68,0.12520148178808108
+3,random_forest,native,protospacer quantum: trimer,72,0.12438459932245133
+3,random_forest,native,published hand-named,29,0.04135218957223737
+3,random_forest,shap,flank: bases within 10 nt,104,0.03245643719316033
+3,random_forest,shap,flank: quantum within 10 nt,156,0.10435716495728002
+3,random_forest,shap,flank: window composition,24,0.02213744673720525
+3,random_forest,shap,flank: window quantum,64,0.09153492584597092
+3,random_forest,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.014387781387271512
+3,random_forest,shap,protospacer indicators: pos 16-20 (seed),781,0.13246447995358018
+3,random_forest,shap,protospacer indicators: pos 6-15 (middle),3383,0.052648841659468405
+3,random_forest,shap,protospacer indicators: unmapped,34,0.004643015803155878
+3,random_forest,shap,protospacer quantum: basepair,60,0.08670490534134392
+3,random_forest,shap,protospacer quantum: dimer,76,0.13107838951459683
+3,random_forest,shap,protospacer quantum: monomer,40,0.05724394784660482
+3,random_forest,shap,protospacer quantum: tetramer,68,0.09653222047696519
+3,random_forest,shap,protospacer quantum: trimer,72,0.10207472355476642
+3,random_forest,shap,published hand-named,29,0.07173571972863034
+3,random_forest,permutation,flank: bases within 10 nt,104,0.032038730256762744
+3,random_forest,permutation,flank: quantum within 10 nt,156,0.22880488621913977
+3,random_forest,permutation,flank: window composition,24,0.010559418631506159
+3,random_forest,permutation,flank: window quantum,64,0.08939589379806381
+3,random_forest,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.0
+3,random_forest,permutation,protospacer indicators: pos 16-20 (seed),781,0.10979801356690412
+3,random_forest,permutation,protospacer indicators: pos 6-15 (middle),3383,0.033002731795899076
+3,random_forest,permutation,protospacer indicators: unmapped,34,0.0
+3,random_forest,permutation,protospacer quantum: basepair,60,0.0705264204086467
+3,random_forest,permutation,protospacer quantum: dimer,76,0.1595321090304613
+3,random_forest,permutation,protospacer quantum: monomer,40,0.0739542491207566
+3,random_forest,permutation,protospacer quantum: tetramer,68,0.07110224473959739
+3,random_forest,permutation,protospacer quantum: trimer,72,0.0852501273351579
+3,random_forest,permutation,published hand-named,29,0.03603517509710441
+3,extra_trees,native,flank: bases within 10 nt,104,0.08769217715378382
+3,extra_trees,native,flank: quantum within 10 nt,156,0.10968590059701773
+3,extra_trees,native,flank: window composition,24,0.015774381526494945
+3,extra_trees,native,flank: window quantum,64,0.04556539081786081
+3,extra_trees,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.042679345637782334
+3,extra_trees,native,protospacer indicators: pos 16-20 (seed),781,0.19705820059096998
+3,extra_trees,native,protospacer indicators: pos 6-15 (middle),3383,0.12852968129630699
+3,extra_trees,native,protospacer indicators: unmapped,34,0.009906976414734524
+3,extra_trees,native,protospacer quantum: basepair,60,0.09081701933073977
+3,extra_trees,native,protospacer quantum: dimer,76,0.07299801006678827
+3,extra_trees,native,protospacer quantum: monomer,40,0.059055872030259374
+3,extra_trees,native,protospacer quantum: tetramer,68,0.046570148800210764
+3,extra_trees,native,protospacer quantum: trimer,72,0.06001045415825893
+3,extra_trees,native,published hand-named,29,0.03365644157879161
+3,extra_trees,shap,flank: bases within 10 nt,104,0.06867441835772342
+3,extra_trees,shap,flank: quantum within 10 nt,156,0.07032701733775065
+3,extra_trees,shap,flank: window composition,24,0.010353218630196222
+3,extra_trees,shap,flank: window quantum,64,0.03399187564804018
+3,extra_trees,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.02784036174396021
+3,extra_trees,shap,protospacer indicators: pos 16-20 (seed),781,0.2491951286208004
+3,extra_trees,shap,protospacer indicators: pos 6-15 (middle),3383,0.12229016264484331
+3,extra_trees,shap,protospacer indicators: unmapped,34,0.010039224771454369
+3,extra_trees,shap,protospacer quantum: basepair,60,0.1357023317392526
+3,extra_trees,shap,protospacer quantum: dimer,76,0.07209011467393947
+3,extra_trees,shap,protospacer quantum: monomer,40,0.06601384749703317
+3,extra_trees,shap,protospacer quantum: tetramer,68,0.0420338403420497
+3,extra_trees,shap,protospacer quantum: trimer,72,0.05253705774035449
+3,extra_trees,shap,published hand-named,29,0.03891140025260178
+3,extra_trees,permutation,flank: bases within 10 nt,104,0.17770679879415607
+3,extra_trees,permutation,flank: quantum within 10 nt,156,0.15744992559669332
+3,extra_trees,permutation,flank: window composition,24,0.04362517411347113
+3,extra_trees,permutation,flank: window quantum,64,0.12419180041800809
+3,extra_trees,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.000978061102847058
+3,extra_trees,permutation,protospacer indicators: pos 16-20 (seed),781,0.2563125988606454
+3,extra_trees,permutation,protospacer indicators: pos 6-15 (middle),3383,0.13012317555635414
+3,extra_trees,permutation,protospacer indicators: unmapped,34,-0.008753876593146144
+3,extra_trees,permutation,protospacer quantum: basepair,60,0.07970474148270541
+3,extra_trees,permutation,protospacer quantum: dimer,76,-0.06986911670878607
+3,extra_trees,permutation,protospacer quantum: monomer,40,0.12853749519592414
+3,extra_trees,permutation,protospacer quantum: tetramer,68,0.006053565342927947
+3,extra_trees,permutation,protospacer quantum: trimer,72,-0.07035739594122171
+3,extra_trees,permutation,published hand-named,29,0.044297052779421205
+3,ridge,native,flank: bases within 10 nt,104,0.01271906521142912
+3,ridge,native,flank: quantum within 10 nt,156,0.060790552979992245
+3,ridge,native,flank: window composition,24,0.0008152827576433985
+3,ridge,native,flank: window quantum,64,0.01898772324071038
+3,ridge,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.18429400273922641
+3,ridge,native,protospacer indicators: pos 16-20 (seed),781,0.13294127250034635
+3,ridge,native,protospacer indicators: pos 6-15 (middle),3383,0.3677765683055431
+3,ridge,native,protospacer indicators: unmapped,34,0.005524950754084578
+3,ridge,native,protospacer quantum: basepair,60,0.03644508465749254
+3,ridge,native,protospacer quantum: dimer,76,0.03697652930237346
+3,ridge,native,protospacer quantum: monomer,40,0.019880774178177178
+3,ridge,native,protospacer quantum: tetramer,68,0.05363621326370999
+3,ridge,native,protospacer quantum: trimer,72,0.04805361976022975
+3,ridge,native,published hand-named,29,0.021158360349041314
+3,ridge,permutation,flank: bases within 10 nt,104,0.004147371704618722
+3,ridge,permutation,flank: quantum within 10 nt,156,0.10490636412910588
+3,ridge,permutation,flank: window composition,24,0.0
+3,ridge,permutation,flank: window quantum,64,0.0319208711798552
+3,ridge,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,-0.00039263594037231063
+3,ridge,permutation,protospacer indicators: pos 16-20 (seed),781,0.044932174965614406
+3,ridge,permutation,protospacer indicators: pos 6-15 (middle),3383,0.012263894647461445
+3,ridge,permutation,protospacer indicators: unmapped,34,0.0003919091856609996
+3,ridge,permutation,protospacer quantum: basepair,60,0.1653496375772518
+3,ridge,permutation,protospacer quantum: dimer,76,0.13672704026751484
+3,ridge,permutation,protospacer quantum: monomer,40,0.051491268778916355
+3,ridge,permutation,protospacer quantum: tetramer,68,0.23638589205283958
+3,ridge,permutation,protospacer quantum: trimer,72,0.1618484806289559
+3,ridge,permutation,published hand-named,29,0.05002773082257701
+3,elastic_net,native,flank: bases within 10 nt,104,0.01240655381293116
+3,elastic_net,native,flank: quantum within 10 nt,156,0.06995863706598035
+3,elastic_net,native,flank: window composition,24,0.0009378648714082904
+3,elastic_net,native,flank: window quantum,64,0.024270609494550857
+3,elastic_net,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.19676063037081454
+3,elastic_net,native,protospacer indicators: pos 16-20 (seed),781,0.14789603938171658
+3,elastic_net,native,protospacer indicators: pos 6-15 (middle),3383,0.39411752377629067
+3,elastic_net,native,protospacer indicators: unmapped,34,0.005064162715766443
+3,elastic_net,native,protospacer quantum: basepair,60,0.028175218707457667
+3,elastic_net,native,protospacer quantum: dimer,76,0.020366095185969116
+3,elastic_net,native,protospacer quantum: monomer,40,0.0220471392849995
+3,elastic_net,native,protospacer quantum: tetramer,68,0.024486807202436723
+3,elastic_net,native,protospacer quantum: trimer,72,0.027482365340033572
+3,elastic_net,native,published hand-named,29,0.026030352789644644
+3,elastic_net,permutation,flank: bases within 10 nt,104,0.0060366581278690325
+3,elastic_net,permutation,flank: quantum within 10 nt,156,0.14529753432567605
+3,elastic_net,permutation,flank: window composition,24,0.0
+3,elastic_net,permutation,flank: window quantum,64,0.054663578101836356
+3,elastic_net,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.0038620578657231333
+3,elastic_net,permutation,protospacer indicators: pos 16-20 (seed),781,0.10271137867387295
+3,elastic_net,permutation,protospacer indicators: pos 6-15 (middle),3383,0.03811998771765571
+3,elastic_net,permutation,protospacer indicators: unmapped,34,0.003968417756390041
+3,elastic_net,permutation,protospacer quantum: basepair,60,0.15241617870570826
+3,elastic_net,permutation,protospacer quantum: dimer,76,0.07381454731758534
+3,elastic_net,permutation,protospacer quantum: monomer,40,0.07011667742033172
+3,elastic_net,permutation,protospacer quantum: tetramer,68,0.05712614451404228
+3,elastic_net,permutation,protospacer quantum: trimer,72,0.08993035963224724
+3,elastic_net,permutation,published hand-named,29,0.20193647984106197
+3,catboost,native,flank: bases within 10 nt,104,0.0310654030887942
+3,catboost,native,flank: quantum within 10 nt,156,0.10582799201541682
+3,catboost,native,flank: window composition,24,0.022910606484485146
+3,catboost,native,flank: window quantum,64,0.07175865047806643
+3,catboost,native,protospacer indicators: pos 1-5 (PAM-distal),1689,0.007047463238279299
+3,catboost,native,protospacer indicators: pos 16-20 (seed),781,0.15862275589247365
+3,catboost,native,protospacer indicators: pos 6-15 (middle),3383,0.08871113937257644
+3,catboost,native,protospacer indicators: unmapped,34,0.0025484757817445156
+3,catboost,native,protospacer quantum: basepair,60,0.11824337540218421
+3,catboost,native,protospacer quantum: dimer,76,0.15501974121152065
+3,catboost,native,protospacer quantum: monomer,40,0.03291325045875908
+3,catboost,native,protospacer quantum: tetramer,68,0.056134598303775596
+3,catboost,native,protospacer quantum: trimer,72,0.05726084393739614
+3,catboost,native,published hand-named,29,0.09193570433452783
+3,catboost,shap,flank: bases within 10 nt,104,0.04648527808507969
+3,catboost,shap,flank: quantum within 10 nt,156,0.1415205638615604
+3,catboost,shap,flank: window composition,24,0.019935561036571264
+3,catboost,shap,flank: window quantum,64,0.06334056709724539
+3,catboost,shap,protospacer indicators: pos 1-5 (PAM-distal),1689,0.0046688572638610175
+3,catboost,shap,protospacer indicators: pos 16-20 (seed),781,0.12160074523287791
+3,catboost,shap,protospacer indicators: pos 6-15 (middle),3383,0.08653078598026155
+3,catboost,shap,protospacer indicators: unmapped,34,0.0019322960092656115
+3,catboost,shap,protospacer quantum: basepair,60,0.10415436175021732
+3,catboost,shap,protospacer quantum: dimer,76,0.13245299730774743
+3,catboost,shap,protospacer quantum: monomer,40,0.046401023790274866
+3,catboost,shap,protospacer quantum: tetramer,68,0.06199429879272299
+3,catboost,shap,protospacer quantum: trimer,72,0.061729078763902906
+3,catboost,shap,published hand-named,29,0.10725358502841167
+3,catboost,permutation,flank: bases within 10 nt,104,0.041084012699441494
+3,catboost,permutation,flank: quantum within 10 nt,156,0.14741215420315526
+3,catboost,permutation,flank: window composition,24,0.024853755569707568
+3,catboost,permutation,flank: window quantum,64,0.05266994165590808
+3,catboost,permutation,protospacer indicators: pos 1-5 (PAM-distal),1689,0.010074718051877282
+3,catboost,permutation,protospacer indicators: pos 16-20 (seed),781,0.2025066223266095
+3,catboost,permutation,protospacer indicators: pos 6-15 (middle),3383,0.11417517918417952
+3,catboost,permutation,protospacer indicators: unmapped,34,0.0003436721422863483
+3,catboost,permutation,protospacer quantum: basepair,60,0.12255602527015513
+3,catboost,permutation,protospacer quantum: dimer,76,0.1113033989443055
+3,catboost,permutation,protospacer quantum: monomer,40,0.027567343380559384
+3,catboost,permutation,protospacer quantum: tetramer,68,0.022047244285584192
+3,catboost,permutation,protospacer quantum: trimer,72,0.038455625940142985
+3,catboost,permutation,published hand-named,29,0.08495030634608776

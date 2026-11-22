@@ -26,7 +26,7 @@ answers that for a twentieth of the cost. Feature selection is model-independent
 here -- the selector is its own fixed XGBoost -- so the 300 columns are chosen
 once per fold and reused by every arm, which is what makes the sweep cheap.
 
-    python -m sgrna.xgb_knobs
+    python -m sgrna.harness.xgb_knobs
 """
 
 from __future__ import annotations

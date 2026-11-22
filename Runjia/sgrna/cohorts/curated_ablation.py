@@ -11,8 +11,8 @@ This runs the same ablation design on the curated cohort: base representation
 (the 6,169 columns regenerable from the 20-mer) against base + one family, five
 seeds by five folds, feature selection fitted inside each training split.
 
-    python -m sgrna.curated_ablation --families b_energy c_folding
-    python -m sgrna.curated_ablation --all
+    python -m sgrna.cohorts.curated_ablation --families b_energy c_folding
+    python -m sgrna.cohorts.curated_ablation --all
 """
 
 from __future__ import annotations

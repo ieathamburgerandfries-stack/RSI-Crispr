@@ -7,9 +7,9 @@
 # to name this fork's `results/post_freeze`, or results are written beside the wrong tree; and PYTHONPATH has to include `Runjia`.
 # The interpreter also lives outside both repositories. Override it with PY=... if yours is elsewhere.
 #
-#   ./run_ext.sh sgrna.post_freeze.verify_numbers
-#   ./run_ext.sh sgrna.post_freeze.family_a_at_tuned --seeds 41
-#   PY=/path/to/python ./run_ext.sh sgrna.post_freeze.tune_split2 --draws 40
+#   ./run_ext.sh sgrna.post_freeze.paper.verify_numbers
+#   ./run_ext.sh sgrna.post_freeze.tuning.family_a_at_tuned --seeds 41
+#   PY=/path/to/python ./run_ext.sh sgrna.post_freeze.tuning.tune_split2 --draws 40
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"    # .../RSI-Crispr-fork/Runjia
@@ -27,7 +27,7 @@ if [ ! -d "$PROJECT/data" ]; then
   exit 1
 fi
 if [ $# -eq 0 ]; then
-  echo "usage: ./run_ext.sh <module> [args...]        e.g. ./run_ext.sh sgrna.post_freeze.verify_numbers" >&2
+  echo "usage: ./run_ext.sh <module> [args...]        e.g. ./run_ext.sh sgrna.post_freeze.paper.verify_numbers" >&2
   exit 2
 fi
 

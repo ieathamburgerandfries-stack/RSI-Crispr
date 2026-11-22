@@ -26,7 +26,7 @@ consequences:
                 biased ranker -- and if they do not, the pipeline has been
                 leaving something on the table since September.
 
-    python -m sgrna.selector_audit
+    python -m sgrna.controls.selector_audit
 """
 
 from __future__ import annotations

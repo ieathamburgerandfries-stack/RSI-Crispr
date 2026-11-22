@@ -6,7 +6,7 @@ cell gives you a wall of text and no object to inspect afterwards. The
 functions here wrap the same code so each step is one call that prints a short
 summary and hands back a DataFrame you can look at.
 
-    import sgrna.notebook as nb
+    import sgrna.harness.notebook as nb
     nb.setup()
     nb.build_index()
     nb.build_features("all")
@@ -158,7 +158,7 @@ def status() -> pd.DataFrame:
 
 def _require_setup() -> None:
     if config is None:
-        raise RuntimeError("Call sgrna.notebook.setup() first.")
+        raise RuntimeError("Call sgrna.harness.notebook.setup() first.")
 
 
 # --------------------------------------------------------------------------

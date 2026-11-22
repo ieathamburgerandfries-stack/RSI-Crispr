@@ -22,7 +22,7 @@ Library defaults matter here and are not a detail: XGBoost's defaults are
 champion's `max_depth=4, learning_rate=0.05`. On a 17,421-row matrix that is a
 different model, not a tweak.
 
-    python -m sgrna.human_baseline
+    python -m sgrna.screens.human_baseline
 """
 
 from __future__ import annotations

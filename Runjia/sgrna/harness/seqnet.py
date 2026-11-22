@@ -14,15 +14,15 @@ Comparing the first against the boosted baseline separates "we need a better
 representation of the guide" from "we need more context".
 
 Needs `torch` (CPU is fine, ~2 min per fold at +/- 100 nt) and two files that
-`sgrna.diagnose` / the pipeline write:
+`sgrna.controls.diagnose` / the pipeline write:
 
     data/interim/sequence_context.csv   sgRNAID, protospacer, pam, up250, dn250
     data/interim/cv_folds.csv           the exact folds the tabular models used
 
     pip install torch --index-url https://download.pytorch.org/whl/cpu
-    python -m sgrna.seqnet --flank 0                      # protospacer + PAM only
-    python -m sgrna.seqnet --flank 100                    # plus 100 nt either side
-    python -m sgrna.seqnet --flank 1000 --source index    # the matched test
+    python -m sgrna.harness.seqnet --flank 0                      # protospacer + PAM only
+    python -m sgrna.harness.seqnet --flank 100                    # plus 100 nt either side
+    python -m sgrna.harness.seqnet --flank 1000 --source index    # the matched test
 """
 
 from __future__ import annotations

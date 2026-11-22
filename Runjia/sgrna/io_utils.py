@@ -46,7 +46,7 @@ def load_block(family: str) -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(
             f"No feature block for '{family}'. Build it with "
-            f"`python -m sgrna.build_features --families {family}`."
+            f"`python -m sgrna.build.build_features --families {family}`."
         )
     return pd.read_csv(path, low_memory=False)
 
@@ -59,7 +59,7 @@ def load_guide_index() -> pd.DataFrame:
     if not config.GUIDE_INDEX.exists():
         raise FileNotFoundError(
             f"{config.GUIDE_INDEX} not found -- run "
-            "`python -m sgrna.build_guide_index` first."
+            "`python -m sgrna.build.build_guide_index` first."
         )
     return pd.read_csv(config.GUIDE_INDEX, low_memory=False)
 

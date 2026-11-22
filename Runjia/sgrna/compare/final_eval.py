@@ -26,7 +26,7 @@ Frozen means frozen: the SLICER arm takes `champion_params`, `make_selector` and
 `N_FEATURES` as they stand, and the selector is fitted on their training rows so
 no test row touches feature selection.
 
-    python -m sgrna.final_eval --arm slicer
+    python -m sgrna.compare.final_eval --arm slicer
     .venv-crisprhal/bin/python src/sgrna/final_eval.py --arm crisprhal
 """
 

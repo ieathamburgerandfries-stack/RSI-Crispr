@@ -19,6 +19,10 @@ folds → R² 0.2937 ± 0.0015, Spearman 0.5278, Pearson 0.5424 on Noshay's 13,8
 guides — kept because reproducing it to four decimal places is how this pipeline
 is checked, not because it is the current baseline.
 
+**Where to start.** [`CODE_MAP.md`](CODE_MAP.md) says what every module is and which section of the report it supports (generated from the
+code and checked by the audit); [`REMOVED.md`](REMOVED.md) says what was deleted and why, and what was brought in; `PROGRESS_REPORT.md` is the
+claims, `EXTENSION_LOG.md` the working record, and `./run_audit.sh` recomputes every number the report quotes.
+
 **Extension (this fork only).** Work outside the frozen pipeline (`sgrna/post_freeze/`, `EXTENSION_LOG.md`).
 Two representation ideas the freeze deferred, as Findings 8–9: the flank's shape and 3D structure add nothing to
 its composition, and nuclease descriptors carry an unseen enzyme's PAM usage and little else. Then, from 9 November,
@@ -66,8 +70,8 @@ produced the two results worth knowing about before reading anything else:
   result moves.
 
 **Where the open questions are.** All of them are in one place — the **open-questions register**, `PROGRESS_REPORT.md`
-Part 4. Nine remain open and each says what would settle it; six were closed on 20 November and the register says where.
-`./run_audit.sh` recomputes every post-freeze number (897 checks), checks that four documents agree on that count, that
+Part 4. Ten remain open and each says what would settle it; six were closed on 20 November. The tenth — what a clone of the repository can verify — was added on 22 November.
+`./run_audit.sh` recomputes every post-freeze number (940 checks), checks that four documents agree on that count, that
 four claims later work made false have not returned, and that every module in the package imports without writing
 anything.
 
@@ -209,7 +213,7 @@ Under 100 kb-blocked CV: `e_nucleoid` +0.017, `g_transcription` +0.016.
 Permutation floors run −0.002 to +0.001.
 
 **All eleven families have now been re-measured on the 33,567-row curated
-cohort** (`python -m sgrna.curated_ablation --all`,
+cohort** (`python -m sgrna.cohorts.curated_ablation --all`,
 [`results/ablation_curated.csv`](results/ablation_curated.csv)). The ranking
 transfers almost exactly — rank ρ 0.97 against the published table — while every
 family inflates, median 3.3×. **The inflation is not noise removal and not the
@@ -219,7 +223,7 @@ host gene shows the weak relationship belongs to Noshay's 1,222-gene panel rathe
 than to the particular guides in it (β +5.4 inside the panel, +17.0 outside).
 Guo's panel is a part of the genome where the flank effect is weak, so +0.080 is
 the right figure for that panel and +0.164 the right one genome-wide — neither
-is an attenuated version of the other (`python -m sgrna.curation_variance`).
+is an attenuated version of the other (`python -m sgrna.cohorts.curation_variance`).
 
 Family A +0.164 (**+0.156 on sealed genes** — see the adaptive-overfitting
 caveat below), `d_supercoiling` +0.139, `i_shape`
@@ -242,7 +246,7 @@ repository's git history is the record of what was believed when.
 were identified as (position, k-mer) indicators (100% verification), so with
 the recovered QCT tables **99% of the published feature matrix regenerates from
 a 20 nt protospacer** — any bacterial Cas9 screen can now be featurised the
-same way. `python -m sgrna.expand --build` does it for all 33,567 curated Guo
+same way. `python -m sgrna.build.expand --build` does it for all 33,567 curated Guo
 guides.
 
 **Four improvement levers, measured not assumed:** a cleaner label +0.003,
@@ -251,7 +255,7 @@ wider flanks saturate at 250–500 nt. Only sequence context outside the 20-mer
 paid, at +0.080.
 
 **All eleven families together on the curated cohort: ρ 0.7475, Δ +0.2030**
-(`python -m sgrna.curated_joint`,
+(`python -m sgrna.cohorts.curated_joint`,
 [`results/curated_joint.csv`](results/curated_joint.csv)). Adding up the eleven
 single-family gains would claim **+0.7046** — so the families realise **29%** of
 their own sum and the family table must never be read as a budget. The overlap is
@@ -292,7 +296,7 @@ flanks (+0.019 vs +0.080). Two independent screens of the same library agree at
 the constraint either. (The curated crisprHAL label we now train on has its own,
 higher ceiling of 0.946 — measured, not inherited; the two numbers belong to two
 different quantities and are not interchangeable.)
-`results/RESULTS_archive_2026-10-10.md` §13 has the full argument; `python -m sgrna.diagnose
+`results/RESULTS_archive_2026-10-10.md` §13 has the full argument; `python -m sgrna.controls.diagnose
 --what all` reproduces it.
 
 **Model class, measured on identical folds and identical selected features.**
@@ -395,7 +399,7 @@ with no paths to edit.
 The whole pipeline is four calls:
 
 ```python
-import sgrna.notebook as nb
+import sgrna.harness.notebook as nb
 nb.setup()                    # find the project, install what is missing
 nb.build_index()              # ~3 min once: locate all 13,880 guides
 nb.build_features("all")      # ~25 min once: all eleven families
@@ -412,8 +416,8 @@ biopython`) are installed by `nb.setup()`.
 > datasets have to live in Drive too, which is slow.
 
 > **Terminal instead?** Every step also has a CLI: `python -m
-> sgrna.build_guide_index`, `python -m sgrna.build_features --all`,
-> `python -m sgrna.run_ablation --families a_flank --permute`, and so on.
+> sgrna.build.build_guide_index`, `python -m sgrna.build.build_features --all`,
+> `python -m sgrna.harness.run_ablation --families a_flank --permute`, and so on.
 
 ---
 
@@ -548,7 +552,7 @@ therefore a replication of a published null, which is worth a paragraph in the
 paper rather than another round of tuning.
 
 Measured here on the curated cohort, that null splits three ways
-(`python -m sgrna.txn_interactions`,
+(`python -m sgrna.strand.txn_interactions`,
 [`results/txn_interactions.csv`](results/txn_interactions.csv)): **essentiality
 is exactly nothing** (+0.00004 as a lone column, confirming Guo), **expression is
 not** (+0.0213), and the largest part of `g_transcription`'s +0.058 is **gene
@@ -581,7 +585,7 @@ transcriptional one.
    development pool only, and differencing against a reference arm chosen
    elsewhere puts the automatable part at **+0.0087 ρ [+0.0020, +0.0153]** over
    **fifteen** sealing draws — 12 of 15 positive, t = 2.56, p = 0.022
-   (`python -m sgrna.sealed_holdout --seal-seeds ...`). **It lands on the
+   (`python -m sgrna.controls.sealed_holdout --seal-seeds ...`). **It lands on the
    differences, not the levels**: absolute scores do not move detectably
    (0.7043 in pool CV against 0.7077 sealed), while **family A's gain reads
    +0.164 in cross-validation and +0.156 on genes the pipeline never saw**.

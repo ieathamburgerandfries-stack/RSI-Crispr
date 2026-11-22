@@ -19,13 +19,13 @@ What it does
 
 Run from a notebook cell (the usual way):
 
-    import sgrna.notebook as nb
+    import sgrna.harness.notebook as nb
     nb.setup()
     nb.build_index()
 
 or from a terminal:
 
-    python -m sgrna.build_guide_index
+    python -m sgrna.build.build_guide_index
 """
 
 from __future__ import annotations

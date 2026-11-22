@@ -43,7 +43,7 @@ Three importance methods are computed where each applies:
                method that is defined identically for every model, and the
                only one measured against held-out data.
 
-    python -m sgrna.importance_models --run
+    python -m sgrna.interpret.importance_models --run
 """
 
 from __future__ import annotations

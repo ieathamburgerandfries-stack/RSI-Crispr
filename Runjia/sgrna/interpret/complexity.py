@@ -25,7 +25,7 @@ equivalent at all:
     decorrelated basis (Appendix B), which says the fitted function is mostly a
     sum of one-dimensional effects and can be read as one.
 
-    python -m sgrna.complexity
+    python -m sgrna.interpret.complexity
 """
 
 from __future__ import annotations

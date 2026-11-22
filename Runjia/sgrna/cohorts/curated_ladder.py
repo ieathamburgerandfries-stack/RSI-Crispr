@@ -23,7 +23,7 @@ mononucleotide indicators" means exactly the columns that decode to
 Three seeds × five folds rather than five × five: no arm selects, so each fit
 is over every column it holds, and the ladder is internally consistent at three.
 
-    python -m sgrna.curated_ladder
+    python -m sgrna.cohorts.curated_ladder
 """
 
 from __future__ import annotations

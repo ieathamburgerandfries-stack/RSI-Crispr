@@ -27,7 +27,7 @@ proved anything on its own:
 The second is the one that matters: it removes the same amount of *structure*,
 just not the structure the ranking pointed at.
 
-    python -m sgrna.faithfulness --run
+    python -m sgrna.interpret.faithfulness --run
 """
 
 from __future__ import annotations
