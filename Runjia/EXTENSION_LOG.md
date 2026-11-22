@@ -222,9 +222,14 @@ champion pipeline.**
 4. *Which geometry columns are used:* of 27 geometry columns surviving selection (6.1% of model
    importance), the five largest are excess twist over 100-499 nt (the summed step twist minus 10.5 bp per
    turn), predictable from letter composition with out-of-fold R2 0.43-0.67 and from **dinucleotide
-   composition with R2 0.963**: a sum of step twists is, to that accuracy, a weighted dinucleotide count.
-   The others are path coordinates at +12 and +25 bp (R2 from composition ~0: they encode the identity of the
+   composition with R2 0.86-0.97 by ridge (0.85-0.94 by boosting)**, 0.968 for the downstream 499-nt window:
+   a sum of step twists is, to that accuracy, a weighted dinucleotide count. The others are path coordinates
+   at +12 and +25 bp (R2 ~0 from letters, at most 0.15 from dinucleotides: they encode the identity of the
    first 12-25 nt after the PAM, which family A holds as position-specific columns).
+   *Correction, 22 Nov:* this item originally read "R2 0.963". That figure came from a session whose code was not
+   kept; re-running the analysis from `geom_importance.py` (now extended to compute it) gives 0.968 by ridge and
+   0.937 by boosting for the same column, so the old figure is retired. The letter-composition values reproduced
+   to three decimals, which is the check that the re-run is the same analysis.
 5. *Why MD geometry is weaker alone (+0.031 against +0.078 / +0.080).* First hypothesis: the MD table's
    mean twist (32.5 deg) puts roll and twist out of phase. **Rejected**: recentring each source's mean twist
    to 34.3 deg changes nothing (md 0.5914 against 0.5897; xrc 0.6377 against 0.6367; mc unchanged). What
@@ -367,7 +372,7 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
-*Current state of the audit (20 Nov):* it has grown with each section and now stands at **885 checks, 0 mismatches**,
+*Current state of the audit (20 Nov):* it has grown with each section and now stands at **897 checks, 0 mismatches**,
 covering sections 7-22. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
 modules need and exits non-zero if any quoted number no longer matches its file. Since 22.4 it also checks three things
 about itself: that every module in the package imports and that importing one writes nothing; that four claims which

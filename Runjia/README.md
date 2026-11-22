@@ -67,7 +67,7 @@ produced the two results worth knowing about before reading anything else:
 
 **Where the open questions are.** All of them are in one place — the **open-questions register**, `PROGRESS_REPORT.md`
 Part 4. Nine remain open and each says what would settle it; six were closed on 20 November and the register says where.
-`./run_audit.sh` recomputes every post-freeze number (885 checks), checks that four documents agree on that count, that
+`./run_audit.sh` recomputes every post-freeze number (897 checks), checks that four documents agree on that count, that
 four claims later work made false have not returned, and that every module in the package imports without writing
 anything.
 

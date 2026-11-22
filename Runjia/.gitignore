@@ -1,0 +1,2 @@
+# CatBoost writes its training log into the working directory; it was tracked by mistake.
+catboost_info/

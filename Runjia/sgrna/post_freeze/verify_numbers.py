@@ -674,6 +674,23 @@ def main():
     chk("every figure has a vector PDF", float(sum((_fd / f"{n_}.pdf").exists() for n_ in man.figure)), 7, 0)
     chk("every figure has a 600 dpi PNG", float(sum((_fd / f"{n_}.png").exists() for n_ in man.figure)), 7, 0)
 
+    print("8. what the geometry columns are (geom_importance)")
+    gi = pd.read_csv(OUT / "geom_importance.csv").set_index("column")
+    xt = gi[gi.index.str.startswith("xtwist.")]
+    chk("8. the five largest geometry columns are all excess twist", float(gi.head(5).index.str.startswith("xtwist.").sum()), 5, 0)
+    chk("8. excess twist, letters: lowest R2", float(xt.r2_from_composition.head(5).min()), 0.43, 2)
+    chk("8. excess twist, letters: highest R2", float(xt.r2_from_composition.head(5).max()), 0.67, 2)
+    chk("8. excess twist, dinucleotides by ridge: lowest R2 (five largest)", float(xt.r2_from_dinucleotide_ridge.head(5).min()), 0.86, 2)
+    chk("8. excess twist, dinucleotides by ridge: highest R2", float(xt.r2_from_dinucleotide_ridge.head(5).max()), 0.97, 2)
+    chk("8. excess twist, dinucleotides by boosting: lowest R2 (five largest)", float(xt.r2_from_dinucleotide_gb.head(5).min()), 0.85, 2)
+    chk("8. excess twist, dinucleotides by boosting: highest R2", float(xt.r2_from_dinucleotide_gb.head(5).max()), 0.94, 2)
+    chk("8. downstream 499-nt window, dinucleotides by ridge", float(gi.loc["xtwist.dn499", "r2_from_dinucleotide_ridge"]), 0.968, 3)
+    chk("8. downstream 499-nt window, dinucleotides by boosting", float(gi.loc["xtwist.dn499", "r2_from_dinucleotide_gb"]), 0.937, 3)
+    chk("8. downstream 100-nt window, dinucleotides by ridge", float(gi.loc["xtwist.dn100", "r2_from_dinucleotide_ridge"]), 0.865, 3)
+    pc = gi[gi.index.str.startswith(("path.", "axis."))]
+    chk("8. path/axis columns: highest R2 from letters", float(pc.r2_from_composition.max()), 0.0, 1)
+    chk("8. path/axis columns: highest R2 even from dinucleotides", float(pc.r2_from_dinucleotide_ridge.max()), 0.15, 2)
+
     print("22.1 the per-locus precompute")
     fl = pd.read_csv(OUT / "flank_locus_bench.csv").set_index("width_nt")
     for w, old, new, pre, up in ((1_000, 0.0614, 0.0113, 0.0051, 5.4), (10_000, 0.0604, 0.0044, 0.0009, 13.6),

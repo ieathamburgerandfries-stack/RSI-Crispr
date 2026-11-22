@@ -116,7 +116,7 @@ experiment and the numbers it produced. It is **not** a second copy of this repo
 what was tried, in what order, what was expected before the run, and which expectations
 were wrong. Where a finding cites a §, that is the working, not a load-bearing part of the
 claim. `./run_audit.sh` recomputes every post-freeze number quoted in this document from
-the files that produced it (885 checks as of 20 November) and exits non-zero on any
+the files that produced it (897 checks as of 20 November) and exits non-zero on any
 mismatch — including a check that the four documents quoting that count all quote the same
 one, so it cannot drift again, and a check that the package still imports without writing
 anything (`EXTENSION_LOG.md` §22.4).
@@ -1978,10 +1978,13 @@ and A + mc all is +0.0022 (14/15 folds), A + mc geom +0.0008, **A + arm-shuffled
 3. *The geometry's gain is composition, shown by shuffling.* `mc geom` on a flank shuffled within 25-nt blocks:
    +0.080 (real +0.080); shuffled across the whole arm, keeping only the arm's composition: +0.077.
 4. *What the geometry columns are.* Of the 27 geometry columns that survive selection, the five largest are
-   excess twist (summed step twist minus 10.5 bp per turn) over 100–499 nt, which dinucleotide fractions
-   predict, for the downstream 499-nt window, with out-of-fold R² **0.963** (mononucleotide fractions 0.66): a sum of step twists is a weighted
-   dinucleotide count. The rest are path coordinates at +12 and +25 bp, R² ≈ 0 from composition: they are the
-   identity of the first 12–25 bp after the PAM.
+   excess twist (summed step twist minus 10.5 bp per turn) over 100–499 nt. Letter fractions predict them out of
+   fold with R² 0.43–0.67, and dinucleotide fractions with R² **0.86–0.97** by ridge (0.85–0.94 by boosting) —
+   **0.968** for the downstream 499-nt window, lower on shorter windows (0.86 at 100 nt): a sum of step twists is,
+   to that accuracy, a weighted dinucleotide count. The rest are path coordinates at +12 and +25 bp, R² ≈ 0 from
+   letters and at most 0.15 even from dinucleotides: they are the identity of the first 12–25 bp after the PAM.
+   (An earlier draft of this item quoted R² 0.963 for the 499-nt window; that figure was computed in a session
+   whose code was not kept and does not reproduce — the figure above is `geom_importance.py`'s, and the audit checks it.)
 5. *Order matters in exactly one place.* `vec` (the first 8 bp of each arm) loses 86% of its gain when the
    flank is shuffled in blocks (+0.053 → +0.008) and 94% when shuffled whole-arm; `mean` loses 4%, `geom` 0%.
 6. *Why MD geometry is weaker alone (+0.031).* A first hypothesis, that the MD table's mean twist
