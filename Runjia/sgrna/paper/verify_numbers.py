@@ -655,7 +655,7 @@ def main():
 
     print("22.4 the package imports, and importing it writes nothing")
     ic = json.loads((OUT / "import_check.json").read_text())
-    chk("22.4 modules swept", float(ic["n_modules"]), 143, 0)
+    chk("22.4 modules swept", float(ic["n_modules"]), 144, 0)
     chk("22.4 modules excluded by name", float(ic["n_skipped"]), 1, 0)
     chk("22.4 modules that fail to import", float(len(ic["fails"])), 0, 0)
     chk("22.4 files under results/", float(ic["files_in_results"]), 675, 0)
@@ -852,6 +852,25 @@ def main():
         chk(f"eukaryotes transfer: share retained, {cat_}, pipeline", float(a_.ret.median()), rp_, 2); chk(f"eukaryotes transfer: share retained, {cat_}, ridge", float(b_.ret.median()), rr_, 2)
     e_ = tr_[(tr_.cat == "E. coli -> eukaryote") & (tr_.model == pm_)]
     chk("eukaryotes transfer: E. coli-trained, lowest rho (zebrafish)", float(e_.rho.min()), -0.238, 3); chk("eukaryotes transfer: E. coli-trained, highest rho", float(e_.rho.max()), 0.108, 3)
+
+    print("the compact model (compact_model.py)")
+    ca = pd.read_csv(OUT / "compact_model_accuracy.csv", index_col=0)
+    for k_, rho_, sh_ in (("full recipe (base + family A, top 300)", 0.7161, 1.00), ("guide only (80)", 0.5402, 0.75), ("guide + four kilobase numbers (84)", 0.6115, 0.85),
+                          ("compact (104)", 0.6335, 0.88), ("compact + adjacent pairs (408)", 0.6541, 0.91)):
+        chk(f"compact model: rho, {k_}", float(ca.loc[k_, "rho_mean_over_seeds"]), rho_, 4); chk(f"compact model: share of the full recipe, {k_}", float(ca.loc[k_, "share_of_full"]), sh_, 2)
+    cs = pd.read_csv(OUT / "compact_model_stability.csv").set_index(["method", "level"])
+    chk("compact model: SHAP agreement per column", float(cs.loc[("shap", "column"), "agreement"]), 0.872, 3); chk("compact model: SHAP agreement per column, sd over splits", float(cs.loc[("shap", "column"), "sd_over_splits"]), 0.006, 3)
+    chk("compact model: SHAP agreement per block", float(cs.loc[("shap", "block"), "agreement"]), 0.923, 3)
+    chk("compact model: default importance agreement per column", float(cs.loc[("native", "column"), "agreement"]), 0.698, 3); chk("compact model: default importance agreement per block", float(cs.loc[("native", "block"), "agreement"]), 0.734, 3)
+    sm = pd.read_csv(OUT / "compact_model_shap_vs_model_free.csv")
+    chk("compact model: SHAP-implied map against the model-free map, Spearman", float(_sp(sm.shap_effect_sd, sm.effect_sd).statistic), 0.851, 3)
+    chk("compact model: ... Pearson", float(np.corrcoef(sm.shap_effect_sd, sm.effect_sd)[0, 1]), 0.963, 3); chk("compact model: cells compared", float(len(sm)), 80, 0)
+    fd = pd.read_csv(OUT / "compact_model_flank_shap_by_decile.csv").sort_values("decile")
+    chk("compact model: flank SHAP in SD, lowest decile", float(fd.flank_shap_in_sd.iloc[0]), -0.78, 2); chk("compact model: flank SHAP in SD, second decile", float(fd.flank_shap_in_sd.iloc[1]), -0.04, 2)
+    chk("compact model: flank SHAP in SD, third decile", float(fd.flank_shap_in_sd.iloc[2]), 0.07, 2); chk("compact model: flank SHAP in SD, top decile", float(fd.flank_shap_in_sd.iloc[9]), 0.17, 2)
+    sc = pd.read_csv(OUT / "compact_model_shap_columns.csv").set_index("column").mean_abs_shap
+    chk("compact model: mean |SHAP| of flank GC 250 nt upstream", float(sc["eng.flank.comp.up250.gc"]), 0.203, 3); chk("compact model: ... downstream", float(sc["eng.flank.comp.dn250.gc"]), 0.182, 3)
+    chk("compact model: the largest column is G at position 20", float(sc.index[0] == "p20.G"), 1, 0)
 
     print("results/: every tracked file is in the generated index, and no two are the same file")
     import hashlib, subprocess

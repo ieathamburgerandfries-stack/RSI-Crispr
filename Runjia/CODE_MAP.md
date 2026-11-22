@@ -55,7 +55,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 
 <!-- generated:begin -->
 
-**133 modules, 28,435 lines** of Python in 11 folders (not counting the `__init__.py` markers).
+**134 modules, 28,668 lines** of Python in 11 folders (not counting the `__init__.py` markers).
 
 #### By the report section each module supports
 
@@ -65,7 +65,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Finding 2 | The DNA around the cut site predicts cutting — the one large effect, and it is local and compositional | 3 | 632 | 6 | controls, harness, interpret |
 | Finding 3 | The effect belongs to the DNA, and transfers | 3 | 1,680 | 26 | compare, harness |
 | Finding 4 | The model is out of *material*, and the tuning gain is evidence for it | 4 | 1,351 | 16 | controls, interpret, tuning |
-| Finding 5 | On a redundant matrix, per-column importance is unstable across fits, but SHAP at block level and edit tests are faithful | 6 | 1,574 | 22 | interpret |
+| Finding 5 | On a redundant matrix, per-column importance is unstable across fits, but SHAP at block level and edit tests are faithful | 7 | 1,788 | 29 | interpret |
 | Finding 6 | The label's ceiling is 0.946, measured from crisprHAL's own replicates | 1 | 122 | 1 | cohorts |
 | Finding 7 | What the signal is made of: GC over a few hundred bases, a seed region that inverts between kingdoms, and the two coupled | 4 | 1,226 | 32 | compare, interpret |
 | Part 2 | Contributions | 3 | 434 | 16 | compare |
@@ -79,7 +79,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Appendix B4 | The flank's shape and 3D structure add nothing that its composition does not already hold | 11 | 1,584 | 21 | build, cohorts, features, interpret |
 | Appendix B5 | A boundary experiment, demoted: the dCas9 / CRISPRi screens | 9 | 1,784 | 22 | cohorts, compare, controls |
 | Appendix C0 | Reproducibility: versions, seeds and protocol | 1 | 199 | 0 | (top) |
-| tooling | the audit, the figures, the guards and this map | 5 | 2,017 | 0 | paper |
+| tooling | the audit, the figures, the guards and this map | 5 | 2,036 | 0 | paper |
 | library | shared code the experiments are built on | 10 | 2,060 | 4 | (top), build, harness |
 | — | no section of the report points at it | 2 | 556 | 5 | cost, interpret |
 
@@ -210,7 +210,7 @@ The adversarial phase: nulls, shuffles, floors, selector and leakage audits, and
 | `why_inflation` | 104 | Why did every family's Δρ roughly triple when the cohort moved? | Appendix B2a | `why_inflation.csv` |
 | `window_robustness` | 114 | Would a different set of flank windows have given the same answer? | Appendix B5 | `ablation_curated.csv`, `window_robustness.csv` |
 
-### `sgrna/interpret/`  —  17 modules, 4,512 lines
+### `sgrna/interpret/`  —  18 modules, 4,726 lines
 
 What the model uses and what the signal is made of: importance, attribution, redundancy, the mechanism work of Finding 7, and what the tuned settings say.
 
@@ -219,6 +219,7 @@ What the model uses and what the signal is made of: importance, attribution, red
 | `asymmetry` | 237 | Is the downstream flank's advantage a transcription effect? | — | `asymmetry_expression.csv`, `asymmetry_strand_audit.csv` |
 | `attribution` | 214 | Two models, different features, same score. | Finding 5 | `attribution.csv`, `attribution_summary.csv` |
 | `base_enrichment` | 185 | Is the curated table inflated because the base has no dense summaries? | Appendix B3 | `base_enrichment.csv`, `base_enrichment_published.csv` |
+| `compact_model` | 214 | Is there a representation on which SLICER can be read column by column? | Finding 5 | `compact_model_accuracy.csv`, `compact_model_accuracy_folds.csv` +5 |
 | `complexity` | 118 | What is SLICER's equivalent of a CNN's parameter count? | Part 5 | `complexity.json` |
 | `faithfulness` | 270 | Dropping a model's top columns costs nothing. | Finding 5 | `faithfulness_clusters.csv`, `faithfulness_clusters_reduced.csv` +2 |
 | `gcstrata` | 210 | Is the flanking-context effect just target GC wearing a different hat? | Finding 2 | `gc_strata_ablation.csv`, `gc_strata_corr.csv` +1 |
@@ -289,7 +290,7 @@ What each model costs to train and to run, measured rather than estimated.
 | `e2e_bench` | 175 | End-to-end scoring cost per guide, one thread: featurisation + column selection + imputation + model, against crisprHAL 2 with its input encoding. | Part 5 | `e2e_crisprhal.csv`, `e2e_slicer.csv` +3 |
 | `inference_cost` | 141 | Training cost is the wrong clock for a guide-design tool. | Part 5 | `inference_cost.csv` |
 
-### `sgrna/paper/`  —  5 modules, 2,017 lines
+### `sgrna/paper/`  —  5 modules, 2,036 lines
 
 The tooling the paper rests on: the audit, the figures, the import and reference guards, and the code map.
 
@@ -299,7 +300,7 @@ The tooling the paper rests on: the audit, the figures, the import and reference
 | `doc_refs` | 165 | Every module, path and Colab script that a document or a docstring names still exists. | tooling | — |
 | `figures` | 427 | Publication figures, to ACS graphics specifications, generated from the result files. | tooling | — |
 | `import_check` | 106 | Every module in the package imports, and importing it writes nothing. | tooling | — |
-| `verify_numbers` | 899 | Audit: recompute every headline number of Appendix B4 and the Finding 3 addendum from the result files and compare with the value typed into the report. | tooling | — |
+| `verify_numbers` | 918 | Audit: recompute every headline number of Appendix B4 and the Finding 3 addendum from the result files and compare with the value typed into the report. | tooling | — |
 
 #### Old paths, for documents written before the reorganisations
 

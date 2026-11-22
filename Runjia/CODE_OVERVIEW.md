@@ -95,12 +95,12 @@ becomes a subtraction, and the one column that is not a sum (the longest homopol
 0.093 ms, and 0.036 ms when designing across a locus, which is **13 to 21×** and **34×** faster than crisprHAL 2.
 
 ### 6. Can the model be explained? Redundancy, importance and headroom *(Findings 4 and 5)*
-`sgrna/interpret/importance.py`, `sgrna/interpret/importance_models.py`, `sgrna/interpret/faithfulness.py`, `sgrna/interpret/representation.py`
+`sgrna/interpret/importance.py`, `sgrna/interpret/importance_models.py`, `sgrna/interpret/faithfulness.py`, `sgrna/interpret/representation.py`, `sgrna/interpret/compact_model.py`
 
 Because 99% of the columns restate the same 20-mer, which column a model credits is close to arbitrary. Across model families the library-default importance agrees between models at only **0.050** per column;
 SHAP agrees at 0.496 (0.800 per block), so the project reports SHAP, at block level only. `representation.py` shows that the 412 portable columns reproduce the full 6,232 (a difference of
 −0.00003 ρ), and that the model is **out of material**: no column it was given correlates with its residuals above 0.028, while family A, held back, correlated at 0.147. The test flagged family A *before
-family A existed*, which is its positive control.
+family A existed*, which is its positive control. `compact_model.py` then removes the redundancy on purpose: on 80 guide indicators plus 24 flank composition columns (88% of the full model's ρ) SHAP agrees between model families at 0.87 per column, against 0.50 on the full matrix, and reads out the model-free design rules, so the instability is the redundancy and not the models.
 
 ### 7. The ceiling: how much can be predicted at all *(Finding 6)*
 `sgrna/cohorts/curated_ceiling.py`, `sgrna/cohorts/ceiling_table.py`

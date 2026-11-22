@@ -19,7 +19,7 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**305 files** in 21 groups.
+**311 files** in 21 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
@@ -115,11 +115,18 @@ Within a group the order is alphabetical.
 | `interp_interaction_pairs.csv` | 1.1 | cited | `interp_extra` | col_i, col_j, mean_abs_interaction |
 | `interp_interactions.csv` | 0.3 | cited | `interp_extra` | rows, columns, var_total, var_main, var_interaction, share_variance_interaction, share_variance_main … |
 | `interp_sensitivity_n.csv` | 2.2 | cited | `interp_extra` | unit, n, attribution, pearson, se, subsets, rows |
+| `post_freeze/compact_model_accuracy.csv` | 0.5 | audited | `compact_model` | , rho_mean_over_seeds, rho_sd_over_seeds, share_of_full |
+| `post_freeze/compact_model_accuracy_folds.csv` | 1.6 | receipt | `compact_model` | seed, fold, full recipe (base + family A, top 300), guide only (80), guide + four kilobase numbers (84), compact (104) … |
+| `post_freeze/compact_model_flank_shap_by_decile.csv` | 0.4 | audited | `compact_model` | decile, flank_gc, flank_shap, flank_shap_in_sd |
+| `post_freeze/compact_model_shap_columns.csv` | 2.3 | audited | `compact_model` | column, mean_abs_shap |
+| `post_freeze/compact_model_shap_vs_model_free.csv` | 3.9 | audited | `compact_model` | position, base, n, shap_effect_sd, effect_sd |
+| `post_freeze/compact_model_stability.csv` | 0.3 | audited | `compact_model` | representation, method, level, agreement, sd_over_splits |
 | `post_freeze/interpret_data_scaling.csv` | 0.7 | audited | `tuned_settings` | fraction, n_train, seed, model, rho |
 | `post_freeze/interpret_depth.csv` | 0.4 | audited | `tuned_settings` | max_depth, learning_rate, best_k, dev_rho, confirm_rho |
 | `post_freeze/interpret_gain_groups.csv` | 2.9 | audited | `tuned_settings` | model, block, n_selected, gain_share |
 | `post_freeze/interpret_position_profile.csv` | 3.4 | audited | `tuned_settings` | model, region, position, gain_share, n_columns |
 | `post_freeze/interpret_within_between.csv` | 0.8 | audited | `tuned_settings` | model, part, rho, lo, hi, d_vs_champion, d_lo … |
+| `post_freeze/mechanism_position_base.csv` | 6.1 | audited | `compact_model`, `mechanism` | position, base, n, effect_sd, lo, hi, clear_of_zero |
 
 ### Finding 6 — The label's ceiling is 0.946, measured from crisprHAL's own replicates
 
@@ -157,7 +164,6 @@ Within a group the order is alphabetical.
 | `post_freeze/mechanism_distance_profile.csv` | 1.0 | audited | `mechanism` | side, window_nt, statistic, n, marginal, partial_given_target_gc |
 | `post_freeze/mechanism_pairs_blocks.csv` | 6.5 | audited | `mechanism` | block_pair, gain_share |
 | `post_freeze/mechanism_pairs_columns.csv` | 1.5 | audited | `mechanism` | col_pair, gain_share |
-| `post_freeze/mechanism_position_base.csv` | 6.1 | audited | `mechanism` | position, base, n, effect_sd, lo, hi, clear_of_zero |
 | `post_freeze/mechanism_position_base_compare.csv` | 4.9 | audited | `mechanism` | position, base, ecoli, human, ecoli_clear, human_clear, inverts |
 | `post_freeze/mechanism_position_base_human.csv` | 6.1 | receipt | `mechanism` | position, base, n, effect_sd, lo, hi, clear_of_zero |
 | `post_freeze/novel_relative_composition.csv` | 0.2 | audited | `novel_followups` | columns, crod_rho, home_cv_rho, n_crod, n_home |

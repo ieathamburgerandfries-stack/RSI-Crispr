@@ -377,7 +377,7 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
-*Current state of the audit (20 Nov):* it has grown with each section and now stands at **1027 checks, 0 mismatches**,
+*Current state of the audit (20 Nov):* it has grown with each section and now stands at **1052 checks, 0 mismatches**,
 covering sections 7-22. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
 modules need and exits non-zero if any quoted number no longer matches its file. Since 22.4 it also checks three things
 about itself: that every module in the package imports and that importing one writes nothing; that four claims which
@@ -1703,4 +1703,19 @@ the data, not the code: 23 plain-text tables from the CRISPOR benchmark collecti
 for the sign only; the weakest anchor (Wang 2015, −0.10) is printed. The two Hart libraries contain no T at position 20, so G minus T is undefined
 there and the contrast was changed to G minus the mean of A and C, which is defined everywhere. A first summary of the transfer matrix pooled both models
 and printed identical rows for each; I caught it because they were identical to three decimals, and the numbers in the report are per model.
+
+## 26. A representation on which the model can be read column by column (22 Nov; the user asked whether SLICER is interpretable at all and to run the compact-model test)
+
+**Why.** Finding 5 attributes the instability of per-column importance to redundancy, which predicts that it disappears on a non-redundant representation. `sgrna/interpret/compact_model.py` tests that on 80 position x base indicators plus 24 flank composition
+columns, with predictions written into the docstring first.
+
+| | prediction | outcome |
+|---|---|---|
+| P1 | the 104-column model keeps at least 90% of the full model's rho (probability about 0.6) | **failed**: 88% (91% with the 304 adjacent-pair indicators) |
+| P2 | SHAP agrees between the five tree families at rho >= 0.8 per column (probability about 0.7) | **held**: 0.872 against 0.496 on the full matrix |
+| P3 | default importance improves but stays below SHAP | **held**: 0.698 |
+| P4 | the SHAP-implied position x base effects reproduce the model-free map at rho >= 0.8 | **held**: 0.851 (Pearson 0.963) |
+| P5 | the flank contribution is a step at the AT-rich end | **held**: -0.78 SD in the lowest decile, -0.04 in the second, +0.07 to +0.17 above |
+
+**What it settles.** The redundancy account of Finding 5 holds: with no restated columns the per-column ranking survives a change of model family. The cost is about an eighth of rho, so the readable model is a counterpart and not a replacement.
 

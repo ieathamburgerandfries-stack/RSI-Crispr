@@ -1,0 +1,5 @@
+representation,method,level,agreement,sd_over_splits
+compact (104 columns),shap,column,0.8723623501661232,0.0055347245382731045
+compact (104 columns),native,column,0.698231632482145,0.007595802571413303
+compact (104 columns),shap,block,0.9227330779054919,0.008775562221358273
+compact (104 columns),native,block,0.7336740960633351,0.00300828723852764
