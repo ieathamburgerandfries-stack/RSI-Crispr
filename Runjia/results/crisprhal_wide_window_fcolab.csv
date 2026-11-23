@@ -1,0 +1,7 @@
+model,arm,input_nt,batch,fold,spearman,r2,fit_minutes,n_train,n_test,note
+crisprHAL 2,mid_1023,1023,256,2,0.6514,,14.0,26853,6714,"Colab T4, from the console output (4 decimals; the csv was not downloaded when the session ran out of compute units)"
+crisprHAL 2,wide_2023,2023,256,2,0.6351,,26.4,26853,6714,"Colab T4, from the console output (4 decimals; the csv was not downloaded when the session ran out of compute units)"
+crisprHAL 2,mid_1023,1023,256,3,0.6553,,13.7,26854,6713,"Colab T4, from the console output (4 decimals; the csv was not downloaded when the session ran out of compute units)"
+crisprHAL 2,wide_2023,2023,256,3,0.6573,,26.3,26854,6713,"Colab T4, from the console output (4 decimals; the csv was not downloaded when the session ran out of compute units)"
+crisprHAL 2,native_378,378,256,4,0.6894,,5.7,26854,6713,"Colab T4, from the console output (4 decimals; the csv was not downloaded when the session ran out of compute units)"
+crisprHAL 2,mid_1023,1023,256,4,0.6678,,13.7,26854,6713,"Colab T4, from the console output (4 decimals; the csv was not downloaded when the session ran out of compute units)"

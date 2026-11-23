@@ -19,12 +19,13 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**355 files** in 22 groups.
+**374 files** in 22 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
+| `ablation_nfeat1200.csv` | 0.5 | cited | `notebook`, `run_ablation`, `report_checks_R1` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
 | `curated_ladder.csv` | 0.7 | cited | `curated_ladder`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R7` | arm, n_cols, spearman, spearman_sd, vs_base_full |
 | `d_mechanics_reconstructibility.csv` | 0.3 | cited | `report_checks_R1`, `report_checks_R7` | oof_r2_from_mono_di |
 | `handnamed_split.csv` | 0.3 | cited | `handnamed_split`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd |
@@ -37,9 +38,13 @@ Within a group the order is alphabetical.
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
+| `crisprhal_wide_window.csv` | 0.7 | cited | `crisprhal_wide_window_folds`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R7` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
+| `crisprhal_wide_window_folds.csv` | 1.8 | cited | `crisprhal_wide_window_folds`, `paper_numbers` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
+| `crisprhal_wide_window_summary.csv` | 0.8 | cited | `crisprhal_wide_window_folds`, `paper_numbers` | arm, input_nt, n_folds, crisprhal_mean, crisprhal_sd, slicer_mean, slicer_sd … |
 | `gc_strata_ablation.csv` | 0.7 | cited | `gcstrata`, `paper_numbers_A`, `report_checks_R2` | stratum, arm, n, gc_lo, gc_hi, spearman, spearman_sd |
 | `gc_strata_corr.csv` | 0.5 | cited | `gcstrata`, `paper_numbers_B`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
 | `gc_strata_corr_curated.csv` | 0.6 | cited | `gcstrata`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
+| `model_inversion.csv` | 0.1 | cited | `report_checks_R2` | kind, seq, predicted, gc |
 | `seqnet.csv` | 0.7 | cited | `seqnet`, `report_checks_R2` | model, flank, seed, fold, r2, spearman, seconds |
 | `seqnet_matched.csv` | 1.3 | cited | `seqnet`, `report_checks_R2` | model, flank, seed, fold, r2, spearman, seconds |
 | `shift_null.csv` | 0.5 | audited | `shiftnull`, `paper_numbers_A`, `report_checks_R2`, `report_checks_R7` | shift_bp, n_flank_cols, spearman, spearman_sd, r2 |
@@ -53,6 +58,7 @@ Within a group the order is alphabetical.
 | `hybrid.csv` | 4.8 | receipt | `transfer` | source, target, arm, fold, cv, seed, spearman … |
 | `post_freeze/cut_within_gene_summary.csv` | 0.7 | audited | `paper_numbers_A`, `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
 | `post_freeze/human_twin_check.csv` | 0.2 | audited | `human_twin_check`, `report_checks_R2` | arm, folds, spearman, spearman_sd, n_fits |
+| `post_freeze/transfer_esp_unseen_guides.csv` | 0.2 | cited | `transfer`, `report_checks_R2` | arm, scope, spearman |
 | `transfer.csv` | 17.5 | audited | `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | dataset, arm, model, seed, fold, n_rows, n_cols … |
 | `transfer_model.csv` | 4.8 | cited | `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | source, target, arm, model, seed, n_train, n_test … |
 
@@ -80,11 +86,14 @@ Within a group the order is alphabetical.
 |---|---:|---|---|---|
 | `additivity_reduced.csv` | 0.5 | cited | `report_checks_R3`, `report_checks_R7` | arm, n_columns, ridge, lightgbm, xgboost, boosting_minus_ridge |
 | `attribution.csv` | 3.9 | receipt | `attribution` | picked_by, column, kind, closest_in_other_set, abs_corr |
+| `attribution_shap.csv` | 1.1 | receipt | `attribution` | picked_by, column, kind, closest_in_other_set, abs_corr |
 | `attribution_summary.csv` | 0.3 | cited | `attribution`, `report_checks_R3` | kind, xgboost_share, lightgbm_share, difference |
+| `attribution_summary_shap.csv` | 0.3 | cited | `attribution`, `report_checks_R3` | kind, xgboost_share, lightgbm_share, difference |
 | `faithfulness_clusters.csv` | 1.3 | receipt | `faithfulness` | fold, model, rank, n_columns, seed_column, shap_share |
 | `faithfulness_clusters_reduced.csv` | 1.2 | receipt | `faithfulness` | fold, model, rank, n_columns, seed_column, shap_share |
 | `faithfulness_groups.csv` | 9.3 | cited | `faithfulness`, `report_checks_R3` | fold, model, arm, things_removed, n_columns_removed, spearman, delta |
 | `faithfulness_groups_reduced.csv` | 10.1 | cited | `faithfulness`, `report_checks_R3` | fold, model, arm, things_removed, n_columns_removed, spearman, delta |
+| `faithfulness_shap_share.csv` | 0.6 | cited | `report_checks_R3` | representation, n_columns, top_n, pct_of_columns, pct_of_shap |
 | `importance_agreement.csv` | 0.4 | receipt | `importance` | fold, level, selected_overlap, selected_kuncheva, gain_vs_gain_rho, xgb_gain_vs_perm_rho, lgb_gain_vs_perm_rho |
 | `importance_blocks.csv` | 4.7 | receipt | `importance` | fold, model, block, n_cols, gain_share, perm_share |
 | `importance_model_blocks.csv` | 58.1 | cited | `importance_models`, `report_checks_R3` | fold, model, method, block, n_cols, share |
@@ -101,6 +110,7 @@ Within a group the order is alphabetical.
 | `post_freeze/compact_model_shap_columns.csv` | 2.3 | audited | `compact_model`, `paper_numbers_B`, `report_checks_R3` | column, mean_abs_shap |
 | `post_freeze/compact_model_shap_vs_model_free.csv` | 3.9 | audited | `compact_model` | position, base, n, shap_effect_sd, effect_sd |
 | `post_freeze/compact_model_stability.csv` | 0.3 | audited | `compact_model`, `paper_numbers_B` | representation, method, level, agreement, sd_over_splits |
+| `post_freeze/faithfulness_top20_full.csv` | 0.6 | cited | `report_checks_R3` | fold, model, base, top20, delta, share20 |
 | `post_freeze/interp_compare_cross_model.csv` | 0.3 | audited | `vs_crisprhal_interpret`, `paper_numbers_B` | a, b, spearman |
 | `post_freeze/interp_compare_faithfulness.csv` | 2.7 | audited | `vs_crisprhal_interpret`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R3` | n, attribution, pearson, se, subsets, rows, model … |
 | `post_freeze/interp_compare_faithfulness_diff.csv` | 1.1 | audited | `vs_crisprhal_interpret`, `report_checks_R3` | n, model, pearson, crisprhal, diff, lo, hi |
@@ -172,6 +182,7 @@ Within a group the order is alphabetical.
 | `ablation_curated.csv` | 0.9 | cited | `notebook`, `run_ablation`, `curated_ablation`, `curated_joint`, `txn_interactions`, `rederive`, `window_robustness`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R4`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | family, n_cols, spearman, spearman_sd, d_spearman |
 | `curated_joint.csv` | 1.0 | cited | `curated_joint`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R8` | arm, n_families, n_cols, spearman, spearman_sd, d_spearman, sum_of_singles … |
 | `portability.csv` | 0.3 | cited | `portability`, `paper_numbers_A`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd, r2 |
+| `post_freeze/label_orientation.csv` | 0.2 | cited | `label_orientation`, `paper_numbers` | n_guides, n_multi_copy, n_single_copy, median_label_multi_copy, median_label_single_copy, auc_multi_higher, mannwhitney_p |
 | `recoverability_trend_columns.csv` | 49.7 | cited | `report_checks_R5` | column, family, abs_rho, oof_r2_from_guide, decile |
 | `txn_interactions.csv` | 0.5 | cited | `txn_interactions`, `paper_numbers_A`, `report_checks_R5`, `report_checks_R7` | arm, n_family_cols, spearman, spearman_sd, d_spearman |
 | `window_robustness.csv` | 0.2 | cited | `window_robustness`, `report_checks_R7` | arm, n_cols, spearman, spearman_sd, d_spearman, d_published_windows, difference |
@@ -188,6 +199,7 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `metric_panel.csv` | 0.9 | cited | `panel` | model, n, spearman, kendall_tau, pearson, r2, calibration_slope … |
+| `post_freeze/sealed_holdout_gene.csv` | 4.1 | cited | `sealed_holdout_gene`, `paper_numbers`, `report_checks_R5` | arm, seal_seed, cv_gene, cv_random, sealed, gap_gene, gap_random … |
 | `post_freeze/sealed_organism.csv` | 0.4 | audited | `sealed_organism`, `paper_numbers_C`, `report_checks_R5` | arm, rho_seed_mean, rho_seed_sd, rho_of_seed_average, minus_champion, lo, hi |
 | `sealed_holdout.csv` | 6.2 | cited | `sealed_holdout`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, n_cols, n_dev, n_sealed, cv_in_pool, sealed, gap … |
 
@@ -204,6 +216,7 @@ Within a group the order is alphabetical.
 | `cui_screen.csv` | 0.5 | cited | `cui_screen`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | cv, arm, n_rows, n_cols, spearman, spearman_sd |
 | `data_ablation.csv` | 0.7 | cited | `data_ablation`, `report_checks_R6` | arm, training_data, n_train, n_cols, label, spearman, vs_crisprhal |
 | `final_eval_espcas9.csv` | 0.6 | cited | `final_eval`, `report_checks_R6`, `report_checks_R7` | arm, model, n_train, n_test, spearman, kendall_tau, pearson … |
+| `folds_ladder_base_full+a_flank.csv` | 1.6 | cited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `paper_numbers_C`, `report_checks_R6`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
 | `headtohead.csv` | 2.8 | cited | `crisprhal_wide_window_folds`, `headtohead`, `paper_numbers`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | arm, model, seed, fold, n_rows, n_cols, spearman … |
 | `heldout_compare.csv` | 0.4 | cited | `heldout_compare`, `paper_numbers_C`, `report_checks_R6` | pairing, n, slicer, crisprhal, difference, ci_lo, ci_hi … |
 | `inference_colab.csv` | 2.9 | cited | `report_checks_R6` | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
@@ -241,6 +254,7 @@ Within a group the order is alphabetical.
 | `post_freeze/panel_espcas9.csv` | 2.5 | audited | `panel_vs_hal`, `paper_numbers_B`, `paper_numbers_C` | split, arm, n, spearman, kendall_tau, pearson, r2 … |
 | `post_freeze/panel_wt.csv` | 2.4 | audited | `panel_vs_hal`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R6` | split, arm, n, spearman, kendall_tau, pearson, r2 … |
 | `post_freeze/seed_stability.csv` | 0.5 | audited | `topk_panel`, `paper_numbers_C` | split, seed, rho, crisprhal |
+| `post_freeze/shape_ablation.csv` | 13.7 | audited | `shape_ablate`, `shape_analyze`, `report_checks_R8` | arm, n_cols, n_ext, spearman, spearman_sd, r2, n_selected_ext … |
 | `post_freeze/topend_confirm.csv` | 2.3 | audited | `topend`, `paper_numbers_C`, `report_checks_R6` | arm, seed, spearman, top10pct_prec, top1pct_prec, pick10_pctile, pick50_pctile … |
 | `post_freeze/topk_panel.csv` | 4.2 | audited | `topk_panel` | split, arm, top1pct_precision, top5pct_precision, top10pct_precision, pick10_percentile, pick50_percentile … |
 | `post_freeze/tune_stage1.csv` | 270.9 | receipt | `tune_analyze`, `tune_ecoli` | draw, seed, fold, k, rho |
@@ -250,6 +264,7 @@ Within a group the order is alphabetical.
 | `their_split_slicer.csv` | 0.4 | cited | `report_checks_R6`, `report_checks_R7` | model, split, n_train, n, spearman, kendall_tau, pearson … |
 | `tuning.csv` | 2.0 | cited | `tune`, `rederive`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, seed, fold, trials, trials_allowed, rho_default, r2_default … |
 | `tuning_trace.csv` | 38.5 | receipt | `tune` | arm, seed, fold, trial, inner_rho, best_so_far, trials_since_improved |
+| `tuning_trials12.csv` | 2.0 | cited | `report_checks_R6` | arm, seed, fold, trials, rho_default, r2_default, rho_tuned … |
 
 ### Appendix A — Controls and nulls
 
@@ -261,6 +276,7 @@ Within a group the order is alphabetical.
 | `ablation_jper_joint.csv` | 0.5 | cited | `notebook`, `run_ablation`, `paper_numbers_A`, `report_checks_R7`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
 | `ablation_label_curated.csv` | 0.5 | cited | `notebook`, `run_ablation`, `paper_numbers_C`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
 | `ablation_label_published.csv` | 0.5 | cited | `notebook`, `run_ablation`, `paper_numbers_C`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `ablation_nfeat600.csv` | 0.5 | receipt | `notebook`, `run_ablation` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
 | `dissection_supercoiling.csv` | 1.5 | cited | `paper_numbers_A`, `report_checks_R5`, `report_checks_R7`, `report_checks_R8` | experiment, columns, grouping, seeds, folds, baseline_r2, r2 … |
 | `final_eval_metric_bootstrap.csv` | 0.6 | cited | `report_checks_R7` | metric, diff, ci_lo, ci_hi, excludes_zero, favours |
 | `folds_base_plus_K562_ATAC.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
@@ -275,6 +291,7 @@ Within a group the order is alphabetical.
 | `folds_humangc_base.csv` | 0.5 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
 | `folds_humangc_base_plus_gc_gc2.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
 | `folds_humangc_only.csv` | 0.5 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_shift_baseline.csv` | 1.8 | audited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `paper_numbers_A`, `report_checks_R2`, `report_checks_R7`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
 | `permutation_floors.csv` | 1.0 | cited | `floors`, `report_checks_R7` | family, real_folds, real_d_r2, real_d_rho, real_p, floor_folds, floor_d_r2 … |
 | `post_freeze/vs_crisprhal_wt.csv` | 0.8 | cited | `vs_crisprhal`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R6`, `report_checks_R7` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
 
@@ -288,7 +305,6 @@ Within a group the order is alphabetical.
 | `crisprhal_rerun.csv` | 0.6 | audited | `rederive`, `crisprhal_rerun`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R6`, `report_checks_R7` | arm, model, seed, fold, epochs, n_train, n_val … |
 | `crisprhal_tuned_folds.csv` | 0.9 | cited | `rederive`, `crisprhal_tune`, `report_checks_R6`, `report_checks_R7` | model, draw, fold, seed, n_train, n_val, learning_rate … |
 | `crisprhal_tuning.csv` | 1.2 | receipt | `crisprhal_tune` | draw, is_published_default, learning_rate, drop_rate, CNN_filters, window_size, CNN_drop … |
-| `crisprhal_wide_window.csv` | 0.7 | cited | `crisprhal_wide_window_folds`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R7` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
 | `curated_models.csv` | 0.5 | cited | `curated_models`, `report_checks_R1`, `report_checks_R6`, `report_checks_R7` | model, spearman, spearman_sd, seconds |
 | `human_additivity.csv` | 0.2 | cited | `human_baseline` | arm, n_features, spearman, spearman_sd, n_fits |
 | `human_baseline.csv` | 0.2 | audited | `human_baseline`, `paper_numbers_B`, `report_checks_R2` | arm, n_features, spearman, spearman_sd, n_fits |
@@ -358,7 +374,6 @@ Within a group the order is alphabetical.
 | `post_freeze/local_sequence_bound.csv` | 5.4 | audited | `local_sequence_bound` | matrix, arm, seed, fold, n_train, n_test, n_sel … |
 | `post_freeze/local_sequence_bound_summary.csv` | 0.7 | audited | `local_sequence_bound` | arm, matrix, base_rho, rho, delta, lo, hi … |
 | `post_freeze/ridge_check.csv` | 1.0 | audited | `ridge_check`, `report_checks_R8` | arm, n_cols, alpha, rho, fold_rho |
-| `post_freeze/shape_ablation.csv` | 13.7 | audited | `shape_ablate`, `shape_analyze`, `report_checks_R8` | arm, n_cols, n_ext, spearman, spearman_sd, r2, n_selected_ext … |
 | `post_freeze/shape_ablation_paired.csv` | 6.5 | receipt | `shape_analyze` | arm, n_ext, rho, selected, d_vs_A, seeds_vs_A, ahead_vs_A … |
 
 ### Appendix B5 — A boundary experiment, demoted: the dCas9 / CRISPRi screens
@@ -392,7 +407,7 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `README.md` | 2.0 | document | — |  |
-| `RESULTS.md` | 30.4 | document | — |  |
+| `RESULTS.md` | 30.5 | document | — |  |
 | `RESULTS_archive_2026-10-10.md` | 110.9 | document | — |  |
 
 ### figures
@@ -421,6 +436,10 @@ Within a group the order is alphabetical.
 |---|---:|---|---|---|
 | `asymmetry_expression.csv` | 1.3 | receipt | `asymmetry` | band, group, n_guides, median_log_tpm, arm, spearman, r2 |
 | `asymmetry_strand_audit.csv` | 0.2 | cited | `asymmetry` | source, orientation, guides |
+| `crisprhal_wide_window_f2.csv` | 0.3 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |
+| `crisprhal_wide_window_f3.csv` | 0.3 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |
+| `crisprhal_wide_window_f4.csv` | 0.2 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |
+| `crisprhal_wide_window_f5.csv` | 0.2 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |
 | `human_transfer.csv` | 0.7 | cited | — | arm, rho, sd, n_train, n_test, seed |
 | `inference_t4.csv` | 0.8 | cited | — | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
 | `kmer_order_noselect.csv` | 0.6 | cited | — | arm, n_columns, spearman, sd |
