@@ -19,7 +19,7 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**374 files** in 22 groups.
+**375 files** in 22 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
@@ -38,8 +38,8 @@ Within a group the order is alphabetical.
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `crisprhal_wide_window.csv` | 0.7 | cited | `crisprhal_wide_window_folds`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R7` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
-| `crisprhal_wide_window_folds.csv` | 1.8 | cited | `crisprhal_wide_window_folds`, `paper_numbers` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
+| `crisprhal_wide_window_fcolab.csv` | 1.1 | cited | — | model, arm, input_nt, batch, fold, spearman, r2 … |
+| `crisprhal_wide_window_folds.csv` | 2.3 | cited | `crisprhal_wide_window_folds`, `paper_numbers` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
 | `crisprhal_wide_window_summary.csv` | 0.8 | cited | `crisprhal_wide_window_folds`, `paper_numbers` | arm, input_nt, n_folds, crisprhal_mean, crisprhal_sd, slicer_mean, slicer_sd … |
 | `gc_strata_ablation.csv` | 0.7 | cited | `gcstrata`, `paper_numbers_A`, `report_checks_R2` | stratum, arm, n, gc_lo, gc_hi, spearman, spearman_sd |
 | `gc_strata_corr.csv` | 0.5 | cited | `gcstrata`, `paper_numbers_B`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
@@ -305,6 +305,7 @@ Within a group the order is alphabetical.
 | `crisprhal_rerun.csv` | 0.6 | audited | `rederive`, `crisprhal_rerun`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R6`, `report_checks_R7` | arm, model, seed, fold, epochs, n_train, n_val … |
 | `crisprhal_tuned_folds.csv` | 0.9 | cited | `rederive`, `crisprhal_tune`, `report_checks_R6`, `report_checks_R7` | model, draw, fold, seed, n_train, n_val, learning_rate … |
 | `crisprhal_tuning.csv` | 1.2 | receipt | `crisprhal_tune` | draw, is_published_default, learning_rate, drop_rate, CNN_filters, window_size, CNN_drop … |
+| `crisprhal_wide_window.csv` | 0.7 | cited | `crisprhal_wide_window_folds`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R7` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
 | `curated_models.csv` | 0.5 | cited | `curated_models`, `report_checks_R1`, `report_checks_R6`, `report_checks_R7` | model, spearman, spearman_sd, seconds |
 | `human_additivity.csv` | 0.2 | cited | `human_baseline` | arm, n_features, spearman, spearman_sd, n_fits |
 | `human_baseline.csv` | 0.2 | audited | `human_baseline`, `paper_numbers_B`, `report_checks_R2` | arm, n_features, spearman, spearman_sd, n_fits |

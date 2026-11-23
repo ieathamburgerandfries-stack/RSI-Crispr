@@ -1,0 +1,5 @@
+model,arm,input_nt,batch,fold,spearman,r2,fit_minutes,n_train,n_test,note
+crisprHAL 2,wide_2023,2023,256,4,0.6317,,27.1,26854,6713,"Colab T4, pasted from the Colab session (console, 4 decimals); the csv was not downloaded"
+crisprHAL 2,native_378,378,256,5,0.683876,,5.63,26854,6713,"Colab T4, pasted from the Colab session (final table); the csv was not downloaded"
+crisprHAL 2,mid_1023,1023,256,5,0.672597,,13.86,26854,6713,"Colab T4, pasted from the Colab session (final table); the csv was not downloaded"
+crisprHAL 2,wide_2023,2023,256,5,0.656794,,26.78,26854,6713,"Colab T4, pasted from the Colab session (final table); the csv was not downloaded"

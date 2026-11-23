@@ -19,7 +19,7 @@ Seven claims, each defended in the finding or part named beside it.
 * **Part 1** is the seven findings, each a claim followed by the evidence and its limit. **Part 2** states the contributions and what is new about the biology. **Part 3** says where the work stops. **Part 4** is the validation: the freeze, the audit of what could have inflated the figures, and the sealed checks. **Part 5** places the work against the published predictors.
 * **Appendices.** A: every control, with what it rules out and what would be believed without it, and the inventory of nulls. B: the methods and controls behind the findings. B2–B4: the imported families that did not work, what curation is, the family table on the curated cohort, and the null on the flank's shape and 3D structure. B5: a boundary experiment on dCas9 screens that no claim rests on. C0 and C: reproducibility and data sources. D: references.
 * **Two *E. coli* SpCas9 cohorts.** Noshay et al.'s published 13,880-row matrix (label `cut.score`; their iRF used 40,468 sgRNAs of Guo et al.'s screen, 32,374 for training, and the released rows that map to a gene lie in a 1,222-gene panel) and crisprHAL 2's curated 33,567-guide genome-wide release of the same screen (ALDEx2 score; 8,617 guides in common) are different frames; every number on *E. coli* SpCas9 belongs to one of them and the text says which, as it does for the other data used (eSpCas9, *C. rodentium*, human, CRISPRi, the CRISPOR tables). The working cohort is the curated one.
-* **Provenance.** [`results/INDEX.md`](results/INDEX.md) lists every result file by the section it supports and [`results/RESULTS.md`](results/RESULTS.md) goes from each claim to its file and command. [`CODE_OVERVIEW.md`](CODE_OVERVIEW.md) tours the code the claims depend on and [`CODE_MAP.md`](CODE_MAP.md) maps every module. `./run_audit.sh` recomputes a large set of the post-freeze numbers quoted here from the file that produced each and exits non-zero on any mismatch (2880 checks as of 23 November; a number without a check line is not covered), and checks that the package imports without writing anything. `EXTENSION_LOG.md` is the working record: what was tried, in what order, and with what expectation.
+* **Provenance.** [`results/INDEX.md`](results/INDEX.md) lists every result file by the section it supports and [`results/RESULTS.md`](results/RESULTS.md) goes from each claim to its file and command. [`CODE_OVERVIEW.md`](CODE_OVERVIEW.md) tours the code the claims depend on and [`CODE_MAP.md`](CODE_MAP.md) maps every module. `./run_audit.sh` recomputes a large set of the post-freeze numbers quoted here from the file that produced each and exits non-zero on any mismatch (2885 checks as of 23 November; a number without a check line is not covered), and checks that the package imports without writing anything. `EXTENSION_LOG.md` is the working record: what was tried, in what order, and with what expectation.
 
 ## What earns a place, and what the work is for
 
@@ -226,31 +226,30 @@ reaches 0.697 on the curated cohort against 0.525 for the in-house network on th
 cohorts differ, so that gap mixes architecture and data.
 
 **Given the same reach, crisprHAL 2 at its published hyperparameters gets worse, not better.**
-Retrained at four input widths on the same rows, label and folds (batch 256, as cuDNN cannot allocate
+Retrained at four input widths on the same rows, label and folds, on all five folds (batch 256, as cuDNN cannot allocate
 the GRU workspace at 2,023 nt and batch 1,024; the 378 nt arm at both batches bounds that cost at
-**−0.011**, a fifth of the effect below). The 23 nt arm ran on all five folds, the 378 and 1,023 nt arms on four and
-the 2,023 nt arm on three. The 378 nt arms of folds 2 and 3 and the 23 nt arms of folds 2 to 5 were trained on a CPU, everything
-else on a T4 (`crisprhal_wide_window.csv` and `crisprhal_wide_window_fcolab.csv`, the latter transcribed to four decimals from the Colab console because
-the session ran out of compute units before the file was downloaded; a harness check on the T4 gave 0.6809 for fold 1's 378 nt arm against 0.6799 in the first run).
-The 2,023 nt arm of fold 4 and all of fold 5 are not run; `colab/crisprhal_wide_window.py` runs them in one paste:
+**−0.011** on fold 1, a fifth of the effect below, and its five-fold mean is 0.6810 at batch 256 against 0.6971 at the published batch).
+Of the twenty arms, the 378 nt arms of folds 2 and 3 and the 23 nt arms of folds 2 to 5 were trained on a CPU and the other fourteen on a T4.
+Fold 1's four T4 arms are in the first run's file; the other ten were transcribed from the Colab console, because its csv files were not downloaded
+(`crisprhal_wide_window_fcolab.csv` and `crisprhal_wide_window_fcolab2.csv`: seven to four decimals, fold 5's three to six);
+a harness check on the T4 gave 0.6809 for fold 1's 378 nt arm against 0.6799 in the first run. `colab/crisprhal_wide_window.py` reproduces the whole experiment in one paste.
 
-| DNA both models see (`crisprhal_wide_window_summary.csv`) | folds | crisprHAL 2 ρ | vs its 378 nt (same folds) | SLICER ρ (same folds) | lead |
-|---|---:|---:|---:|---:|---|
-| guide + PAM (23 nt) | 5 | 0.5556 | −0.126 (4 folds) | 0.5440 | crisprHAL **+0.012** (ahead in 5 of 5) |
-| **378 nt (as published)** | 4 | **0.6803** | — | 0.6705 | crisprHAL **+0.010** (ahead in 3 of 4; −0.013 on fold 3) |
-| 1,023 nt | 4 | 0.6587 | **−0.022** (below in 4 of 4; −0.005 to −0.040) | — | — |
-| ±1,000 nt (2,023 nt) | 3 | 0.6408 | **−0.036** (below in 3 of 3; −0.003 to −0.056) | **0.7048** | **SLICER +0.064** (ahead in 3 of 3; +0.055 to +0.073) |
+| DNA both models see (`crisprhal_wide_window_summary.csv`) | crisprHAL 2 ρ | vs its 378 nt (paired, five folds) | SLICER ρ (same folds) | lead |
+|---|---:|---:|---:|---|
+| guide + PAM (23 nt) | 0.5556 | −0.125 | 0.5440 | crisprHAL **+0.012** (ahead in 5 of 5) |
+| **378 nt (as published)** | **0.6810** | — | 0.6724 | crisprHAL **+0.009** (ahead in 4 of 5; −0.013 on fold 3) |
+| 1,023 nt | 0.6615 | **−0.020** (below in 5 of 5; −0.005 to −0.040) | — | — |
+| ±1,000 nt (2,023 nt) | 0.6421 | **−0.039** (below in 5 of 5; −0.003 to −0.058) | **0.7078** | **SLICER +0.066** (ahead in 5 of 5; +0.055 to +0.079) |
 
 (SLICER's arms are the 20-mer representation alone, family A restricted to 189 / 166 nt, and the full family A, on the same folds.)
-crisprHAL 2 peaks at the width it was designed for and falls below its 378 nt score at both wider inputs in every fold run,
-by 0.022 on average at 1,023 nt and 0.036 at 2,023 nt, while SLICER improves with width. The size of the fall varies by fold
-(across-fold sd 0.029 at 2,023 nt; fold 3 is almost flat at −0.003 and its 378 nt arm, a CPU run, is the lowest of the four, 0.6602),
-so the direction is consistent and the magnitude is not tightly measured. At its own span crisprHAL 2's lead over SLICER's windowed composition is
-smaller at batch 256 (+0.010, four folds, and reversed on fold 3) than at its published batch (+0.025, five folds, above). Browne et al. (2026) settled
+crisprHAL 2 peaks at the width it was designed for and falls below its own 378 nt score at both wider inputs in all five folds,
+by 0.020 on average at 1,023 nt and 0.039 at 2,023 nt, while SLICER improves with width (0.5440, 0.6724, 0.7078). The size of the fall varies
+(sd across folds 0.013 and 0.024; fold 3 is almost flat at −0.003, and its 378 nt arm, a CPU run, is the lowest of the five at 0.6602),
+so the direction is established on five folds and one seed and the magnitude is not tightly measured. At its own span crisprHAL 2's lead over SLICER's windowed composition is
++0.009 at batch 256 (sd 0.014 across folds, reversed on fold 3) against +0.025 at its published batch (five folds, above): small, and not stable in sign. Browne et al. (2026) settled
 on 378 nt for *E. coli* SpCas9 (406 nt for eSpCas9) as the optimum of their per-dataset length search, reporting a small
 mean gain per added nucleotide (+0.00034 ρ per nucleotide upstream, +0.00074 downstream, averaged over the whole added span; 0.554 on the sgRNA alone
-to 0.697 at 378 nt, five-fold CV), so the decline beyond it follows a curve whose per-nucleotide gain was already small. *Limit:* one seed per fold, and the
-2,023 nt arm covers three folds, so the claim is only that the published configuration is degraded by input wider than
+to 0.697 at 378 nt, five-fold CV), so the decline beyond it follows a curve whose per-nucleotide gain was already small. *Limit:* one seed per fold, so the claim is only that the published configuration is degraded by input wider than
 it was tuned for. Equalising the DNA removes the information asymmetry (they receive raw sequence,
 family A a 348-column summary) but not the opportunity to use it, since epochs, dropout, filters and
 GRU width were chosen at 378 nt; a re-tune at each width is not yet run
@@ -970,7 +969,7 @@ Performance numbers from different cohorts, labels and metrics are not commensur
 |---|---|---|
 | **their two splits, their published weights** | rows, label, split, and each model as its authors ship it | **SLICER +0.0286** [+0.0239, +0.0331] on eSpCas9 and **+0.0226** [+0.0139, +0.0314] on WT-SpCas9 |
 | **our five folds** | rows, label and folds; crisprHAL 2 at its published configuration and at the best configuration any search found for it | **SLICER +0.0288** [+0.0251, +0.0326] against their published configuration, **+0.0216** [+0.0180, +0.0252] against the best configuration found for them |
-| **equal input DNA** | all of the above *plus* the DNA each model reads | **depends on the width**: crisprHAL +0.012 on the guide and PAM alone (five folds) and +0.010 at 378 nt (four folds, batch 256), SLICER +0.064 at ±1,000 nt (three folds; original model; one seed) |
+| **equal input DNA** | all of the above *plus* the DNA each model reads | **depends on the width**: crisprHAL +0.012 on the guide and PAM alone and +0.009 at 378 nt (batch 256), SLICER +0.066 at ±1,000 nt (original model; five folds each, one seed) |
 | **a different assay, neither model trained on it** | rows, label, and that neither has seen the data | **crisprHAL +0.026** [+0.023, +0.029] (frozen model, 76,325 guides; not like-for-like, see the last subsection) |
 
 **What the comparison claims.** A product-level claim: used as released, SLICER scores higher on crisprHAL 2's own test splits. Published predictors are compared as released in this field's benchmarks (Konstantakos et al., 2022, ran published tools through the authors' code, weights or web servers on sequence-only inputs, and retrained only two CRISPRLearner models that could not be reproduced and, on sequence features alone, CNN-SVR and C-RNNCrispr), and it is what a user experiences. It is not, by itself, a claim that boosted trees beat convolutional-recurrent networks: SLICER's settings were searched and crisprHAL 2's were not, and general guidance on method comparisons asks for equal tuning budgets before an architecture is credited (Lones, 2021). Two things bound that reading: a nested search of crisprHAL 2's own on our folds found nothing better than its published configuration in four of five folds (Appendix B), and `colab/crisprhal_retune_own_splits.py`, which would supply the matched search on its own splits, has not been run. As an extrapolation and not a measurement: the best configuration any search found for crisprHAL 2 lifted its per-fold mean ρ by +0.0080 on our folds (0.6971 to 0.7051; +0.0072 on the pooled out-of-fold predictions, 0.6968 to 0.7040); the same gain on its own splits would leave SLICER's lead at about +0.015 on SpCas9 and +0.021 on eSpCas9. Interpretability is not among the things the comparison claims for SLICER: Finding 5 puts both models through the same four tests and finds SLICER's attributions the more faithful and the two tied, or crisprHAL 2 ahead, on stability under refitting, agreement with the model-free design rules and compressibility.
@@ -1036,10 +1035,10 @@ Search effort differs by construction: SLICER's settings were searched (97–157
 | DNA both models see | folds | SLICER | crisprHAL 2 | lead |
 |---|---:|---:|---:|---|
 | guide + PAM only | 5 | 0.5440 | 0.5556 | crisprHAL **+0.012** (5 of 5 folds) |
-| their 378 nt span | 4 | 0.6705 | 0.6803 | crisprHAL **+0.010** (3 of 4 folds) |
-| ±1,000 nt | 3 | **0.7048** | 0.6408 | **SLICER +0.064** (3 of 3 folds) |
+| their 378 nt span | 5 | 0.6724 | 0.6810 | crisprHAL **+0.009** (4 of 5 folds) |
+| ±1,000 nt | 5 | **0.7078** | 0.6421 | **SLICER +0.066** (5 of 5 folds) |
 
-Limit: crisprHAL 2 was retrained at each width with its published configuration, whose epochs, dropout, filters and GRU width were chosen at 378 nt, on five, four and three folds and one seed. The result supports "the published configuration is degraded by input wider than it was tuned for", not that convolutional-recurrent networks cannot use long-range context (Finding 2, Appendix A).
+Limit: crisprHAL 2 was retrained at each width with its published configuration, whose epochs, dropout, filters and GRU width were chosen at 378 nt, on five folds and one seed. The result supports "the published configuration is degraded by input wider than it was tuned for", not that convolutional-recurrent networks cannot use long-range context (Finding 2, Appendix A).
 
 #### Cost: fitting, data, scoring and size
 
@@ -1220,7 +1219,7 @@ Each control is given as what it rules out, the design, the result, and what wou
 
 | control | rules out; design | result | believed without it |
 |---|---|---|---|
-| Matched-span head-to-head against crisprHAL 2 | the lead attributed to architecture when the models read different amounts of DNA; crisprHAL also run at our window widths, SLICER at theirs | at their span our windowed composition loses by 0.025 (our five folds, seed 41, crisprHAL 2 at its published batch; +0.010 over the four folds retrained at batch 256 in the Part 5 table); at ±1,000 nt we lead by 0.064 (three folds and one seed, original model) | "we out-encode a tuned deep model", which is false; the defensible claim is access to DNA they never see |
+| Matched-span head-to-head against crisprHAL 2 | the lead attributed to architecture when the models read different amounts of DNA; crisprHAL also run at our window widths, SLICER at theirs | at their span our windowed composition loses by 0.025 (our five folds, seed 41, crisprHAL 2 at its published batch; +0.009 over the five folds retrained at batch 256 in the Part 5 table); at ±1,000 nt we lead by 0.066 (five folds and one seed, original model) | "we out-encode a tuned deep model", which is false; the defensible claim is access to DNA they never see |
 | Distance- and GC-matched orientation comparison, bootstrap over 47 genomic blocks | a cohort confound (opposite-orientation guides sit at different distances from the gene and in different GC); blocks rather than rows, since nearby guides are not independent | opposite-minus-same asymmetry against the nearest gene is 0.026 [−0.006, 0.058] unmatched (a first unweighted pass gave 0.047 against 0.005 and is withdrawn) and **0.007 [−0.024, 0.038]**, P = 0.34, after matching; against a curated **TSS** it is 0.051 [0.020, 0.082] unmatched and **0.025 [−0.003, 0.053]**, one-sided P = 0.04, after the same matching: the TSS orientation survives matching attenuated, with an interval that includes zero (Jacky's `intergenic_orientation_controls_delta_ci.csv`) | the unmatched nearest-gene difference read as an orientation effect |
 | Conditional GC test within matched target-GC strata | flank GC acting as target GC seen through a correlated variable; bin on target GC and measure inside each bin | curated cohort, flank GC the mean of ±500 nt: **+0.176 marginal → +0.221 partial**, positive in all five strata: a suppressor, the opposite of a confound | the GC account would rest on a marginal correlation |
 

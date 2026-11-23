@@ -12,11 +12,11 @@
 # re-tuned) on the same rows, label and folds as the SLICER arms: KFold(5, shuffle=True, random_state=41) over the 33,567 curated
 # guides. The question is only whether the published configuration is degraded by input wider than it was designed for.
 #
-# WHAT IS ALREADY DONE (so it is not repeated): fold 1 at all four widths, folds 2 and 3 at 1,023 and 2,023 nt and fold 4 at 378 and
-# 1,023 nt (Colab T4; results/crisprhal_wide_window_fcolab.csv, transcribed from the console because the session ended before the file
-# was downloaded), the 23 nt arm on all five folds and the 378 nt arm on folds 2 and 3 (local CPU). What is left is PLAN below: fold 4's
-# 2,023 nt arm and all three wider arms of fold 5, about 27 + 6 + 14 + 27 = 74 minutes on a T4. Fold 1's 378 nt arm was reproduced on the
-# T4 as a harness check (0.6809 against 0.6799); set CHECK = True to repeat it (about 6 more minutes) if the Colab environment changed.
+# STATUS: every arm has been run (fold 1 at all widths in the first Colab run; folds 2-5 in a second; the 23 nt arm and the 378 nt arms of
+# folds 2 and 3 on a CPU), so with the default PLAN this file reproduces the whole experiment: all four widths on all five folds,
+# about 3.5 hours on a T4 (6 + 14 + 27 minutes per fold plus 1.5 for the 23 nt arm). To run only part of it, edit PLAN. Fold 1's 378 nt arm
+# was reproduced on the T4 as a harness check (0.6809 against 0.6799); CHECK = True repeats it first. A cheap robustness run: PLAN = {2: ["native_378"],
+# 3: ["native_378"]} retrains the two 378 nt arms that were trained on a CPU (about 12 minutes).
 #
 # BATCH 256 throughout. The published batch is 1,024, but cuDNN cannot allocate the GRU workspace at 2,023 nt on a T4 at that batch.
 # At 378 nt the two batches differ by -0.011 (0.6906 at 1,024, 0.6799 at 256), a fifth of the effect at 2,023 nt, so every width is
@@ -28,17 +28,16 @@
 # separate folds 2-5 script that had to be pasted over cells of it, and two cell-3 drafts.
 #
 # AFTER IT RUNS: the cell downloads crisprhal_wide_window_fcolab.csv (if the session runs out of compute units first, paste the printed
-# lines back). Save it as results/crisprhal_wide_window_fcolab2.csv in the project (results/crisprhal_wide_window_fcolab.csv holds the
-# first six arms) and run   python -m sgrna.compare.crisprhal_wide_window_folds assemble   (the assemble step reads every
+# lines back). Save it as results/crisprhal_wide_window_fcolab3.csv in the project (the files fcolab.csv and fcolab2.csv hold the
+# values already transcribed) and run   python -m sgrna.compare.crisprhal_wide_window_folds assemble   (the assemble step reads every
 # results/crisprhal_wide_window_f*.csv; the harness check is printed, not saved).
 # ============================================================================
 import os, subprocess, sys, time
 
 # ---- what to run: {fold: [arms]} ------------------------------------------------------------------------------------------------
 # Arms: core_23 (guide + PAM), native_378 (their span: 189 up, 166 down), mid_1023 (+/-500), wide_2023 (+/-1,000).
-PLAN = {4: ["wide_2023"],
-        5: ["native_378", "mid_1023", "wide_2023"]}
-# To run everything for every fold instead:  PLAN = {f: ["core_23", "native_378", "mid_1023", "wide_2023"] for f in (1, 2, 3, 4, 5)}
+PLAN = {f: ["core_23", "native_378", "mid_1023", "wide_2023"] for f in (1, 2, 3, 4, 5)}
+# Only the two CPU-trained 378 nt arms:  PLAN = {2: ["native_378"], 3: ["native_378"]}
 CHECK = False                # True: run fold 1's 378 nt arm first as the harness check (must give about 0.680)
 BATCH, SEED, HALF, CORE = 256, 41, 1000, 23
 WIDTHS = {"core_23": (0, 0), "native_378": (189, 166), "mid_1023": (500, 500), "wide_2023": (1000, 1000)}
