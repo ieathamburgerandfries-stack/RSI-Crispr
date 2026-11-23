@@ -44,15 +44,27 @@
 # is what makes these numbers comparable with the ones above.
 # ============================================================================
 
-# --- cell 1 ---------------------------------------------------------------
+# ONE Colab cell: paste the whole file and run it (T4 GPU). It fetches crisprHAL, asks once for crisprhal_widewindow_input.csv.gz
+# (data/interim/ in the project folder, 19.9 MB) and, when it finishes, downloads crisprhal_width_tuning.csv. The run is resumable:
+# if the session dies, paste and run again and it continues from the rows already in /content/crisprhal_width_tuning.csv.
+import subprocess, sys
 # Do NOT pin TensorFlow: Colab's Python is often too new for older releases.
-# import tensorflow as tf; print("tensorflow", tf.__version__)
-# !git clone -q https://github.com/tbrowne5/crisprHAL.git /content/crisprHAL
+try:
+    import tensorflow as tf
+except ImportError:
+    subprocess.run([sys.executable, "-m", "pip", "-q", "install", "tensorflow>=2.19"], check=True)
+    raise SystemExit("TensorFlow was just installed: Runtime -> Restart session, then run this cell again")
+print("tensorflow", tf.__version__, "| GPUs:", tf.config.list_physical_devices("GPU"))
+if not tf.config.list_physical_devices("GPU"):
+    raise SystemExit("No GPU: Runtime -> Change runtime type -> T4 GPU, then run this cell again")
+import os
+if not os.path.isdir("/content/crisprHAL"):
+    subprocess.run(["git", "clone", "-q", "https://github.com/tbrowne5/crisprHAL.git", "/content/crisprHAL"], check=True)
+if not os.path.exists("/content/crisprhal_widewindow_input.csv.gz"):
+    from google.colab import files
+    _up = files.upload()                                     # choose crisprhal_widewindow_input.csv.gz
+    os.replace(next(iter(_up)), "/content/crisprhal_widewindow_input.csv.gz")
 
-# --- cell 2: upload crisprhal_widewindow_input.csv.gz ---------------------
-# from google.colab import files; files.upload()
-
-# --- cell 3 ---------------------------------------------------------------
 import json
 import os
 import sys
@@ -232,7 +244,10 @@ if len(f):
           "378 nt 0.6799 / 1,023 nt 0.6602 / 2,023 nt 0.6299")
     print("SLICER on the same fold: 0.6568 at their span, 0.6944 at +-1,000 nt")
 
-# --- cell 4: bring it home ------------------------------------------------
-# from google.colab import files; files.download(OUT)
+try:                                                         # bring it home
+    from google.colab import files
+    files.download(OUT)
+except Exception as e:
+    print("download", OUT, "from the file browser:", e)
 # Put it in results/crisprhal_width_tuning.csv, then update Finding 2's
 # "re-tune at each width has not been run" paragraph and Part 4 item 7.
