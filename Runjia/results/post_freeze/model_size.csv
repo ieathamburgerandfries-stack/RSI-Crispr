@@ -1,0 +1,4 @@
+model,trees,nodes,leaves,inner_nodes,columns_used,columns_selected,max_depth,bytes_file,bytes_json,parameters,n_train
+SLICER default,400.0,12276.0,6338.0,5938.0,284.0,300.0,4.0,682427,812408.0,,26853.0
+SLICER tuned,4000.0,223080.0,113540.0,109540.0,450.0,450.0,5.0,10229364,13560740.0,,26853.0
+crisprHAL 2,,,,,,,,9633304,,790533.0,

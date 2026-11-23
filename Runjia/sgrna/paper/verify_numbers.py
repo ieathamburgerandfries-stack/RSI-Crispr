@@ -655,7 +655,7 @@ def main():
 
     print("22.4 the package imports, and importing it writes nothing")
     ic = json.loads((OUT / "import_check.json").read_text())
-    chk("22.4 modules swept", float(ic["n_modules"]), 163, 0)
+    chk("22.4 modules swept", float(ic["n_modules"]), 179, 0)
     chk("22.4 modules excluded by name", float(ic["n_skipped"]), 2, 0)
     chk("22.4 modules that fail to import", float(len(ic["fails"])), 0, 0)
     chk("22.4 files under results/", float(ic["files_in_results"]), 675, 0)

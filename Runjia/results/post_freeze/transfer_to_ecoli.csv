@@ -1,0 +1,13 @@
+trained_on,scored_on,rho,within,species_trained
+chari2015Train293T,E. coli,-0.11959276752129723,False,human
+doench2014-Hs,E. coli,-0.02606888460000115,False,human
+doench2016_hg19,E. coli,-0.05761771329134825,False,human
+hart2016-HelaLib1Avg,E. coli,-0.05275957938827703,False,human
+hart2016-Hct1161lib1Avg,E. coli,-0.041989713406963655,False,human
+wang2015_hg19,E. coli,-0.05354225632873832,False,human
+xu2015TrainHl60,E. coli,-0.07751758830306371,False,human
+xu2015TrainKbm7,E. coli,-0.059224999532009444,False,human
+doench2014-Mm,E. coli,-0.012106742218338906,False,mouse
+xu2015TrainMEsc,E. coli,-0.07886271751316502,False,mouse
+morenoMateos2015,E. coli,-0.08161456507869361,False,zebrafish
+E. coli,E. coli,0.5443899173103701,True,E. coli

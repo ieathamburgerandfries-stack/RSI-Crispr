@@ -118,7 +118,7 @@ field. C becomes one short section, honestly scoped.
 - Follow crisprHAL 2's order: Datasets → Data processing → Features → Model → Metrics → Splits.
 - **Splits section must carry**: gene-grouped and 100 kb-block CV; the train/test Hamming statistic
   (min 3, no identical guides) — both comparators report this and reviewers will look for it.
-- Reproducibility: `run_audit.sh`, 2885 checks; `import_check.py` for the code itself.
+- Reproducibility: `run_audit.sh`, 3122 checks; `import_check.py` for the code itself.
 
 ---
 

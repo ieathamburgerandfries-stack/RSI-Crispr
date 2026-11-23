@@ -2,8 +2,9 @@
 
     ./run_ext.sh sgrna.paper.paper_numbers
 
-The checks are in three modules by topic (A: data, features, the flank signal and the hypotheses tested; B: transfer, design rules across
-kingdoms, the label's ceiling, interpretability; C: the comparison with crisprHAL 2, cost, adaptive overfitting). Each states, next to
+The checks are in four modules by topic (A: data, features, the flank signal and the hypotheses tested; B: transfer, design rules across
+kingdoms, the label's ceiling, interpretability; C: the comparison with crisprHAL 2, cost, adaptive overfitting; D: the second review round of 23 Nov: one protocol,
+the reach of the flank signal, controls, the full transfer table, more metrics against crisprHAL 2, the cost with its spread). Each states, next to
 the number, which cohort and protocol it belongs to, because a value often recurs for a different quantity (for example +0.164 is random-row
 cross-validation on the curated cohort and +0.157 the gene-grouped figure). This module adds the few checks that were missing after the
 text was corrected. `verify_numbers` calls `run` so `./run_audit.sh` covers the paper too.
@@ -18,7 +19,7 @@ import json
 import pandas as pd
 
 from ..common import OUT
-from . import paper_numbers_A, paper_numbers_B, paper_numbers_C
+from . import paper_numbers_A, paper_numbers_B, paper_numbers_C, paper_numbers_D
 
 P = "paper: "
 
@@ -28,6 +29,7 @@ def run(chk):
     paper_numbers_A.run(chk)
     paper_numbers_B.run(chk)
     paper_numbers_C.run(chk)
+    paper_numbers_D.run(chk)
     # the published matrix's guides lie in a 1,222-gene panel
     cg = pd.read_csv(R / "cohort_groups.csv")
     chk(P + "genes in the published matrix's panel (cohort_groups.csv, gene grouping)",

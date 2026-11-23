@@ -14,12 +14,14 @@ Seven claims, each defended in the finding or part named beside it.
 6. **The final SLICER model, as shipped, leads crisprHAL 2, as released, on crisprHAL 2's own splits**: by **+0.0286** [+0.0239, +0.0331] on eSpCas9 and **+0.0226** [+0.0139, +0.0314] on SpCas9 (paired 95% bootstrap over test guides; the settings search used the labels of the SpCas9 test guides that lie in its development genes, though no weights were fitted on any test row, and on the 1,204 genes the search never touched the lead is +0.0324 [+0.0248, +0.0403] against crisprHAL 2's published configuration). It scores a guide 13–21× faster end to end (tuned model, one thread, 1 to 10,000 guides) and reaches crisprHAL 2's 26,853-guide accuracy with about a third of the labelled guides (about 9,100, by interpolation on our five folds). Before tuning, the same model was not distinguishable from crisprHAL 2 (Δρ +0.0021, 95% CI [−0.0031, +0.0072] on eSpCas9; +0.0039 [−0.0047, +0.0124] on SpCas9; no equivalence margin was pre-declared) at an estimated 150× less CPU time to fit (65.8 against 10,000 CPU-seconds per fold; the 10,000 is an estimate, not a measured CPU time). Both models are compared as used in practice, which is as released; whether the architecture itself is better is a separate method-level question that is not tested (Part 5).
 7. **The sealed-gene drop is small, and not shown to be adaptive overfitting.** Sealing 20% of the guides by whole gene lowers family A's gain by +0.0087 ρ [+0.0020, +0.0153; mean ± 1.96 se over 15 sealings]; the frozen configuration re-derives no hyperparameter, an 8-draw search adds nothing detectable, and holding out whole genes inside the pool removes only +0.0007 of it (8 sealings), so the figure is the most that automatable adaptive overfitting could be and says nothing about the cohort choice, family A's design or its window set, and the tuned settings' benefit survives a genome nothing was chosen on (+0.0172 over the frozen champion, zero-shot on *C. rodentium*) (Part 4).
 
+**Second review round (23 Nov).** The paper's Results now quote every effect under one protocol (the default model, five-fold cross-validation with whole genes held out, three seeds, the 20-mer alone as the baseline): the flank gain is **+0.161** (ρ 0.547 → 0.707, sd 0.010 over 15 folds, positive in all). Under it the flank signal peaks at a window of 250 nt (two GC columns, +0.105), is no better for the four base fractions than for GC (+0.108 against +0.113), is lost when the flank is read from DNA more than about 3 kb away, and survives a mappability, read-depth and curation check and a second screen's labels at the sealed genes (+0.103). Transfer was extended to every pair of datasets (every eukaryotic model scored on E. coli is negative) and compared with crisprHAL 2's, the metrics a user choosing guides cares about were compared (AUROC +0.011 / +0.016, top-decile precision not detected), and the cost was repeated many times and compared with the nearest published design (BoostMEC). Details, files and commands: `EXTENSION_LOG.md` §29 and `results/RESULTS.md`; the numbers are recomputed by `sgrna/paper/paper_numbers_D.py`. The findings below keep the protocols they were first reported under, each labelled.
+
 ## How to read this document
 
 * **Part 1** is the seven findings, each a claim followed by the evidence and its limit. **Part 2** states the contributions and what is new about the biology. **Part 3** says where the work stops. **Part 4** is the validation: the freeze, the audit of what could have inflated the figures, and the sealed checks. **Part 5** places the work against the published predictors.
 * **Appendices.** A: every control, with what it rules out and what would be believed without it, and the inventory of nulls. B: the methods and controls behind the findings. B2–B4: the imported families that did not work, what curation is, the family table on the curated cohort, and the null on the flank's shape and 3D structure. B5: a boundary experiment on dCas9 screens that no claim rests on. C0 and C: reproducibility and data sources. D: references.
-* **Two *E. coli* SpCas9 cohorts.** Noshay et al.'s published 13,880-row matrix (label `cut.score`; their iRF used 40,468 sgRNAs of Guo et al.'s screen, 32,374 for training, and the released rows that map to a gene lie in a 1,222-gene panel) and crisprHAL 2's curated 33,567-guide genome-wide release of the same screen (ALDEx2 score; 8,617 guides in common) are different frames; every number on *E. coli* SpCas9 belongs to one of them and the text says which, as it does for the other data used (eSpCas9, *C. rodentium*, human, CRISPRi, the CRISPOR tables). The working cohort is the curated one.
-* **Provenance.** [`results/INDEX.md`](results/INDEX.md) lists every result file by the section it supports and [`results/RESULTS.md`](results/RESULTS.md) goes from each claim to its file and command. [`CODE_OVERVIEW.md`](CODE_OVERVIEW.md) tours the code the claims depend on and [`CODE_MAP.md`](CODE_MAP.md) maps every module. `./run_audit.sh` recomputes a large set of the post-freeze numbers quoted here from the file that produced each and exits non-zero on any mismatch (2885 checks as of 23 November; a number without a check line is not covered), and checks that the package imports without writing anything. `EXTENSION_LOG.md` is the working record: what was tried, in what order, and with what expectation.
+* **Two *E. coli* SpCas9 cohorts.** Noshay et al.'s published 13,880-row matrix (label `cut.score`; their iRF used 40,468 sgRNAs of Guo et al.'s screen, 32,374 for training; the released file holds 13,880 rows, the first 1,225 genes of the screen in alphabetical order (aaeA to leuC, 1,222 after our gene assignment), cut off mid-file; the paper does not say why) and crisprHAL 2's curated 33,567-guide genome-wide release of the same screen (ALDEx2 score; 8,617 guides in common) are different frames; every number on *E. coli* SpCas9 belongs to one of them and the text says which, as it does for the other data used (eSpCas9, *C. rodentium*, human, CRISPRi, the CRISPOR tables). The working cohort is the curated one.
+* **Provenance.** [`results/INDEX.md`](results/INDEX.md) lists every result file by the section it supports and [`results/RESULTS.md`](results/RESULTS.md) goes from each claim to its file and command. [`CODE_OVERVIEW.md`](CODE_OVERVIEW.md) tours the code the claims depend on and [`CODE_MAP.md`](CODE_MAP.md) maps every module. `./run_audit.sh` recomputes a large set of the post-freeze numbers quoted here from the file that produced each and exits non-zero on any mismatch (3122 checks as of 23 November; a number without a check line is not covered), and checks that the package imports without writing anything. `EXTENSION_LOG.md` is the working record: what was tried, in what order, and with what expectation.
 
 ## What earns a place, and what the work is for
 
@@ -481,7 +483,7 @@ duplex DNA, far longer than the ~20–30 nt Cas9 contacts) is a hypothesis.
 
 **(d) The guide's own base preferences sit in the seed, and they invert between *E. coli* and eukaryotes.** In *E. coli* (33,567 curated guides), per-base effects on the label (SD units) are
 within ±0.04 of zero at positions 1–7 and the twelve strongest are all at 14–20: at position 20, G **−0.322** and T **+0.348**; at position 18, G −0.266 and T +0.210. The
-model's gain-by-position profile (63% of the champion's split gain, 62% of the tuned model's, in the eight PAM-proximal positions) and Orro et al.'s human base-editing SHAP profile (A375; highest at position 20; a different organism, nuclease, label and importance measure) agree. The identical
+model's gain-by-position profile (63% of the champion's split gain, 62% of the tuned model's, in the eight PAM-proximal positions) and Orro et al.'s human base-editing SHAP profile (A375; concentrated at the PAM-proximal end, with its largest values at positions 16, 20 and 14 in the published model; a different organism, nuclease, label and importance measure) agree in that. The identical
 estimator on the human matrix (13,138 distinct guides; sign convention: target GC against label is −0.147 in the 33,567-guide cohort and +0.018 in the human matrix, too close to zero to fix a sign alone) gives at position 20 G **+0.131** and T
 **−0.170**. Across the 80-cell matrix the rank correlation is **−0.052**, with **15 of 27** jointly-significant cells opposite in sign (the chance expectation for unrelated maps:
 binomial p = 0.70), so the maps are unrelated overall and the reversal is established for G and T at position 20 and for five cells at positions 18–19. G immediately 5′ of the PAM is the
@@ -904,7 +906,7 @@ pool genes and the sealed genes.
 
 | data | used for | anything chosen on it? | at loci the *E. coli* cohort does not hold? |
 |---|---|---|---|
-| Noshay's published matrix (Supplementary Table 2: 13,880 guides in a 1,222-gene panel; the paper's own table counts 40,468 sgRNAs; same screen as the curated cohort, label ρ 0.945 on 8,617 shared guides) | Finding 1, the 412-column result, the harness anchor, family A's design and window sweep | **yes**: family A's existence and windows | no |
+| Noshay's published matrix (Supplementary Table 2: 13,880 guides in the alphabetical block of genes aaeA to leuC, 1,222 genes under our assignment; the paper's own table counts 40,468 sgRNAs; same screen as the curated cohort, label ρ 0.945 on 8,617 shared guides) | Finding 1, the 412-column result, the harness anchor, family A's design and window sweep | **yes**: family A's existence and windows | no |
 | crisprHAL curated WT-SpCas9, 33,567 guides | the working cohort: every model and figure | **yes**: the cohort itself; hyperparameters (on 70% of its genes) | n/a |
 | eSpCas9, 59,489 guides (their split 47,591 / 11,898) | transfer; the head-to-head on their split; an external check during tuning | nothing selected, but scores were visible: confirmatory | no |
 | *C. rodentium* TevSpCas9, 25,210 guides (5.35 Mb genome) | the frozen champion's transfer test (Finding 3); the sealed check below | **no** | **yes** |
@@ -920,6 +922,18 @@ independent of the loci and never chosen on, *C. rodentium*. eSpCas9 was never s
 is made of guides from the cohort whose DEV genes fed the settings search (no weights were fitted on its test rows), and has
 carried seven arms (SLICER's original 0.6997 and six data-ablation arms). Both are confirmatory but not untouched; no
 untouched external set remains at the same loci.
+
+**The same seal, scored on a second screen.** Train on the WT-SpCas9 guides of the development genes of each of the 15 sealing draws and score the
+*eSpCas9* labels of every eSpCas9 guide that lies in a sealed gene (11,609 to 12,200 guides in 861 to 932 genes per draw; `sealed_crossscreen.py`,
+`results/post_freeze/sealed_crossscreen.csv`). The enzyme changes as well as the genes, and no step has fitted these labels, which answers the
+suggestion of holding one screen out: dropping a screen after it has been looked at cannot make it untouched, but sealing its guides by gene
+while training on the other screen's labels gives a test no earlier one was. The prediction was written into the module before the run: family A's gain
+(300 columns selected inside the training genes, against the base alone) positive in at least 14 of 15 draws with a mean of at least +0.08.
+Observed: **+0.1033 [+0.0997, +0.1070], positive in 15 of 15 (range +0.0917 to +0.1157)**, against +0.1560 [+0.1506, +0.1615] for the
+WT labels of the same sealed genes (eSpCas9 base 0.5656 → 0.6689; two-thirds of the WT gain; mean ± 1.96 se over draws, which share genes). The status
+stays *confirmatory*: eSpCas9 scores were visible during tuning and in the head-to-head, and the loci are the same genome (a sealed guide's
+flank windows can overlap training loci beside its gene). What the test adds is that the gain survives a change of enzyme and of gene together and is not a property
+of one screen's labels.
 
 **The sealed check.** Train on all 33,567 *E. coli* guides and score the 25,210 *C. rodentium* guides zero-shot, with the same
 protocol for each arm (`sealed_organism.py`; three seeds; 16 blocks of 100 kb resampled for the interval). Predicted in
@@ -953,8 +967,8 @@ Each question is open because of something this project does not have.
 | Does measured nucleoid-protein occupancy add anything beyond family A? (H-NS/Fis ChIP, GSE24991; IHF/HU, SRP008538; IPOD-HR, GSE164796) | one processed track mapped to the 33,567 loci, plus one ablation arm | no processed track was fetched. Bounded by argument, not measured: family E (Hi-C and NAP dependence) is worth +0.072 alone but is one variable with the read-density families, all ten other families together add only +0.039 beyond family A (Appendix B3), the flank effect has no structure below ~250 nt (Finding 7), and coarse NAP occupancy is AT-driven, which family A's composition columns carry |
 | Would a measured DNA shape or stiffness matrix differ from the tabulated pentamer means? | ABC/muABC tetranucleotide stiffness (Pasi et al. 2014) | no download page was found; the local-predictor half is closed by measurement (`EXTENSION_LOG.md` §22.3) |
 | How much of the unexplained ρ is repair rather than cutting? | an assay separating cutting from survival for the same guide | no pooled survival screen can provide it; this is the honest form of the 0.215 ρ gap |
-| Does the lead hold on an untouched cutting screen? | a new, never-used *E. coli* cutting screen | none remains at the same loci; a different genome carries the sealed check on the tuned settings (+0.0172). The dimension on which this project is weakest |
-| Why do the 1,222 panel genes differ from the rest? | per-guide read counts, to separate dynamic range from different biology | the counts were not used; the essentiality explanation is argued against (family G's essentiality column is worth +0.00004) |
+| Does the lead hold on an untouched cutting screen? | a new, never-used *E. coli* cutting screen | none remains at the same loci (the flank gain, though not the lead over crisprHAL 2, was tested on eSpCas9's labels in sealed genes: +0.1033, but that screen is confirmatory); a different genome carries the sealed check on the tuned settings (+0.0172). The dimension on which this project is weakest |
+| What about the genes of the published matrix (aaeA to leuC) lowers the flank gain there (+0.102 against +0.180 in all other genes, curated cohort)? | gene-level covariates (length, expression, function, essentiality) tested as moderators of the gain | not run. The file is an alphabetical block of the screen's genes and not a designed panel, so the difference is whatever separates genes named a to l from the rest (their base is easier: ρ 0.607 against 0.542); the essentiality explanation is argued against (family G's essentiality column is worth +0.00004) |
 | Do the human-arm results hold on a deduplicated matrix, and does the human shape result (+0.018 on top of family A, where *E. coli* gives zero) mean anything? | the 13,138-guide deduplicated matrix searched under twin-grouped folds; human family A rebuilt on our own hg38 flanks | the cross-kingdom transfer figures (shared columns: −0.046 [−0.061, −0.031] and −0.016 [−0.032, +0.001]; family A on both sides: +0.022 and +0.017, no intervals) use no human folds but rest on a matrix with repeated guides, and the human local figures behind them are row-wise and not re-run; human runs are outside the current scope |
 
 ## Part 5 — Where this sits in the field
@@ -1085,7 +1099,7 @@ measured expected pick of ten candidates from the 69.6th to the 75.9th percentil
 | **SLICER, frozen champion** | *E. coli*, cutting | **±1,000 nt** windowed composition | XGBoost, 300 columns | **gene-grouped**, 3 seeds × 5 folds | ρ 0.7151 CV; 0.6997 / 0.7842 on their splits |
 | **SLICER, tuned (post-freeze)** | same | same | XGBoost, 450 columns, 4,000 trees | gene-grouped, 3 seeds × 5 folds; DEV/CONFIRM genes | ρ 0.7314 CV; 0.7172 / 0.8107 on their splits |
 | Yu et al. 2024 | bacteria, **CRISPRi** depletion | gene-level covariates: expression, transcription-unit structure, gene GC, gene length, distance to operon start | mixed-effect random forest (129 guide features fixed, 9 gene features random, 301 genes as clusters) | **gene-wise** CV, train/test Hamming distances reported | mixed-effect model, gene-wise CV on three screens: median within-gene ρ 0.396. (The ρ ≈ 0.21 sequence only → 0.25 with distance and thermodynamics → **0.66** with gene features belongs to their auto-sklearn depletion models under guide-wise CV on one screen, 1,951 guides in 293 essential genes.) |
-| Orro et al. 2026 | human, **base-editing** fitness screen; ~11,000 sgRNAs over 47 genes | **±15 nt** context sweep (total 20–50 nt), gene strand, DepMap essentiality, mutation type, three external editing-efficiency predictors | six classifiers at library defaults | gene-held-out per the published abstract; the preprint's methods describe 5-fold CV × 10 seeds | AUC-ROC 0.838–0.948 in the preprint's 5-fold CV (87–94% under gene-held-out validation in the published abstract); classification, not commensurable with ρ |
+| Orro et al. 2026 | human, **base-editing** fitness screen (the Hanna et al. 2021 library: ~11,000 sgRNAs over 47 genes, five cell lines, one model each) | a short sequence context (**±15 nt** in the preprint), GC content, melting temperature, DepMap essentiality, mutation type, external editing-efficiency predictors | gradient-boosted trees (CatBoost best) among six classifiers | leave-one-gene-out in the published version (the preprint's main protocol was random 5-fold CV × 10) | CatBoost AUC-ROC 0.914–0.943 across the five cell lines (87–94% across the classifiers compared); classification, not commensurable with ρ |
 | CRISPRon (Xiang et al. 2021) | human, Cas9 knockout | a 30-nt window (protospacer, PAM and neighbouring bases) plus a computed gRNA–DNA binding energy (ΔG_B); no experimental track | CNN | internal + external test sets | ρ 0.80 internal, ≈0.46–0.68 external |
 
 Other flank readers are shorter still (Yu et al. 4 nt upstream and 3 beyond the PAM; CRISPOR 50 bp each side, Haeussler et al. 2016), and the field's other
@@ -1093,9 +1107,9 @@ routes outside the protospacer are experimental (epigenetic tracks, as in DeepCR
 No surveyed predictor builds compositional descriptors of flanking DNA in windows of hundreds to a thousand nucleotides and measures
 their increment, and this one needs only a reference genome.
 
-*Independent agreement.* (i) Gene-held-out evaluation is also reported by Yu et al. (2024) for their guide-efficiency model and, per its published abstract, by Orro et al. (2026) (their preprint's main protocol is random 5-fold CV, with a leave-one-gene-out check on LightGBM in two cell lines), and Yu et al.'s
+*Independent agreement.* (i) Gene-held-out evaluation is also reported by Yu et al. (2024) for their guide-efficiency model and by Orro et al. (2026) (leave-one-gene-out is the main protocol of the published version; the preprint's was random 5-fold CV), and Yu et al.'s
 separation of guide and gene effects is the within-gene / between-gene decomposition used here (Finding 3's +0.085, asked entirely
-inside genes). (ii) Orro et al.'s SHAP importance (A375 cell line, preprint) rises toward the 3′ end of the guide, highest at position 20 (0.328), with 0.237 at position 19, 0.139–0.304 at positions 13–16 and positions 1–5 lowest (0.065–0.068); here the eight PAM-proximal positions carry **63% / 62%** of the gain (frozen / tuned) and positions 1–12
+inside genes). (ii) Orro et al.'s SHAP importance for the A375 model rises toward the 3′ end of the guide in both versions of their paper (published CatBoost model: largest at positions 16 (1.119), 20 (0.750) and 14 (0.617); the preprint's LightGBM model peaked at position 20, 0.328); here the eight PAM-proximal positions carry **63% / 62%** of the gain (frozen / tuned) and positions 1–12
 only 10% / 17% (`EXTENSION_LOG.md` §14), on a different organism, nuclease, label and importance measure.
 
 *Reference figures.* crisprHAL 2's *C. rodentium* TevSpCas9 model (a different organism and nuclease) reports 0.754 by five-fold CV and 0.746 on its held-out split,
@@ -1137,8 +1151,8 @@ the field or in earlier versions of this work).*
    selection bias.
 8. **The strand warning (Appendix B5, a boundary experiment).** A feature family worth +0.27 in a dCas9 screen is worth +0.007 to
    +0.025 once the assay's own strand rule is supplied: a family containing a lossy copy of an assay's dominant covariate looks
-   powerful. Orro et al. (2026, preprint) independently find gene strand their most influential non-sequence feature (SHAP 0.493, ahead of
-   essentiality 0.179), so any subgroup result from a pooled screen should control strand first. Whether the effect needs a break was
+   powerful. the nearest literature does not settle it (Orro et al. (2026) model the gene's orientation, not the guide's strand relative to the gene, and
+   the preprint's gene-orientation feature was dropped from the published version), so any subgroup result from a pooled screen should control strand first. Whether the effect needs a break was
    not settled.
 
 Items 4, 5 and 8 generalise beyond this project and are the most likely to be useful to others.
@@ -1181,8 +1195,8 @@ describe equally good models on differently noisy data, which is why the ceiling
 - **Specificity.** Six of `h_offtarget`'s thirteen columns are constant zero because the cohort keeps only uniquely-targeting guides, so
   its +0.0011 (curated cohort, random-row CV; +0.0003 gene-grouped) is a filter, not evidence about off-target descriptors (Part 3).
 - **Nickase editors (base and prime editing).** Untested: they bind and nick rather than cut. The nearest literature, Orro et al. (2026),
-  fits a binarised human fitness label with ±15 nt of context, so the kilobase window is untested there. Gene essentiality predicts their
-  label (0.179, SHAP, A375) and is a null here (+0.00004), plausibly because the labels measure different things (untested):
+  fits a binarised human fitness label with a short sequence context (±15 nt in the preprint), so the kilobase window is untested there. Gene essentiality
+  carries marginal weight in their published models (DepMap, SHAP 0.388, third among the non-sequence features in A375) and is a null here (+0.00004), plausibly because the labels measure different things (untested):
   a fitness effect against survival of a break that is lethal whichever gene carried it.
 - **Human.** The *E. coli* flank result should not be assumed to transfer: the one cross-kingdom quantity tested inverted (GC against
   activity, −0.147 on the curated cohort [−0.201 on the published 13,880-row matrix] against +0.018 in the decoded human matrix), and the seed preferences are uncorrelated (ρ = −0.052). Cross-kingdom tests are in Part 3.
@@ -1285,7 +1299,7 @@ The gain holds on never-seen genes, at the size it has on the tuning folds (0.71
 
 ### Grouped cross-validation means something different on the curated cohort, and the gap narrows
 
-Gene identity explains **16%** of the published label and **29%** of the curated one, because the published rows target a gene panel and crisprHAL's curated release is genome-wide: within-gene share **0.843** on the published matrix (13,829 of 13,880 guides placed in 1,222 genes, 11.3 guides/gene) against **0.713** on the curated one (30,203 of 33,567 guides in 4,013 genes, 7.5 guides/gene). Pre-specified: twice the between-gene variance should widen the gap between random and gene-grouped CV. Observed: it narrows; grouping cost `e_nucleoid` 42% of its gain on the published matrix and 12% here, `g_transcription` 36% and 21% (Appendix B3; the published random-row arms of these two families are not stored in `results/`). Between-gene variance sets how much a locus-memorising model could win and guides per gene how well it can learn each locus's mean; both moved, in opposite directions, and only the measurement says which won. *Check on the method:* genes are assigned by coordinate on NC_000913.2 against the reference gene table for both cohorts; on the published rows this agrees with Noshay's own assignment for **97.7%** of guides and gives the same share to three decimals (0.843 against 0.844), so the change is the cohort and not the method (`python -m sgrna.harness.cohort_groups`, `results/cohort_groups.csv`).
+Gene identity explains **16%** of the published label and **29%** of the curated one, because the published rows are an alphabetical block of the screen's genes (aaeA to leuC) and crisprHAL's curated release is genome-wide: within-gene share **0.843** on the published matrix (13,829 of 13,880 guides placed in 1,222 genes, 11.3 guides/gene) against **0.713** on the curated one (30,203 of 33,567 guides in 4,013 genes, 7.5 guides/gene). Pre-specified: twice the between-gene variance should widen the gap between random and gene-grouped CV. Observed: it narrows; grouping cost `e_nucleoid` 42% of its gain on the published matrix and 12% here, `g_transcription` 36% and 21% (Appendix B3; the published random-row arms of these two families are not stored in `results/`). Between-gene variance sets how much a locus-memorising model could win and guides per gene how well it can learn each locus's mean; both moved, in opposite directions, and only the measurement says which won. *Check on the method:* genes are assigned by coordinate on NC_000913.2 against the reference gene table for both cohorts; on the published rows this agrees with Noshay's own assignment for **97.7%** of guides and gives the same share to three decimals (0.843 against 0.844), so the change is the cohort and not the method (`python -m sgrna.harness.cohort_groups`, `results/cohort_groups.csv`).
 
 ### The published label's ceiling is 0.937 [0.929, 0.945], from tiling-library agreement
 
@@ -1466,7 +1480,7 @@ Out-of-fold R² of predicting each new column from position-specific mono- and d
 
 ## Appendix B2a — Curation: what it is, and why family A doubled between cohorts
 
-**Family A's gain is +0.080 on the published matrix and +0.164 on crisprHAL's curated cohort (both five seeds × five random-row folds) because the curated cohort contains 24,950 additional guides in which the flank effect is steeper: the label, the row count and the base account for +0.014 of the +0.084 difference, and the remaining ≈ +0.070 is shown by elimination and, directly, by a 2.96× steeper flank-GC slope in the added guides.** Neither figure is an attenuated version of the other: +0.080 is the right figure for the 1,222-gene panel in which the published matrix's rows lie (a subset of Guo et al.'s genome-wide library), +0.164 the right figure genome-wide. Comparing them across cohorts without this reads as the model improving.
+**Family A's gain is +0.080 on the published matrix and +0.164 on crisprHAL's curated cohort (both five seeds × five random-row folds) because the curated cohort contains 24,950 additional guides in which the flank effect is steeper: the label, the row count and the base account for +0.014 of the +0.084 difference, and the remaining ≈ +0.070 is shown by elimination and, directly, by a 2.96× steeper flank-GC slope in the added guides.** Neither figure is an attenuated version of the other: +0.080 is the right figure for the alphabetical block of genes (aaeA to leuC, 1,222 under our assignment) in which the published matrix's rows lie (a subset of Guo et al.'s genome-wide library), +0.164 the right figure genome-wide. On the curated cohort itself, gene-grouped, the gain is +0.102 [+0.089, +0.115] in those genes and +0.180 [+0.164, +0.197] in all the others (`mappability_stratum.csv`), so the block alone accounts for most of the gap. Comparing them across cohorts without this reads as the model improving.
 
 **Curation drops rows; selection drops columns, and only curation can flatter a score.** crisprHAL's curation removes guides whose label is unreliable and is applied to the whole dataset **before splitting**, so it also cleans the test set and raises ρ partly by making evaluation easier; feature selection is fitted inside each training fold and cannot. The figure for curation here, ρ 0.607 → 0.628 for base + family A (Noshay's label) on restricting the 13,880 rows to the 8,617 that curation retains, contains both effects and has not been separated.
 
@@ -1730,6 +1744,12 @@ High-resolution, genome-wide mapping of positive supercoiling in chromosomes.
 *eLife*, *10*, e67236. https://doi.org/10.7554/eLife.67236
 — GapR-seq; positive-supercoiling density (GEO accession GSE152880).
 
+Hanna, R. E., Hegde, M., Fagre, C. R., DeWeirdt, P. C., Sangree, A. K., Szegletes, Z.,
+Griffith, A., Feeley, M. N., Sanson, K. R., Baidi, Y., Koblan, L. W., Liu, D. R., Neal, J. T.,
+& Doench, J. G. (2021). Massively parallel assessment of human variants with base editor
+screens. *Cell*, *184*(4), 1064–1080.e20. https://doi.org/10.1016/j.cell.2021.01.012
+— the base-editing screen whose data Orro et al. model (as they describe it).
+
 Haeussler, M., Schönig, K., Eckert, H., Eschstruth, A., Mianné, J., Renaud, J.-B.,
 Schneider-Maunoury, S., Shkumatava, A., Teboul, L., Kent, J., Joly, J.-S., &
 Concordet, J.-P. (2016). Evaluation of off-target and on-target scoring algorithms
@@ -1813,14 +1833,14 @@ explainable-AI driven feature engineering. *Nucleic Acids Research*, *51*(19),
 Orro, A., Consiglio, A., Curci, M. I., Scichilone, M., Hasin, F., Minervini, M.,
 Mencar, C., De Bellis, G., Cocola, C., Pelucchi, P., & Selmi, T. (2026). Machine
 learning-based prediction of base editor sgRNA fitness score. *Scientific Reports*.
-Advance online publication, 10 November 2026.
-https://doi.org/10.1038/s41598-026-79920-1
-(preprint: https://doi.org/10.21203/rs.3.rs-9224117/v1, which is the version read here)
-— base-editing fitness prediction over ~11,000 sgRNAs and 47 genes. Its SHAP position
-profile independently reproduces this project's gain-by-position result, and gene strand
-is its largest non-sequence feature, as strand was in our dCas9 screen. It finds gene
-essentiality weakly predictive where we find it null, a difference the report attributes
-to the two labels (Part 5; untested).
+Advance online publication (accelerated preview), 10 November 2026;
+volume, issue and article number not yet assigned. https://doi.org/10.1038/s41598-026-79920-1
+(preprint: Research Square, 10 April 2026, https://doi.org/10.21203/rs.3.rs-9224117/v1; both versions read)
+— base-editing fitness prediction (the Hanna et al. 2021 library, about 11,000 sgRNAs over 47 genes, five cell
+lines), gradient-boosted trees with leave-one-gene-out validation. Its SHAP position profile concentrates at the
+PAM-proximal end, as this project's gain-by-position result does; gene essentiality carries marginal weight
+where we find it null, a difference the report attributes to the two labels (Part 5; untested). The preprint's
+SHAP values (peak at position 20) and its gene-strand result differ from the published version and are not relied on.
 
 Pasi, M., Maddocks, J. H., Beveridge, D., Bishop, T. C., Case, D. A., Cheatham, T.,
 Dans, P. D., Jayaram, B., Lankas, F., Laughton, C., Mitchell, J., Osman, R., Orozco, M.,

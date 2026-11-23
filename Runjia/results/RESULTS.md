@@ -39,7 +39,29 @@ marked **[P]** published or **[C]** curated. They are not interchangeable.
 | The window widths are not where the gain lives | +0.1634 vs +0.1638 | [C] | `window_robustness.csv` | `python -m sgrna.controls.window_robustness` |
 | It is not target GC in disguise: conditioning raises it | +0.044 → +0.082 | [P] | `gc_strata_corr.csv`, `gc_strata_ablation.csv` | `python -m sgrna.interpret.gcstrata` |
 | It is not gene ranking: it holds inside genes | +0.085 within-gene [+0.078, +0.090] | [P] | `cut_within_gene_summary.csv` | `ext/cut_within_gene.py` (EXTENSION_LOG §1) |
-| Read depth or mappability is **not excluded**: the control's stated result (+0.078 → +0.051 in a high-uniqueness stratum) is not in the cited files | unsupported | [P] | `ablation_abund_split.csv` (`abund_local_vs_mappability.csv` †) | `python -m sgrna.harness.run_ablation --tag abund_split` |
+| It is not read depth or mappability: the gain is +0.1569 [+0.1448, +0.1694] among the 26,146 guides with no repeated 25-mer within 1 kb, no seed duplicate and one copy (all guides +0.1606), larger in repeated sequence (+0.2607, 852 guides), and +0.1600 given the control read depth as a column | +0.157 ρ | [C] | `mappability_stratum.csv`, `mappability_depth.csv` | `python -m sgrna.controls.mappability_stratum` (second review round, 23 Nov; supersedes the unsupported row of the published matrix) |
+
+## The second review round (23 Nov): one protocol, the reach of the flank, transfer to every dataset, cost with its spread
+
+All under five-fold cross-validation with whole genes held out, three seeds, the default model, the 20-mer alone as the baseline (frame **[C]**); every number is recomputed by `sgrna/paper/paper_numbers_D.py`.
+
+| claim | number | evidence | command |
+|---|---|---|---|
+| The flank gain under the one protocol | +0.161 ρ (0.547 → 0.707; sd 0.010; 15 of 15 folds) | `flank_scale.csv` | `python -m sgrna.interpret.flank_scale` (seed 41: window, resolution, displacement), then `--parts resolution --seeds 42 43` and `--parts full --seeds 42 43` |
+| Two GC columns carry most of it, peaking at 250 nt; the four bases add nothing | +0.105 at W = 250 nt, +0.042 at 5 kb; GC +0.113, A/C/G/T +0.108 | `flank_scale.csv`, `flank_scale_summary.csv` | same |
+| It needs the guide's own flank and fades over about 3 kb | 68%, 57%, 32%, 6% at 100 bp, 300 bp, 1 kb, 3 kb; 0 from 10 kb | `flank_scale.csv` | same |
+| A step at the AT-rich end, graded by the base at position 20 | lowest decile −3.154; ρ with flank GC 0.219 (A), 0.119 (G) | `signal_decile.csv`, `signal_slope.csv`, `signal_target_gc.csv`, `signal_corr.csv` | `python -m sgrna.interpret.signal_profile` |
+| Flank and guide score are close to additive | R² +0.0035 (15 of 15), ρ +0.0007 | `gate_test.csv` | `python -m sgrna.interpret.gate_test` |
+| It survives a second screen's labels at the sealed genes | +0.1033 [+0.0997, +0.1070], 15 of 15 | `sealed_crossscreen.csv` | `python -m sgrna.controls.sealed_crossscreen` |
+| Curation does not select on the flank | kept by flank-GC decile 0.53 to 0.57; discarded guides carry the same association | `curation_check.csv` | `python -m sgrna.cohorts.curation_check` |
+| SLICER against crisprHAL 2 on more metrics | AUROC +0.011 / +0.016; top-decile precision and NDCG not detected | `metrics_panel.csv` | `python -m sgrna.compare.metrics_panel` |
+| Transfer across nuclease, against crisprHAL 2 | 0.659 / 0.678 against 0.633 | `transfer_vs_crisprhal_nuclease.csv` | `python -m sgrna.compare.transfer_vs_crisprhal prepare / tf / report` |
+| Transfer across kingdom, against crisprHAL 2 | median −0.041 against −0.015 | `transfer_vs_crisprhal_kingdom.csv` | same |
+| The full 12 x 12 transfer table | every eukaryote scored on E. coli negative (−0.120 to −0.012) | `eukaryote_transfer.csv`, `transfer_to_ecoli.csv` | `python -m sgrna.compare.eukaryote_rules --transfer`; `python -m sgrna.compare.transfer_to_ecoli` |
+| Cost with its spread | crisprHAL 2 takes 24.8, 18.1 and 15.1 times as long as SLICER's default model per guide at batches of 1, 100 and 10,000; fits 14 s (default), 25 s (tuned), 17 min (crisprHAL 2, CPU) | `cost_repeats_inference.csv`, `cost_repeats_fit.csv`, `model_size.csv` | `python -m sgrna.cost.cost_repeats inference / hal / fit`; `python -m sgrna.cost.model_size` |
+| BoostMEC rebuilt as its authors built it, on this cohort | released hyperparameters ρ 0.620 ± 0.009 (−0.087 against SLICER default); its own search 0.624 on the held-out genes against 0.707 and 0.722 | `boostmec_released.csv`, `boostmec_searched.csv`, `boostmec_search_trace.csv`, `boostmec_vs_slicer_confirm.csv` | `python -m sgrna.compare.boostmec_replica released / search / compare` |
+| Why the diagonal of the transfer table is low | 20-mer cross-validation 0.18 to 0.55 against a median published predictor of 0.10 to 0.42 on the same tables | `transfer_diagonal.csv` | `python -m sgrna.compare.transfer_diagonal` |
+
 
 ## The representation
 
@@ -141,7 +163,7 @@ marked **[P]** published or **[C]** curated. They are not interchangeable.
 | ~~The human signal is far less additive than *E. coli*'s~~ **withdrawn 19 November**: measured on row-wise folds that split duplicate guides; with twins kept together it is 88.8% against 95.6% | ridge/boosting 63.7% vs 95.6% (row-wise folds) | human | `human_additivity.csv` | `python -m sgrna.compare.human_baseline --additivity` |
 | **Sealed-gene drop in family A's gain, over 15 sealing draws** (not shown to be adaptive overfitting) | **+0.0087 [+0.0020, +0.0153]**, falling on the arm-to-arm difference: family A is +0.1647 in pool CV and **+0.1560** on sealed genes; with whole genes held out inside the pool as well (first 8 sealings) +0.0081, so random-row pool folds account for only +0.0007 | [C] | `sealed_holdout.csv`, `sealed_holdout_gene.csv` | `python -m sgrna.controls.sealed_holdout --seal-seeds 20261016 ... 20261030`; `python -m sgrna.controls.sealed_holdout_gene --max-draws 8` |
 | The 3.2× inflation is the row population, not the label | label +0.004; population ≈ +0.070 | both | `why_inflation.csv`, `ablation_label_published.csv`, `ablation_label_curated.csv` | `python -m sgrna.controls.why_inflation` |
-| **and the mechanism is a steeper slope outside the 1,222-gene panel in which the published matrix's rows lie** | β +5.4 inside, +17.0 outside | [C] | `curation_variance.csv` | `python -m sgrna.cohorts.curation_variance` |
+| **and the mechanism is a steeper slope outside the 1,222-gene alphabetical block (aaeA to leuC) in which the published matrix's rows lie** | β +5.4 inside, +17.0 outside | [C] | `curation_variance.csv` | `python -m sgrna.cohorts.curation_variance` |
 | Gene identity explains more of the curated label than the published one | 0.844 → 0.713 within-gene share | both | `cohort_groups.csv` | `python -m sgrna.harness.cohort_groups` |
 
 ---
