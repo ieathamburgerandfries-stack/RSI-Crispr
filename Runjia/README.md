@@ -157,4 +157,4 @@ nb.ablate(["c_folding"])      # step 3, ~2 min per family
 * **Family provenance** (why each was tried, what it carries and needs): report Appendix C, and B2 for why the imported families failed.
 * **Known nulls** (essentiality, `d_supercoiling`, `i_shape`, `j_periodicity`, `f_methylation`, `h_offtarget`): Appendix A and C. Read why before
   spending another iteration on one.
-* **Ablation tables** per family on the curated cohort, with their caveats: Appendix B3. **Adaptive overfitting**, measured: Part 4.
+* **Ablation tables** per family on the curated cohort, with their caveats: Appendix B3. **The sealed-gene drop** (not shown to be adaptive overfitting): Part 4.

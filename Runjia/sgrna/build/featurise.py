@@ -8,8 +8,8 @@ et al. published features for. Two pieces of reverse engineering lift the cap:
   * `qct.learn_lookup_tables` recovers the 316 quantum tensor columns as exact
     k-mer -> value tables (all 4/16/64/256 k-mers present, no conflicts);
   * `decode_v_columns` identifies 5,853 of the 5,887 `V####` columns as
-    (position, k-mer) one-hot indicators, verified at 100% on 1.17 million
-    rebuilt values.
+    (position, k-mer) one-hot indicators, verified at 100% on 3.08 million
+    rebuilt values (500 guides; 85.6 million over all 13,880 guides).
 
 Together that is 6,169 of 6,232 columns -- 99.0% of the published matrix --
 regenerable from a 20 nt protospacer alone.

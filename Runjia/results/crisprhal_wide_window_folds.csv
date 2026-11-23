@@ -1,0 +1,11 @@
+model,arm,input_nt,batch,fold,spearman,fit_minutes,note
+crisprHAL 2,core_23,23,256.0,1,0.549356,1.48,"Colab T4, first run"
+crisprHAL 2,core_23,23,256.0,2,0.5517383226042889,3.34,"local CPU, 3 threads"
+crisprHAL 2,core_23,23,256.0,3,0.5645642992150814,8.07,"local CPU, 2 threads"
+crisprHAL 2,core_23,23,256.0,4,0.5524403978452196,8.05,"local CPU, 2 threads"
+crisprHAL 2,core_23,23,256.0,5,0.5598320359500981,8.08,"local CPU, 2 threads"
+crisprHAL 2,native_378,378,256.0,1,0.679851,5.98,"Colab T4, first run"
+crisprHAL 2,native_378,378,256.0,2,0.6915813036431054,76.19,"local CPU, 3 threads"
+crisprHAL 2,native_378,378,256.0,3,0.6602186739527098,82.2,"local CPU, 2 threads"
+crisprHAL 2,mid_1023,1023,256.0,1,0.660166,14.0,"Colab T4, first run"
+crisprHAL 2,wide_2023,2023,256.0,1,0.629853,27.24,"Colab T4, first run"

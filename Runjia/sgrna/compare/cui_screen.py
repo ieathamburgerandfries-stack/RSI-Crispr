@@ -55,8 +55,9 @@ def load_screen(verbose: bool = True) -> pd.DataFrame:
     n0 = len(d)
     d = d[d["ntargets"] == 1]                      # multi-target guides are a
     d = d[d["guide"].str.fullmatch(r"[ACGT]{20}")] # different measurement
-    # The two arms (18 and 75 generations) agree at rho 0.711, so their mean is
-    # the more reliable label: Spearman-Brown gives 2r/(1+r) = 0.83 against 0.71
+    # The two arms (Cui's strains LC-E18 and LC-E75, both grown 17 generations; E75
+    # expresses dCas9 at a lower level) agree at rho 0.692 on unique guides, so their mean
+    # is the more reliable label: Spearman-Brown gives 2r/(1+r) = 0.82 against 0.69
     # for either arm alone.
     d = d.groupby("guide", as_index=False).agg(
         fit18=("fit18", "mean"), fit75=("fit75", "mean"),
@@ -260,7 +261,7 @@ def cas9_reference(seeds=(41, 42, 43), n_splits=None, verbose: bool = True):
 # that its level matter. Where it does not, the guide scores ~0 however well
 # dCas9 bound -- and the label says that is most of this cohort: essential-gene
 # guides have a label sd of 2.886 against 1.133 for non-essential ones, and
-# 85% of the cohort is non-essential.
+# 92% of the genic cohort is non-essential (64,784 of 70,298).
 #
 # So the CRISPRi null could be a null about the *phenotypic channel* rather than
 # about binding, and Finding 5 cannot tell the two apart as it stands. The test:

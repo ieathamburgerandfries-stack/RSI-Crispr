@@ -44,7 +44,7 @@ question a different way -- by bounding what *any* local shape predictor could a
 
 ## 1. Prerequisite: the within-gene effect of family A on the cutting screen
 
-**Run.** `ext/cut_within_gene.py` -- the same decomposition used on Cui and Rousset
+**Run.** `ext/cut_within_gene.py` -- the same decomposition used on Cui and on its E75 arm
 (`strand_within_gene.py`): gene-grouped CV, ten seeds (41-50), genes with at least five guides;
 30,203 genic guides in 4,013 genes.
 
@@ -56,26 +56,28 @@ question a different way -- by bounding what *any* local shape predictor could a
 
 **Inference (the earlier dCas9 claim, re-examined).** Finding 3 said family A adds nothing to the
 dCas9 screens beyond the strand rule. The within-gene decomposition already showed +0.102 (Cui,
-coding strand) and +0.114 (Rousset) there. The cutting screen's within-gene gain is +0.085, so in
+coding strand) and +0.114 (E75 arm, one experiment with Cui) there. The cutting screen's within-gene gain is +0.085, so in
 raw rho the dCas9 coding-strand gains are *not smaller*. That comparison is not valid as it stands,
 because the three screens start from very different bases (within-gene rho 0.62 on the cutting
 screen, 0.17 and 0.08 on the dCas9 coding strands) and a gain of 0.1 from 0.08 is not a gain of 0.1
 from 0.62. Two scale-free comparisons:
 
 * *Fraction of the attainable gain closed.* Cutting: ceiling 0.946 (the label's replicate ceiling,
-  Finding 6), (0.7035 - 0.6181) / (0.946 - 0.6181) = **26%**. Cui coding strand: the two time points
-  of the screen (fit18, fit75) agree within genes at rho 0.768 on exactly these 2,289 guides, which
-  by Spearman-Brown puts the reliability of their mean at 0.869 and the ceiling near 0.93;
-  (0.274 - 0.172) / (0.93 - 0.172) = **13%**. Rousset has no second readout, but the same 1,759 coding-strand guides
-  were screened at E18 and E75 and agree within genes at rho 0.805, which with Cui's reliability puts Rousset's
-  ceiling at 0.864 or above (r^2 / rel_C = 0.746); (0.196 - 0.083) / (0.864 - 0.083) = **14%**.
-* *Variance explained* (rho squared): +0.113 (cutting) against +0.045 (Cui) and +0.031 (Rousset).
+  Finding 6), (0.7035 - 0.6181) / (0.946 - 0.6181) = **26%**. Cui coding strand: the screen's two
+  dCas9 arms (strains LC-E18 and LC-E75, `fit18` and `fit75`; two expression levels of one experiment,
+  not a time course and not true replicates) agree within genes at rho 0.768 on exactly these 2,289
+  guides, which by Spearman-Brown puts the reliability of their mean at 0.869 and the ceiling near 0.93;
+  (0.274 - 0.172) / (0.93 - 0.172) = **13%**. The E75 arm ("Rousset": the `fit75` column of Cui's own
+  `screen_data.csv`, the same experiment) has one readout, but the same 1,759 coding-strand guides carry
+  the E18 arm and agree within genes at rho 0.805, which with Cui's reliability puts its ceiling at
+  0.864 or above (r^2 / rel_C = 0.746); (0.196 - 0.083) / (0.864 - 0.083) = **at most 15%**.
+* *Variance explained* (rho squared): +0.113 (cutting) against +0.046 (Cui) and +0.032 (E75 arm).
 
-Both say the same thing: the dCas9 within-gene effect is **real and between a third and a half the size of
-the cutting one** (half by share of the attainable gain, 27-40% by variance explained), not absent and not equal. **Status: verified** for "not absent" (ten seeds, bootstrap
-interval clear of zero, two screens, survives conditioning on transcription context); **open** for
-"a third to a half the size" (rests on a reliability ceiling estimated from time points that are not true
-replicates, and on assuming Rousset's ceiling equals Cui's).
+Both say the same thing: the dCas9 within-gene effect is **real and between a quarter and a half the size of
+the cutting one** (half by share of the attainable gain, 28-40% by variance explained), not absent and not equal. **Status: verified** for "not absent" (ten seeds, bootstrap
+interval clear of zero, two arms of one screen, survives conditioning on transcription context); **open** for
+"a quarter to a half the size" (rests on a reliability ceiling estimated from two dCas9 expression arms that are not
+true replicates, and on an E75-arm ceiling that is only a lower bound; the two dCas9 rows are one experiment, not two screens).
 
 ## 2. Verification of the building blocks (done before any result below was trusted)
 
@@ -377,7 +379,7 @@ the result files and compares them with the report's text. First run: 3 mismatch
 at 600 columns -0.0018 not -0.0017; the cutting screen's within-gene rho with A 0.7035 -> 0.703 not 0.704;
 tuned k-only at k = 500 0.804 not 0.805). Corrected; second run 98 / 98.
 
-*Current state of the audit (20 Nov):* it has grown with each section and now stands at **1178 checks, 0 mismatches**,
+*Current state of the audit (23 Nov):* it has grown with each section and now stands at **2869 checks, 0 mismatches**,
 covering sections 7-22. Run it with `./run_audit.sh` from `Runjia/` -- it sets the three environment variables the
 modules need and exits non-zero if any quoted number no longer matches its file. Since 22.4 it also checks three things
 about itself: that every module in the package imports and that importing one writes nothing; that four claims which
@@ -963,7 +965,7 @@ efficiency. Found via PubMed/Europe PMC; full text read. It matters for three re
 - *It reaches our decomposition independently.* Their headline is "the surprising discovery that gene-specific features
   substantially impact prediction", and their answer is a **mixed-effect random forest** — 129 guide features as fixed
   effects, 9 gene features as random effects, 301 genes as clusters — separating guide efficiency from the targeted
-  gene. That is the same guide/gene split as our within-gene versus between-gene analysis and as Finding 2's "+0.061
+  gene. That is the same guide/gene split as our within-gene versus between-gene analysis and as Finding 3's "+0.085
   asked entirely inside genes".
 - *It validates the way we evaluate.* They abandon guide-wise cross-validation for a **gene-wise** scheme for our
   reason, and additionally report train/test Hamming distances (minimum 7, median 21). Orro et al. also hold out genes.
@@ -1736,3 +1738,25 @@ columns, with predictions written into the docstring first.
 **What it settles.** SLICER is interpretable and is not more interpretable than crisprHAL 2 by these measures; its attributions are the more faithful and nothing else separates them. Two by-products: the two models' substitution maps agree at rho 0.97, and an independently built network with a 189 and 169 nt window reproduces the asymmetric flank-GC response, which supports Finding 7 and says the effect is not an artefact of SLICER's features.
 
 **What I had to be careful about.** The attribution estimators differ (exact TreeSHAP; expected gradients sampled 50 times), so a control raised the draws to 200 and 800 on the same 100 guides; the block sets differ (12, 28 and 25 blocks), so SLICER-104 (28) is reported beside the shipped model (12). The network's refits on halves use its 48 epochs on half the steps (rho 0.662-0.671 against 0.691-0.692 on all rows). The shipped SLICER's per-column stability is measured over the union of the columns the two fits selected, with zeros for the columns one did not use. Nothing was tuned on these guides in this test, but the tuned settings were chosen on curated folds that contain many of them, which does not affect a comparison of readings. Intermediate readings are tracked in `results/post_freeze/interp_hal_cache/` (the refitted weights are not kept) so the comparison tables rebuild without the 90 minutes of refitting: `./run_ext.sh sgrna.interpret.vs_crisprhal_interpret --step assemble`.
+
+## 28. A line-by-line review of the report, and what it corrected (23 Nov; the user: "make sure it is ALL correct")
+
+**Why.** The report was about to be condensed into the paper (the Google Doc) and then committed in two places, so every statement of `PROGRESS_REPORT.md` was checked against its stored file, its protocol and its source. Nine reviewers each took a slice of the report and every correction was applied as a patch whose `old` text had to occur exactly once. Each number a reviewer could recompute became a check in `sgrna/paper/report_checks_*.py` (1,298 checks, run by `sgrna/paper/report_numbers.py` from `./run_audit.sh`); R3's refits (about two minutes) run every time, R2's SpCas9 to eSpCas9 refit is stored in `results/post_freeze/transfer_esp_unseen_guides.csv` and redone only with `RSI_AUDIT_HEAVY=1`.
+
+**What was wrong, by kind** (about sixty real errors; none moved a headline, several moved how a headline is worded):
+
+| kind | examples |
+|---|---|
+| a number quoted without its protocol, or with the wrong one | the +0.164 flank gain is random-row five-by-five CV on the curated cohort, +0.157 gene-grouped, +0.156 on sealed genes; 0.7215 is the 1,204 CONFIRM genes and 0.7314 gene-grouped CV; SLICER's tuned mean over its own five folds is 0.7212 and the old 0.7218 is in no file |
+| a number with no source | unsourced Part 5 claims were removed or replaced by one that a file backs; the hand-entered 10,000 CPU-s for crisprHAL 2 is labelled an estimate |
+| a source misdescribed | Cui's two readouts are two dCas9 strains (LC-E18, LC-E75), not time points, and "Rousset" is Cui's E75 arm, one experiment and not a second screen (Wang is the one independent screen, and the within-gene null does not replicate there); Alkan 2022 was Corsi et al. 2022 (CRISPRoff itself is Alkan et al. 2018); Noshay's table lists 40,468 sgRNAs, the released matrix 13,880 rows in a 1,222-gene panel; eleven sources cited in text had no entry in Appendix D and now have one, Crossref-checked |
+| a bound that is not one | the label's ceiling 0.946 is not a lower bound: a Dirichlet-CLR re-implementation of ALDEx2 gives replicate agreement 0.798 and ceiling 0.942, so it is 0.942 to 0.946 by estimator |
+| a transfer row that shares its library | SpCas9 to eSpCas9 is one guide library; on the 25,922 eSpCas9 guides absent from the SpCas9 screen the transferred ρ is 0.662 and family A's share +0.103 (all rows 0.689 and +0.098) |
+| an assumption the label never checked | higher label values are more cutting: the 118 multi-copy guides have median 2.11 against 0.27 (`label_orientation.csv`) |
+| a scale-free comparison that was not | the dCas9 within-gene gain is 13% (Cui) and at most 15% (E75 arm) of the attainable gain against 26% on cutting, a quarter to a half by variance explained (§1) |
+| the eukaryote claim stated too strongly | all eleven datasets carry the eukaryotic sign as point estimates, ten of eleven intervals exclude zero (Wang 2015 does not), the four whose direction the orientation rule set are not independent of it, and a second bacterial genome has the bacterial sign (*C. rodentium* −0.42 [−0.45, −0.39]) |
+| the sealed-gene drop called adaptive overfitting | see below |
+
+**The sealed-gene drop (`sgrna/controls/sealed_holdout_gene.py`).** Sealing whole genes lowers family A's gain by +0.0087 [+0.0020, +0.0153] (15 sealings), measured as a difference of differences between random-row CV inside the development pool and the sealed genes. A random-row pool fold can reward recognising a guide's neighbourhood, so the control repeats the pool CV with whole genes held out (guides outside genes grouped by 100 kb block). On the first eight sealings (the compute allowed; their random-row figure is +0.0088 against +0.0087 over all fifteen) the drop is +0.0081 [-0.0037, +0.0199] with whole-gene pool folds, so random-row folds account for only +0.0007. The hypothesis that most of the figure was the cost of unseen genes to a locus-reading feature was therefore wrong. What the figure is not: the frozen arm re-derives no hyperparameter and an eight-draw search adds nothing, so the drop is not shown to be adaptive overfitting, and the design cannot reach the human choices (the cohort, family A's design and its window set). The wording changed from "adaptive overfitting is measured, and it is small" to "the sealed-gene drop is small, and not shown to be adaptive overfitting".
+
+**What stays open.** crisprHAL 2 was not re-tuned on its own splits with the search SLICER got (`colab/crisprhal_retune_own_splits.py` is the script); Orro et al.'s SHAP details were read from a preprint; the hand-entered crisprHAL 2 fitting time; whether the flank effect is a physical property of the DNA or a position effect that relative position does not capture.

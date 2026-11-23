@@ -1,147 +1,128 @@
 # ============================================================================
-# Does crisprHAL 2 close the gap when it is given the DNA it currently cannot
-# see?  --  run this in Google Colab on a GPU runtime.
+# crisprHAL 2 at wider input, on every fold  --  ONE Colab cell: paste the whole file and run it.
 #
-# WHY. Our headline is SLICER 0.7072 against crisprHAL 0.697 on the same rows,
-# label and folds. But the two models do not see the same DNA. crisprHAL reads
-# 378 nt (189 up, 166 down); family A reaches +/-1,000 nt. Restricting family A
-# to their span already showed their convolutions WIN by 0.025, so our margin
-# comes from DNA they never see -- not from a better encoding. The obvious
-# question, and the one a reviewer will ask, is what happens when they are
-# handed the same reach.
+# Runtime: GPU (Runtime -> Change runtime type -> T4). crisprHAL 2's GRU is built for cuDNN's fused kernel.
+# You will be asked once to upload crisprhal_widewindow_input.csv.gz (columns protospacer, y, seq (2,023 nt), ok; it is
+# data/interim/crisprhal_widewindow_input.csv.gz in the project folder, 19.9 MB, the 33,567 curated guides in the order of
+# data/interim/curated_guide_index.csv). Everything else is fetched by this cell.
 #
-# THE 2x2 THIS COMPLETES
-#                     20-mer only    +/-175 nt     +/-1,000 nt
-#   SLICER               0.5440        0.6724         0.7072
-#   crisprHAL 2            ?           0.697            ?
+# WHY. SLICER reads up to +/-1,000 nt of flank, crisprHAL 2 reads 378 nt (189 up, 166 down). Restricting SLICER to their span
+# showed their convolutions win by about 0.02, so SLICER's lead comes from DNA their input never reaches. This retrains crisprHAL 2
+# at four widths with its PUBLISHED configuration (epochs, dropout, filters and GRU width as released, tuned at 378 nt; nothing is
+# re-tuned) on the same rows, label and folds as the SLICER arms: KFold(5, shuffle=True, random_state=41) over the 33,567 curated
+# guides. The question is only whether the published configuration is degraded by input wider than it was designed for.
 #
-# INTERPRETATION, FIXED IN ADVANCE so the result cannot be read after the fact:
-#   * If crisprHAL at +/-1,000 nt reaches ~0.707 or better, our contribution is
-#     "we identified the feature", and the efficiency claim stands only as
-#     "a deep model is not required to exploit it".
-#   * If it stays near 0.697, then a tuned CNN cannot use long-range
-#     composition even when handed it, which vindicates the inductive-bias
-#     argument on THEIR architecture rather than our in-house control.
-#   Either way the 378 nt arm must reproduce ~0.697 or the harness is wrong and
-#   nothing else here can be trusted.
+# WHAT IS ALREADY DONE (so it is not repeated): fold 1 at all four widths (an earlier Colab run), the 23 nt arm on all five folds
+# and the 378 nt arm on folds 2 and 3 (local CPU). What is left is PLAN below: about 6 + 2 x 6 min for the 378 nt arms and
+# 4 x (14 + 27) min for the 1,023 and 2,023 nt arms, about 3 hours on a T4. Fold 1's 378 nt arm is run first as a harness check: it
+# must give about 0.680 (0.6799 in the first run at batch 256) or the environment is wrong and the script stops.
 #
-# Runtime: GPU (Runtime -> Change runtime type -> T4). Their GRU is configured
-# for cuDNN's fused kernel, so CPU is many times slower.
+# BATCH 256 throughout. The published batch is 1,024, but cuDNN cannot allocate the GRU workspace at 2,023 nt on a T4 at that batch.
+# At 378 nt the two batches differ by -0.011 (0.6906 at 1,024, 0.6799 at 256), a fifth of the effect at 2,023 nt, so every width is
+# read at one optimiser setting.
+#
+# HISTORY. Earlier drafts trained through crisprHAL's own train()/predict(), which swallow exceptions: a failed 2,023 nt fit came
+# back as a randomly initialised network scored at rho 0.043. This file calls Keras directly (which raises) and refuses any fit
+# whose predictions are constant or whose rho is below 0.30. It is one file in place of the earlier fold-1-only script, a
+# separate folds 2-5 script that had to be pasted over cells of it, and two cell-3 drafts.
+#
+# AFTER IT RUNS: the cell downloads crisprhal_wide_window_fcolab.csv. Save it as results/crisprhal_wide_window_fcolab.csv in the
+# project and run   python -m sgrna.compare.crisprhal_wide_window_folds assemble   (the assemble step reads every
+# results/crisprhal_wide_window_f*.csv; the harness check is printed, not saved).
 # ============================================================================
+import os, subprocess, sys, time
 
-# --- cell 1 ---------------------------------------------------------------
-# Colab ships TensorFlow already, so do NOT pin a version -- Colab's Python is
-# often too new for older releases and the install will fail. Just check what is
-# there. crisprHAL declares no TF requirement; we run it locally on 2.19.1 with
-# Keras 3.15.1, and anything from 2.19 up should behave. The 378 nt positive
-# control below is what actually certifies the environment: if it reproduces
-# ~0.697, the TF version is fine, whatever it says here.
-#
-# import tensorflow as tf; print("tensorflow", tf.__version__)
-# !git clone -q https://github.com/tbrowne5/crisprHAL.git /content/crisprHAL
-#
-# Only if the import fails outright:
-# !pip -q install "tensorflow>=2.19"    (then Runtime -> Restart session)
+# ---- what to run: {fold: [arms]} ------------------------------------------------------------------------------------------------
+# Arms: core_23 (guide + PAM), native_378 (their span: 189 up, 166 down), mid_1023 (+/-500), wide_2023 (+/-1,000).
+PLAN = {2: ["mid_1023", "wide_2023"],
+        3: ["mid_1023", "wide_2023"],
+        4: ["native_378", "mid_1023", "wide_2023"],
+        5: ["native_378", "mid_1023", "wide_2023"]}
+# To run everything for every fold instead:  PLAN = {f: ["core_23", "native_378", "mid_1023", "wide_2023"] for f in (1, 2, 3, 4, 5)}
+CHECK = True                 # fold 1's 378 nt arm first, as the harness check
+BATCH, SEED, HALF, CORE = 256, 41, 1000, 23
+WIDTHS = {"core_23": (0, 0), "native_378": (189, 166), "mid_1023": (500, 500), "wide_2023": (1000, 1000)}
+HAL_DIR, DATA, OUT = "/content/crisprHAL", "/content/crisprhal_widewindow_input.csv.gz", "/content/crisprhal_wide_window_fcolab.csv"
 
-# --- cell 2: upload crisprhal_widewindow_input.csv.gz ----------------------
-# from google.colab import files; files.upload()
+# ---- environment ----------------------------------------------------------------------------------------------------------------
+# Colab ships TensorFlow, so do not pin a version (an old pin often fails on Colab's newer Python). crisprHAL declares no TF
+# requirement; anything from 2.19 up behaves, and the harness check below is what certifies the environment.
+try:
+    import tensorflow as tf
+except ImportError:
+    subprocess.run([sys.executable, "-m", "pip", "-q", "install", "tensorflow>=2.19"], check=True)
+    raise SystemExit("TensorFlow was just installed: Runtime -> Restart session, then run this cell again")
+print("tensorflow", tf.__version__, "| GPUs:", tf.config.list_physical_devices("GPU"))
+if not tf.config.list_physical_devices("GPU"):
+    raise SystemExit("No GPU: Runtime -> Change runtime type -> T4 GPU, then run this cell again")
+if not os.path.isdir(HAL_DIR):
+    subprocess.run(["git", "clone", "-q", "https://github.com/tbrowne5/crisprHAL.git", HAL_DIR], check=True)
+if not os.path.exists(DATA):
+    from google.colab import files
+    up = files.upload()                                      # choose crisprhal_widewindow_input.csv.gz
+    os.replace(next(iter(up)), DATA)
 
-# --- cell 3 ---------------------------------------------------------------
-# This cell is the third version of itself, and the first two are why it looks the way it does.
-# v1 trained through crisprHAL's own train()/predict() with a fixed batch of 1,024: cuDNN cannot allocate the GRU
-# workspace at 2,023 nt on a T4, and because those wrappers swallow their exceptions the failed fit returned None and
-# predict() scored a randomly-initialised network. v2 added failure checks and a batch fallback but still trained through
-# the wrappers, so the swallowed exception hid the failure from its checks and the 2,023 nt arm 'succeeded' at rho
-# 0.0434 in 0.36 minutes, which is an untrained net and not a measurement. v3, below, calls
-# Keras directly (which raises), retries the widest arm at smaller batches, and re-runs every other width at the batch
-# it needed so the width curve is read within one optimiser setting. The table in the report (batch 256) is v3's.
-# The two superseded drafts, colab/cell3_revised.py and colab/cell3_v3.py, were folded into this file on 22 Nov 2026.
-import os, sys, time
-import numpy as np
-import pandas as pd
+import numpy as np, pandas as pd
 from scipy.stats import spearmanr
 from sklearn.metrics import r2_score
 from sklearn.model_selection import KFold
 
-HAL_DIR, DATA = "/content/crisprHAL", "/content/crisprhal_widewindow_input.csv.gz"
-OUT = "/content/crisprhal_wide_window_results.csv"
-MODEL, HALF, CORE, SEED, FOLD = "WT-SPCAS9", 1000, 23, 41, 1
-WIDTHS = [("core_23", 0, 0), ("native_378", 189, 166),
-          ("mid_1023", 500, 500), ("wide_2023", 1000, 1000)]
-
-sys.path.insert(0, HAL_DIR)
-_cwd = os.getcwd(); os.chdir(HAL_DIR)
+sys.path.insert(0, HAL_DIR); _cwd = os.getcwd(); os.chdir(HAL_DIR)
 try:
     import models as hal_models
     from models import models
     from processing import processing
 finally:
     os.chdir(_cwd)
-proc = processing()
-EPOCHS = hal_models.modelVersionDefaultEpochs[MODEL]
-
+MODEL = "WT-SPCAS9"
+proc = processing(); EPOCHS = hal_models.modelVersionDefaultEpochs[MODEL]
 df = pd.read_csv(DATA)
+assert len(df) == 33567 and df["seq"].str.len().eq(2 * HALF + CORE).all(), "unexpected input file"
 y = df["y"].to_numpy(dtype=float); full = df["seq"].to_numpy()
-tr, va = list(KFold(5, shuffle=True, random_state=SEED).split(np.arange(len(y))))[FOLD - 1]
-import tensorflow as tf
+splits = list(KFold(5, shuffle=True, random_state=SEED).split(np.arange(len(y))))
 
 
-def fit(name, up, down, batch):
-    length = up + CORE + down
-    lo, hi = HALF - up, HALF + CORE + down
-    seqs = np.array([s[lo:hi] for s in full])
+def fit(fold, name):
+    up, down = WIDTHS[name]; length = up + CORE + down
+    tr, va = splits[fold - 1]
+    seqs = np.array([s[HALF - up:HALF + CORE + down] for s in full])
     hal_models.modelVersionInputLength[MODEL][0] = length
     tf.keras.backend.clear_session(); tf.keras.utils.set_random_seed(SEED)
     m = models(MODEL, summary=False)
     if getattr(m, "model", None) is None or m.model.input_shape[1] != length:
-        raise RuntimeError(f"{name}: did not build at {length} nt")
-    X = proc.onehotencode(seqs[tr]).astype("float32")
-    Xv = proc.onehotencode(seqs[va]).astype("float32")
+        raise RuntimeError(f"fold {fold} {name}: did not build at {length} nt")
+    X = proc.onehotencode(seqs[tr]).astype("float32"); Xv = proc.onehotencode(seqs[va]).astype("float32")
     t0 = time.time()
-    # Keras directly, NOT m.train / m.predict -- those swallow the exception.
-    m.model.fit(X, y[tr], epochs=EPOCHS, batch_size=batch, verbose=0)
-    pred = np.asarray(m.model.predict(Xv, batch_size=batch, verbose=0)).ravel()
-    if pred.shape[0] != len(va) or not np.isfinite(pred).all() or np.std(pred) == 0:
-        raise RuntimeError(f"{name}: degenerate predictions")
+    m.model.fit(X, y[tr], epochs=EPOCHS, batch_size=BATCH, verbose=0)           # Keras directly: it raises on failure
+    pred = np.asarray(m.model.predict(Xv, batch_size=BATCH, verbose=0)).ravel()
     rho = float(spearmanr(y[va], pred).statistic)
-    if rho < 0.30:          # backstop: an untrained net lands near 0
-        raise RuntimeError(f"{name}: rho {rho:.4f} implies the fit did not take")
-    return dict(arm=name, input_nt=length, batch=batch, fold=FOLD,
-                n_train=len(tr), n_test=len(va), spearman=rho,
-                r2=float(r2_score(y[va], pred)),
-                fit_minutes=round((time.time() - t0) / 60, 2))
+    if pred.shape[0] != len(va) or not np.isfinite(pred).all() or np.std(pred) == 0 or rho < 0.30:
+        raise RuntimeError(f"fold {fold} {name}: degenerate fit (rho {rho:.4f}); an untrained net lands near 0")
+    return dict(model="crisprHAL 2", arm=name, input_nt=length, batch=BATCH, fold=fold, spearman=rho,
+                r2=float(r2_score(y[va], pred)), fit_minutes=round((time.time() - t0) / 60, 2),
+                n_train=len(tr), n_test=len(va), note="Colab T4")
 
 
-def run(name, up, down, batches):
-    for b in batches:
-        try:
-            r = fit(name, up, down, b)
-            print(f"  {name:>11} ({r['input_nt']:>4} nt, batch {b:>4}): "
-                  f"rho {r['spearman']:.4f}   {r['fit_minutes']:.1f} min", flush=True)
-            return r
-        except Exception as e:
-            print(f"  {name} FAILED at batch {b}: {str(e)[:110]}", flush=True)
-    return None
+if CHECK:
+    print("== harness check: fold 1, 378 nt (first run: 0.6799) ==", flush=True)
+    r = fit(1, "native_378")
+    print(f"   rho {r['spearman']:.4f}   {r['fit_minutes']:.1f} min", flush=True)
+    if abs(r["spearman"] - 0.6799) > 0.02:
+        raise SystemExit(f"harness check failed: {r['spearman']:.4f} is not near 0.680, so nothing else here can be trusted")
+    print("   harness reproduces the first run\n", flush=True)
 
+rows = []
+for fold, arms in PLAN.items():
+    for name in arms:
+        r = fit(fold, name); rows.append(r)
+        pd.DataFrame(rows).to_csv(OUT, index=False)                              # saved after every arm: a crash loses one arm
+        print(f"fold {fold} {name:>10} ({r['input_nt']:>4} nt): rho {r['spearman']:.4f}   {r['fit_minutes']:.1f} min", flush=True)
 
-# Step 1: find the largest batch the widest arm can actually train at.
-print("== finding a workable batch for 2,023 nt ==", flush=True)
-wide = run("wide_2023", 1000, 1000, (256, 64, 16))
-if wide is None:
-    raise SystemExit("2,023 nt will not train at any batch tried")
-B = wide["batch"]
-print(f"\n== re-running every width at batch {B} so the curve is comparable ==", flush=True)
-
-rows = [wide]
-for name, up, down in WIDTHS[:-1]:
-    r = run(name, up, down, (B,))
-    if r: rows.append(r)
-    pd.DataFrame(rows).to_csv(OUT, index=False)
-
-out = pd.DataFrame(rows).sort_values("input_nt")
-print()
-print(out[["arm", "input_nt", "batch", "spearman", "fit_minutes"]].to_string(index=False))
-print("\nSLICER, same fold 1 split: 0.5473 (20-mer) / 0.6568 (matched) / 0.6944 (full family A)")
-
-# --- cell 4 ---------------------------------------------------------------
-# from google.colab import files; files.download(OUT)
+print("\n", pd.DataFrame(rows)[["fold", "arm", "input_nt", "spearman", "fit_minutes"]].to_string(index=False))
+print("\nSLICER on the same folds (results/headtohead.csv): full flank 0.7079 / 0.7121 / 0.7112 / 0.7136 on folds 2-5 "
+      "and 0.6944 on fold 1; matched to 378 nt 0.6724 / 0.6733 / 0.6793 / 0.6802 and 0.6568")
+try:
+    from google.colab import files
+    files.download(OUT)
+except Exception as e:                                                           # not in Colab, or the download was blocked
+    print("download", OUT, "from the file browser:", e)

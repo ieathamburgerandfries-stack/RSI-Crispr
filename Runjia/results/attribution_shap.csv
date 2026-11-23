@@ -1,0 +1,10 @@
+picked_by,column,kind,closest_in_other_set,abs_corr
+xgboost only,V55.xsgRNA.raw,target: position/k-mer indicator,V215.xsgRNA.raw,0.4525653123855591
+xgboost only,V61.xsgRNA.raw,target: position/k-mer indicator,p15dimer.Hbond.stackingraw,0.3098719120025635
+xgboost only,p13tetramer.Hbond.energyraw,target: quantum descriptor,p11tetramer.Hbond.energyraw,0.48059535026550293
+xgboost only,p16trimer.Hbond.energyraw,target: quantum descriptor,p15tetramer.Hbond.energyraw,0.8783416152000427
+xgboost only,p18basepair.Hlgap.eVEraw,target: other published column,p18basepair.Hbond.energyraw,0.999999463558197
+xgboost only,p1dimer.Hbond.stackingraw,target: quantum descriptor,p1trimer.Hbond.energyraw,0.4139307141304016
+xgboost only,eng.flank.qct.dimer.Hbondenergy.d1,"flank, nearest 10 nt",eng.flank.qct.dimer.Hbondstacking.d1,0.6436911225318909
+xgboost only,eng.flank.qct.dimer.Hbondenergy.d2,"flank, nearest 10 nt",eng.flank.qct.dimer.Hbondenergy.d3,0.5305559039115906
+xgboost only,eng.flank.qct.dimer.Hbondenergy.d4,"flank, nearest 10 nt",eng.flank.qct.dimer.Hbondenergy.d3,0.5286497473716736

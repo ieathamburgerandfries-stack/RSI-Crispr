@@ -9,9 +9,11 @@ Barquist et al. (2024) assembled three *E. coli* MG1655 CRISPRi screens for a
 mixed-effect guide-efficiency model, with the processed tables in
 `BarquistLab/CRISPRi_guide_efficiency_bacteria/0_Datasets`:
 
-    E75_Rousset    59,246 guides, 4,371 genes -- never used in this project
-    E18_Cui        59,246 guides, the *same library* under a stronger dCas9
-                   promoter, so Cui-vs-Rousset varies dosage and nothing else
+    E75_Rousset    59,246 guides, 4,371 genes: this is the `fit75` column of Cui's own
+                   `screen_data.csv` (Spearman 1.0000 on 54,326 shared guides),
+                   i.e. Cui's strain LC-E75, not a second screen
+    E18_Cui        59,246 guides, Cui's strain LC-E18 (`fit18`); both strains ran 17
+                   generations and differ in dCas9 expression
     Wang_dataset   52,104 guides, a different library, 6,139 shared with the
                    other two
 
@@ -25,11 +27,12 @@ Three things follow that are not accuracy numbers.
    how much of the signal is guide-intrinsic rather than specific to a library,
    a promoter, a medium or a laboratory. That is a different and lower ceiling,
    and it bounds what any model trained on one screen can score on another.
-2. **A replication of the strand result** on a screen this project has never
-   touched, in a table produced by someone else's pipeline.
-3. **An untouched external set, which Part 4 says is permanently gone.** Rousset
-   and Wang are untouched *by this project*, which restores for the dCas9 claims
-   exactly what eSpCas9 and Cui stopped providing.
+2. **A reproduction of the strand result** in a table produced by someone
+   else's pipeline. E75 is Cui's second dCas9-expression arm, so this is the
+   same experiment and not a replication; Wang is the independent screen.
+3. **An untouched external set, which Part 4 says is permanently gone.** Wang is
+   untouched *by this project* and is the one independent dCas9 screen here (the
+   E75 arm is Cui's experiment).
 
     python -m sgrna.compare.crispri_screens --agreement
     python -m sgrna.compare.crispri_screens --strand
@@ -180,9 +183,9 @@ def main(argv=None) -> int:
 # --------------------------------------------------------------------------
 # Finding 3's localisation rests on one screen. On Cui, family A adds -0.009
 # across the whole genic cohort and +0.007 inside the essential genes once the
-# strand call is supplied. Rousset is the same library under a different dCas9
-# promoter and Wang is a different library; neither has ever been featurised
-# here. If the null reproduces on them, the claim stops being a property of one
+# strand call is supplied. E75 ("Rousset") is Cui's second arm, the same experiment
+# at a lower dCas9 level, and Wang is a different library; neither had been
+# featurised here. If the null reproduces on them, the claim stops being a property of one
 # dataset.
 FAMILY_A_OUT = config.RESULTS / "crispri_screen_family_a.csv"
 FLANK = 1000

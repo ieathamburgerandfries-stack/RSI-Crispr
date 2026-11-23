@@ -27,7 +27,7 @@ def chk(label, got, claimed, dec):
     ok = abs(got - claimed) <= 0.5 * 10 ** (-dec) + 1e-9
     if not ok:
         bad.append((label, got, claimed))
-    print(f"  {'ok ' if ok else 'BAD'} {label:58s} computed {got:+.5f}  report {claimed:+.{dec}f}")
+    print(f"  {'ok ' if ok else 'BAD'} {label:58s} computed {got:+.5f}  report {claimed:+.{max(dec, 0)}f}")
 
 
 def folds(df, arm):
@@ -655,7 +655,7 @@ def main():
 
     print("22.4 the package imports, and importing it writes nothing")
     ic = json.loads((OUT / "import_check.json").read_text())
-    chk("22.4 modules swept", float(ic["n_modules"]), 146, 0)
+    chk("22.4 modules swept", float(ic["n_modules"]), 163, 0)
     chk("22.4 modules excluded by name", float(ic["n_skipped"]), 2, 0)
     chk("22.4 modules that fail to import", float(len(ic["fails"])), 0, 0)
     chk("22.4 files under results/", float(ic["files_in_results"]), 675, 0)
@@ -960,6 +960,14 @@ def main():
     chk("CODE_OVERVIEW.md: numbers quoted that appear in no project document", float(len(_missing)), 0, 0)
     for t in _missing[:10]:
         print(f"      not found anywhere: {t}")
+
+    print("the paper (point form): every number in it, recomputed from its stored file")
+    from . import paper_numbers
+    paper_numbers.run(chk)
+
+    print("the report, line by line (review of 23 Nov 2026): protocol-labelled numbers recomputed from stored files")
+    from . import report_numbers
+    report_numbers.run(chk)
 
     print("documents: no stale claim, and one check count")
     _docs = {f.name: f.read_text() for f in (RUNJIA / "PROGRESS_REPORT.md", RUNJIA / "EXTENSION_LOG.md",

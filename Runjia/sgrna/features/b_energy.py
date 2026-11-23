@@ -1,7 +1,7 @@
 """Family B -- the R-loop free-energy decomposition (CRISPRoff / CRISPRspec).
 
 Cas9 has to pay to unwind the target duplex and to unfold its own guide, and
-is repaid by RNA:DNA hybridisation. Alkan et al. (2018, 2022) split that
+is repaid by RNA:DNA hybridisation. Alkan et al. (2018) and Corsi et al. (2022) split that
 budget into terms that a sequence-composition feature cannot express:
 
     dG_H   RNA:DNA hybridisation, position-weighted
@@ -9,7 +9,7 @@ budget into terms that a sequence-composition feature cannot express:
     dG_U   guide self-folding penalty
     dG_B   the net binding energy, with the PAM correction applied
 
-The relationship to activity is *not* monotonic. Alkan et al. (2022) found
+The relationship to activity is *not* monotonic. Corsi et al. (2022) found
 efficient guides cluster in a window of roughly -64.5 to -47.1 kcal/mol and
 fall off on both sides, so this module also emits the signed and absolute
 distance from the middle of that window. A gradient-boosted tree can discover
@@ -41,7 +41,7 @@ from ..io_utils import save_block
 PREFIX = "eng.dg"
 
 # Midpoint of the efficient-guide hybridisation window reported by
-# Alkan et al. 2022 (Nat Commun 13:2601): -64.53 to -47.09 kcal/mol.
+# Corsi et al. 2022 (Nat Commun 13:2601, doi 10.1038/s41467-022-30515-0): -64.53 to -47.09 kcal/mol.
 DG_H_WINDOW = (-64.53, -47.09)
 DG_H_CENTRE = sum(DG_H_WINDOW) / 2
 
@@ -124,7 +124,7 @@ def build(index: pd.DataFrame) -> pd.DataFrame:
     # Distance from the middle of the efficient window.
     #
     # This must use the POSITION-WEIGHTED hybridisation term, not the raw one.
-    # Alkan et al. report the window on the weighted quantity; measured against
+    # Corsi et al. report the window on the weighted quantity; measured against
     # the raw term, zero of the 13,880 guides fall inside it (so the indicator
     # was a constant column and the offsets were meaningless), while against
     # the weighted term 64% do. Checking that the indicator is not constant is
@@ -141,7 +141,7 @@ def build(index: pd.DataFrame) -> pd.DataFrame:
         ).astype("int8")
         if out[f"{PREFIX}.hyb_in_window"].nunique() == 1:
             print("  ! b_energy: hyb_in_window is constant -- check the dG "
-                  "convention against Alkan et al. before trusting it")
+                  "convention against Corsi et al. before trusting it")
 
     # The net budget, term by term, is more interpretable as ratios too.
     if all(f"{PREFIX}.{k}" in out for k in ("hybridisation", "dna_opening")):

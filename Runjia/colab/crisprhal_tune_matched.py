@@ -4,7 +4,7 @@
 #
 # RAN 16 OCTOBER. Result: 0.6987 mean over the five folds (0.6890, 0.7011,
 # 0.7044, 0.6993, 0.6997) against their published configuration's 0.6971 and
-# SLICER's 0.7218. Their published configuration WON the inner search in four
+# SLICER's 0.7212 (mean of its five per-fold scores). Their published configuration WON the inner search in four
 # folds of five; the fifth picked a draw 0.0016 ahead on the inner split, which
 # is noise. 33 fits, ~2.6 GPU-hours, because patience stopped every fold after
 # 5-8 draws.

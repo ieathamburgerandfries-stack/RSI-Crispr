@@ -64,7 +64,7 @@ field. C becomes one short section, honestly scoped.
 ### Results 2 — "DNA outside the protospacer predicts cutting" (Findings 2–3)
 - The increment (+0.164 CV, +0.156 sealed genes), gene-grouped.
 - Locality: the texture-preserving null and the autocorrelation length.
-- Not mappability, not gene ranking, survives holding out whole genes, within-gene +0.061.
+- Not gene ranking, survives holding out whole genes, within-gene +0.085. Read depth and mappability is an **open objection** (the control's cited numbers are not in the files; report Finding 3, Limits): say so as a limit, do not claim it is excluded.
 - Transfer: 88–91% retained across nuclease and organism with no retraining; flanks carry +0.150 of the 0.628 that arrives.
 - Whether it needs a break is **not** a claim of this paper: the dCas9 screens did not settle it (report Appendix B5). If a sentence is wanted, it belongs in the limits.
 - **Fig 2**: Δρ vs shift distance (the autocorrelation measurement).
@@ -112,13 +112,13 @@ field. C becomes one short section, honestly scoped.
 - The ~0.21 ρ that is real, repeatable and unexplained — and that closing it needs an experiment in
   which guide and locus are not confounded, which no pooled screen can provide.
 - Limitations: one organism plus two relatives; survival not cutting; the curated label is a fitted
-  procedure; no untouched external set remains at the same loci; adaptive component +0.0087, small and measured, and the tuned settings' benefit survives a sealed genome (+0.0172).
+  procedure; no untouched external set remains at the same loci; sealed-gene drop +0.0087, small and not shown to be adaptive overfitting, and the tuned settings' benefit survives a sealed genome (+0.0172).
 
 ### Methods
 - Follow crisprHAL 2's order: Datasets → Data processing → Features → Model → Metrics → Splits.
 - **Splits section must carry**: gene-grouped and 100 kb-block CV; the train/test Hamming statistic
   (min 3, no identical guides) — both comparators report this and reviewers will look for it.
-- Reproducibility: `run_audit.sh`, 1178 checks; `import_check.py` for the code itself.
+- Reproducibility: `run_audit.sh`, 2869 checks; `import_check.py` for the code itself.
 
 ---
 
@@ -139,7 +139,7 @@ plan and the built set cannot disagree:
 | Fig 7 | `fig7_pipeline` | 7.00 × 2.50 | how a ρ in this paper is produced, with the two leakage controls | Part 4 | Methods |
 | Table 1 | — | — | the ceiling correction, now parametric in *r* and *k* (`ceiling_parametric.csv`) | Finding 6 | Results 5 |
 | Table 2 | — | — | metric panel on both splits + data efficiency + the design-path cost | report Part 5 | Results 6 |
-| Supp | — | — | family ablations, adaptive-overfitting draws, the shape null (Appendix B4), the local-sequence bound | Appendices | Supplementary |
+| Supp | — | — | family ablations, sealed-gene draws, the shape null (Appendix B4), the local-sequence bound | Appendices | Supplementary |
 
 ACS applied: ≤ 3.33 in single column and ≤ 7 in double, ≤ 9.167 in depth, Helvetica at ≥ 7 pt
 (the floor is 4.5 pt but ACS pages disagree, so everything clears every variant), no rule thinner

@@ -1,0 +1,3 @@
+model,arm,input_nt,batch,fold,spearman,r2,fit_minutes,n_train,n_test,note
+crisprHAL 2,core_23,23,256,3,0.5645642992150814,0.338164236920805,8.07,26854,6713,"local CPU, 2 threads"
+crisprHAL 2,native_378,378,256,3,0.6602186739527098,0.4504298263162205,82.2,26854,6713,"local CPU, 2 threads"

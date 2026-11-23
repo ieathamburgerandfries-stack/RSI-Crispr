@@ -47,7 +47,7 @@ The pipeline is drawn as a figure in `results/post_freeze/figures/fig7_pipeline.
 The published matrix names each guide only by an ID. One per-position quantum-chemical column takes exactly four values across all guides, the
 valence-electron counts of A, C, G and T, so the 20-mer can be read straight back out. 5,853 of the 5,887 anonymous binary `V` columns turn out to be
 the one-hot (position, k-mer) indicators for k = 1 to 4. Every decoded guide is checked by finding it in the genome with an NGG PAM in the right place.
-**Result:** 6,169 of 6,232 columns (99.0%) regenerate from a bare 20-mer, verified to 100.000000% over 1.17 million rebuilt values, and 13,879 of
+**Result:** 6,169 of 6,232 columns (99.0%) regenerate from a bare 20-mer, verified to 100.000000% of the 3.08 million values rebuilt for 500 guides and of the 85.6 million over all 13,880 guides, and 13,879 of
 13,880 guides are located. Any guide can now be featurised, and imported feature families that are functions of the guide could not have added information.
 
 ### 2. Family A: features from the DNA around the cut site *(Finding 2)*
@@ -75,7 +75,7 @@ Each of these is an attack on the result, not a confirmation of it.
 - **Circular-shift null.** Re-assign each guide the flanks of a position offset around the chromosome. Composition, smoothness and every column's distribution are preserved
   exactly; only the correspondence to the guide is broken. A single offset would be ambiguous, because chromosome-scale GC structure could survive a short one, so the code sweeps
   the offset and reads off how fast the gain decays: a 1 kb shift retains 8% and shifts of 10 kb or more retain none. The effect is local to about a kilobase.
-- **Sealed-gene hold-out.** Re-derive every mechanisable choice on a development pool only, then score once on genes no step ever saw. The adaptive-overfitting component is **+0.0087**, small and measured.
+- **Sealed-gene hold-out.** Re-derive every mechanisable choice on a development pool only, then score once on genes no step ever saw. The sealed-gene drop in family A's gain is **+0.0087**, small and not shown to be adaptive overfitting (whole-gene folds inside the pool remove only +0.0007 of it).
 - **Permutation floor.** Shuffled flank rows (the harness's `--permute` arm, summarised by `floors.py`) score 0.5264 against a 0.5272 baseline, so the floor is zero.
 - **Target-GC strata.** Conditioning on the target's own GC raises the effect (+0.044 to +0.082 on the published matrix), so it is not target GC in disguise.
 - **Sequence distance.** The minimum Hamming distance between any validation and training guide is 3, with no identical guide across any split. The same statistic recovers a known
@@ -106,7 +106,7 @@ family A existed*, which is its positive control. `compact_model.py` then remove
 `sgrna/cohorts/curated_ceiling.py`, `sgrna/cohorts/ceiling_table.py`
 
 crisprHAL publishes its per-replicate counts. Pairing each Cas9 replicate with its matched dead-nuclease control gives two independent estimates of the same quantity, which agree at ρ 0.8097;
-Spearman–Brown gives the released score's reliability (0.8948), and its square root is the highest ρ any predictor can reach: **0.946** [0.944, 0.948]. The field's "~0.7 upper limit" drops both the square
+Spearman–Brown gives the released score's reliability (0.8948), and its square root is the highest ρ any predictor can reach: **0.946** [0.944, 0.947]. The field's "~0.7 upper limit" drops both the square
 root and the averaging step; corrected, its own numbers give 0.91 to 0.93, so models at ρ ≈ 0.70 are at about 75 to 77% of what is attainable, not at the top. `ceiling_table.py` tabulates the correction
 for any replicate agreement.
 
@@ -149,7 +149,7 @@ These read the stored results and the genome, so they need no GPU and no re-trai
 ## What this code does not show
 
 - The lead over crisprHAL 2 is a statement about the two models **as shipped**, which is how both are used in practice. Whether boosted trees beat its architecture under equal tuning is a separate question that has not been tested (the Colab script `colab/crisprhal_retune_own_splits.py` is written, not run).
-- No untouched external cutting dataset remains at the same loci. The adaptive-overfitting component is measured (+0.0087) and small, and the tuned settings' benefit survives a genome no choice ever saw (+0.0172); what cannot be undone is the choice of cohort and of family A, both made on *E. coli*.
+- No untouched external cutting dataset remains at the same loci. The sealed-gene drop is small (+0.0087) and not shown to be adaptive overfitting, and the tuned settings' benefit survives a genome no choice ever saw (+0.0172); what cannot be undone is the choice of cohort and of family A, both made on *E. coli*.
 - Whether the flank effect needs a double-strand break is **not** established. dCas9 CRISPRi screens were tried and could not separate cutting from binding (Appendix B5); their code is not in this tour, and no claim rests on it.
 - One organism and two relatives; the human arm was stopped, and its rules are uncorrelated with *E. coli*'s.
 - The physical reading of the signal (a bulk property over a few hundred bases) is a hypothesis, not a result.

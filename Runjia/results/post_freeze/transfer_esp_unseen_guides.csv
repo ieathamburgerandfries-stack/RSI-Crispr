@@ -1,0 +1,8 @@
+arm,scope,spearman
+base,all,0.591279643895201
+base,seen,0.6165410406256601
+base,unseen,0.5584992471452002
+base+a_flank,all,0.6890623728982614
+base+a_flank,seen,0.7102291136840642
+base+a_flank,unseen,0.6615298462244006
+n_unseen_guides,unseen,25922.0
