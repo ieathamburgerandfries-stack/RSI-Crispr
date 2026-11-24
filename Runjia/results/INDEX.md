@@ -19,7 +19,7 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**430 files** in 22 groups.
+**432 files** in 22 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
@@ -352,6 +352,8 @@ Within a group the order is alphabetical.
 | `post_freeze/figure_manifest_paper.csv` | 0.0 | receipt | `cost_boostmec_shipped`, `figures_paper` | figure, width_in, height_in |
 | `post_freeze/flank_scale.csv` | 9.6 | cited | `flank_scale`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | part, arm, seed, fold, rho |
 | `post_freeze/flank_scale_summary.csv` | 3.2 | cited | `flank_scale`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | part, arm, base_rho, n_folds, rho, gain, gain_sd_over_folds … |
+| `post_freeze/flank_window_tune.csv` | 11.5 | cited | `flank_window_tune`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | part, arm, up, down, seed, fold, rho |
+| `post_freeze/flank_window_tune_summary.csv` | 4.5 | cited | `flank_window_tune`, `cost_boostmec_shipped`, `paper_numbers_D` | arm, part, up, down, n_folds_41, gain_41, gain_sd_41 … |
 | `post_freeze/gate_test.csv` | 1.7 | cited | `gate_test`, `cost_boostmec_shipped`, `paper_numbers_D` | model, seed, fold, rho, r2 |
 | `post_freeze/gene_grouped_slicer.csv` | 0.4 | receipt | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped` | model, fold, n_test, spearman |
 | `post_freeze/gene_grouped_vs_crisprhal.csv` | 0.7 | cited | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped`, `paper_numbers_D` | model, against, mean, sd, crisprhal_mean, crisprhal_sd, lead_mean … |
@@ -478,7 +480,7 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `README.md` | 2.0 | document | — |  |
-| `RESULTS.md` | 36.1 | document | — |  |
+| `RESULTS.md` | 36.7 | document | — |  |
 | `RESULTS_archive_2026-10-10.md` | 110.9 | document | — |  |
 
 ### figures
@@ -500,8 +502,8 @@ Within a group the order is alphabetical.
 | `post_freeze/figures/fig6_flank_windows_schematic.png` | 136.5 | figure | — |  |
 | `post_freeze/figures/fig7_pipeline.pdf` | 26.7 | figure | — |  |
 | `post_freeze/figures/fig7_pipeline.png` | 199.9 | figure | — |  |
-| `post_freeze/figures/p_fig1_reach.pdf` | 28.1 | figure | — |  |
-| `post_freeze/figures/p_fig1_reach.png` | 292.1 | figure | — |  |
+| `post_freeze/figures/p_fig1_reach.pdf` | 28.4 | figure | — |  |
+| `post_freeze/figures/p_fig1_reach.png` | 293.5 | figure | — |  |
 | `post_freeze/figures/p_fig2_signal.pdf` | 27.0 | figure | — |  |
 | `post_freeze/figures/p_fig2_signal.png` | 294.6 | figure | — |  |
 | `post_freeze/figures/p_fig3_transfer.pdf` | 34.2 | figure | — |  |

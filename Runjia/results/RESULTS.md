@@ -48,7 +48,8 @@ All under five-fold cross-validation with whole genes held out, three seeds, the
 | claim | number | evidence | command |
 |---|---|---|---|
 | The flank gain under the one protocol | +0.161 ρ (0.547 → 0.707; sd 0.010; 15 of 15 folds) | `flank_scale.csv` | `python -m sgrna.interpret.flank_scale` (seed 41: window, resolution, displacement), then `--parts resolution --seeds 42 43` and `--parts full --seeds 42 43` |
-| Two GC columns carry most of it, peaking at 250 nt; the four bases add nothing | +0.105 at W = 250 nt, +0.042 at 5 kb; GC +0.113, A/C/G/T +0.108 | `flank_scale.csv`, `flank_scale_summary.csv` | same |
+| Two GC columns carry most of it; highest at 200 nt of 14 symmetric windows, within 0.01 of it from 150 to 500 nt; the four bases add nothing | +0.106 at W = 200 nt, +0.105 at 250 nt, +0.042 at 5 kb; GC +0.113, A/C/G/T +0.108 | `flank_scale.csv`, `flank_scale_summary.csv`, `flank_window_tune.csv` | `python -m sgrna.interpret.flank_scale`, `python -m sgrna.interpret.flank_window_tune` |
+| Tuning the upstream and downstream windows separately finds nothing that replicates | best of 33 combinations (200 nt up, 250 nt down): +0.0021 over 250/250 on its own folds (5 of 5), +0.0001 on seeds 42 and 43 (5 of 10 folds); the two sides never differ by more than 0.004 | `flank_window_tune.csv`, `flank_window_tune_summary.csv` | `python -m sgrna.interpret.flank_window_tune` |
 | It needs the guide's own flank and fades over about 3 kb | 68%, 57%, 32%, 6% at 100 bp, 300 bp, 1 kb, 3 kb; 0 from 10 kb | `flank_scale.csv` | same |
 | A step at the AT-rich end, graded by the base at position 20 | lowest decile −3.154; ρ with flank GC 0.219 (A), 0.119 (G) | `signal_decile.csv`, `signal_slope.csv`, `signal_target_gc.csv`, `signal_corr.csv` | `python -m sgrna.interpret.signal_profile` |
 | Flank and guide score are close to additive | R² +0.0035 (15 of 15), ρ +0.0007 | `gate_test.csv` | `python -m sgrna.interpret.gate_test` |
