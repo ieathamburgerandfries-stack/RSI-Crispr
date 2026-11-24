@@ -140,7 +140,7 @@ def fig_signal():
 
 # ------------------------------------------------------------------------------------------------ Figure 3: transfer
 def fig_signal_appendix():
-    """Appendix Figure A1: which composition works (a), GC and purine against the guide's own GC (b), how finely the flank must be described (c)."""
+    """Appendix Figure A1: which composition works (a), how finely the flank must be described (b)."""
     _style()
     fr = pd.read_csv(R / "post_freeze" / "flank_scale.csv")
     fr = fr[fr.seed == 41]
@@ -154,7 +154,7 @@ def fig_signal_appendix():
         return pd.DataFrame(sorted(rows), columns=["W", "gain", "sd"])
 
     gc = pd.concat([curve("gc", ("window",)), _tune_symmetric_gains().rename(columns={"gain_sd_over_folds": "sd"})[["W", "gain", "sd"]]]).drop_duplicates("W").sort_values("W")
-    fig, ax = plt.subplots(1, 3, figsize=(DOUBLE, 2.3), gridspec_kw=dict(width_ratios=[1.25, 1, 1]))
+    fig, ax = plt.subplots(1, 2, figsize=(DOUBLE * 0.72, 2.3), gridspec_kw=dict(width_ratios=[1.25, 1]))
     for name, dfc, col, mk in (("GC (C+G against A+T): 2 columns", gc, BLUE, "o"), ("purine (A+G against C+T): 2 columns", curve("purine", ("partition",)), ORANGE, "s"),
                                ("amino (A+C against G+T): 2 columns", curve("amino", ("partition",)), GREEN, "^"), ("A, C, G, T separately: 8 columns", curve("base4", ("window",)), INK2, "D")):
         _sd_bars(ax[0], dfc.W, dfc.gain, dfc.sd, col, mk, name)
@@ -166,33 +166,20 @@ def fig_signal_appendix():
     ax[0].set_ylabel("gain in ρ over the 20-mer alone")
     ax[0].legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 0.06), fontsize=5.6, handlelength=1.6)
     _clean(ax[0])
-    dp = pd.read_csv(R / "post_freeze" / "mechanism_distance_profile.csv")
-    for stat, col, lab in (("gc", BLUE, "GC"), ("purine", ORANGE, "purine")):
-        for side, ls, mk, sl in (("up", "-", "o", "upstream"), ("dn", (0, (3, 1.5)), "s", "downstream")):
-            t = dp[(dp.statistic == stat) & (dp.side == side)].sort_values("window_nt")
-            ax[1].plot(t.window_nt, t.partial_given_target_gc, color=col, ls=ls, marker=mk, ms=3, label=f"{lab}, {sl}")
-    ax[1].axhline(0, color=INK2, lw=0.5)
-    ax[1].set_xscale("log")
-    ax[1].set_xticks([50, 250, 500, 1000])
-    ax[1].get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-    ax[1].set_xlabel("window (nt from the cut)")
-    ax[1].set_ylabel("partial ρ (target GC held fixed)")
-    ax[1].legend(frameon=False, loc="center right", fontsize=5.6, handlelength=1.8)
-    _clean(ax[1])
     res = pd.read_csv(R / "post_freeze" / "novel_resolution.csv").set_index("arm")
     pts = sorted((int(a.split()[2]), float(res.loc[a, "rho"]), float(res.loc[a, "sd"])) for a in res.index if "binned" in a)
     n, r, e = (np.array(z) for z in zip(*pts))
-    ax[2].errorbar(n, r, yerr=e, color=BLUE, marker="o", ms=3, lw=0.9, capsize=1.6, elinewidth=0.6)
+    ax[1].errorbar(n, r, yerr=e, color=BLUE, marker="o", ms=3, lw=0.9, capsize=1.6, elinewidth=0.6)
     ref = float(res.loc["base + family A comp block (24 cols)", "rho"])
-    ax[2].axhline(ref, color=INK2, lw=0.6, ls=(0, (3, 2)))
-    ax[2].text(n[-1], 0.6415, "dashed: the 24 columns of the model (0.673)", fontsize=5.6, color=INK2, va="bottom", ha="right")
-    ax[2].set_xscale("log")
-    ax[2].set_xticks(n)
-    ax[2].get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
-    ax[2].set_xlabel("columns (GC, purine; equal bins of the kb)")
-    ax[2].set_ylabel("Spearman ρ")
-    _clean(ax[2])
-    for a, l, dx in zip(ax, "abc", (-0.2, -0.2, -0.2)):
+    ax[1].axhline(ref, color=INK2, lw=0.6, ls=(0, (3, 2)))
+    ax[1].text(n[-1], 0.6415, "dashed: the 24 columns of the model (0.673)", fontsize=5.6, color=INK2, va="bottom", ha="right")
+    ax[1].set_xscale("log")
+    ax[1].set_xticks(n)
+    ax[1].get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    ax[1].set_xlabel("columns (GC, purine; equal bins of the kb)")
+    ax[1].set_ylabel("Spearman ρ")
+    _clean(ax[1])
+    for a, l, dx in zip(ax, "ab", (-0.2, -0.2)):
         _panel(a, l, dx=dx)
     fig.tight_layout()
     return _save(fig, "p_figA1_signal")

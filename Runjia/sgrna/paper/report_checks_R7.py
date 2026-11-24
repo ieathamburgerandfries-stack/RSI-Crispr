@@ -132,10 +132,10 @@ def run(chk):
     sn_ = pd.read_csv(RES / "interp_sensitivity_n.csv")
     perm = sn_[sn_.attribution == "SHAP, columns permuted"].pearson
     real = sn_[sn_.attribution == "SHAP"].pearson
-    chk(P + "sensitivity-n: permuted-column SHAP, lowest correlation", float(perm.min()), -0.045, 3)
-    chk(P + "sensitivity-n: permuted-column SHAP, highest correlation", float(perm.max()), 0.038, 3)
-    chk(P + "sensitivity-n: SHAP on real columns, lowest", float(real.min()), 0.93, 2)
-    chk(P + "sensitivity-n: SHAP on real columns, highest", float(real.max()), 0.97, 2)
+    chk(P + "sensitivity-n: permuted-column SHAP, lowest correlation", float(perm.min()), -0.023, 3)
+    chk(P + "sensitivity-n: permuted-column SHAP, highest correlation", float(perm.max()), 0.047, 3)
+    chk(P + "sensitivity-n: SHAP on real columns, lowest", float(real.min()), 0.92, 2)
+    chk(P + "sensitivity-n: SHAP on real columns, highest", float(real.max()), 0.98, 2)
 
     print("report R7: Appendix A, orientation controls (Jacky's tables, 2,000 block resamples over 47 blocks)")
     jc, jd = JACKY / "intergenic_orientation_controls_delta_ci.csv", JACKY / "intergenic_orientation_delta_ci.csv"

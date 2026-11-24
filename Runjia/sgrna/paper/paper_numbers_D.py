@@ -298,10 +298,48 @@ def run(chk):
         claim(f"[D16b] top-5% precision of crisprHAL 2, {sp}", tk.loc[(sp, "crisprHAL 2")].top5pct_precision, h_)
     # sensitivity-n over every subset size (interp_extra.py; the four rows quoted individually are audited in report_checks_R3.py)
     sn = pd.read_csv(OUT.parent / "interp_sensitivity_n.csv")
-    for a_, (lo_, hi_) in {"SHAP": ("+0.928", "+0.969"), "ridge surrogate": ("+0.079", "+0.456"), "SHAP, columns permuted": ("−0.045", "+0.038")}.items():
+    for a_, (lo_, hi_) in {"SHAP": ("+0.922", "+0.977"), "ridge surrogate": ("+0.127", "+0.316"), "SHAP, columns permuted": ("−0.023", "+0.047")}.items():
         v = sn[sn.attribution == a_].pearson
         claim(f"[D17] sensitivity-n, {a_}, lowest over all ten subset sizes", v.min(), lo_)
         claim(f"[D17]   highest", v.max(), hi_)
+    # Appendix A7: the processed dataset (docnum_ds.py of the Doc build prints the same values)
+    from scipy.stats import spearmanr as _spr
+
+    from .. import config as _cfg
+    _I = _cfg.INTERIM
+    _meta = json.loads((_I / "expanded_meta.json").read_text())
+    claim("[D19] base columns of the curated cohort", len(_meta["feature_names"]), "6,169")
+    _tot = 0
+    for _lab, _nm, _txt in (("A", "a_flank", "348"), ("B", "b_energy", "10"), ("C", "c_folding", "9"), ("D1", "d_mechanics", "30"), ("D2", "d_supercoiling", "26"),
+                            ("E", "e_nucleoid", "20"), ("F", "f_methylation", "17"), ("G", "g_transcription", "19"), ("H", "h_offtarget", "13"),
+                            ("I", "i_shape", "152"), ("J", "j_periodicity", "24")):
+        _n = len(pd.read_csv(_I / "features" / f"{_nm}_curated.csv", nrows=1).columns) - 1
+        claim(f"[D19] columns of block {_lab}", _n, _txt)
+        _tot += _n if _lab != "A" else 0
+    claim("[D19] columns of the ten blocks other than A", _tot, "320")
+    _hdr = [c for c in pd.read_csv(_I / "features" / "a_flank_curated.csv", nrows=1).columns if c != "sgRNAID"]
+    for _pre, _txt in (("seq", "104"), ("qct", "156"), ("win", "64"), ("comp", "24")):
+        claim(f"[D19] family A columns, eng.flank.{_pre}", sum(c.startswith(f"eng.flank.{_pre}.") for c in _hdr), _txt)
+    claim("[D19] model columns, base + family A", len(_meta["feature_names"]) + len(_hdr), "6,517")
+    _cols = ["eng.flank.win.up250.trimer.Hbondenergy.mean", "eng.flank.comp.up250.gc", "eng.flank.win.dn250.trimer.Hbondenergy.mean", "eng.flank.comp.dn250.gc",
+             "eng.flank.win.up1000.trimer.Hbondenergy.mean", "eng.flank.comp.up1000.gc"]
+    _a = pd.read_csv(_I / "features" / "a_flank_curated.csv", usecols=_cols)
+    claim("[D19] Spearman, trimer hydrogen-bond mean against GC fraction, 250 nt upstream", _spr(_a[_cols[0]], _a[_cols[1]]).statistic, "0.999")
+    claim("[D19]   250 nt downstream", _spr(_a[_cols[2]], _a[_cols[3]]).statistic, "0.999")
+    claim("[D19]   1,000 nt upstream", _spr(_a[_cols[4]], _a[_cols[5]]).statistic, "0.9998")
+    _ab = pd.read_csv(_I / "features" / "a_flank_curated.csv").drop(columns="sgRNAID")
+    claim("[D19] family A: missing values in the whole block", float(_ab.isna().sum().sum()), "0")
+    _ix = pd.read_csv(_I / "curated_guide_index.csv", low_memory=False, usecols=["located", "upstream", "downstream"])
+    claim("[D19] guides whose upstream or downstream flank is shorter than 1,000 nt", float((_ix.upstream.astype(str).str.len().lt(1000) | _ix.downstream.astype(str).str.len().lt(1000)).sum()), "0")
+    _eq = pd.read_csv(OUT / "featuriser_equivalence.csv").set_index("item").value
+    _mb, _ma = _eq["base ms per guide (whole cohort, one call)"], _eq["family A ms per guide (whole cohort, one call)"]
+    claim("[D19] base ms per guide, whole cohort in one call", _mb, "0.019")
+    claim("[D19] family A ms per guide, whole cohort in one call", _ma, "0.068")
+    claim("[D19] seconds for the whole cohort, base plus family A", (_mb + _ma) * 33567 / 1000, "2.9")
+    claim("[D19] flank_locus ms per guide over 100 kb", pd.read_csv(OUT / "flank_locus_bench.csv").set_index("width_nt").loc[100000, "flank_locus_ms_per_guide"], "0.004")
+    import os as _os
+    for _f, _div, _txt in (("curated_guide_index.csv", 1e6, "70"), ("expanded_X.npy", 1e6, "828"), ("features/a_flank_curated.csv", 1e6, "85"), ("qct_lookup_tables.json", 1e3, "27")):
+        claim(f"[D19] size of {_f}", _os.path.getsize(_I / _f) / _div, _txt)
     # the T4 (colab/cost_gpu.py)
     gp = pd.read_csv(OUT / "cost_gpu.csv")
     gs = gp[gp.unit == "ms/guide"]

@@ -1,8 +1,10 @@
 """Three interpretability probes on one fixed model: sensitivity-n of SHAP, SHAP interaction values, and counterfactual flank edits.
 
 All three use the production recipe -- base + family A on the curated cohort,
-gain-ranked top-300 columns, the champion XGBoost -- fitted once on 80% of
-guides and probed on held-out ones. None refits the model.
+gain-ranked top-300 columns, the champion XGBoost -- fitted once on four of the
+five whole-gene folds of the paper's design (seed 41; guides outside genes grouped
+by 100 kb block) and probed on the guides of the fifth, whose genes the model
+has never seen. None refits the model.
 
   --sens    Sensitivity-n (Ancona et al. 2018). For random subsets S of n columns,
             does the sum of attributions over S equal what the prediction loses
@@ -35,8 +37,18 @@ from .. import config
 SEED = 41
 
 
+def paper_groups(protos):
+    """The paper's fold groups: the gene a guide lies in, else its 100 kb block (as in `controls.sealed_holdout_gene`)."""
+    from ..build.build_features import load_curated_index
+
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL)
+    gene = idx["gene_name"].reindex(protos)
+    left = idx["left"].reindex(protos).to_numpy(float)
+    return np.array([g if isinstance(g, str) and g else f"ig{int(l // 100_000)}" for g, l in zip(gene, left)], dtype=object)
+
+
 def _fit(verbose=True):
-    """The production recipe on a random 80% of the curated cohort."""
+    """The production recipe on four whole-gene folds of five (the paper's design, seed 41); fold 0 is held out."""
     import xgboost as xgb
 
     from ..cohorts.curated_ablation import _base, _block
@@ -46,10 +58,10 @@ def _fit(verbose=True):
     A, an = _block("a_flank", protos)
     X = np.hstack([X, A])
     names = list(names) + list(an)
-    rng = np.random.default_rng(SEED)
-    perm = rng.permutation(len(y))
-    cut = int(0.8 * len(y))
-    tr, te = np.sort(perm[:cut]), np.sort(perm[cut:])
+    from ..controls.sealed_holdout_gene import _fold_ids
+
+    fold = _fold_ids(paper_groups(protos), 5, SEED)
+    tr, te = np.where(fold != 0)[0], np.where(fold == 0)[0]
     Xtr, Xte = _impute(X[tr], X[te])
     sel = make_selector(SEED)
     sel.fit(Xtr, y[tr])

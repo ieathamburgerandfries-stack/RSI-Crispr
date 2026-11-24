@@ -125,7 +125,7 @@ Within a group the order is alphabetical.
 | `interp_interaction_blocks.csv` | 3.6 | cited | `interp_extra`, `report_checks_R3` | , flank: bases within 10 nt, flank: quantum within 10 nt, flank: window composition, flank: window quantum, protospacer indicators: pos 1-5 (PAM-distal), protospacer indicators: pos 16-20 (seed) … |
 | `interp_interaction_pairs.csv` | 1.1 | cited | `interp_extra`, `report_checks_R3` | col_i, col_j, mean_abs_interaction |
 | `interp_interactions.csv` | 0.3 | cited | `interp_extra`, `report_checks_R3` | rows, columns, var_total, var_main, var_interaction, share_variance_interaction, share_variance_main … |
-| `interp_sensitivity_n.csv` | 2.2 | cited | `interp_extra`, `paper_numbers_D`, `report_checks_R3`, `report_checks_R7` | unit, n, attribution, pearson, se, subsets, rows |
+| `interp_sensitivity_n.csv` | 2.1 | cited | `interp_extra`, `paper_numbers_D`, `report_checks_R3`, `report_checks_R7` | unit, n, attribution, pearson, se, subsets, rows |
 | `post_freeze/compact_model_accuracy.csv` | 0.5 | audited | `compact_model`, `paper_numbers_B`, `paper_numbers_D` | , rho_mean_over_seeds, rho_sd_over_seeds, share_of_full |
 | `post_freeze/compact_model_accuracy_folds.csv` | 1.6 | receipt | `compact_model` | seed, fold, full recipe (base + family A, top 300), guide only (80), guide + four kilobase numbers (84), compact (104) … |
 | `post_freeze/compact_model_flank_shap_by_decile.csv` | 0.4 | audited | `compact_model`, `paper_numbers_D` | decile, flank_gc, flank_shap, flank_shap_in_sd |
@@ -199,7 +199,7 @@ Within a group the order is alphabetical.
 | `post_freeze/hypotheses_h2_thirds.csv` | 0.5 | audited | `hypotheses` | kind, slope_low_third, lo_low, hi_low, slope_high_third, lo_high, hi_high … |
 | `post_freeze/hypotheses_h3_pam_density.csv` | 0.3 | audited | `hypotheses`, `paper_numbers_A` | marginal_gc, marginal_pam, pam_given_gc, gc_given_pam, null_mean, null_sd, null_p2_5 … |
 | `post_freeze/hypotheses_h3_trimer_classes.csv` | 0.9 | receipt | `hypotheses` | class, partial_given_gc |
-| `post_freeze/mechanism_distance_profile.csv` | 1.0 | audited | `mechanism`, `figures_paper`, `paper_numbers_A` | side, window_nt, statistic, n, marginal, partial_given_target_gc |
+| `post_freeze/mechanism_distance_profile.csv` | 1.0 | audited | `mechanism`, `paper_numbers_A` | side, window_nt, statistic, n, marginal, partial_given_target_gc |
 | `post_freeze/mechanism_pairs_blocks.csv` | 6.5 | audited | `mechanism`, `paper_numbers_A` | block_pair, gain_share |
 | `post_freeze/mechanism_pairs_columns.csv` | 1.5 | audited | `mechanism` | col_pair, gain_share |
 | `post_freeze/mechanism_position_base_compare.csv` | 4.9 | audited | `mechanism`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R4` | position, base, ecoli, human, ecoli_clear, human_clear, inverts |
@@ -271,8 +271,8 @@ Within a group the order is alphabetical.
 | `post_freeze/e2e_crisprhal.csv` | 0.4 | audited | `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, batch, ms_per_call, ms_per_guide, encode_ms, model_ms |
 | `post_freeze/e2e_slicer.csv` | 0.7 | audited | `e2e_bench`, `paper_numbers_C` | model, batch, ms_per_call, ms_per_guide |
 | `post_freeze/e2e_slicer_locus.csv` | 0.7 | audited | `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, width_nt, n_guides, ms_per_call, ms_per_guide |
-| `post_freeze/featuriser_equivalence.csv` | 0.5 | audited | `equiv_check` | item, value |
-| `post_freeze/flank_locus_bench.csv` | 0.7 | audited | `flank_locus` | width_nt, n_guides, nt_per_guide, a_flank_fast_ms_per_guide, flank_locus_ms_per_guide, precompute_ms, precompute_ms_per_guide … |
+| `post_freeze/featuriser_equivalence.csv` | 0.5 | audited | `equiv_check`, `paper_numbers_D` | item, value |
+| `post_freeze/flank_locus_bench.csv` | 0.7 | audited | `flank_locus`, `paper_numbers_D` | width_nt, n_guides, nt_per_guide, a_flank_fast_ms_per_guide, flank_locus_ms_per_guide, precompute_ms, precompute_ms_per_guide … |
 | `post_freeze/fold_distance.csv` | 0.3 | audited | `fold_distance` | scheme, n_guides, guide_len, min, p1, median, frac_identical … |
 | `post_freeze/lit_binary.csv` | 1.8 | audited | `lit_followups` | arm, seed, rho, top_decile_precision, pick10_percentile |
 | `post_freeze/lit_merf.csv` | 0.6 | audited | `lit_followups` | arm, seed, pooled, between, within, n_genes |
@@ -492,8 +492,8 @@ Within a group the order is alphabetical.
 | `post_freeze/figures/p_fig6_width.png` | 319.7 | figure | — |  |
 | `post_freeze/figures/p_fig7_cost.pdf` | 27.9 | figure | — |  |
 | `post_freeze/figures/p_fig7_cost.png` | 301.3 | figure | — |  |
-| `post_freeze/figures/p_figA1_signal.pdf` | 33.1 | figure | — |  |
-| `post_freeze/figures/p_figA1_signal.png` | 403.8 | figure | — |  |
+| `post_freeze/figures/p_figA1_signal.pdf` | 26.0 | figure | — |  |
+| `post_freeze/figures/p_figA1_signal.png` | 286.7 | figure | — |  |
 
 ### not placed in a section (kept by decision; see REMOVED.md)
 

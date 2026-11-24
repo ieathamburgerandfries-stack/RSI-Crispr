@@ -7,7 +7,7 @@ the report writes it. The report's claims here sit on four different protocols, 
   importance across model families, the drop-and-refit probe   the published 13,880-row matrix + family A (6,580 columns), random-row
                                                                three-fold CV, seed 41 (`importance_model_*.csv`, `faithfulness_*.csv`)
   the three tests that need no refit                           the curated 33,567-guide cohort, one fit of the production recipe on a
-                                                               random 80% (`interp_extra.py`)
+                                                               four whole-gene folds of five (`interp_extra.py`)
   the compact model                                            the 30,203 genic guides, gene-grouped folds (`compact_model_*.csv`)
   SLICER against crisprHAL 2                                   crisprHAL 2's WT-SpCas9 split, 100 or 1,000 or 1,500 test guides
                                                                (`interp_compare_*.csv`)
@@ -104,51 +104,51 @@ def _interp_extra(chk, RES):
     print("R3 the three tests that need no refit (interp_extra.py)")
     from ..interpret import interp_extra as ie
     f = ie._fit(verbose=False)
-    chk(P + "production recipe: held-out rho on a random 20% of the curated cohort", f["rho"], 0.712, 3)
+    chk(P + "production recipe: held-out rho on the fifth whole-gene fold (the paper's design, seed 41, fold 0)", f["rho"], 0.722, 3)
     chk(P + "... guides fitted on", float(len(f["tr"])), 26853, 0)
     chk(P + "... guides held out", float(len(f["te"])), 6714, 0)
     chk(P + "columns of the production matrix (6,169 base + 348 family A)", float(f["nbase"] + len(f["an"])), 6517, 0)
     sn = pd.read_csv(RES / "interp_sensitivity_n.csv").set_index(["unit", "n", "attribution"]).pearson
-    for (u, n, a), v in (((("column", 1, "SHAP"), 0.928), (("column", 1, "ridge surrogate"), 0.079), (("column", 1, "SHAP, columns permuted"), -0.000),
-                          (("column", 100, "SHAP"), 0.957), (("column", 100, "ridge surrogate"), 0.210), (("column", 100, "SHAP, columns permuted"), 0.007),
-                          (("block", 1, "SHAP"), 0.956), (("block", 1, "ridge surrogate"), 0.396), (("block", 1, "SHAP, columns permuted"), -0.011),
-                          (("block", 6, "SHAP"), 0.969), (("block", 6, "ridge surrogate"), 0.423), (("block", 6, "SHAP, columns permuted"), 0.038))):
+    for (u, n, a), v in (((("column", 1, "SHAP"), 0.922), (("column", 1, "ridge surrogate"), 0.190), (("column", 1, "SHAP, columns permuted"), 0.022),
+                          (("column", 100, "SHAP"), 0.961), (("column", 100, "ridge surrogate"), 0.213), (("column", 100, "SHAP, columns permuted"), -0.006),
+                          (("block", 1, "SHAP"), 0.960), (("block", 1, "ridge surrogate"), 0.273), (("block", 1, "SHAP, columns permuted"), 0.039),
+                          (("block", 6, "SHAP"), 0.977), (("block", 6, "ridge surrogate"), 0.316), (("block", 6, "SHAP, columns permuted"), 0.043))):
         chk(P + f"sensitivity-n, {u}s, n = {n}, {a}", float(sn[(u, n, a)]), v, 3)
     it = pd.read_csv(RES / "interp_interactions.csv").iloc[0]
     chk(P + "interaction test: rows", float(it.rows), 400, 0)
-    chk(P + "interaction test: single-column terms, share of the variance (%)", float(it.share_variance_main * 100), 70.2, 1)
-    chk(P + "interaction test: pairwise terms, share of the variance (%)", float(it.share_variance_interaction * 100), 14.7, 1)
-    chk(P + "interaction test: off-diagonal share of the absolute mass (%)", float(it.share_abs_mass_offdiagonal * 100), 52.7, 1)
+    chk(P + "interaction test: single-column terms, share of the variance (%)", float(it.share_variance_main * 100), 69.8, 1)
+    chk(P + "interaction test: pairwise terms, share of the variance (%)", float(it.share_variance_interaction * 100), 13.9, 1)
+    chk(P + "interaction test: off-diagonal share of the absolute mass (%)", float(it.share_abs_mass_offdiagonal * 100), 52.6, 1)
     B = pd.read_csv(RES / "interp_interaction_blocks.csv", index_col=0)
     tot, bd = B.values.sum(), float(np.trace(B.values))
-    chk(P + "interaction test: between-block share of the absolute mass (%)", float((1 - bd / tot) * 100), 44.2, 1)
-    chk(P + "interaction test: within-block off-diagonal share (%)", float((bd / tot - (1 - it.share_abs_mass_offdiagonal)) * 100), 8.5, 1)
+    chk(P + "interaction test: between-block share of the absolute mass (%)", float((1 - bd / tot) * 100), 42.8, 1)
+    chk(P + "interaction test: within-block off-diagonal share (%)", float((bd / tot - (1 - it.share_abs_mass_offdiagonal)) * 100), 9.8, 1)
     off = B.values.copy(); np.fill_diagonal(off, 0)
     idx = list(B.index)
     pro = [i for i, k in enumerate(idx) if k.startswith("protospacer")]
     fla = [i for i, k in enumerate(idx) if k.startswith("flank")]
     pp = sum(off[i, j] for i in pro for j in pro); ff = sum(off[i, j] for i in fla for j in fla); pf = sum(off[i, j] for i in pro for j in fla) * 2
-    chk(P + "between-block interaction mass: two protospacer blocks (%)", float(pp / off.sum() * 100), 46, 0)
-    chk(P + "between-block interaction mass: two flank blocks (%)", float(ff / off.sum() * 100), 15, 0)
-    chk(P + "between-block interaction mass: a flank and a protospacer block (%)", float(pf / off.sum() * 100), 39, 0)
+    chk(P + "between-block interaction mass: two protospacer blocks (%)", float(pp / off.sum() * 100), 44, 0)
+    chk(P + "between-block interaction mass: two flank blocks (%)", float(ff / off.sum() * 100), 14, 0)
+    chk(P + "between-block interaction mass: a flank and a protospacer block (%)", float(pf / off.sum() * 100), 41, 0)
     pairs = pd.read_csv(RES / "interp_interaction_pairs.csv")
     chk(P + "strongest interaction pair is p18dimer.Hbond.energyraw x p19dimer.Hbond.stackingraw", float(
         {pairs.col_i[0], pairs.col_j[0]} == {"p18dimer.Hbond.energyraw", "p19dimer.Hbond.stackingraw"}), 1, 0)
-    chk(P + "... its mean |interaction|", float(pairs.mean_abs_interaction[0]), 0.034, 3)
-    chk(P + "second pair is p20basepair.Hbond.energyraw x p19dimer.HLgap.eVEraw, mean |interaction|", float(
-        pairs.mean_abs_interaction[1] if {pairs.col_i[1], pairs.col_j[1]} == {"p20basepair.Hbond.energyraw", "p19dimer.HLgap.eVEraw"} else -1), 0.032, 3)
+    chk(P + "... its mean |interaction|", float(pairs.mean_abs_interaction[0]), 0.036, 3)
+    chk(P + "second pair is the GC fraction of the 250 nt windows upstream and downstream, mean |interaction|", float(
+        pairs.mean_abs_interaction[1] if {pairs.col_i[1], pairs.col_j[1]} == {"eng.flank.comp.up250.gc", "eng.flank.comp.dn250.gc"} else -1), 0.035, 3)
     cf = pd.read_csv(RES / "interp_counterfactual.csv").set_index("edit")
-    chk(P + "flank edit, GC +5 points", float(cf.loc["GC +5 points, both flanks", "mean_change"]), 0.46, 2)
-    chk(P + "... lower end", float(cf.loc["GC +5 points, both flanks", "ci_lo"]), 0.42, 2)
-    chk(P + "... upper end", float(cf.loc["GC +5 points, both flanks", "ci_hi"]), 0.50, 2)
-    chk(P + "flank edit, GC -5 points", float(cf.loc["GC -5 points, both flanks", "mean_change"]), -0.88, 2)
-    chk(P + "... lower end", float(cf.loc["GC -5 points, both flanks", "ci_lo"]), -0.93, 2)
-    chk(P + "... upper end", float(cf.loc["GC -5 points, both flanks", "ci_hi"]), -0.83, 2)
+    chk(P + "flank edit, GC +5 points", float(cf.loc["GC +5 points, both flanks", "mean_change"]), 0.41, 2)
+    chk(P + "... lower end", float(cf.loc["GC +5 points, both flanks", "ci_lo"]), 0.37, 2)
+    chk(P + "... upper end", float(cf.loc["GC +5 points, both flanks", "ci_hi"]), 0.46, 2)
+    chk(P + "flank edit, GC -5 points", float(cf.loc["GC -5 points, both flanks", "mean_change"]), -0.81, 2)
+    chk(P + "... lower end", float(cf.loc["GC -5 points, both flanks", "ci_lo"]), -0.86, 2)
+    chk(P + "... upper end", float(cf.loc["GC -5 points, both flanks", "ci_hi"]), -0.77, 2)
     chk(P + "label sd", float(cf.label_sd.iloc[0]), 3.29, 2)
-    chk(P + "flank edit, 5% of bases swapped at fixed GC", float(cf.loc["5% of bases swapped, GC kept", "mean_change"]), 0.003, 3)
-    chk(P + "flank edit, 20% of bases swapped at fixed GC", float(cf.loc["20% of bases swapped, GC kept", "mean_change"]), 0.016, 3)
-    chk(P + "flank edit, order shuffled", float(cf.loc["order shuffled, composition kept", "mean_change"]), 0.23, 2)
-    chk(P + "flank edit, fall over rise (about twice)", float(cf.loc["GC -5 points, both flanks", "mean_change"] / -cf.loc["GC +5 points, both flanks", "mean_change"]), 1.9, 1)
+    chk(P + "flank edit, 5% of bases swapped at fixed GC", float(cf.loc["5% of bases swapped, GC kept", "mean_change"]), 0.004, 3)
+    chk(P + "flank edit, 20% of bases swapped at fixed GC", float(cf.loc["20% of bases swapped, GC kept", "mean_change"]), 0.021, 3)
+    chk(P + "flank edit, order shuffled", float(cf.loc["order shuffled, composition kept", "mean_change"]), 0.19, 2)
+    chk(P + "flank edit, fall over rise (about twice)", float(cf.loc["GC -5 points, both flanks", "mean_change"] / -cf.loc["GC +5 points, both flanks", "mean_change"]), 2.0, 1)
     chk(P + "flank edits: guides", float(cf.guides.iloc[0]), 1500, 0)
     from ..build.build_features import load_curated_index
 
@@ -223,14 +223,14 @@ def _shuffle(chk):
     for c in a_cols:
         groups.setdefault(_group(c), []).append(pos[c])
     chk(P + "production recipe: run-length (maxrun) columns among its 300", float(len(groups.get("comp.maxrun", []))), 0, 0)
-    chk(P + "production recipe: shuffle, mean change in the prediction", float((m.predict(X1) - p0).mean()), 0.23, 2)
+    chk(P + "production recipe: shuffle, mean change in the prediction", float((m.predict(X1) - p0).mean()), 0.19, 2)
 
     def only(v):
         Xo = X0.copy(); Xo[:, v] = X1[:, v]
         return float((m.predict(Xo) - p0).mean())
 
-    chk(P + "production recipe: shuffle, windowed quantum columns edited alone", only(groups["win"]), 0.18, 2)
-    chk(P + "production recipe: shuffle, windowed GC columns edited alone", only(groups["comp.gc"]), 0.07, 2)
+    chk(P + "production recipe: shuffle, windowed quantum columns edited alone", only(groups["win"]), 0.14, 2)
+    chk(P + "production recipe: shuffle, windowed GC columns edited alone", only(groups["comp.gc"]), 0.06, 2)
     cols = f["cols"]
     ch = {c: float(np.abs(X1[:, cols.index(c)] - X0[:, cols.index(c)]).mean() * 100) for c in cols if c.startswith("eng.flank.comp.") and c.endswith(".gc")}
     w = [v for k, v in ch.items() if not k.endswith("1000.gc")]
