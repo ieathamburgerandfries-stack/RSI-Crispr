@@ -433,7 +433,7 @@ def run(chk):
     claim("[D23]   folds in which 250 nt beats both 100 and 500 nt", ((wg(250) > wg(100)) & (wg(250) > wg(500))).sum(), "5")
     claim("[D23]   250 nt is within 0.01 of 100 and of 500 nt (1 = yes)", float(max((wg(250) - wg(100)).mean(), (wg(250) - wg(500)).mean()) < 0.01), "1")
     claim("[D23]   windows of the first sweep (10, 25, 50, 100, 250, 500, 1,000, 2,000, 5,000)", fsd[fsd.part == "window"].arm.str.extract(r"gc W=(\d+)").dropna()[0].nunique(), "9")
-    # tuning the two windows separately (flank_window_tune.py): the five symmetric windows it adds to the nine above, one-sided scans, a 3 x 3 refinement, a replication on two new fold assignments
+    # tuning the two windows separately (flank_scale.py, part asymmetric): the five symmetric windows it adds to the nine above, one-sided scans, a 3 x 3 refinement, a replication on two new fold assignments
     wtn = pd.read_csv(OUT / "flank_window_tune.csv").drop_duplicates(["arm", "seed", "fold"])
     wsm = pd.read_csv(OUT / "flank_window_tune_summary.csv").set_index("arm")
     sym = {W: float((wg(W) - bs0).mean()) for W in (10, 25, 50, 100, 250, 500, 1000, 2000, 5000)}
@@ -481,6 +481,79 @@ def run(chk):
         claim(f"[D25] the same family on random rows (5 seeds x 5 folds): {fam}", arf.loc[fam, "d_spearman"], txt)
     for fam, txt in (("a_flank", "98"), ("b_energy", "97"), ("c_folding", "99"), ("f_methylation", "99"), ("d_mechanics", "98"), ("i_shape", "98"), ("d_supercoiling", "98"), ("e_nucleoid", "90"), ("g_transcription", "78"), ("j_periodicity", "75")):
         claim(f"[D25] share of the random-row gain kept on the paper's folds, %: {fam}", 100 * apf.loc[fam, "gain_same_selection"] / arf.loc[fam, "d_spearman"], txt)
+    # search effort given to each model (tuning.csv, crisprhal_matched_folds.csv, crisprhal_tuning.csv, cost_gpu.csv): equal compute, not equal draws
+    tu = pd.read_csv(OUT.parent / "tuning.csv")
+    mf = pd.read_csv(OUT.parent / "crisprhal_matched_folds.csv")
+    lt = pd.read_csv(OUT.parent / "crisprhal_tuning.csv")
+    cgp = pd.read_csv(OUT / "cost_gpu.csv")
+    t4fit = float(cgp[(cgp.model == "crisprHAL 2") & (cgp.what == "fit")].value.median())
+    srch = mf[mf.stage == "search"]
+    wins = sum(bool(g.loc[g.spearman.idxmax(), "is_published_config"]) for _, g in srch.groupby("fold"))
+    claim("[D26] SLICER's original version: draws searched over five folds", tu.trials.sum(), "627")
+    claim("[D26]   hours of search and column selection on the laptop", (tu.search_seconds.sum() + tu.select_seconds.sum()) / 3600, "2.4")
+    claim("[D26] crisprHAL 2's matched search: draws over five folds", len(srch), "28")
+    claim("[D26]   fits including the five final refits", len(mf), "33")
+    claim("[D26]   GPU-hours at the measured 326 s per fit on a T4", len(mf) * t4fit / 3600, "3.0")
+    claim("[D26]   folds in which its published configuration won the search", wins, "4")
+    claim("[D26] crisprHAL 2's earlier search: draws on the laptop CPU", len(lt), "10")
+    claim("[D26]   CPU-hours", lt.fit_seconds.sum() / 3600, "7.3")
+    claim("[D26] GPU-hours of 627 crisprHAL 2 fits (equal draws)", 627 * t4fit / 3600, "57")
+    # the 104-column model read with SHAP (compact_model.py): where the attribution sits
+    cm = pd.read_csv(OUT / "compact_model_shap_columns.csv")
+    cm["guide"] = cm.column.str.startswith("p")
+    cm["gc"] = cm.column.str.endswith(".gc")
+    tot_ = cm.mean_abs_shap.sum()
+    claim("[D26] 104-column model: share of the attribution in the 80 guide indicators, %", 100 * cm[cm.guide].mean_abs_shap.sum() / tot_, "83")
+    claim("[D26]   in the 24 flank columns, %", 100 * cm[~cm.guide].mean_abs_shap.sum() / tot_, "17")
+    claim("[D26]   share of the flank attribution carried by the GC columns, %", 100 * cm[(~cm.guide) & cm.gc].mean_abs_shap.sum() / cm[~cm.guide].mean_abs_shap.sum(), "79")
+    gpos = cm[cm.guide].assign(pos=lambda x: x.column.str.extract(r"p(\d+)\.")[0].astype(int))
+    pp = gpos.groupby("pos").mean_abs_shap.sum()
+    claim("[D26]   share of the guide attribution at positions 15 to 20, %", 100 * pp.loc[15:20].sum() / pp.sum(), "61")
+    claim("[D26]   at position 20 alone, %", 100 * pp.loc[20] / pp.sum(), "20")
+    sm = pd.read_csv(OUT / "compact_model_shap_vs_model_free.csv").set_index(["position", "base"])
+    claim("[D26]   SHAP-implied effect of G at position 20, SD of the label", sm.loc[(20, "G"), "shap_effect_sd"], "\u22120.33")
+    claim("[D26]   of G at position 18", sm.loc[(18, "G"), "shap_effect_sd"], "\u22120.28")
+    claim("[D26]   of T at position 20", sm.loc[(20, "T"), "shap_effect_sd"], "0.36")
+    claim("[D26]   Spearman of the 80 SHAP-implied effects with the model-free ones", float(spearmanr(sm.shap_effect_sd, sm.effect_sd).statistic), "0.85")
+    dsh = pd.read_csv(OUT / "compact_model_flank_shap_by_decile.csv")
+    claim("[D26]   flank GC, lowest decile: contribution, SD of the label", dsh.flank_shap_in_sd.iloc[0], "\u22120.78")
+    claim("[D26]     as a multiple of the largest guide-base effect (G at position 20)", abs(dsh.flank_shap_in_sd.iloc[0]) / abs(sm.loc[(20, "G"), "shap_effect_sd"]), "2.4")
+    claim("[D26]   flank GC, deciles 2 to 10: lowest contribution", dsh.flank_shap_in_sd.iloc[1:].min(), "\u22120.04")
+    claim("[D26]     highest", dsh.flank_shap_in_sd.iloc[1:].max(), "0.17")
+    cmstab = pd.read_csv(OUT / "compact_model_stability.csv").set_index(["method", "level"])
+    claim("[D26]   agreement of SHAP between five tree families, per column", cmstab.loc[("shap", "column"), "agreement"], "0.87")
+    cac = pd.read_csv(OUT / "compact_model_accuracy.csv").set_index("Unnamed: 0")
+    claim("[D26]   share of the full model's rho kept by the 104 columns, %", 100 * cac.loc["compact (104)", "share_of_full"], "88")
+    # same-session comparison on the Colab VM: the forward pass of crisprHAL 2 on the card against the trees' forward pass on the VM's CPU; and the cross-machine ratio from raw contexts
+    cf = cgp[cgp.what.isin(["forward", "score"])]
+    hal_fwd = float(cf[(cf.model == "crisprHAL 2") & (cf.what == "forward") & (cf.batch == 10000)].value.median())
+    tree_fwd = float(cf[(cf.model == "SLICER default shape") & (cf.device == "Colab CPU") & (cf.batch == 10000)].value.median())
+    hal_raw = float(cf[(cf.model == "crisprHAL 2") & (cf.what == "score") & (cf.batch == 10000)].value.median())
+    claim("[D26] Colab session, 10,000 guides: crisprHAL 2 forward pass on the card over SLICER's trees forward pass on the VM's CPU", hal_fwd / tree_fwd, "13")
+    claim("[D26]   crisprHAL 2 from raw contexts on the T4 over SLICER's whole path on the laptop (different machines)", hal_raw / float(inf[(inf.model == "SLICER default") & (inf.batch == 10000)].ms_per_guide.median()), "3.9")
+    bm41 = pd.read_csv(OUT / "boostmec_released.csv")
+    bm41 = bm41[bm41.seed == 41].rho
+    claim("[D26] BoostMEC on the folds of seed 41: mean rho", bm41.mean(), "0.619")
+    claim("[D26]   sd over the five folds", bm41.std(ddof=1), "0.013")
+    # the other pairs of base classes and the four bases (flank_scale.py, parts partition and window, seed 41, five folds)
+    fsd5 = pd.read_csv(OUT / "flank_scale.csv")
+    fsd5 = fsd5[fsd5.seed == 41]
+    b5 = fsd5[fsd5.arm == "base"].set_index("fold").rho
+    pa_gain = {a: float((g.set_index("fold").rho - b5).mean()) for a, g in fsd5[fsd5.arm.str.match(r"(?:purine|amino) W=")].groupby("arm")}
+    pa_pos = {a: int(((g.set_index("fold").rho - b5) > 0).sum()) for a, g in fsd5[fsd5.arm.str.match(r"(?:purine|amino) W=")].groupby("arm")}
+    claim("[D27] purine and amino fractions: windows tried for each (the 14 of Figure 1b)", len(pa_gain) / 2, "14")
+    claim("[D27]   lowest gain over the 20-mer of any of the 28 arms", min(pa_gain.values()), "\u22120.0014")
+    claim("[D27]   highest gain of any of the 28 arms", max(pa_gain.values()), "0.0000")
+    claim("[D27]   the most folds (of 5) in which any of them gains", max(pa_pos.values()), "2")
+    b4 = {int(a.split("W=")[1]): float((g.set_index("fold").rho - b5).mean()) for a, g in fsd5[fsd5.arm.str.startswith("base4 W=")].groupby("arm")}
+    claim("[D27] the four bases separately (8 columns): highest gain over the nine windows", max(b4.values()), "0.103")
+    claim("[D27]   at the window (nt)", max(b4, key=b4.get), "250")
+    cfd = cgp[(cgp.what == "forward") & (cgp.batch == 10000)]
+    hf = cfd[cfd.model == "crisprHAL 2"].value
+    tf = cfd[(cfd.model == "SLICER default shape") & (cfd.device == "Colab CPU")].value
+    claim("[D27] Colab session, forward pass at 10,000 guides: coefficient of variation of the repeats on the card, %", 100 * hf.std(ddof=1) / hf.mean(), "2.7")
+    claim("[D27]   of the trees on the VM's CPU, %", 100 * tf.std(ddof=1) / tf.mean(), "30")
+    claim("[D27] native importance, agreement between tree families per column, 104-column model", cmstab.loc[("native", "column"), "agreement"], "0.70")
     # BoostMEC retrained on the cohort as its authors trained it (boostmec_replica.py), on the features of their own pipeline; released hyperparameters, same folds and seeds as the flank-scale arms
     bm = pd.read_csv(OUT / "boostmec_released.csv").set_index(["seed", "fold"])
     base_ = fr[fr.arm == "base"].set_index(["seed", "fold"]).rho
