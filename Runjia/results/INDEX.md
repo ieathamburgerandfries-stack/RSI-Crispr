@@ -19,7 +19,7 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**376 files** in 22 groups.
+**417 files** in 22 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
@@ -59,7 +59,11 @@ Within a group the order is alphabetical.
 | `hybrid.csv` | 4.8 | receipt | `transfer` | source, target, arm, fold, cv, seed, spearman … |
 | `post_freeze/cut_within_gene_summary.csv` | 0.7 | audited | `paper_numbers_A`, `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
 | `post_freeze/human_twin_check.csv` | 0.2 | audited | `human_twin_check`, `report_checks_R2` | arm, folds, spearman, spearman_sd, n_fits |
+| `post_freeze/transfer_diagonal.csv` | 1.0 | cited | `transfer`, `transfer_diagonal`, `paper_numbers_D` | dataset, species, n, own_cv_rho, published_median, published_best, published_tools |
 | `post_freeze/transfer_esp_unseen_guides.csv` | 0.2 | cited | `transfer`, `report_checks_R2` | arm, scope, spearman |
+| `post_freeze/transfer_to_ecoli.csv` | 0.7 | cited | `transfer`, `transfer_to_ecoli`, `figures_paper`, `paper_numbers_D` | trained_on, scored_on, rho, within, species_trained |
+| `post_freeze/transfer_vs_crisprhal_kingdom.csv` | 1.5 | cited | `transfer`, `transfer_vs_crisprhal`, `figures_paper`, `paper_numbers_D` | dataset, species, n, slicer_base, crisprhal_core23, own_cv_rho, slicer_retained … |
+| `post_freeze/transfer_vs_crisprhal_nuclease.csv` | 1.4 | cited | `transfer`, `transfer_vs_crisprhal`, `paper_numbers_D` | part, subset, n, model, rho, crisprhal, diff … |
 | `transfer.csv` | 17.5 | audited | `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | dataset, arm, model, seed, fold, n_rows, n_cols … |
 | `transfer_model.csv` | 4.8 | cited | `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | source, target, arm, model, seed, n_train, n_test … |
 
@@ -200,6 +204,7 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `metric_panel.csv` | 0.9 | cited | `panel` | model, n, spearman, kendall_tau, pearson, r2, calibration_slope … |
+| `post_freeze/sealed_crossscreen.csv` | 2.0 | cited | `sealed_crossscreen`, `paper_numbers_D` | seal_seed, n_sealed_genes, n_esp_guides, rho_base, rho_A, gain_esp, wt_base … |
 | `post_freeze/sealed_holdout_gene.csv` | 4.1 | cited | `sealed_holdout_gene`, `paper_numbers`, `report_checks_R5` | arm, seal_seed, cv_gene, cv_random, sealed, gap_gene, gap_random … |
 | `post_freeze/sealed_organism.csv` | 0.4 | audited | `sealed_organism`, `paper_numbers_C`, `report_checks_R5` | arm, rho_seed_mean, rho_seed_sd, rho_of_seed_average, minus_champion, lo, hi |
 | `sealed_holdout.csv` | 6.2 | cited | `sealed_holdout`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, n_cols, n_dev, n_sealed, cv_in_pool, sealed, gap … |
@@ -231,13 +236,18 @@ Within a group the order is alphabetical.
 | `post_freeze/clean_vs_hal.csv` | 1.0 | audited | `clean_vs_hal`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C` | vs, arm, n, n_genes, rho, crisprhal, diff … |
 | `post_freeze/cost_crisprhal.csv` | 0.4 | audited | `cost_bench`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
 | `post_freeze/cost_featurise.csv` | 0.2 | audited | `cost_bench` | part, n_guides, per_guide_ms |
+| `post_freeze/cost_repeats_fit.csv` | 0.9 | cited | `cost_repeats`, `figures_paper`, `paper_numbers_D` | model, rep, cpu_seconds, wall_seconds, n_train |
+| `post_freeze/cost_repeats_inference.csv` | 37.3 | cited | `cost_repeats`, `figures_paper`, `paper_numbers_D` | model, batch, rep, ms_per_guide |
 | `post_freeze/cost_slicer.csv` | 0.9 | audited | `cost_bench`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
 | `post_freeze/data_efficiency.csv` | 3.5 | audited | `data_efficiency`, `paper_numbers_C`, `report_checks_R6` | arm, fold, n_train, trees, rho |
 | `post_freeze/e2e_crisprhal.csv` | 0.4 | audited | `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, batch, ms_per_call, ms_per_guide, encode_ms, model_ms |
 | `post_freeze/e2e_slicer.csv` | 0.7 | audited | `e2e_bench`, `paper_numbers_C` | model, batch, ms_per_call, ms_per_guide |
 | `post_freeze/e2e_slicer_locus.csv` | 0.7 | audited | `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, width_nt, n_guides, ms_per_call, ms_per_guide |
 | `post_freeze/featuriser_equivalence.csv` | 0.5 | audited | `equiv_check` | item, value |
+| `post_freeze/figure_manifest_paper.csv` | 0.2 | receipt | `figures_paper` | figure, width_in, height_in |
 | `post_freeze/flank_locus_bench.csv` | 0.7 | audited | `flank_locus` | width_nt, n_guides, nt_per_guide, a_flank_fast_ms_per_guide, flank_locus_ms_per_guide, precompute_ms, precompute_ms_per_guide … |
+| `post_freeze/flank_scale.csv` | 9.6 | cited | `flank_scale`, `figures_paper`, `paper_numbers_D` | part, arm, seed, fold, rho |
+| `post_freeze/flank_scale_summary.csv` | 3.2 | cited | `flank_scale`, `figures_paper`, `paper_numbers_D` | part, arm, base_rho, n_folds, rho, gain, gain_sd_over_folds … |
 | `post_freeze/fold_distance.csv` | 0.3 | audited | `fold_distance` | scheme, n_guides, guide_len, min, p1, median, frac_identical … |
 | `post_freeze/lit_binary.csv` | 1.8 | audited | `lit_followups` | arm, seed, rho, top_decile_precision, pick10_percentile |
 | `post_freeze/lit_merf.csv` | 0.6 | audited | `lit_followups` | arm, seed, pooled, between, within, n_genes |
@@ -256,6 +266,8 @@ Within a group the order is alphabetical.
 | `post_freeze/panel_wt.csv` | 2.4 | audited | `panel_vs_hal`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R6` | split, arm, n, spearman, kendall_tau, pearson, r2 … |
 | `post_freeze/seed_stability.csv` | 0.5 | audited | `topk_panel`, `paper_numbers_C` | split, seed, rho, crisprhal |
 | `post_freeze/shape_ablation.csv` | 13.7 | audited | `shape_ablate`, `shape_analyze`, `report_checks_R8` | arm, n_cols, n_ext, spearman, spearman_sd, r2, n_selected_ext … |
+| `post_freeze/signal_decile.csv` | 0.9 | cited | `signal_profile`, `figures_paper`, `paper_numbers_D` | decile, n, flank_gc, mean_label, lo, hi, gap_vs_rest |
+| `post_freeze/signal_slope.csv` | 2.1 | cited | `signal_profile`, `figures_paper`, `paper_numbers_D` | base, n, spearman, lo, hi, quintile, flank_gc … |
 | `post_freeze/topend_confirm.csv` | 2.3 | audited | `topend`, `paper_numbers_C`, `report_checks_R6` | arm, seed, spearman, top10pct_prec, top1pct_prec, pick10_pctile, pick50_pctile … |
 | `post_freeze/topk_panel.csv` | 4.2 | audited | `topk_panel` | split, arm, top1pct_precision, top5pct_precision, top10pct_precision, pick10_percentile, pick50_percentile … |
 | `post_freeze/tune_stage1.csv` | 270.9 | receipt | `tune_analyze`, `tune_ecoli` | draw, seed, fold, k, rho |
@@ -313,9 +325,19 @@ Within a group the order is alphabetical.
 | `human_baseline_knobs.csv` | 0.4 | cited | `human_baseline` | arm, n_features, changed, spearman, spearman_sd, n_fits |
 | `interpretability.csv` | 1.3 | receipt | `evaluate`, `report_checks_R3` | model, importance, stability_kuncheva, importance_rank_agreement, method_agreement, faithfulness, direction_consistency … |
 | `model_comparison.csv` | 30.7 | cited | `evaluate`, `report_checks_R1`, `report_checks_R7` | model, seed, fold, r2, spearman, pearson, top_decile_precision … |
+| `post_freeze/boostmec_released.csv` | 1.1 | cited | `boostmec_replica`, `paper_numbers_D` | seed, fold, rho, trees, leaves, seconds, features_ms_per_guide |
+| `post_freeze/boostmec_search_trace.csv` | 33.4 | cited | `boostmec_replica`, `paper_numbers_D` | step, phase, cv_mse, mean_best_iteration, seconds, u_learning_rate, u_max_depth … |
+| `post_freeze/boostmec_searched.csv` | 0.8 | cited | `boostmec_replica`, `paper_numbers_D` | seed, rho, trees, leaves, seconds, search_seconds, n_confirm … |
+| `post_freeze/boostmec_vs_slicer_confirm.csv` | 0.4 | cited | `boostmec_replica`, `paper_numbers_D` | arm, n_guides, rho, rho_lo, rho_hi, boostmec_minus_arm, diff_lo … |
+| `post_freeze/curation_check.csv` | 1.1 | cited | `curation_check`, `paper_numbers_D` | stratum, n, kept, spearman_flank_gc, label_sd, lowest_decile_deficit_sd, share_in_lowest_decile … |
+| `post_freeze/gate_test.csv` | 1.7 | cited | `gate_test`, `paper_numbers_D` | model, seed, fold, rho, r2 |
 | `post_freeze/human_additivity_twin.csv` | 10.4 | audited | `human_additivity_twin` | folds, arm, seed, fold, shared_protospacers, rho |
 | `post_freeze/human_additivity_twin_claim.csv` | 0.4 | audited | `human_additivity_twin` | folds, ridge, best_boosting_arm, best_boosting, ridge_over_boosting, depth_4_to_6, depth_lo … |
 | `post_freeze/human_additivity_twin_summary.csv` | 0.9 | audited | `human_additivity_twin`, `report_checks_R6`, `report_checks_R7` | folds, arm, mean, std, count |
+| `post_freeze/metrics_panel.csv` | 12.6 | cited | `metrics_panel`, `paper_numbers_D` | split, model, metric, value, lo, hi, n_test … |
+| `post_freeze/model_size.csv` | 0.3 | cited | `model_size`, `paper_numbers_D` | model, trees, nodes, leaves, inner_nodes, columns_used, columns_selected … |
+| `post_freeze/signal_corr.csv` | 6.2 | cited | `signal_profile`, `paper_numbers_D` | window_nt, side, statistic, marginal, partial_given_target_gc |
+| `post_freeze/signal_target_gc.csv` | 0.7 | cited | `signal_profile`, `paper_numbers_D` | quintile, target_gc_mean, n, rho_base, rho_with_flank, gain, gain_lo … |
 | `post_freeze/tune_split2_configs.json` | 14.5 | receipt | `tune_split2` |  |
 | `post_freeze/tune_split2_confirm.csv` | 1.1 | audited | `tune_split2` | arm, rho, rho_lo, rho_hi, d_vs_champion, d_lo, d_hi … |
 | `post_freeze/tune_split2_stage1.csv` | 57.9 | audited | `tune_split2` | draw, seed, fold, k, rho |
@@ -353,6 +375,10 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `curation_variance.csv` | 0.4 | cited | `curation_variance`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R5`, `report_checks_R8` | rows, n, sd_x, sd_y, slope_beta, pearson, spearman … |
+| `post_freeze/mappability_depth.csv` | 1.1 | cited | `mappability_stratum`, `paper_numbers_D` | stratum, n, depth_min, depth_max, rho_base, rho_base+A, rho_base+D … |
+| `post_freeze/mappability_stratum.csv` | 2.2 | cited | `mappability_stratum`, `paper_numbers_D` | stratum, n, genes, rho_base, rho_base+U, rho_base+A, rho_base+U+A … |
+| `post_freeze/mappability_stratum_guides.csv` | 1796.8 | receipt | `mappability_stratum` | sgRNAID, u250, u1000, seed_dup, copies, ctl_depth |
+| `post_freeze/mappability_stratum_oof.csv` | 3459.1 | receipt | `mappability_stratum`, `gate_test`, `signal_profile` | sgRNAID, y, group, base, base+U, base+A, base+U+A … |
 | `why_inflation.csv` | 0.5 | cited | `why_inflation`, `paper_numbers_C`, `report_checks_R8` | sub_seed, n_rows, family, spearman, d_spearman |
 
 ### Appendix B3 — The family ablations on the curated cohort, and what they measure
@@ -431,6 +457,20 @@ Within a group the order is alphabetical.
 | `post_freeze/figures/fig6_flank_windows_schematic.png` | 136.5 | figure | — |  |
 | `post_freeze/figures/fig7_pipeline.pdf` | 26.7 | figure | — |  |
 | `post_freeze/figures/fig7_pipeline.png` | 199.9 | figure | — |  |
+| `post_freeze/figures/p_fig1_reach.pdf` | 28.1 | figure | — |  |
+| `post_freeze/figures/p_fig1_reach.png` | 292.1 | figure | — |  |
+| `post_freeze/figures/p_fig2_signal.pdf` | 27.0 | figure | — |  |
+| `post_freeze/figures/p_fig2_signal.png` | 294.6 | figure | — |  |
+| `post_freeze/figures/p_fig3_transfer.pdf` | 34.2 | figure | — |  |
+| `post_freeze/figures/p_fig3_transfer.png` | 583.0 | figure | — |  |
+| `post_freeze/figures/p_fig4_rule.pdf` | 22.0 | figure | — |  |
+| `post_freeze/figures/p_fig4_rule.png` | 179.9 | figure | — |  |
+| `post_freeze/figures/p_fig5_ceiling.pdf` | 34.4 | figure | — |  |
+| `post_freeze/figures/p_fig5_ceiling.png` | 345.9 | figure | — |  |
+| `post_freeze/figures/p_fig6_width.pdf` | 21.5 | figure | — |  |
+| `post_freeze/figures/p_fig6_width.png` | 319.7 | figure | — |  |
+| `post_freeze/figures/p_fig7_cost.pdf` | 39.6 | figure | — |  |
+| `post_freeze/figures/p_fig7_cost.png` | 200.9 | figure | — |  |
 
 ### not placed in a section (kept by decision; see REMOVED.md)
 
@@ -449,6 +489,7 @@ Within a group the order is alphabetical.
 | `memory_comparison.csv` | 0.5 | cited | `bench` | config, columns, peak_gb_median, peak_gb_min, peak_gb_max, select_s_median, rho … |
 | `memory_comparison_runs.csv` | 1.2 | receipt | `bench` | config, peak_gb, rep, columns, select_s, rho |
 | `net_cost.csv` | 0.1 | receipt | `bench` | config, columns, params, train_s, rho, peak_gb |
+| `post_freeze/gene_grouped_slicer.csv` | 0.4 | receipt | `gene_grouped_vs_crisprhal` | model, fold, n_test, spearman |
 | `post_freeze/human_shape_ablation_locus_n900.csv` | 0.9 | audited | — | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `post_freeze/import_check.json` | 0.3 | audited | — |  |
 | `post_freeze/interp_hal_cache/hal_full1.npz` | 348.8 | receipt | — |  |
