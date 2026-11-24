@@ -1,168 +1,27 @@
-# Paper flow — skeleton only
+# From the report to the paper
 
-**This is a flow, not a draft.** Headings, what each section has to establish, which result goes
-where, and what the figures are. No prose: the text is yours to write.
+The paper is the point-form write-up in the project's Google Doc (tabs "Paper (point form)" and "Appendix (point form)"); `PROGRESS_REPORT.md` is the full report. They state the same results in different
+words: the paper is concise, uses no internal vocabulary (no freeze, DEV or CONFIRM; "default" and "tuned" instead), and keeps one protocol for every effect, while the report keeps the
+history. `PROGRESS_REPORT.md` Appendix E repeats the paper's bullets in the paper's own wording, so every number the paper states is also in the report with the same protocol label.
 
-Two things to settle before writing, because they change the shape:
+**One protocol.** Five-fold cross-validation that holds whole genes out (all 33,567 curated guides; guides outside genes grouped in 100 kb blocks), three seeds, the default model (400 trees, 300 columns
+chosen inside each training fold), the 20-mer alone as the baseline. The team's shared harness assigns rows at random (five seeds of five-fold `KFold`); only the fold assignment differs. Appendix A3 of the paper
+compares them, and the family ablation was run on both (`ablation_curated.csv`, `ablation_paper_folds.csv`).
 
-1. **Which paper is this?** See "The choice of frame" below. The flow assumes Frame A.
-2. **The Google Doc.** I don't have access to the one you shared (the report records it as frozen
-   on 13 October and no longer synced). If it already has an outline, reconcile against this rather
-   than replacing it — and tell me where they differ.
+**Where each part of the paper comes from.**
 
----
-
-## The field's conventions, from the exemplars
-
-| | crisprHAL 2 (Browne 2026, *PeerJ*) | Yu et al. (2024, *Genome Biology*) | Orro et al. (2026, *Sci Rep*) |
+| paper | report | result files | audit |
 |---|---|---|---|
-| order | Intro → Methods → Results → Discussion → Conclusion | Background → Results → Discussion → Conclusions → Methods | Intro → Methods → Results → Discussion |
-| Results headings | **claim-shaped sentences** | claim-shaped | topic labels |
-| length | ~6,000 words, 5 figures, 3 tables | similar | shorter |
-| what leads | the model and its performance | the *surprise* (gene features dominate) | the task |
+| Methods: data, curation, genes, protocol | Part 4, Appendices C0, C, B2a | `curated_ceiling.json`, `cohort_groups.csv`, `reference_genome_versions.csv` | `paper_numbers_A`, `paper_numbers_D` |
+| Results: the guide-derived families | Finding 1, Appendix B3 | `portability.csv`, `ablation_paper_folds_summary.csv`, `ablation_curated.csv` | `paper_numbers_A` [10], [11]; `paper_numbers_D` [D25] |
+| Results: flank features add 0.161, windows, displacement, controls | Findings 2 and 3 | `flank_scale.csv`, `flank_scale_summary.csv`, `sealed_holdout*.csv`, `mappability_*.csv` | `paper_numbers_D` [D4] to [D6], [D24], [D27] |
+| Results: the shape of the flank effect, SHAP | Findings 5 and 7 | `signal_*.csv`, `compact_model_*.csv`, `gate_test.csv` | `paper_numbers_D` [D7], [D8], [D26] |
+| Results: the replicate ceiling | Finding 6 | `curated_ceiling.json`, `ceiling_parametric.csv` | `paper_numbers_A` |
+| Results: SLICER, crisprHAL 2 and BoostMEC | Part 5, Appendix B | `vs_crisprhal_*.csv`, `gene_grouped_vs_crisprhal.csv`, `boostmec_*.csv`, `crisprhal_matched_folds.csv`, `tuning.csv` | `paper_numbers_D` [D13] to [D22], [D26] |
+| Results: cost by hardware | Part 5 (cost), Appendix B | `cost_repeats_*.csv`, `cost_gpu.csv`, `model_size.csv`, `boostmec_shipped_*.csv` | `paper_numbers_D` [D15] to [D21], [D26] |
+| Appendices A1 to A6 | Findings 2, 5, 7, Appendices A to C | as above, plus `transfer*.csv`, `eukaryote_*.csv` | `paper_numbers_A` to `D` |
 
-**Convention to adopt:** claim-shaped Results headings. Our report already states findings as
-claims, so each finding maps to one heading. **Convention to reject:** leading with the model.
-Browne et al. can, because the model *is* their contribution. Ours is not (Part 5).
+**Figures.** The paper has four main figures (1 reach, 2 shape, 3 replicate ceiling and accuracy, 4 cost) and four in the appendix (A1 composition, A2 input width, A3 transfer matrix, A4 position-20 rule), all drawn from stored result
+files by `sgrna/paper/figures_paper.py`. The report's own figures are drawn by `sgrna/paper/figures.py`.
 
----
-
-## The choice of frame
-
-| | frame | leads with | risk |
-|---|---|---|---|
-| **A** | **Determinants** — what decides whether a guide cuts, and how much is knowable | the flanking-DNA effect and what it is made of | reviewers ask for the predictor anyway |
-| B | Method/measurement — the field's headroom is mis-measured | the ceiling correction | thin as a standalone; better as a section |
-| C | Model — a better bacterial predictor | the +0.023–0.029 lead | the lead is a product-level claim (both models as shipped, which is how benchmarks of published predictors are made); the architecture claim is not novel (BoostMEC) and is not made, since SLICER's settings were searched and crisprHAL 2's were not |
-
-**Recommend A, with B as a full Results section.** A carries the two largest novel results (the
-flank effect's characterisation; the cross-kingdom inversion) and B reframes every number in the
-field. C becomes one short section, honestly scoped.
-
----
-
-## Flow
-
-### Title + abstract
-- One sentence each: the effect, its shape, the kingdom inversion, the corrected ceiling.
-- Do **not** put the crisprHAL 2 margin in the abstract. It invites the frame we are rejecting.
-
-### Introduction (~700 words)
-- Establish: bacterial Cas9 as antimicrobial/engineering tool; activity varies by target.
-- Establish: predictors exist, mostly mammalian-trained, and **transfer badly to bacteria** — cite
-  that the bacterial literature says this repeatedly *without explaining it*. This is the gap we close.
-- Name what is not known: what the determinants physically are, and how much of the variance is
-  reachable at all.
-- Close on the three things the paper establishes. No results numbers here.
-
-### Results 1 — "The published representation is a re-encoding of the guide" (Finding 1)
-- Why first: it sets up why new *information* has to come from outside the 20-mer. The rest of the
-  paper is the consequence.
-- Short. 99% regenerate; the 412-column equivalent; the arithmetic consequence.
-- **Fig 1**: decoding schematic + the 412-vs-6,232 equivalence.
-
-### Results 2 — "DNA outside the protospacer predicts cutting" (Findings 2–3)
-- The increment (+0.164 CV, +0.156 sealed genes), gene-grouped.
-- Locality: the texture-preserving null and the autocorrelation length.
-- Not gene ranking, survives holding out whole genes, within-gene +0.085. Read depth and mappability is an **open objection** (the control's cited numbers are not in the files; report Finding 3, Limits): say so as a limit, do not claim it is excluded.
-- Transfer: 88–91% retained across nuclease and organism with no retraining; flanks carry +0.150 of the 0.628 that arrives.
-- Whether it needs a break is **not** a claim of this paper: the dCas9 screens did not settle it (report Appendix B5). If a sentence is wanted, it belongs in the limits.
-- **Fig 2**: Δρ vs shift distance (the autocorrelation measurement).
-
-### Results 3 — "The effect is GC over a few hundred bases, and it is coupled to the seed" (Finding 7)
-- **This is the paper's centre of gravity under Frame A.**
-- GC not purine (the partial-correlation table).
-- Side-symmetric → not directional → separate from the orientation effect.
-- One length scale, 250–500 nt; the resolution curve saturating and turning over.
-- The flank × seed interaction (depth-2 pairs), and its form: synergy, not compensation (the flank's slope is steeper beside a favourable seed base).
-- **The shape of the response, which changes how the effect is described:** pooled, it is a step at the AT-rich end (lowest tenth of guides, below 44.4% GC), with a gentler graded component inside genes. Decide whether the paper leads with "gradient" or with "AT-rich penalty"; the report now argues the latter. Four hypotheses with tests are in Finding 7's last subsection.
-- **Fig 3**: four panels — distance profile by side; resolution curve; purine-vs-GC null; interaction heatmap.
-
-### Results 4 — "Guide design rules do not transfer between kingdoms" (Finding 7, second half)
-- **Extended to eleven eukaryotic datasets (human, mouse, zebrafish):** the inversion is bacteria against eukaryotes, not *E. coli* against one human cohort. Mouse and human maps agree (+0.56) as human libraries do (+0.59); a human-trained model keeps ~70% of its accuracy on mouse guides, an *E. coli*-trained one scores below zero. Zebrafish is the outlier; fly and worm are too small.
-- Position × base matrix, *E. coli*.
-- Same estimator on the human matrix; ρ = −0.052; 15 of 27 cells invert; position-20 G.
-- Tie back to the Introduction's gap: this is *why* mammalian predictors fail here.
-- **Fig 4**: the two position × base heatmaps side by side.
-- State the sign-convention verification in the legend or methods. It is the obvious attack.
-
-### Results 5 — "The attainable ceiling is 0.946, and the field's ~0.7 is mis-derived" (Finding 6)
-- Our replicate-derived ceiling, from crisprHAL's released per-replicate counts.
-- The correction: attenuation √, then Spearman–Brown; the review's own numbers give 0.91–0.93.
-- Consequence: models at ρ ≈ 0.70 are at 75–77% of attainable, not at the top.
-- **Table 1**: *r* → √*r* → *k*-replicate reliability → ceiling, with our row, and the parametric grid
-  (`ceiling_parametric.csv`) so the claim does not rest on recovering anyone's replicate count.
-- **Fig 5** carries the same thing as a picture; use one or the other, not both.
-- Caveat in text: exact for Pearson, approximate for Spearman.
-
-### Results 6 — "A compact model reaches this with far fewer labels" (report Part 5, the head-to-head, scoped)
-- Short and honest. The final model leads by +0.023–0.029 (equivalent before tuning); ~3× fewer labels; 13–21× faster,
-  34× on the design path — and say why that ratio is fair (95% of crisprHAL 2's cost is its forward pass,
-  so the same precompute could take at most 4.7% off it).
-- **Say in the text**: the final SLICER model as shipped against crisprHAL 2 as released; this is a claim about the two
-  models as used, not about the architecture (equal tuning is untested); the architecture claim is not novel (cite BoostMEC).
-- Top-end metrics tied, and four objectives aimed at the top end all failed.
-- **Table 2**: metric panel on both of their splits + the data-efficiency curve.
-
-### Discussion (~900 words)
-- What the determinants imply mechanically: bulk GC property over a few hundred bases, no fine
-  structure, no direction, coupled to the seed. Name the persistence-length reading **as a hypothesis**.
-- What is excluded: shape/3D, periodicity, Chi, supercoiling (→ read density → gene dosage).
-- Why the kingdom inversion matters for anyone using a mammalian tool in bacteria.
-- The ~0.21 ρ that is real, repeatable and unexplained — and that closing it needs an experiment in
-  which guide and locus are not confounded, which no pooled screen can provide.
-- Limitations: one organism plus two relatives; survival not cutting; the curated label is a fitted
-  procedure; no untouched external set remains at the same loci; sealed-gene drop +0.0087, small and not shown to be adaptive overfitting, and the tuned settings' benefit survives a sealed genome (+0.0172).
-
-### Methods
-- Follow crisprHAL 2's order: Datasets → Data processing → Features → Model → Metrics → Splits.
-- **Splits section must carry**: gene-grouped and 100 kb-block CV; the train/test Hamming statistic
-  (min 3, no identical guides) — both comparators report this and reviewers will look for it.
-- Reproducibility: `run_audit.sh`, 3322 checks; `import_check.py` for the code itself.
-
----
-
-## Figures and tables
-
-**The figures exist** (`results/post_freeze/figures/`, built by `sgrna/paper/figures.py`,
-vector PDF + 600 dpi PNG each, geometry and completeness checked by the audit). One table, so the
-plan and the built set cannot disagree:
-
-| # | file | size (in) | content | source | where it goes |
-|---|---|---|---|---|---|
-| Fig 1 | `fig1_representation` | 7.00 × 1.85 | decoding + the 412-column equivalence; a schematic, deliberately not a plot — see below | Finding 1 | Results 1 |
-| Fig 2 | `fig2_locality` | 3.33 × 2.35 | Δρ vs shift distance (single column; it had a second panel, cut vs bind, removed with the dCas9 demotion) | Finding 2 | Results 2 |
-| Fig 3 | `fig3_what_the_signal_is` | 7.00 × 4.60 | (a) GC distance profile by side, (b) the purine null on the same scale, (c) the resolution curve, (d) interaction pairs | Finding 7 | Results 3 |
-| Fig 4 | `fig4_design_rules_by_kingdom` | 4.73 × 3.50 | position × base heatmaps, *E. coli* vs human | Finding 7 | Results 4 |
-| Fig 5 | `fig5_attainable_ceiling` | 3.33 × 2.60 | the corrected ceiling, single column | Finding 6 | Results 5 |
-| Fig 6 | `fig6_flank_windows_schematic` | 7.00 × 2.15 | what family A actually reads | Findings 2, 7 | Methods or Results 2 |
-| Fig 7 | `fig7_pipeline` | 7.00 × 2.50 | how a ρ in this paper is produced, with the two leakage controls | Part 4 | Methods |
-| Table 1 | — | — | the ceiling correction, now parametric in *r* and *k* (`ceiling_parametric.csv`) | Finding 6 | Results 5 |
-| Table 2 | — | — | metric panel on both splits + data efficiency + the design-path cost | report Part 5 | Results 6 |
-| Supp | — | — | family ablations, sealed-gene draws, the shape null (Appendix B4), the local-sequence bound | Appendices | Supplementary |
-
-ACS applied: ≤ 3.33 in single column and ≤ 7 in double, ≤ 9.167 in depth, Helvetica at ≥ 7 pt
-(the floor is 4.5 pt but ACS pages disagree, so everything clears every variant), no rule thinner
-than 0.5 pt, vector PDF so the raster minima are satisfied by construction. Colour is secondary
-throughout — marker shape and line style carry identity too, so each figure survives greyscale.
-
-**Two judgement calls worth knowing about before you write captions:**
-
-* **Fig 1 is a schematic, not a chart.** The 412-vs-6,232 equivalence spans two protocols and no
-  single result file holds both arms. A first attempt assembled a two-point chart from
-  incommensurable sources and produced a spurious −0.019 ρ. The numbers are stated as annotation
-  instead.
-* **Fig 2 is one panel.** It had a second, a dumbbell of cut against bind by screen, which was removed with the dCas9
-  demotion (report Appendix B5). Its baseline is the de-duplicated no-flank mean (0.5291): the frozen baseline file repeats
-  three fold rows, which the figure code drops and an audit check pins, so "1 kb retains 8%" matches the report.
-
----
-
-## Things to decide, not assume
-
-- **Venue** sets order (Methods before or after Results) and length. Not assumed here.
-- **The shape/3D null** (Appendix B4) is supplementary under Frame A, unless a reviewer asks. The nuclease
-  work was removed (`REMOVED.md`).
-- **Jacky's orientation result and the human arm** are his; agree authorship and which figures are
-  shared before drafting.
-- **The three withdrawn claims** must not reappear. The report lists them once, at the top.
+**Reproducibility.** `run_audit.sh`, 3359 checks; `import_check.py` for the code itself. Rounding and coverage: every number in the paper's text is matched to an audit claim or is a setting, a seed or a published constant.

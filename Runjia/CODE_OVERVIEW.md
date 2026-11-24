@@ -56,7 +56,7 @@ the one-hot (position, k-mer) indicators for k = 1 to 4. Every decoded guide is 
 For each guide the code reads up to 1,000 nt either side, in the guide's orientation, and builds 348 columns: the identity of the nearest bases
 on each side, the paper's own quantum-chemical tables extended past the guide, and window summaries (GC fraction, purine fraction, longest
 homopolymer, mean and spread of four descriptor series) over the nearest 50, 250, 500 and 1,000 nt. The windows are nested, so each profile is computed once.
-**Result: +0.164 ρ on the curated cohort**, +0.156 measured on genes no step of the pipeline had seen, and +0.080 on the published matrix. It is a smooth
+**Result: +0.161 ρ on the curated cohort** (whole genes held out, three seeds; +0.164 on random rows), +0.156 measured on genes no step of the pipeline had seen, and +0.080 on the published matrix. It is a smooth
 compositional gradient, not a motif, and it is the largest effect in the project.
 
 ### 3. The harness: what every number is measured through *(throughout; Appendix B)*
@@ -67,7 +67,7 @@ gain. An "ablation" is the same rows, folds and model with only the columns chan
 grouped by gene (and in some runs by 100 kb block), so a position-based feature cannot score by recognising a locus. Five seeds by five folds; each fold is
 written to disk as it finishes. Every claim in the report is a paired difference measured this way.
 
-### 4. The controls: why +0.164 is not an artefact *(Finding 2; Appendix A)*
+### 4. The controls: why +0.161 is not an artefact *(Finding 2; Appendix A)*
 `sgrna/controls/shiftnull.py`, `sgrna/controls/sealed_holdout.py`, `sgrna/controls/selector_audit.py`, `sgrna/controls/floors.py`,
 `sgrna/interpret/gcstrata.py`, `sgrna/controls/fold_distance.py`, `sgrna/compare/sealed_organism.py`
 
@@ -87,12 +87,12 @@ Each of these is an attack on the result, not a confirmation of it.
 
 **Accuracy.** The final SLICER model, as shipped, leads crisprHAL 2, as released, by **+0.023 to +0.029 ρ** on both of crisprHAL 2's own splits. The comparison is run under four conditions, because the answer depends on which is held equal. On our folds, with both models tuned here, SLICER leads by +0.0172. On a different assay neither model was trained on (a boundary of the claim, not a like-for-like comparison), crisprHAL 2 leads by +0.026.
 The tuning is designed so that it cannot fool itself: genes are split once into DEV (70%) and CONFIRM (30%), a random search runs on DEV only, and the winners are scored on genes never used to choose anything,
-giving **+0.014 ρ**, which replicates on a second split. Before tuning, the same model was statistically equivalent to crisprHAL 2's released weights (Δρ +0.0021, 95% CI [−0.0031, +0.0072]) at about 150× less CPU time to fit.
+giving **+0.014 ρ**, which replicates on a second split. Before tuning, no difference was detected against crisprHAL 2's released weights (Δρ +0.0021, 95% CI [−0.0031, +0.0072]), and the model fits 81 times faster on the same laptop.
 
 **Cost: 1.41 ms, then 0.093 ms, then 0.036 ms per guide.** The original featuriser walked every nucleotide in Python, which was 1.33 ms of the 1.41 ms it cost to score a guide. The array rewrite produces the same 348 columns, identical on all
 33,567 guides. The per-locus version goes further. Neighbouring guides read almost the same DNA, so it scans a stretch of chromosome once into cumulative tracks; every window statistic then
 becomes a subtraction, and the one column that is not a sum (the longest homopolymer run) becomes two lookups in a sparse table. It matches the rewrite to 4.6 × 10⁻¹². End to end the model scores a guide in
-0.093 ms, and 0.036 ms when designing across a locus, which is **13 to 21×** and **34×** faster than crisprHAL 2 on a CPU (on a Colab T4 the scoring gap closes for large batches: `EXTENSION_LOG.md` §30).
+0.093 ms, and 0.036 ms when designing across a locus, which is 15 to 25 times faster than crisprHAL 2 on one CPU thread for the default model, and faster again when designing across a locus (on a Colab T4, crisprHAL 2 costs 3.9 times SLICER's laptop path from raw contexts, on two machines: `EXTENSION_LOG.md` section 33).
 
 ### 6. Can the model be explained? Redundancy, importance and headroom *(Findings 4 and 5)*
 `sgrna/interpret/importance.py`, `sgrna/interpret/importance_models.py`, `sgrna/interpret/faithfulness.py`, `sgrna/interpret/representation.py`, `sgrna/interpret/compact_model.py`, `sgrna/interpret/vs_crisprhal_interpret.py`, `sgrna/interpret/hal_readout.py`
@@ -135,6 +135,14 @@ binarised classifier, were also null, each with a mechanism. The shape null was 
 transcription and rounding errors. Four smaller guards sit beside it: every module imports and importing writes nothing (`import_check.py`); every module, path and script a
 document names exists (`doc_refs.py`); every module is documented (`code_map.py`); and the numbers in this overview all appear in the project's documents. `figures.py` builds the seven publication
 figures to ACS specification from the result files.
+
+## How the modules are organised
+
+Each module answers one question. A variation of that question (another family, another fold design, another window set, another split) is a flag of the same module, not another file. The
+flank-reach questions show the pattern: `flank_scale` is the one module for them, with the parts `window` (symmetric windows), `partition` (which pair of base classes), `resolution`, `displacement`
+(reading the flank from a shifted site) and `asymmetric` (the upstream and downstream windows chosen separately), and it reproduces the stored result of the module it replaced byte for byte.
+A reader looking for a control should look for its question (block 4 and `CODE_MAP.md`) and not for the name of a variation. An analysis of the whole package found twenty-six clusters of modules that run one
+pipeline with different arm tables, folds or seeds; two modules are merged and the plan for the rest, with the result files each must keep reproducing, is in `EXTENSION_LOG.md` section 33.
 
 ## What a judge can run
 

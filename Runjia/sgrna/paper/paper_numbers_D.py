@@ -463,7 +463,7 @@ def run(chk):
     claim("[D24] largest difference between the upstream and the downstream change at any window", max(gaps), "0.004")
     claim("[D24] gain of 250/250 on the two new fold assignments (mean over 10 folds)", wsm.loc["gc up=250 down=250", "gain_rep"], "0.106")
     claim("[D24] gain of 200/250 on the two new fold assignments", wsm.loc[top, "gain_rep"], "0.106")
-    # the family ablation on the paper's own folds (ablation_paper_folds.py), against the same ablation on random rows (the team's shared harness, ablation_curated.csv)
+    # the family ablation on the paper's own folds (curated_ablation.py --paper-folds), against the same ablation on random rows (the team's shared harness, ablation_curated.csv)
     apf = pd.read_csv(OUT / "ablation_paper_folds_summary.csv").set_index("family")
     arf = pd.read_csv(OUT.parent / "ablation_curated.csv").set_index("family")
     claim("[D25] family ablation, paper folds: folds per family (3 seeds x 5)", apf.n_folds.min(), "15")

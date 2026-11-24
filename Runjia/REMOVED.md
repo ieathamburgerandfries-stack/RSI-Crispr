@@ -25,7 +25,7 @@ result files, only the entries below failed every test. The code base is not pad
 it is roughly a hundred one-question scripts, each of which is the provenance of a claim the report makes,
 and the problem was navigability rather than bulk. That is why the rest of the consolidation is a
 reorganisation (see `CODE_MAP.md`) rather than a deletion. One further check confirmed it: across the whole
-package only one 8-line function is duplicated, so there is no copy-paste to merge away.
+package only one 8-line function is duplicated, so there is no copy-paste to merge away. (Corrected on 25 November: thirteen helpers are copied and 26 clusters of modules differ only by an arm table, a fold scheme or a split; see the last section of this file and `EXTENSION_LOG.md` section 33.)
 
 If you want the repository smaller than this, the lever is not more deletion of orphans: it is deciding
 which *claims* leave the report, because each claim carries its code and results with it. See "What
@@ -106,3 +106,15 @@ crisprHAL 2 and SLICER-shaped trees on a Colab T4 (and, in the last two, a CPU),
 adds the fits and the tuned tree shape, and needs no upload. Their stored medians stay in `results/inference_colab.csv`, `inference_t4.csv`,
 `inference_onecore.csv` and `inference_onecore_local.csv` (their `source` columns name the scripts that wrote them); restore a script with
 `git checkout b6fc21a -- Runjia/colab/<file>`.
+
+## 25 November 2026: `flank_window_tune` folded into `flank_scale`
+
+`sgrna/interpret/flank_window_tune.py` (the upstream and downstream windows chosen separately) ran the same engine as `flank_scale.py` (same folds, same model, its symmetric
+arms read from `flank_scale.csv`) and differed by the table of window pairs it scored. It is now the part `asymmetric` of `flank_scale.py`
+(`python -m sgrna.interpret.flank_scale --parts asymmetric`), and the merged module reproduces its stored summary byte for byte
+(`results/post_freeze/flank_window_tune_summary.csv` is unchanged). Restore the old module with `git checkout pre-merge-2026-11-25 -- Runjia/sgrna/interpret/flank_window_tune.py`.
+
+`sgrna/cohorts/ablation_paper_folds.py` (the family ablation on the paper's own folds, written on 24 November) is likewise folded into `curated_ablation.py` as `--paper-folds`; its two result files are unchanged
+(`results/post_freeze/ablation_paper_folds.csv`, `ablation_paper_folds_summary.csv`) and the merged design resumes from them and reproduces the summary byte for byte. Restore with
+`git checkout pre-merge-2026-11-25 -- Runjia/sgrna/cohorts/ablation_paper_folds.py` (the tag was set before the first merge, so use `git log --diff-filter=D -- Runjia/sgrna/cohorts/ablation_paper_folds.py` to find the commit that holds it).
+

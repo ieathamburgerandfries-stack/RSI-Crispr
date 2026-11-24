@@ -1,4 +1,4 @@
-"""Feature-family ablations on crisprHAL's curated cohort.
+"""Feature-family ablations on crisprHAL's curated cohort (designs: one family at a time on random rows or whole genes, and `--paper-folds`).
 
 Every Δρ in Appendix C was measured on the published 13,880-row matrix against
 the published label. The model layer moved to crisprHAL's 33,567 curated guides
@@ -218,6 +218,91 @@ def shape_audit(verbose: bool = True) -> pd.DataFrame:
         print(f"written -> {SHAPE_OUT}")
     return out
 
+# ------------------------------------------------------------------------------------------------ the paper's own folds
+# Design `paper_folds`: the family ablation on exactly the folds of the paper's other numbers (`controls/sealed_holdout_gene._fold_ids` over all 33,567 guides, every gene whole,
+# the 3,364 guides outside genes in 100 kb blocks, seeds 41 to 43, so 15 folds) with the default model, so a delta here sits beside the flank gain of +0.161 without a change of protocol.
+# Every arm sees the same five folds per seed. Arms: the 20-mer with the same 300-column selection every family arm gets (the like-for-like baseline); the 20-mer plus one family; and the two halves of
+# `d_mechanics` (its 22 columns that are functions of the protospacer, its 8 that read the flanking DNA: `.flank.` in the column name). `flank_scale.csv` already holds two arms on these folds and they are
+# read, not rerun: the 20-mer with no selection (the paper's 0.547) and the 20-mer + family A. Each gain is reported against both baselines. Results: `post_freeze/ablation_paper_folds.csv` (per fold) and
+# `ablation_paper_folds_summary.csv`; fold checkpoints are the rows of the csv, so a rerun resumes.
+#     python -m sgrna.cohorts.curated_ablation --paper-folds [--threads 9] [--seeds 41 42 43] [--summary-only]
+import time
+
+from scipy.stats import spearmanr
+
+from ..common import OUT as OUT_PF
+
+PF_RESULT = OUT_PF / "ablation_paper_folds.csv"
+PF_SUMMARY = OUT_PF / "ablation_paper_folds_summary.csv"
+PF_BASE_SEL = "20-mer, 300 selected"
+# guide-derived families first (the claim this answers), then the families that read DNA or tracks beyond the guide
+PF_ORDER = ("b_energy", "c_folding", "f_methylation", "j_periodicity", "h_offtarget",
+         "d_mechanics", "i_shape", "e_nucleoid", "g_transcription", "d_supercoiling")
+PF_SPLIT = {"d_mechanics, guide columns only": False, "d_mechanics, flank columns only": True}     # arm -> keep the columns that read the flanks?
+PF_FLANK = ".flank."
+
+
+def run_paper_folds(seeds=(41, 42, 43), threads: int = 9, verbose: bool = True) -> None:
+    from ..controls import sealed_holdout_gene as sg
+    from ..controls.mappability_stratum import _groups
+    from ..interpret import flank_scale as FS
+    
+    sg.N_JOBS = threads
+    X, y, names, protos = _base()
+    groups = _groups(protos)
+    done = pd.read_csv(PF_RESULT) if PF_RESULT.exists() and PF_RESULT.stat().st_size else pd.DataFrame(columns=["arm", "seed", "fold", "rho", "n_cols"])
+    rows = done.to_dict("records")
+    have = {(r["arm"], r["seed"]) for r in rows}
+    blocks = {}
+    for seed in seeds:
+        fold = sg._fold_ids(groups, 5, seed)
+        for arm in (PF_BASE_SEL,) + PF_ORDER + tuple(PF_SPLIT):
+            if (arm, seed) in have:
+                continue
+            if arm == PF_BASE_SEL:
+                M = X
+            elif arm in PF_SPLIT:
+                if "d_mechanics" not in blocks:
+                    blocks["d_mechanics"] = _block("d_mechanics", protos)
+                v, fnames = blocks["d_mechanics"]
+                is_flank = np.array([PF_FLANK in f for f in fnames])
+                M = np.hstack([X, v[:, is_flank if PF_SPLIT[arm] else ~is_flank]])
+            else:
+                if arm not in blocks:
+                    blocks[arm] = _block(arm, protos)
+                M = np.hstack([X, blocks[arm][0]])
+            t0 = time.time()
+            pred = FS._cv(M, y, groups, fold, config.N_FEATURES, seed)
+            for k in range(5):
+                va = fold == k
+                rows.append(dict(arm=arm, seed=seed, fold=k + 1, rho=float(spearmanr(y[va], pred[va]).statistic), n_cols=int(M.shape[1])))
+            pd.DataFrame(rows).to_csv(PF_RESULT, index=False)
+            if verbose:
+                print(f"  {arm:24s} seed {seed}  rho {spearmanr(y, pred).statistic:.4f}  {time.time() - t0:.0f}s", flush=True)
+
+
+def summary_paper_folds() -> pd.DataFrame:
+    d = pd.read_csv(PF_RESULT)
+    fs = pd.read_csv(OUT_PF / "flank_scale.csv")
+    nosel = fs[fs.arm == "base"].set_index(["seed", "fold"]).rho
+    fam_a = fs[fs.arm == "family A shifted 0"].set_index(["seed", "fold"]).rho
+    sel = d[d.arm == PF_BASE_SEL].set_index(["seed", "fold"]).rho
+    arms = {"a_flank": fam_a}
+    for arm, g in d[d.arm != PF_BASE_SEL].groupby("arm", sort=False):
+        arms[arm] = g.set_index(["seed", "fold"]).rho
+    rows = []
+    for arm, r in arms.items():
+        ix = r.index.intersection(sel.index).intersection(nosel.index)
+        a = (r.loc[ix] - sel.loc[ix])                 # like for like: the same 300-column selection on both arms
+        b = (r.loc[ix] - nosel.loc[ix])               # against the paper's baseline, the 20-mer with no selection
+        rows.append(dict(family=arm, n_folds=len(ix), seeds=int(ix.get_level_values(0).nunique()), rho=float(r.loc[ix].mean()),
+                         gain_same_selection=float(a.mean()), gain_same_selection_sd=float(a.std(ddof=1)), folds_positive_same_selection=int((a > 0).sum()),
+                         gain_vs_no_selection=float(b.mean()), gain_vs_no_selection_sd=float(b.std(ddof=1)), folds_positive_vs_no_selection=int((b > 0).sum()),
+                         base_selected_rho=float(sel.loc[ix].mean()), base_no_selection_rho=float(nosel.loc[ix].mean())))
+    s = pd.DataFrame(rows)
+    s.to_csv(PF_SUMMARY, index=False)
+    return s
+
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -231,7 +316,15 @@ def main(argv=None) -> int:
                     help="only audit column shape against the measured deltas")
     ap.add_argument("--force-baseline", action="store_true",
                     help="re-measure the base representation instead of reusing it")
+    ap.add_argument("--paper-folds", action="store_true", help="design paper_folds: the ablation on the paper's own folds (see the section above)")
+    ap.add_argument("--threads", type=int, default=9, help="paper_folds only")
+    ap.add_argument("--summary-only", action="store_true", help="paper_folds only")
     a = ap.parse_args(argv)
+    if a.paper_folds:
+        if not a.summary_only:
+            run_paper_folds(tuple(a.seeds or (41, 42, 43)), a.threads)
+        print(summary_paper_folds().round(4).to_string(index=False))
+        return 0
     if a.shape_audit:
         shape_audit()
         return 0

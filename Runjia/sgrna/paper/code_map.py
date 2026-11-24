@@ -109,8 +109,11 @@ def _results(tree: ast.Module, existing: set[str]) -> list[str]:
             base = s.split("/")[-1]
             if len(base) < 5 or base in (".csv", ".json"):
                 continue
+            pre = base.split("{")[0]
             for f in existing:
-                if f == base or (len(base) >= 6 and (base.endswith("_") or "{" in s) and f.startswith(base.split("{")[0])):
+                # a literal with a `{` in it is a template (`f"transfer_{name}.csv"`): its text before the brace must be long enough to name something, or a Docker
+                # `--format '{{.Id}}'` literal (empty prefix) would match every result file
+                if f == base or (len(base) >= 6 and (base.endswith("_") or "{" in s) and len(pre) >= 4 and f.startswith(pre)):
                     out.add(f)
     return sorted(out)
 

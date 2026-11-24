@@ -1,26 +1,17 @@
 # RSI-Crispr
 
-**Where the project stands (22 November 2026):** SLICER, the model in `Runjia/`, now **leads** crisprHAL 2 — the published
-state of the art — on crisprHAL 2's **own two published splits**, scored against its released weights: Δρ **+0.0286**
-[+0.0239, +0.0331] on eSpCas9 and **+0.0226** [+0.0139, +0.0314] on SpCas9, after a joint hyperparameter search worth
-+0.014 ρ on genes it never saw. Before that tuning the same model was statistically equivalent to crisprHAL 2 (Δρ
-+0.0021, 95% CI [−0.0031, +0.0072] on eSpCas9, about 150× less CPU time to fit). It scores a guide 13–21× faster end to
-end (34× when designing across a locus) and reaches crisprHAL 2's accuracy on about a third of the labelled guides.
+**Where the project stands (25 November 2026):** SLICER, the model in `Runjia/`, leads crisprHAL 2 — the published state of the art — on crisprHAL 2's **own two published splits**, both models as released:
+Δρ **+0.0286** [+0.0239, +0.0331] on eSpCas9 and **+0.0226** [+0.0139, +0.0314] on SpCas9. Before the settings were tuned, no difference was detected (+0.0021 [−0.0031, +0.0072] on eSpCas9).
+On whole-gene folds, with crisprHAL 2 retrained at its published settings, it reaches ρ 0.693 against 0.707 for SLICER's default model and 0.723 for the tuned model; the lead of the default model is
+explained by the DNA beyond crisprHAL 2's 378-nt input, the tuned model's is not. Both were tuned with comparable compute, not equal draws (627 draws in 2.4 hours against 28 draws in about 3.0 GPU-hours).
+On a quiet laptop CPU SLICER's default model scores a guide 15 to 25 times faster than crisprHAL 2 and 42 times faster than BoostMEC, fits 81 times faster than crisprHAL 2 on the same laptop (25 times
+against a Colab T4), and is 0.68 MB; on a Colab T4 crisprHAL 2 costs 3.9 times SLICER's laptop path from raw contexts (two machines).
 
-**Both models are compared as released**, which is how they are used in practice: SLICER as shipped, with settings chosen on
-held-out genes, against crisprHAL 2's published weights. That is a claim about the two models, not about their architectures:
-SLICER's settings were searched and crisprHAL 2's were not, and a Colab script that gives crisprHAL 2 a search of its own is
-written and not yet run.
-On our own curated five folds the margin is larger (0.7218 against 0.7051, paired +0.0161, five of five folds) but the two
-models were not searched with equal effort there, so that is not the headline; and on a screen neither model trained on
-(a dCas9 CRISPRi screen) **theirs** transfers better.
-
-The result underneath it is not the score: sgRNA efficiency in *E. coli* depends on the **DNA surrounding the target**,
-out to roughly 500 nt, as a smooth compositional gradient rather than a motif. It is carried by GC specifically, is
-side-symmetric, has one length scale of 250–500 nt, and is coupled to the PAM-proximal seed — which is why a
-gradient-boosted model on hand-built summaries keeps up with a CNN–BiGRU. Whether the effect needs a double-strand break
-was tried against dCas9 CRISPRi screens and **not settled** (the report's Appendix B5). [`Runjia/PROGRESS_REPORT.md`](Runjia/PROGRESS_REPORT.md)
-is the full write-up, including the claims withdrawn on the way.
+The result underneath it is not the score: sgRNA efficiency in *E. coli* depends on the **DNA surrounding the target**. Flank features add **+0.161** ρ (0.547 to 0.707; five-fold cross-validation that holds
+whole genes out, three seeds, the default model), +0.156 on genes sealed before any choice was made. The signal is GC specifically (the purine and amino fractions give no gain), highest at a window
+of 200 nt of 14 tried and within 0.01 of it from 150 to 500 nt, side-symmetric, and a step at the AT-rich end: the lowest decile of flank GC sits 3.16 label units below the rest. Repeats, mappability
+and read depth do not account for it. Whether the effect needs a double-strand break was tried against dCas9 CRISPRi screens and **not settled** (the report's Appendix B5).
+[`Runjia/PROGRESS_REPORT.md`](Runjia/PROGRESS_REPORT.md) is the full write-up, including the claims withdrawn on the way.
 
 Predicting sgRNA cutting efficiency in *E. coli* CRISPR-Cas9 screens, extending
 the quantum chemical tensor (QCT) feature set of
