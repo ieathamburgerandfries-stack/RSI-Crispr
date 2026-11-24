@@ -3,13 +3,15 @@
 SLICER's deployed model is the boosted trees alone (the 300-tree selector that picks the columns is not needed at prediction time, only the list of selected
 columns). Both are refitted here on one training fold of the curated cohort exactly as `vs_crisprhal.train_predict` fits them, and the booster is counted:
 trees, total nodes, leaves (the numbers a model has to remember: one value per leaf, a split per inner node) and the size of the saved file (XGBoost's binary UBJ format, and its JSON form). crisprHAL 2 is
-counted from its released Keras file (parameters) and the file on disk.
+counted from its released Keras file (parameters) and the file on disk; each file is also gzipped (level 9), so that LightGBM's text format (BoostMEC, `cost_boostmec.py size`),
+XGBoost's binary one and Keras' zip can be compared on the bytes that carry information.
 
     OMP_NUM_THREADS=2 ./run_ext.sh sgrna.cost.model_size                    # SLICER, main environment
     .venv-crisprhal/bin/python -m sgrna.cost.model_size hal               # crisprHAL 2, TensorFlow environment
 """
 from __future__ import annotations
 
+import gzip
 import sys
 from pathlib import Path
 
@@ -55,10 +57,11 @@ def slicer() -> None:
         with tempfile.TemporaryDirectory() as d:
             m.save_model(f"{d}/m.ubj")
             ubj = Path(f"{d}/m.ubj").stat().st_size
+            ubj_gz = len(gzip.compress(Path(f"{d}/m.ubj").read_bytes(), 9))
             m.save_model(f"{d}/m.json")
             js = Path(f"{d}/m.json").stat().st_size
         rows.append(dict(model=lab, trees=int(df.Tree.nunique()), nodes=int(len(df)), leaves=leaves, inner_nodes=int(len(df) - leaves), columns_used=int(len(set(df.Feature) - {"Leaf"})),
-                         columns_selected=int(cfg["nf"]), max_depth=int(cfg["max_depth"]), bytes_file=ubj, bytes_json=js, parameters=np.nan, n_train=len(tr)))
+                         columns_selected=int(cfg["nf"]), max_depth=int(cfg["max_depth"]), bytes_file=ubj, bytes_json=js, bytes_gzip=ubj_gz, parameters=np.nan, n_train=len(tr)))
         print(f"  {lab}: {rows[-1]}", flush=True)
     old = pd.read_csv(OUTF) if OUTF.exists() else pd.DataFrame()
     pd.concat([old[~old.model.isin([r['model'] for r in rows])] if len(old) else old, pd.DataFrame(rows)]).to_csv(OUTF, index=False)
@@ -76,7 +79,8 @@ def hal() -> None:
     os.chdir(hal_dir)
     m = keras.models.load_model("models/WT-SPCAS9.keras", compile=False)
     os.chdir(cwd)
-    row = dict(model="crisprHAL 2", parameters=int(m.count_params()), bytes_file=int((hal_dir / "models" / "WT-SPCAS9.keras").stat().st_size))
+    row = dict(model="crisprHAL 2", parameters=int(m.count_params()), bytes_file=int((hal_dir / "models" / "WT-SPCAS9.keras").stat().st_size),
+               bytes_gzip=len(gzip.compress((hal_dir / "models" / "WT-SPCAS9.keras").read_bytes(), 9)))
     print(f"  crisprHAL 2: {row}", flush=True)
     old = pd.read_csv(OUTF) if OUTF.exists() else pd.DataFrame()
     pd.concat([old[old.model != "crisprHAL 2"] if len(old) else old, pd.DataFrame([row])]).to_csv(OUTF, index=False)

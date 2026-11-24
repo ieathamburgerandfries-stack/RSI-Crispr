@@ -1,0 +1,15 @@
+batch,rep,seconds,ms_per_guide,note
+1,0,,,fails: Error: ! Assigned data `unname(rules[[col_name]][data[[col_name]]])` must be compatible with existing data. ✖ Existing data has 1 row. ✖ Assigned data has 4 rows. ℹ Row updates require a list value. Do you need `list()` or `as.list()`?
+10,0,3.695,369.5,
+10,1,3.744,374.4,
+10,2,3.727,372.7,
+10,3,3.775,377.5,
+10,4,3.747,374.7,
+100,0,4.192,41.92,
+100,1,4.162,41.62,
+100,2,4.152,41.52,
+100,3,4.168,41.68,
+100,4,4.184,41.84,
+10000,0,52.715,5.2715,
+10000,1,54.518,5.4518,
+10000,2,53.467,5.3467,

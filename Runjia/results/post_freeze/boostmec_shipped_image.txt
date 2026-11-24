@@ -1,0 +1,9 @@
+image sha256:b6e6231476d7424b3ef54a8ff7e63422070bc4b4c32aea103597c9c2698aad93 amd64 1201206112 ["oazarate/boostmec@sha256:b6e6231476d7424b3ef54a8ff7e63422070bc4b4c32aea103597c9c2698aad93"]
+host VM aarch64 cpus=10 mem=8321712128 Docker Desktop
+repo /
+x86_64
+NAME="Ubuntu"
+VERSION="18.04.6 LTS (Bionic Beaver)"
+R version 4.1.0 (2021-05-18) -- "Camp Pontanezen"
+RNAfold 2.4.14
+Python 3.7.1

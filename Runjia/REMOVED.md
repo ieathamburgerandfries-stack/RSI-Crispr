@@ -97,3 +97,12 @@ Two citations pointed at nothing and were corrected: `human_ladder.csv` in `resu
 saved — the figures it summarised (human base 0.382, with family A 0.434, +0.052) are the means of
 `folds_human_base_cv.csv` and `folds_human_base_a_cv.csv`, which are now cited and audited; and `final_eval.csv` in the report
 was `final_eval_espcas9.csv`.
+
+## 24 November 2026: four Colab benchmarks folded into one
+
+`colab/inference_bench_t4.py`, `colab/inference_bench_onecore.py`, `colab/slicer_cpu_check.py` and `colab/crisprhal_inference_bench.py` timed
+crisprHAL 2 and SLICER-shaped trees on a Colab T4 (and, in the last two, a CPU), each a slightly different version of the same measurement
+(medians of a few calls, one with a hard-coded laptop path). They are replaced by one paste-into-one-cell file, `colab/cost_gpu.py`, which keeps every repeat,
+adds the fits and the tuned tree shape, and needs no upload. Their stored medians stay in `results/inference_colab.csv`, `inference_t4.csv`,
+`inference_onecore.csv` and `inference_onecore_local.csv` (their `source` columns name the scripts that wrote them); restore a script with
+`git checkout b6fc21a -- Runjia/colab/<file>`.

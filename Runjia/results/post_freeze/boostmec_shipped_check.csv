@@ -1,0 +1,17 @@
+item,value
+"pipeline seconds, 100 guides",4.369
+prediction: Spearman between the shipped pipeline and the Python version,0.9989798979897988
+prediction: mean absolute difference,0.3359226823175628
+prediction: largest absolute difference,3.1865673824705425
+feature grna_energy: mean absolute difference,2.3573636991347512e-08
+feature grna_scaffold_energy: mean absolute difference,4.844665525993719e-07
+feature tm1: mean absolute difference,1.9488348688021357
+feature tm2: mean absolute difference,0.9103494102352738
+feature tm3: mean absolute difference,1.4648263387648979
+feature tm4: mean absolute difference,1.1001357317174791
+feature gc_count: mean absolute difference,0.0
+feature num_poly_t: mean absolute difference,0.0
+feature max_poly_t_len: mean absolute difference,0.0
+k-mer counts (84 columns): largest absolute difference,0.0
+categorical columns (56): cells that differ from the sequence,0.0
+rows compared,100.0

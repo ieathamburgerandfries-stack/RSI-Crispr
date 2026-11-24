@@ -1,0 +1,3 @@
+workload,sequences,native_seconds,container_seconds,ratio
+guide (20 nt),2000,0.056251166854053736,0.119,2.1155116712289903
+guide plus scaffold (101 nt),2000,5.874950333032757,6.427,1.0939666951503

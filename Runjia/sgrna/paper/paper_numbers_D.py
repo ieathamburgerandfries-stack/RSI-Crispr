@@ -231,80 +231,182 @@ def run(chk):
     chk(P + "[D14]   datasets with a positive value", float((cb.g_minus_ac_pos20 > 0).sum()), 11, 0)
     chk(P + "[D14]   E. coli", float(c[c.group == "E. coli"].g_minus_ac_pos20.iloc[0]), -0.333, 3)
 
-    # ---------------------------------------------------------------------------------------------------- the cost, with its spread (cost_repeats.py, model_size.py, boostmec_style.py)
-    inf = pd.read_csv(OUT / "cost_repeats_inference.csv")
-    g = inf.groupby(["model", "batch"]).ms_per_guide
-    cnt, med, sd, mean = g.count(), g.median(), g.std(ddof=1), g.mean()
-    for (m, b), n_ in {("SLICER default", 1): 300, ("SLICER default", 100): 60, ("SLICER default", 10000): 15, ("SLICER tuned", 1): 300, ("SLICER tuned", 100): 60,
-                       ("SLICER tuned", 10000): 15, ("crisprHAL 2", 1): 200, ("crisprHAL 2", 100): 40, ("crisprHAL 2", 10000): 8}.items():
-        chk(P + f"[D15] repeats, {m}, batch {b:,}", float(cnt[(m, b)]), n_, 0)
-    for m, b, claimed, dec in (("SLICER default", 1, 0.64, 2), ("SLICER default", 100, 0.077, 3), ("SLICER default", 10000, 0.081, 3), ("SLICER tuned", 1, 0.72, 2),
-                               ("SLICER tuned", 100, 0.091, 3), ("SLICER tuned", 10000, 0.097, 3), ("crisprHAL 2", 1, 16, 0), ("crisprHAL 2", 100, 1.4, 1), ("crisprHAL 2", 10000, 1.2, 1)):
-        chk(P + f"[D15] median ms per guide, {m}, batch {b:,}", float(med[(m, b)]), claimed, dec)
-    chk(P + "[D15] largest coefficient of variation over the nine configurations, %", float((100 * sd / mean).max()), 8, 0)
+    # ---------------------------------------------------------------------------------------------------- the cost (cost_repeats.py, cost_boostmec.py, cost_boostmec_shipped.py, model_size.py, colab/cost_gpu.py)
+    # One quiet laptop session and one Colab T4 session; every claimed value below is typed as the Doc prints it (three significant figures), and its number of decimals is read from it.
+    def dec(txt):
+        return len(txt.replace(",", "").split(".")[1]) if "." in txt else 0
 
-    def ratio(m, b, seed=0, B=4000):
+    def claim(label, got, txt):
+        chk(label, float(got), float(txt.replace(",", "").replace("−", "-").rstrip("%")), dec(txt))
+
+    inf = pd.read_csv(OUT / "cost_repeats_inference.csv")
+    gi = inf.groupby(["model", "batch"]).ms_per_guide
+    cnt, med, sd, mean = gi.count(), gi.median(), gi.std(ddof=1), gi.mean()
+    CPU = {("SLICER default", 1): (300, "0.629"), ("SLICER default", 100): (60, "0.0726"), ("SLICER default", 10000): (15, "0.0795"),
+           ("SLICER tuned", 1): (300, "0.716"), ("SLICER tuned", 100): (60, "0.0885"), ("SLICER tuned", 10000): (15, "0.0935"),
+           ("BoostMEC", 1): (300, "2.94"), ("BoostMEC", 100): (60, "3.07"), ("BoostMEC", 10000): (15, "3.11"),
+           ("crisprHAL 2", 1): (200, "15.4"), ("crisprHAL 2", 100): (40, "1.37"), ("crisprHAL 2", 10000): (8, "1.22")}
+    for (m, b), (n_, txt) in CPU.items():
+        claim(f"[D15] repeats, {m}, batch {b:,}", cnt[(m, b)], str(n_))
+        claim(f"[D15] median ms per guide, {m}, batch {b:,} (quiet CPU, one thread)", med[(m, b)], txt)
+    claim("[D15] largest coefficient of variation over the twelve configurations, %", (100 * sd / mean).max(), "4")
+    claim("[D15] load average while scoring, lowest", min(inf.load1_start.min(), inf.load1_end.min()), "1.8")
+    claim("[D15]   highest", max(inf.load1_start.max(), inf.load1_end.max()), "2.4")
+    assert inf.session.nunique() == 3, "scoring was timed in the three commands of one chained session"
+
+    def ratio(num, den, b, seed=0, B=4000):
         rng = np.random.default_rng(seed)
-        a_ = inf[(inf.model == "crisprHAL 2") & (inf.batch == b)].ms_per_guide.to_numpy()
-        c_ = inf[(inf.model == m) & (inf.batch == b)].ms_per_guide.to_numpy()
+        a_ = inf[(inf.model == num) & (inf.batch == b)].ms_per_guide.to_numpy()
+        c_ = inf[(inf.model == den) & (inf.batch == b)].ms_per_guide.to_numpy()
         r = [np.median(rng.choice(a_, len(a_))) / np.median(rng.choice(c_, len(c_))) for _ in range(B)]
         return np.median(a_) / np.median(c_), np.percentile(r, 2.5), np.percentile(r, 97.5)
-    for b, (r_, lo_, hi_) in {1: (24.8, 24.6, 24.9), 100: (18.1, 17.9, 18.3), 10000: (15.1, 14.9, 15.2)}.items():
-        e = ratio("SLICER default", b)
-        chk(P + f"[D15] crisprHAL 2 / SLICER default, batch {b:,}: ratio of medians", float(e[0]), r_, 1)
-        chk(P + f"[D15]   lower end of the bootstrap interval", float(e[1]), lo_, 1)
-        chk(P + f"[D15]   upper end", float(e[2]), hi_, 1)
+    for num, den, b, (r_, lo_, hi_) in (("crisprHAL 2", "SLICER default", 1, ("24.5", "24.4", "24.5")), ("crisprHAL 2", "SLICER default", 100, ("18.8", "18.8", "18.9")),
+                                         ("crisprHAL 2", "SLICER default", 10000, ("15.4", "15.3", "15.4")), ("BoostMEC", "SLICER default", 100, ("42.3", "42.2", "42.5"))):
+        e = ratio(num, den, b)
+        claim(f"[D15] {num} / {den}, batch {b:,}: ratio of medians", e[0], r_)
+        claim("[D15]   lower end of the bootstrap interval", e[1], lo_)
+        claim("[D15]   upper end", e[2], hi_)
+    # the T4 (colab/cost_gpu.py)
+    gp = pd.read_csv(OUT / "cost_gpu.csv")
+    gs = gp[gp.unit == "ms/guide"]
+    gm = lambda model, device, pl, b: gs[(gs.model == model) & (gs.device == device) & (gs.placement == pl) & (gs.batch == b)].value
+    claim("[D18] T4 session: repeats at 1, 100 and 10,000 guides (200, 60, 30)", len(gm("crisprHAL 2", "T4", "raw contexts on host", 100)), "60")
+    claim("[D18] crisprHAL 2 on the T4 from raw contexts, one guide, median ms", gm("crisprHAL 2", "T4", "raw contexts on host", 1).median(), "74.5")
+    claim("[D18]   10,000 guides, ms per guide", gm("crisprHAL 2", "T4", "raw contexts on host", 10000).median(), "0.311")
+    claim("[D18] encoded batch on the card, 10,000 guides, ms per guide", gm("crisprHAL 2", "T4", "encoded batch on the card", 10000).median(), "0.0837")
+    ra = np.random.default_rng(0)
+    a_ = gm("crisprHAL 2", "T4", "encoded batch on the card", 10000).to_numpy(); c_ = inf[(inf.model == "SLICER default") & (inf.batch == 10000)].ms_per_guide.to_numpy()
+    rr_ = [np.median(ra.choice(a_, len(a_))) / np.median(ra.choice(c_, len(c_))) for _ in range(4000)]
+    claim("[D18]   ... times SLICER default's whole path on one CPU thread (ratio of medians)", np.median(a_) / np.median(c_), "1.05")
+    claim("[D18]     lower end", np.percentile(rr_, 2.5), "1.04")
+    claim("[D18]     upper end", np.percentile(rr_, 97.5), "1.07")
+    claim("[D18] best batch size on the card at 10,000 guides", gp[(gp.what == "best batch size") & (gp.placement == "encoded batch on the card") & (gp.batch == 10000)].value.iloc[0], "2048")
+    for lab, vals in (("SLICER default shape", ("0.00636", "0.00519", "0.000617")), ("SLICER tuned shape", ("0.0690", "0.0194", "0.00803"))):
+        for (dev, pl), txt in zip((("Colab CPU", "one CPU thread"), ("T4", "matrix on host"), ("T4", "matrix on the card")), vals):
+            claim(f"[D18] {lab}, forward pass at 10,000 guides, {pl}", gm(lab, dev, pl, 10000).median(), txt)
+    gf = gp[gp.unit == "s"]
+    gfv = lambda model, device: gf[(gf.model == model) & (gf.device == device)].value
+    claim("[D18] fits on the T4 of the default shape, s", gfv("SLICER default shape", "T4").median(), "3.20")
+    claim("[D18]   on Colab's CPU", gfv("SLICER default shape", "Colab CPU, all threads").median(), "23.8")
+    claim("[D18] tuned shape on the T4, s", gfv("SLICER tuned shape", "T4").median(), "29.0")
+    claim("[D18]   on Colab's CPU", gfv("SLICER tuned shape", "Colab CPU, all threads").median(), "479")
+    claim("[D18] crisprHAL 2 fit on the T4: fits", len(gfv("crisprHAL 2", "T4")), "3")
+    claim("[D18]   median seconds", gfv("crisprHAL 2", "T4").median(), "326")
+    claim("[D18]   shortest, minutes", gfv("crisprHAL 2", "T4").min() / 60, "5.4")
+    claim("[D18]   longest, minutes", gfv("crisprHAL 2", "T4").max() / 60, "5.6")
+    for ln in (OUT.parent / "inference_onecore.csv").read_text().splitlines()[1:]:         # device names hold commas, so parse from the right
+        q = ln.split(",")
+        if q[0].startswith("crisprHAL 2 WT-SpCas9 (shipped)") and "input on card" in ln and q[-4] == "10000":
+            claim("[D18] an earlier Colab session: crisprHAL 2 on the card at 10,000 guides, ms per guide", float(q[-3]) / 10000, "0.0762")
+    # fits on the laptop
     fit = pd.read_csv(OUT / "cost_repeats_fit.csv")
-    for m, n_, w_ in (("SLICER default", 10, 14), ("SLICER tuned", 5, 25)):
+    FIT = {"SLICER default": (10, "12.8", "81.5"), "SLICER tuned": (5, "24.5", "132"), "BoostMEC, final fit": (5, "13.2", "46.0"), "BoostMEC, with its tree count": (5, "29.2", "181"), "crisprHAL 2": (3, "1,037", "9,617")}
+    for m, (n_, w_, c_) in FIT.items():
         q = fit[fit.model == m]
-        chk(P + f"[D15] fits timed, {m}", float(len(q)), n_, 0)
-        chk(P + f"[D15]   median wall-clock seconds per fit", float(q.wall_seconds.median()), w_, 0)
-    chk(P + "[D15] SLICER default fits: slowest wall-clock seconds (the text says 14 to 15)", float(fit[fit.model == "SLICER default"].wall_seconds.max()), 15, 0)
+        claim(f"[D15] fits timed, {m}", len(q), str(n_))
+        claim("[D15]   median wall-clock seconds per fit", q.wall_seconds.median(), w_)
+        claim("[D15]   median process CPU seconds", q.cpu_seconds.median(), c_)
+    hq = fit[fit.model == "crisprHAL 2"]
+    claim("[D15] crisprHAL 2 fit on the laptop: median minutes", hq.wall_seconds.median() / 60, "17.3")
+    claim("[D15]   shortest, minutes", hq.wall_seconds.min() / 60, "17.0")
+    claim("[D15]   CPU minutes", hq.cpu_seconds.median() / 60, "160")
+    claim("[D15]   cores busy on average", (hq.cpu_seconds / hq.wall_seconds).median(), "9.3")
+    wm = lambda m: fit[fit.model == m].wall_seconds.median()
+    claim("[D15] crisprHAL 2 on the laptop over SLICER default, fit time", wm("crisprHAL 2") / wm("SLICER default"), "81")
+    claim("[D15] crisprHAL 2 on the T4 over SLICER default", gfv("crisprHAL 2", "T4").median() / wm("SLICER default"), "25")
+    claim("[D15] computing the training features, SLICER default (26,853 guides, one thread, s)", 26853 * med[("SLICER default", 10000)] / 1000, "2.13")
+    claim("[D15]   BoostMEC", 26853 * med[("BoostMEC", 10000)] / 1000, "83.5")
     rr = pd.read_csv(OUT.parent / "crisprhal_rerun.csv")
     hf = rr[(rr.arm == "our_folds") & rr.model.str.startswith("crisprHAL2")].fit_seconds
-    chk(P + "[D15] crisprHAL 2 fits on the CPU (five folds): median minutes", float(hf.median()) / 60, 17, 0)
-    t4 = pd.read_csv(OUT.parent / "crisprhal_wide_window_folds.csv")
-    t4 = t4[(t4.arm == "native_378") & t4.note.astype(str).str.startswith("Colab")].fit_minutes
-    chk(P + "[D15] crisprHAL 2 fits on a Colab T4 (folds): number", float(len(t4)), 3, 0)
-    chk(P + "[D15]   median minutes", float(t4.median()), 5.7, 1)
+    claim("[D15] earlier fits of crisprHAL 2 on this CPU (five folds, other sessions): median minutes", hf.median() / 60, "17.0")
     sz = pd.read_csv(OUT / "model_size.csv").set_index("model")
-    chk(P + "[D15] stored model, SLICER default: trees", float(sz.loc["SLICER default", "trees"]), 400, 0)
-    chk(P + "[D15]   leaves (one training fold; the all-data model has 6,348, see [54])", float(sz.loc["SLICER default", "leaves"]), 6338, 0)
-    chk(P + "[D15]   megabytes", float(sz.loc["SLICER default", "bytes_file"]) / 1e6, 0.68, 2)
-    chk(P + "[D15] stored model, SLICER tuned: trees", float(sz.loc["SLICER tuned", "trees"]), 4000, 0)
-    chk(P + "[D15]   leaves", float(sz.loc["SLICER tuned", "leaves"]), 113540, 0)
-    chk(P + "[D15]   megabytes", float(sz.loc["SLICER tuned", "bytes_file"]) / 1e6, 10.23, 2)
-    chk(P + "[D15] crisprHAL 2: parameters", float(sz.loc["crisprHAL 2", "parameters"]), 790533, 0)
-    chk(P + "[D15]   megabytes (the released .keras file)", float(sz.loc["crisprHAL 2", "bytes_file"]) / 1e6, 9.6, 1)
-    # BoostMEC rebuilt as its authors built it (boostmec_replica.py), released hyperparameters, same folds and seeds as the flank-scale arms
+    SIZE = {"SLICER default": (400, "6,338", "0.68", "0.15"), "SLICER tuned": (4000, "113,540", "10.2", "2.71"), "BoostMEC (released)": (1582, "136,142", "11.5", "4.14")}
+    for m, (t_, lv_, mb_, gz_) in SIZE.items():
+        claim(f"[D15] stored model, {m}: trees", sz.loc[m, "trees"], str(t_))
+        claim("[D15]   leaves", sz.loc[m, "leaves"], lv_)
+        claim("[D15]   megabytes", sz.loc[m, "bytes_file"] / 1e6, mb_)
+        claim("[D15]   megabytes compressed (gzip, level 9)", sz.loc[m, "bytes_gzip"] / 1e6, gz_)
+    claim("[D15] crisprHAL 2: parameters", sz.loc["crisprHAL 2", "parameters"], "790,533")
+    claim("[D15]   megabytes (the released .keras file)", sz.loc["crisprHAL 2", "bytes_file"] / 1e6, "9.6")
+    # BoostMEC as shipped (cost_boostmec_shipped.py): the authors' image, unmodified
+    sh = pd.read_csv(OUT / "boostmec_shipped_timings.csv")
+    for b, (n_, s_, ms_) in {10: (5, "3.74", None), 100: (5, "4.17", "41.7"), 10000: (3, "53.5", "5.35")}.items():
+        q = sh[(sh.batch == b) & sh.seconds.notna()]
+        claim(f"[D19] shipped pipeline, {b:,} guides: runs", len(q), str(n_))
+        claim("[D19]   median seconds, whole script", q.seconds.median(), s_)
+        if ms_:
+            claim("[D19]   ms per guide", q.ms_per_guide.median(), ms_)
+    q = sh[(sh.batch == 10000) & sh.seconds.notna()]
+    claim("[D19]   10,000 guides, fastest run", q.seconds.min(), "52.7")
+    claim("[D19]   slowest run", q.seconds.max(), "54.5")
+    claim("[D19] ... times SLICER default's whole path at 10,000 guides", q.ms_per_guide.median() / med[("SLICER default", 10000)], "67.3")
+    claim("[D19] ... times the Python version of BoostMEC's features", q.ms_per_guide.median() / med[("BoostMEC", 10000)], "1.72")
+    assert sh[sh.batch == 1].note.astype(str).str.startswith("fails").all(), "a one-guide input must have failed as shipped"
+    st = pd.read_csv(OUT / "boostmec_shipped_stages.csv")
+    q = st[st.batch == 10000].reset_index(drop=True)
+    rna = q[q.stage.str.startswith("RNAfold")].seconds.tolist(); whole = float(q[q.stage == "whole pipeline"].seconds.iloc[0])
+    claim("[D19] stages at 10,000 guides: RNAfold on the guide with its scaffold, s", rna[1], "31.6")
+    claim("[D19]   ... % of the whole script", 100 * rna[1] / whole, "60")
+    claim("[D19]   whole script in the staged run, s", whole, "52.5")
+    claim("[D19]   R feature script, s", q[q.stage == "Rscript featurize-dataset.R"].seconds.iloc[0], "16.8")
+    claim("[D19]   R prediction script, s", q[q.stage == "Rscript predict.R"].seconds.iloc[0], "2.18")
+    claim("[D19]   RNAfold on the guide, s", rna[0], "0.523")
+    rn = pd.read_csv(OUT / "boostmec_shipped_rnafold.csv").set_index("workload")
+    claim("[D19] RNAfold on the 101-nt guide with scaffold, natively, ms per fold", 1000 * rn.loc["guide plus scaffold (101 nt)", "native_seconds"] / rn.loc["guide plus scaffold (101 nt)", "sequences"], "2.9")
+    claim("[D19]   in the container, relative to native", rn.loc["guide plus scaffold (101 nt)", "ratio"], "1.1")
+    ck = pd.read_csv(OUT / "boostmec_shipped_check.csv").set_index("item").value
+    claim("[D19] shipped pipeline against the Python features, 100 guides: Spearman between predictions", ck["prediction: Spearman between the shipped pipeline and the Python version"], "0.9990")
+    claim("[D19]   mean absolute difference of predictions", ck["prediction: mean absolute difference"], "0.34")
+    claim("[D19]   largest", ck["prediction: largest absolute difference"], "3.19")
+    for k, txt in (("tm1", "1.95"), ("tm2", "0.91"), ("tm3", "1.46"), ("tm4", "1.10")):
+        claim(f"[D19]   {k}, mean absolute difference in degrees", ck[f"feature {k}: mean absolute difference"], txt)
+    for item in ("feature grna_energy: mean absolute difference", "feature grna_scaffold_energy: mean absolute difference", "feature gc_count: mean absolute difference", "feature num_poly_t: mean absolute difference",
+                 "feature max_poly_t_len: mean absolute difference", "k-mer counts (84 columns): largest absolute difference", "categorical columns (56): cells that differ from the sequence"):
+        claim(f"[D19]   {item.split(':')[0]} identical", ck[item], "0")
+    orc = pd.read_csv(OUT / "boostmec_oracle.csv")
+    claim("[D19] the paper's worked example S2: reproduced prediction", orc.reproduced_prediction.iloc[0], "49.19")
+    claim("[D19]   S3", orc.reproduced_prediction.iloc[1], "28.41")
+    claim("[D19]   published S2 and S3 (49.53, 28.42): differences", orc.difference.iloc[0], "-0.34")
+    # ---------------------------------------------------------------------------------------------------- the reference genome (Appendix A4)
+    rg = pd.read_csv(OUT / "reference_genome_versions.csv").set_index("accession_version")
+    from .. import config as _cfg
+    seq_len = sum(len(l.strip()) for l in open(_cfg.GENOME_FASTA) if not l.startswith(">"))
+    claim("[D20] reference genome used (NC_000913.2): length of the fasta file, bp", seq_len, "4,639,675")
+    claim("[D20]   NCBI's length for NC_000913.2", rg.loc["NC_000913.2", "length_bp"], "4,639,675")
+    claim("[D20]   NCBI's length for the replacing version NC_000913.3", rg.loc["NC_000913.3", "length_bp"], "4,641,652")
+    assert rg.loc["NC_000913.2", "status"] == "replaced" and rg.loc["NC_000913.2", "replaced_by"] == "NC_000913.3", "NCBI no longer lists NC_000913.2 as replaced by NC_000913.3"
+    # BoostMEC retrained on the cohort as its authors trained it (boostmec_replica.py), on the features of their own pipeline; released hyperparameters, same folds and seeds as the flank-scale arms
     bm = pd.read_csv(OUT / "boostmec_released.csv").set_index(["seed", "fold"])
     base_ = fr[fr.arm == "base"].set_index(["seed", "fold"]).rho
     al_ = fr[fr.arm == "family A shifted 0"].set_index(["seed", "fold"]).rho
     ix = bm.index.intersection(base_.index).intersection(al_.index)
-    chk(P + "[D16] BoostMEC, released hyperparameters: folds (3 seeds x 5)", float(len(ix)), 15, 0)
-    chk(P + "[D16]   rho, mean over folds", float(bm.loc[ix].rho.mean()), 0.620, 3)
-    chk(P + "[D16]   sd over folds", float(bm.loc[ix].rho.std(ddof=1)), 0.009, 3)
-    chk(P + "[D16]   over the 20-mer alone", float((bm.loc[ix].rho - base_.loc[ix]).mean()), 0.073, 3)
-    chk(P + "[D16]   against SLICER's default model with the flank features", float((bm.loc[ix].rho - al_.loc[ix]).mean()), -0.087, 3)
-    chk(P + "[D16]   folds in which SLICER is ahead", float(((al_.loc[ix] - bm.loc[ix].rho) > 0).sum()), 15, 0)
-    chk(P + "[D16]   milliseconds per guide to compute its 149 features", float(bm.features_ms_per_guide.iloc[0]), 3.0, 1)
-    chk(P + "[D16]   ... times SLICER default's whole scoring path at a batch of 100", float(bm.features_ms_per_guide.iloc[0] / med[("SLICER default", 100)]), 39, 0)
-    chk(P + "[D16]   mean trees chosen by its ten-fold rule", float(bm.trees.mean()), 904, 0)
-    chk(P + "[D16]   mean leaves", float(bm.leaves.mean()), 86762, 0)
-    chk(P + "[D16]   seconds per model (ten-fold rule on ten cores, then the fit)", float(bm.seconds.mean()), 30, 0)
+    claim("[D16] BoostMEC, released hyperparameters: folds (3 seeds x 5)", len(ix), "15")
+    claim("[D16]   rho, mean over folds", bm.loc[ix].rho.mean(), "0.620")
+    claim("[D16]   sd over folds", bm.loc[ix].rho.std(ddof=1), "0.009")
+    claim("[D16]   over the 20-mer alone", (bm.loc[ix].rho - base_.loc[ix]).mean(), "0.074")
+    claim("[D16]   against SLICER's default model with the flank features", (bm.loc[ix].rho - al_.loc[ix]).mean(), "-0.087")
+    claim("[D16]   folds in which SLICER is ahead", ((al_.loc[ix] - bm.loc[ix].rho) > 0).sum(), "15")
+    claim("[D16]   mean trees chosen by its ten-fold rule", bm.trees.mean(), "919")
+    claim("[D16]   mean leaves", bm.leaves.mean(), "88,309")
     ss = pd.read_csv(OUT / "boostmec_searched.csv")
     cvx = pd.read_csv(OUT / "boostmec_vs_slicer_confirm.csv").set_index("arm")
     me = cvx.loc["BoostMEC, its search"]
-    chk(P + "[D17] BoostMEC after its own search: guides in the genes held out of the search", float(me.n_guides), 8943, 0)
-    chk(P + "[D17]   rho there (three seeds, mean)", float(me.rho), 0.624, 3)
-    chk(P + "[D17]   SLICER default model on the same genes", float(cvx.loc["SLICER default", "rho"]), 0.707, 3)
-    chk(P + "[D17]   SLICER tuned model on the same genes", float(cvx.loc["SLICER tuned", "rho"]), 0.722, 3)
-    chk(P + "[D17]   BoostMEC minus SLICER default", float(cvx.loc["SLICER default", "boostmec_minus_arm"]), -0.084, 3)
-    chk(P + "[D17]   BoostMEC minus SLICER tuned", float(cvx.loc["SLICER tuned", "boostmec_minus_arm"]), -0.098, 3)
-    chk(P + "[D17]   trees of the searched model", float(ss.trees.iloc[0]), 350, 0)
-    chk(P + "[D17]   minutes the search took (ten cores)", float(ss.search_seconds.max() / 60), 16, 0)
+    claim("[D17] BoostMEC after its own search: guides in the genes held out of the search", me.n_guides, "8,943")
+    claim("[D17]   rho there (three seeds, mean)", me.rho, "0.623")
+    claim("[D17]   SLICER default model on the same genes", cvx.loc["SLICER default", "rho"], "0.707")
+    claim("[D17]   SLICER tuned model on the same genes", cvx.loc["SLICER tuned", "rho"], "0.722")
+    for arm, (d_, lo_, hi_) in {"SLICER default": ("-0.084", "-0.103", "-0.066"), "SLICER tuned": ("-0.099", "-0.117", "-0.080")}.items():
+        claim(f"[D17]   BoostMEC minus {arm}", cvx.loc[arm, "boostmec_minus_arm"], d_)
+        claim("[D17]     interval, lower end", cvx.loc[arm, "diff_lo"], lo_)
+        claim("[D17]     upper end", cvx.loc[arm, "diff_hi"], hi_)
+    claim("[D17]   trees of the searched model", ss.trees.iloc[0], "704")
+    claim("[D17]   minutes the search took (ten cores)", ss.search_seconds.max() / 60, "17")
     tr = pd.read_csv(OUT / "boostmec_search_trace.csv")
-    chk(P + "[D17]   evaluations in the search (10 initial + 100 Bayesian)", float(len(tr)), 110, 0)
+    claim("[D17]   evaluations in the search (10 initial + 100 Bayesian)", len(tr), "110")
+    zc = pd.read_csv(OUT / "boostmec_shipped_cohort.csv")
+    claim("[D19] the released BoostMEC model (human cells) on the E. coli cohort: rho", zc.rho_released_model_on_ecoli.iloc[0], "-0.066")
+    claim("[D19]   the shipped pipeline on all cohort guides, seconds", zc.pipeline_seconds.iloc[0], "171")
+    claim("[D19]   Python loader against its predictions: largest difference (0 to rounding)", zc.max_abs_diff_python_loader_vs_shipped.iloc[0], "0.0")
 
 
 # ---------------------------------------------------------------------------------------------------------------------------

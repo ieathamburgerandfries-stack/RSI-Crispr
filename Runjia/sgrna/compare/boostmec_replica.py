@@ -4,8 +4,11 @@ BoostMEC (Zarate et al., 2022, BMC Bioinformatics 23:446) is the closest publish
 interpretability. Its released model was trained on human guides, so it is rebuilt here from what its authors published, and nothing is approximated that they
 specify. The sources, all read in full:
 
-  features   the 149 features of `model/featurize-dataset.R` and `model/boostmec-pipeline.py` in github.com/oazarate/BoostMEC, reimplemented line by line from
-             the 30-mer (4 nt before the guide, the 20-nt guide, the 3-nt PAM, 3 nt after): two RNAfold minimum free energies (the 20-nt guide, and the guide with the
+  features   the 149 features of `model/featurize-dataset.R` and `model/boostmec-pipeline.py` in github.com/oazarate/BoostMEC, computed from
+             the 30-mer (4 nt before the guide, the 20-nt guide, the 3-nt PAM, 3 nt after) BY THE AUTHORS' OWN PIPELINE, run unmodified in their Docker image on every guide of the
+             cohort (`sgrna.cost.cost_boostmec_shipped`; `BOOSTMEC_FEATURES=shipped`, the default). `features()` below is a Python reimplementation of the same definitions, kept for the cost
+             measurements and as `--features python`; it agrees with the shipped pipeline on every column except the four melting temperatures (Biopython against R's TmCalculator: 0.9
+             to 1.9 degrees apart on average), which changes the released model's predictions by 0.34 on average on its 0-100 scale (Spearman 0.999). The features are: two RNAfold minimum free energies (the 20-nt guide, and the guide with the
              81-nt scaffold `GTTTTAGAGC...GCTTTTT` of that file), four nearest-neighbour melting temperatures (Tm_NN of TmCalculator 1.0.1: table DNA_NN4, 50 mM Na,
              25 nM strands, salt correction 5, of the 21-mer made of the guide and the first PAM base, and of its positions 1-4, 5-12 and 16-20), the number of G and C
              in the 30-mer, the number and the longest length of poly-T runs of 3 or more, the 28 position-specific nucleotides and 28 dinucleotides (the PAM's GG removed,
@@ -37,6 +40,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import time
@@ -56,11 +60,13 @@ HYPERPARAMETERS = dict(learning_rate=0.00989607, num_leaves=701, max_depth=12, m
                        max_bin=343, min_split_gain=0.0, subsample=0.134516, subsample_freq=0)          # bagging_fraction is set but bagging_freq is 0: row subsampling is off, as released
 TREE_LIMIT, EARLY_STOP, INNER_FOLDS = 7000, 10, 10
 RELEASED = dict(trees=1582, leaves=136142, bytes=11455146)       # counted from model/model.txt of the BoostMEC repository
+FEATURES = os.environ.get("BOOSTMEC_FEATURES", "shipped")
+SHIPPED_CSV = config.EXTERNAL / "BoostMEC" / "work" / "cohort-with-features.csv"
 RES_RELEASED, RES_SEARCH, RES_TRACE = OUT / "boostmec_released.csv", OUT / "boostmec_searched.csv", OUT / "boostmec_search_trace.csv"
 
 
 # ------------------------------------------------------------------------------------------------------------------------ features
-def features(s30: str):
+def features(s30: str):    # noqa: E301 (also available as features_of)
     """The 149 values of one 30-mer: (continuous block of 93, categorical block of 56)."""
     import RNA
     from Bio.SeqUtils import MeltingTemp as mt
@@ -83,20 +89,41 @@ def features(s30: str):
     return cont, mono + di
 
 
-def build():
+def _from_shipped(thirty, y, protos):
+    """The 149 features as the authors' own pipeline wrote them (`cohort-with-features.csv`), in this module's layout: 93 continuous columns, then 28 + 28 category codes (0-based)."""
+    d = pd.read_csv(SHIPPED_CSV, dtype={"x30mer": str})
+    assert len(d) == len(thirty) and (d.x30mer.to_numpy() == np.asarray(thirty)).all(), "the shipped features are for other sequences or in another order"
+    cont = ["grna_energy", "grna_scaffold_energy", "tm1", "tm2", "tm3", "tm4", "gc_count", "num_poly_t", "max_poly_t_len"] + NUC + DI + TRI
+    code = {b: j for j, b in enumerate(NUC)}
+    mono = [f"X{k}mono" for k in range(1, 31) if k not in (26, 27)]
+    di = [f"X{k}di" for k in range(1, 30) if k != 26]
+    cat = np.hstack([d[mono].apply(lambda c: c.map(code)).to_numpy(float), d[di].apply(lambda c: c.map(lambda q: 4 * code[q[0]] + code[q[1]])).to_numpy(float)])
+    F = np.hstack([d[cont].to_numpy(float), cat])
+    ms = float(pd.read_csv(OUT / "boostmec_zeroshot.csv").features_ms_per_guide.iloc[0]) if (OUT / "boostmec_zeroshot.csv").exists() else float("nan")   # the Python version's cost, for the log line
+    return F, y, protos, ms
+
+
+def build(features=None):
     from ..build.build_curated_features import load_index
     from ..cohorts.curated_ablation import _base
 
+    features = features or FEATURES
     X, y, names, protos = _base()
     idx = load_index(verbose=False).set_index(config.ID_COL).reindex(protos)
+    thirty = [(up + sp + pam + dn).upper() for up, sp, pam, dn in zip(idx.upstream.str[-4:], idx.protospacer, idx.pam, idx.downstream.str[:3])]
+    if features == "shipped":
+        return _from_shipped(thirty, np.asarray(y, float), np.asarray(protos, dtype=object))
     t0 = time.time()
     num, cat = [], []
-    for up, sp, pam, dn in zip(idx.upstream.str[-4:], idx.protospacer, idx.pam, idx.downstream.str[:3]):
-        a, c = features((up + sp + pam + dn).upper())
+    for s30 in thirty:
+        a, c = features_of(s30)
         num.append(a); cat.append(c)
     F = np.hstack([np.asarray(num, np.float64), np.asarray(cat, np.float64)])
     assert F.shape == (len(y), 149)
     return F, np.asarray(y, float), np.asarray(protos, dtype=object), 1000 * (time.time() - t0) / len(y)
+
+
+features_of = features
 
 
 # ------------------------------------------------------------------------------------------------------------------------ the model and its tree count
@@ -251,7 +278,10 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("cmd", choices=["released", "search", "compare", "report"])
     ap.add_argument("--seeds", type=int, nargs="*", default=[41, 42, 43])
+    ap.add_argument("--features", choices=["shipped", "python"], default=None, help="shipped: the authors' own pipeline's features (default); python: this module's reimplementation")
     a = ap.parse_args(argv)
+    if a.features:
+        globals()["FEATURES"] = a.features
     {"released": lambda: released(tuple(a.seeds)), "search": search, "compare": compare, "report": report}[a.cmd]()
     return 0
 

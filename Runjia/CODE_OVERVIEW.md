@@ -92,7 +92,7 @@ giving **+0.014 ρ**, which replicates on a second split. Before tuning, the sam
 **Cost: 1.41 ms, then 0.093 ms, then 0.036 ms per guide.** The original featuriser walked every nucleotide in Python, which was 1.33 ms of the 1.41 ms it cost to score a guide. The array rewrite produces the same 348 columns, identical on all
 33,567 guides. The per-locus version goes further. Neighbouring guides read almost the same DNA, so it scans a stretch of chromosome once into cumulative tracks; every window statistic then
 becomes a subtraction, and the one column that is not a sum (the longest homopolymer run) becomes two lookups in a sparse table. It matches the rewrite to 4.6 × 10⁻¹². End to end the model scores a guide in
-0.093 ms, and 0.036 ms when designing across a locus, which is **13 to 21×** and **34×** faster than crisprHAL 2.
+0.093 ms, and 0.036 ms when designing across a locus, which is **13 to 21×** and **34×** faster than crisprHAL 2 on a CPU (on a Colab T4 the scoring gap closes for large batches: `EXTENSION_LOG.md` §30).
 
 ### 6. Can the model be explained? Redundancy, importance and headroom *(Findings 4 and 5)*
 `sgrna/interpret/importance.py`, `sgrna/interpret/importance_models.py`, `sgrna/interpret/faithfulness.py`, `sgrna/interpret/representation.py`, `sgrna/interpret/compact_model.py`, `sgrna/interpret/vs_crisprhal_interpret.py`, `sgrna/interpret/hal_readout.py`

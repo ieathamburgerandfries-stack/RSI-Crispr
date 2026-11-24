@@ -287,52 +287,84 @@ def fig_width():
 
 
 # ------------------------------------------------------------------------------------------------ Figure 7: cost
+PURPLE = "#8e5fb0"
+
+
+def _gpu_data():
+    """crisprHAL 2 on the Colab T4 from `cost_gpu.csv` (one row per repeat, written by `colab/cost_gpu.py`): ms per guide by (placement, batch), and the fit seconds."""
+    d = pd.read_csv(R / "post_freeze" / "cost_gpu.csv")
+    h = d[(d.model == "crisprHAL 2") & (d.unit == "ms/guide")]
+    score = {("host" if pl.startswith("raw") else "card", int(b)): g.value.to_numpy() for (pl, b), g in h.groupby(["placement", "batch"])}
+    return score, d[(d.model == "crisprHAL 2") & (d.what == "fit")].value.to_numpy(), "cost_gpu.csv"
+
+
 def fig_cost():
     _style()
     inf = pd.read_csv(R / "post_freeze" / "cost_repeats_inference.csv")
     fit = pd.read_csv(R / "post_freeze" / "cost_repeats_fit.csv")
-    fig, ax = plt.subplots(1, 2, figsize=(DOUBLE * 0.92, 2.5), gridspec_kw=dict(width_ratios=[1.5, 1]))
-    models = ["SLICER default", "SLICER tuned", "crisprHAL 2"]
-    cols = {"SLICER default": BLUE, "SLICER tuned": GREEN, "crisprHAL 2": ORANGE}
+    gpu, gpu_fit, _ = _gpu_data()
+    fig, ax = plt.subplots(1, 3, figsize=(DOUBLE * 0.98, 2.8), gridspec_kw=dict(width_ratios=[1.5, 0.95, 1.15]))
+    models = ["SLICER default", "SLICER tuned", "BoostMEC", "crisprHAL 2"]
+    cols = {"SLICER default": BLUE, "SLICER tuned": GREEN, "BoostMEC": PURPLE, "crisprHAL 2": ORANGE}
     batches = [1, 100, 10_000]
+    lo, hi = -2.2, 2.6
+
+    def violin(a, v, pos, color, w):
+        v = np.log10(np.asarray(v, float))
+        if len(v) > 2:
+            vp = a.violinplot(v, positions=[pos], widths=w, showextrema=False, showmedians=False)
+            for body in vp["bodies"]:
+                body.set_facecolor(color); body.set_alpha(0.45); body.set_edgecolor("none")
+        rng = np.random.default_rng(0)
+        a.scatter(pos + rng.uniform(-0.35, 0.35, len(v)) * w, v, s=2.2, color=color, alpha=0.7, linewidths=0, zorder=3)      # every repeat
+        a.plot([pos - w * 0.45, pos + w * 0.45], [np.median(v)] * 2, color=INK, lw=0.8, zorder=4)
     for bi, b in enumerate(batches):
         for mi, m in enumerate(models):
-            v = np.log10(inf[(inf.model == m) & (inf.batch == b)].ms_per_guide.to_numpy())
-            pos = bi + (mi - 1) * 0.27
-            vp = ax[0].violinplot(v, positions=[pos], widths=0.24, showextrema=False, showmedians=False)
-            for body in vp["bodies"]:
-                body.set_facecolor(cols[m]); body.set_alpha(0.75); body.set_edgecolor("none")
-            ax[0].plot([pos - 0.09, pos + 0.09], [np.median(v)] * 2, color=INK, lw=0.8)
-    ax[0].set_xticks(range(3))
-    ax[0].set_xticklabels([f"{b:,} guide{'s' if b > 1 else ''}" for b in batches])
-    ax[0].set_ylabel("time to score one guide, from the raw sequence (ms)")
-    yt = [-2, -1, 0, 1, 2]
-    ax[0].set_yticks(yt)
-    ax[0].set_yticklabels([f"{10.0 ** t:g}" for t in yt])
-    ax[0].set_xlabel("guides scored per call (one thread; every repeat shown)")
+            violin(ax[0], inf[(inf.model == m) & (inf.batch == b)].ms_per_guide.to_numpy(), bi + (mi - 1.5) * 0.2, cols[m], 0.18)
+        for mi, (kind, lab) in enumerate((("host", "raw contexts"), ("card", "on the card"))):
+            if (kind, b) in gpu:
+                violin(ax[1], gpu[(kind, b)], bi + (mi - 0.5) * 0.3, ORANGE if kind == "host" else "#f5b08f", 0.26)
+        sl = np.log10(inf[(inf.model == "SLICER default") & (inf.batch == b)].ms_per_guide.median())
+        ax[1].plot([bi - 0.3, bi + 0.3], [sl, sl], color=BLUE, lw=1.1, ls=(0, (3, 1.5)))
+    for a in ax[:2]:
+        a.set_xticks(range(3))
+        a.set_xticklabels([f"{b:,}" for b in batches])
+        a.set_ylim(lo, hi)
+        yt = [-2, -1, 0, 1, 2]
+        a.set_yticks(yt)
+        a.set_yticklabels([f"{10.0 ** t:g}" for t in yt])
+        a.set_xlabel("guides per call", fontsize=6.6)
+        _clean(a)
+    ax[0].set_ylabel("ms to score one guide (log scale)")
+    ax[0].set_title("CPU, one thread, raw sequence in", fontsize=6.8, pad=3)
+    ax[1].set_title("Colab T4 GPU", fontsize=6.8, pad=3)
+    ax[1].set_yticklabels([])
     for m in models:
         ax[0].plot([], [], color=cols[m], lw=4, label=m)
-    ax[0].legend(frameon=False, loc="upper right", fontsize=6)
-    _clean(ax[0])
-    # fit time
-    rp = pd.read_csv(R / "crisprhal_rerun.csv")
-    hal_cpu = rp[(rp.arm == "our_folds") & rp.model.str.startswith("crisprHAL2")].fit_seconds.to_numpy()
-    t4 = pd.read_csv(R / "crisprhal_wide_window_folds.csv")
-    t4 = t4[t4.arm == "native_378"]
-    t4 = t4[t4.note.astype(str).str.startswith("Colab")].fit_minutes.to_numpy() * 60
-    groups = [("SLICER\ndefault\n(CPU)", fit[fit.model == "SLICER default"].wall_seconds.to_numpy(), BLUE),
-              ("SLICER\ntuned\n(CPU)", fit[fit.model == "SLICER tuned"].wall_seconds.to_numpy(), GREEN),
-              ("crisprHAL 2\n(CPU)", hal_cpu, ORANGE), ("crisprHAL 2\n(T4 GPU)", t4, ORANGE)]
+    ax[0].legend(frameon=False, loc="upper right", fontsize=5.8, ncol=2, columnspacing=0.8, handlelength=1.2)
+    ax[1].plot([], [], color=ORANGE, lw=4, label="crisprHAL 2, raw contexts")
+    ax[1].plot([], [], color="#f5b08f", lw=4, label="crisprHAL 2, batch on the card")
+    ax[1].plot([], [], color=BLUE, lw=1.1, ls=(0, (3, 1.5)), label="SLICER default, one CPU thread (a)")
+    ax[1].legend(frameon=False, loc="lower left", fontsize=5.4, handlelength=1.4, bbox_to_anchor=(-0.02, -0.02))
+    # fit time, wall-clock seconds, every fit a dot
+    groups = [("SLICER default", fit[fit.model == "SLICER default"].wall_seconds.to_numpy(), BLUE),
+              ("SLICER tuned", fit[fit.model == "SLICER tuned"].wall_seconds.to_numpy(), GREEN),
+              ("BoostMEC, final fit", fit[fit.model == "BoostMEC, final fit"].wall_seconds.to_numpy(), PURPLE),
+              ("BoostMEC, + tree count", fit[fit.model == "BoostMEC, with its tree count"].wall_seconds.to_numpy(), PURPLE),
+              ("crisprHAL 2, CPU", fit[fit.model == "crisprHAL 2"].wall_seconds.to_numpy(), ORANGE), ("crisprHAL 2, T4", gpu_fit, ORANGE)]
     for i, (lab, v, c) in enumerate(groups):
-        ax[1].scatter(np.full(len(v), i) + np.linspace(-0.12, 0.12, len(v)), v, color=c, s=9, zorder=3)
-        ax[1].plot([i - 0.2, i + 0.2], [np.median(v)] * 2, color=INK, lw=0.9)
-    ax[1].set_yscale("log")
-    ax[1].set_xticks(range(len(groups)))
-    ax[1].set_xticklabels([g[0] for g in groups], fontsize=5.8)
-    ax[1].set_ylabel("one fit, wall-clock seconds (each dot a fit)")
-    _clean(ax[1])
-    _panel(ax[0], "a")
-    _panel(ax[1], "b")
+        if len(v):
+            ax[2].scatter(np.full(len(v), i) + np.linspace(-0.12, 0.12, len(v)), v, color=c, s=9, zorder=3)
+            ax[2].plot([i - 0.22, i + 0.22], [np.median(v)] * 2, color=INK, lw=0.9)
+    ax[2].set_yscale("log")
+    ax[2].set_xticks(range(len(groups)))
+    ax[2].set_xticklabels([g[0] for g in groups], fontsize=5.6, rotation=40, ha="right", rotation_mode="anchor")
+    ax[2].set_ylabel("one fit, wall-clock seconds (each dot a fit)")
+    ax[2].set_title("Fitting (CPU: all ten cores)", fontsize=6.8, pad=3)
+    _clean(ax[2])
+    _panel(ax[0], "a", dx=-0.22)
+    _panel(ax[1], "b", dx=-0.1)
+    _panel(ax[2], "c", dx=-0.2)
     fig.tight_layout()
     return _save(fig, "p_fig7_cost")
 

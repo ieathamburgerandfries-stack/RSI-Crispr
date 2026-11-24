@@ -6,8 +6,9 @@ up the same comparison on the gene-grouped folds used everywhere else (whole gen
 
   folds    writes `data/interim/crisprhal_widewindow_input_genefolds.csv.gz` (the Colab input file with one more column, `gene_fold`, 0-4) and the per-fold rho of SLICER's
            default and tuned models on exactly those folds (`gene_grouped_slicer.csv`)
-  assemble reads crisprHAL 2's per-fold rho from `results/crisprhal_gene_grouped_fcolab.csv` (written by `colab/crisprhal_gene_grouped.py`, about 30 minutes on a T4) and
-           writes the paired comparison (`gene_grouped_vs_crisprhal.csv`)
+  assemble reads crisprHAL 2's per-fold rho from `results/crisprhal_gene_grouped_fcolab_b1024.csv` (written by `colab/crisprhal_gene_grouped.py`, about 30 minutes on a T4, at
+           crisprHAL 2's published batch size of 1,024) and writes the paired comparison (`gene_grouped_vs_crisprhal.csv`). A first run used batch 256 and is kept in
+           `crisprhal_gene_grouped_fcolab_b256.csv`; it handicaps crisprHAL 2 (256 cost it 0.016 on random-row folds) and is reported only as that, beside the published batch
 
     python -m sgrna.compare.gene_grouped_vs_crisprhal folds
     python -m sgrna.compare.gene_grouped_vs_crisprhal assemble
@@ -24,7 +25,8 @@ from .. import config
 from ..common import OUT
 
 SLICER = OUT / "gene_grouped_slicer.csv"
-HAL = OUT.parent / "crisprhal_gene_grouped_fcolab.csv"
+HAL = OUT.parent / "crisprhal_gene_grouped_fcolab_b1024.csv"
+HAL256 = OUT.parent / "crisprhal_gene_grouped_fcolab_b256.csv"
 RESULT = OUT / "gene_grouped_vs_crisprhal.csv"
 SEED = 41
 
@@ -57,15 +59,20 @@ def folds() -> None:
 
 def assemble() -> None:
     s = pd.read_csv(SLICER)
-    h = pd.read_csv(HAL)
-    h = h.assign(model="crisprHAL 2")[["model", "fold", "spearman"]]
-    d = pd.concat([s[["model", "fold", "spearman"]], h])
+    parts = [("crisprHAL 2", HAL), ("crisprHAL 2 (batch 256)", HAL256)]
+    d = s[["model", "fold", "spearman"]]
+    have = []
+    for name, path in parts:
+        if path.exists():
+            d = pd.concat([d, pd.read_csv(path).assign(model=name)[["model", "fold", "spearman"]]])
+            have.append(name)
     p = d.pivot_table(index="fold", columns="model", values="spearman")
     rows = []
     for m in ("SLICER default", "SLICER tuned"):
-        diff = p[m] - p["crisprHAL 2"]
-        rows.append(dict(model=m, mean=float(p[m].mean()), sd=float(p[m].std(ddof=1)), crisprhal_mean=float(p["crisprHAL 2"].mean()), crisprhal_sd=float(p["crisprHAL 2"].std(ddof=1)),
-                         lead_mean=float(diff.mean()), lead_sd=float(diff.std(ddof=1)), folds_ahead=int((diff > 0).sum())))
+        for h in have:
+            diff = p[m] - p[h]
+            rows.append(dict(model=m, against=h, mean=float(p[m].mean()), sd=float(p[m].std(ddof=1)), crisprhal_mean=float(p[h].mean()), crisprhal_sd=float(p[h].std(ddof=1)),
+                             lead_mean=float(diff.mean()), lead_sd=float(diff.std(ddof=1)), folds_ahead=int((diff > 0).sum())))
     r = pd.DataFrame(rows)
     r.to_csv(RESULT, index=False)
     print(p.round(4).to_string())

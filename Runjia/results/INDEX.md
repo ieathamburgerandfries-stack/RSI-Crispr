@@ -19,430 +19,472 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**417 files** in 22 groups.
+**429 files** in 22 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `ablation_nfeat1200.csv` | 0.5 | cited | `notebook`, `run_ablation`, `report_checks_R1` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `curated_ladder.csv` | 0.7 | cited | `curated_ladder`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R7` | arm, n_cols, spearman, spearman_sd, vs_base_full |
-| `d_mechanics_reconstructibility.csv` | 0.3 | cited | `report_checks_R1`, `report_checks_R7` | oof_r2_from_mono_di |
-| `handnamed_split.csv` | 0.3 | cited | `handnamed_split`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd |
-| `no_information.csv` | 0.3 | cited | `no_information`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R7` | arm, n_family_cols, spearman, spearman_sd, d_spearman |
-| `portability_364.csv` | 0.1 | cited | `report_checks_R1` | arm, n_columns, spearman, spearman_sd |
-| `portability_audit.csv` | 2.7 | cited | `handnamed_split`, `portability`, `paper_numbers_A`, `report_checks_R1` | column, kind, r2_from_20mer, portable |
-| `selector_control.csv` | 0.2 | cited | `report_checks_R1`, `report_checks_R7`, `report_checks_R8` | arm, n_cols, selected, spearman, sd |
+| `ablation_nfeat1200.csv` | 0.5 | cited | `notebook`, `run_ablation`, `cost_boostmec_shipped`, `report_checks_R1` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `curated_ladder.csv` | 0.7 | cited | `curated_ladder`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R7` | arm, n_cols, spearman, spearman_sd, vs_base_full |
+| `handnamed_split.csv` | 0.3 | cited | `handnamed_split`, `cost_boostmec_shipped`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd |
+| `no_information.csv` | 0.3 | cited | `no_information`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R7` | arm, n_family_cols, spearman, spearman_sd, d_spearman |
+| `portability_audit.csv` | 2.7 | cited | `handnamed_split`, `portability`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R1` | column, kind, r2_from_20mer, portable |
+| `selector_control.csv` | 0.2 | cited | `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R7`, `report_checks_R8` | arm, n_cols, selected, spearman, sd |
 
 ### Finding 2 — The DNA around the cut site predicts cutting — the one large effect, and it is local and compositional
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `crisprhal_wide_window_fcolab.csv` | 1.1 | cited | — | model, arm, input_nt, batch, fold, spearman, r2 … |
-| `crisprhal_wide_window_fcolab2.csv` | 0.6 | cited | — | model, arm, input_nt, batch, fold, spearman, r2 … |
-| `crisprhal_wide_window_folds.csv` | 2.3 | cited | `crisprhal_wide_window_folds`, `figures_paper`, `paper_numbers`, `paper_numbers_D` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
-| `crisprhal_wide_window_summary.csv` | 0.8 | cited | `crisprhal_wide_window_folds`, `paper_numbers` | arm, input_nt, n_folds, crisprhal_mean, crisprhal_sd, slicer_mean, slicer_sd … |
-| `gc_strata_ablation.csv` | 0.7 | cited | `gcstrata`, `paper_numbers_A`, `report_checks_R2` | stratum, arm, n, gc_lo, gc_hi, spearman, spearman_sd |
-| `gc_strata_corr.csv` | 0.5 | cited | `gcstrata`, `paper_numbers_B`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
-| `gc_strata_corr_curated.csv` | 0.6 | cited | `gcstrata`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
-| `model_inversion.csv` | 0.1 | cited | `report_checks_R2` | kind, seq, predicted, gc |
-| `seqnet.csv` | 0.7 | cited | `seqnet`, `report_checks_R2` | model, flank, seed, fold, r2, spearman, seconds |
-| `seqnet_matched.csv` | 1.3 | cited | `seqnet`, `report_checks_R2` | model, flank, seed, fold, r2, spearman, seconds |
-| `shift_null.csv` | 0.5 | audited | `shiftnull`, `paper_numbers_A`, `report_checks_R2`, `report_checks_R7` | shift_bp, n_flank_cols, spearman, spearman_sd, r2 |
+| `crisprhal_wide_window_fcolab.csv` | 1.1 | cited | `cost_boostmec_shipped` | model, arm, input_nt, batch, fold, spearman, r2 … |
+| `crisprhal_wide_window_fcolab2.csv` | 0.6 | cited | `cost_boostmec_shipped` | model, arm, input_nt, batch, fold, spearman, r2 … |
+| `crisprhal_wide_window_folds.csv` | 2.3 | cited | `crisprhal_wide_window_folds`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
+| `crisprhal_wide_window_summary.csv` | 0.8 | cited | `crisprhal_wide_window_folds`, `cost_boostmec_shipped`, `paper_numbers` | arm, input_nt, n_folds, crisprhal_mean, crisprhal_sd, slicer_mean, slicer_sd … |
+| `gc_strata_ablation.csv` | 0.7 | cited | `gcstrata`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R2` | stratum, arm, n, gc_lo, gc_hi, spearman, spearman_sd |
+| `gc_strata_corr.csv` | 0.5 | cited | `gcstrata`, `cost_boostmec_shipped`, `paper_numbers_B`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
+| `gc_strata_corr_curated.csv` | 0.6 | cited | `gcstrata`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
+| `model_inversion.csv` | 0.1 | cited | `cost_boostmec_shipped`, `report_checks_R2` | kind, seq, predicted, gc |
+| `seqnet.csv` | 0.7 | cited | `seqnet`, `cost_boostmec_shipped`, `report_checks_R2` | model, flank, seed, fold, r2, spearman, seconds |
+| `seqnet_matched.csv` | 1.3 | cited | `seqnet`, `cost_boostmec_shipped`, `report_checks_R2` | model, flank, seed, fold, r2, spearman, seconds |
+| `shift_null.csv` | 0.5 | audited | `shiftnull`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R2`, `report_checks_R7` | shift_bp, n_flank_cols, spearman, spearman_sd, r2 |
 
 ### Finding 3 — The effect belongs to the DNA, and transfers
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `ablation_abund_split.csv` | 0.7 | cited | `notebook`, `run_ablation` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `abund_local_vs_mappability.csv` | 1.2 | cited | — | track, uniq.w100, gc.w100, uniq.w500, gc.w500, uniq.w2000, gc.w2000 … |
-| `hybrid.csv` | 4.8 | receipt | `transfer` | source, target, arm, fold, cv, seed, spearman … |
-| `post_freeze/cut_within_gene_summary.csv` | 0.7 | audited | `paper_numbers_A`, `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
-| `post_freeze/human_twin_check.csv` | 0.2 | audited | `human_twin_check`, `report_checks_R2` | arm, folds, spearman, spearman_sd, n_fits |
-| `post_freeze/transfer_diagonal.csv` | 1.0 | cited | `transfer`, `transfer_diagonal`, `paper_numbers_D` | dataset, species, n, own_cv_rho, published_median, published_best, published_tools |
-| `post_freeze/transfer_esp_unseen_guides.csv` | 0.2 | cited | `transfer`, `report_checks_R2` | arm, scope, spearman |
-| `post_freeze/transfer_to_ecoli.csv` | 0.7 | cited | `transfer`, `transfer_to_ecoli`, `figures_paper`, `paper_numbers_D` | trained_on, scored_on, rho, within, species_trained |
-| `post_freeze/transfer_vs_crisprhal_kingdom.csv` | 1.5 | cited | `transfer`, `transfer_vs_crisprhal`, `figures_paper`, `paper_numbers_D` | dataset, species, n, slicer_base, crisprhal_core23, own_cv_rho, slicer_retained … |
-| `post_freeze/transfer_vs_crisprhal_nuclease.csv` | 1.4 | cited | `transfer`, `transfer_vs_crisprhal`, `paper_numbers_D` | part, subset, n, model, rho, crisprhal, diff … |
-| `transfer.csv` | 17.5 | audited | `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | dataset, arm, model, seed, fold, n_rows, n_cols … |
-| `transfer_model.csv` | 4.8 | cited | `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | source, target, arm, model, seed, n_train, n_test … |
+| `ablation_abund_split.csv` | 0.7 | cited | `notebook`, `run_ablation`, `cost_boostmec_shipped` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `abund_local_vs_mappability.csv` | 1.2 | cited | `cost_boostmec_shipped` | track, uniq.w100, gc.w100, uniq.w500, gc.w500, uniq.w2000, gc.w2000 … |
+| `hybrid.csv` | 4.8 | receipt | `transfer`, `cost_boostmec_shipped` | source, target, arm, fold, cv, seed, spearman … |
+| `post_freeze/cut_within_gene_summary.csv` | 0.7 | audited | `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
+| `post_freeze/human_twin_check.csv` | 0.2 | audited | `human_twin_check`, `cost_boostmec_shipped`, `report_checks_R2` | arm, folds, spearman, spearman_sd, n_fits |
+| `post_freeze/transfer_diagonal.csv` | 1.0 | cited | `transfer`, `transfer_diagonal`, `cost_boostmec_shipped`, `paper_numbers_D` | dataset, species, n, own_cv_rho, published_median, published_best, published_tools |
+| `post_freeze/transfer_esp_unseen_guides.csv` | 0.2 | cited | `transfer`, `cost_boostmec_shipped`, `report_checks_R2` | arm, scope, spearman |
+| `post_freeze/transfer_to_ecoli.csv` | 0.7 | cited | `transfer`, `transfer_to_ecoli`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | trained_on, scored_on, rho, within, species_trained |
+| `post_freeze/transfer_vs_crisprhal_kingdom.csv` | 1.5 | cited | `transfer`, `transfer_vs_crisprhal`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | dataset, species, n, slicer_base, crisprhal_core23, own_cv_rho, slicer_retained … |
+| `post_freeze/transfer_vs_crisprhal_nuclease.csv` | 1.4 | cited | `transfer`, `transfer_vs_crisprhal`, `cost_boostmec_shipped`, `paper_numbers_D` | part, subset, n, model, rho, crisprhal, diff … |
+| `transfer.csv` | 17.5 | audited | `transfer`, `cost_boostmec_shipped`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | dataset, arm, model, seed, fold, n_rows, n_cols … |
+| `transfer_model.csv` | 4.8 | cited | `transfer`, `cost_boostmec_shipped`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | source, target, arm, model, seed, n_train, n_test … |
 
 ### Finding 4 — The model is out of *material*, and the tuning gain is evidence for it
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `kmer_order_paired.csv` | 1.8 | audited | `report_checks_R1`, `report_checks_R7` | seed, fold, arm, n_columns, spearman |
-| `post_freeze/family_a_at_tuned.csv` | 6.0 | audited | `family_a_at_tuned`, `paper_numbers_C`, `report_checks_R2` | matrix, arm, seed, fold, n_train, n_test, n_flank_cols … |
-| `post_freeze/family_a_at_tuned_summary.csv` | 1.0 | audited | `family_a_at_tuned`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R3`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | comparison, base, with_a, delta, lo, hi, folds_positive … |
-| `post_freeze/tune_budget_check.csv` | 0.5 | audited | `tune_ecoli` | nf, k, rho, n_nonzero_gain |
-| `post_freeze/tune_configs.json` | 69.0 | cited | `family_a_at_tuned`, `mix_ecoli`, `tune_analyze`, `tune_ecoli`, `tune_split2`, `local_sequence_bound`, `equiv_check`, `mechanism`, `novel_followups`, `tuned_settings`, `data_efficiency`, `lit_followups`, `topend`, `vs_crisprhal`, `cost_bench`, `e2e_bench`, `paper_numbers_A`, `report_checks_R2` |  |
-| `post_freeze/tune_confirm.csv` | 1.3 | audited | `tune_ecoli`, `report_checks_R3` | arm, rho, rho_lo, rho_hi, d_vs_champion, d_lo, d_hi … |
-| `post_freeze/tune_external.csv` | 1.5 | audited | `tune_ecoli`, `report_checks_R7` | arm, seed, fold, rho |
-| `post_freeze/tune_fullcv.csv` | 2.0 | audited | `tune_ecoli`, `paper_numbers_A`, `report_checks_R6`, `report_checks_R7` | arm, seed, fold, rho |
-| `post_freeze/tune_stage2.csv` | 69.4 | receipt | `tune_ecoli`, `report_checks_R7` | draw, seed, fold, k, rho |
-| `representation.csv` | 0.9 | receipt | `representation`, `paper_numbers_B` | arm, n_columns, spearman, spearman_sd, r2, r2_sd, complete |
-| `representation_depth.csv` | 1.1 | cited | `representation`, `report_checks_R2` | arm, n_columns, max_depth, spearman, spearman_sd, r2, complete |
-| `representation_headroom.csv` | 1937.3 | audited | `representation`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R2` | arm, column, group, rho_with_residual |
-| `representation_residual.csv` | 0.3 | receipt | `representation` | arm, n_columns, spearman, spearman_sd, r2, complete |
+| `kmer_order_paired.csv` | 1.8 | audited | `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R7` | seed, fold, arm, n_columns, spearman |
+| `post_freeze/family_a_at_tuned.csv` | 6.0 | audited | `family_a_at_tuned`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R2` | matrix, arm, seed, fold, n_train, n_test, n_flank_cols … |
+| `post_freeze/family_a_at_tuned_summary.csv` | 1.0 | audited | `family_a_at_tuned`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R3`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | comparison, base, with_a, delta, lo, hi, folds_positive … |
+| `post_freeze/tune_budget_check.csv` | 0.5 | audited | `tune_ecoli`, `cost_boostmec_shipped` | nf, k, rho, n_nonzero_gain |
+| `post_freeze/tune_configs.json` | 69.0 | cited | `family_a_at_tuned`, `mix_ecoli`, `tune_analyze`, `tune_ecoli`, `tune_split2`, `local_sequence_bound`, `equiv_check`, `mechanism`, `novel_followups`, `tuned_settings`, `data_efficiency`, `lit_followups`, `topend`, `vs_crisprhal`, `cost_bench`, `cost_boostmec_shipped`, `e2e_bench`, `paper_numbers_A`, `report_checks_R2` |  |
+| `post_freeze/tune_confirm.csv` | 1.3 | audited | `tune_ecoli`, `cost_boostmec_shipped`, `report_checks_R3` | arm, rho, rho_lo, rho_hi, d_vs_champion, d_lo, d_hi … |
+| `post_freeze/tune_external.csv` | 1.5 | audited | `tune_ecoli`, `cost_boostmec_shipped`, `report_checks_R7` | arm, seed, fold, rho |
+| `post_freeze/tune_fullcv.csv` | 2.0 | audited | `tune_ecoli`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R6`, `report_checks_R7` | arm, seed, fold, rho |
+| `post_freeze/tune_stage2.csv` | 69.4 | receipt | `tune_ecoli`, `cost_boostmec_shipped`, `report_checks_R7` | draw, seed, fold, k, rho |
+| `representation.csv` | 0.9 | receipt | `representation`, `cost_boostmec_shipped`, `paper_numbers_B` | arm, n_columns, spearman, spearman_sd, r2, r2_sd, complete |
+| `representation_depth.csv` | 1.1 | cited | `representation`, `cost_boostmec_shipped`, `report_checks_R2` | arm, n_columns, max_depth, spearman, spearman_sd, r2, complete |
+| `representation_headroom.csv` | 1937.3 | audited | `representation`, `cost_boostmec_shipped`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R2` | arm, column, group, rho_with_residual |
+| `representation_residual.csv` | 0.3 | receipt | `representation`, `cost_boostmec_shipped` | arm, n_columns, spearman, spearman_sd, r2, complete |
 
 ### Finding 5 — On a redundant matrix, per-column importance is unstable across fits, but SHAP at block level and edit tests are faithful; SLICER is interpretable, more faithful than crisprHAL 2, and ties or splits with it on stability, truth and compressibility depending on the reading used
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `additivity_reduced.csv` | 0.5 | cited | `report_checks_R3`, `report_checks_R7` | arm, n_columns, ridge, lightgbm, xgboost, boosting_minus_ridge |
-| `attribution.csv` | 3.9 | receipt | `attribution` | picked_by, column, kind, closest_in_other_set, abs_corr |
-| `attribution_shap.csv` | 1.1 | receipt | `attribution` | picked_by, column, kind, closest_in_other_set, abs_corr |
-| `attribution_summary.csv` | 0.3 | cited | `attribution`, `report_checks_R3` | kind, xgboost_share, lightgbm_share, difference |
-| `attribution_summary_shap.csv` | 0.3 | cited | `attribution`, `report_checks_R3` | kind, xgboost_share, lightgbm_share, difference |
-| `faithfulness_clusters.csv` | 1.3 | receipt | `faithfulness` | fold, model, rank, n_columns, seed_column, shap_share |
-| `faithfulness_clusters_reduced.csv` | 1.2 | receipt | `faithfulness` | fold, model, rank, n_columns, seed_column, shap_share |
-| `faithfulness_groups.csv` | 9.3 | cited | `faithfulness`, `report_checks_R3` | fold, model, arm, things_removed, n_columns_removed, spearman, delta |
-| `faithfulness_groups_reduced.csv` | 10.1 | cited | `faithfulness`, `report_checks_R3` | fold, model, arm, things_removed, n_columns_removed, spearman, delta |
-| `faithfulness_shap_share.csv` | 0.6 | cited | `report_checks_R3` | representation, n_columns, top_n, pct_of_columns, pct_of_shap |
-| `importance_agreement.csv` | 0.4 | receipt | `importance` | fold, level, selected_overlap, selected_kuncheva, gain_vs_gain_rho, xgb_gain_vs_perm_rho, lgb_gain_vs_perm_rho |
-| `importance_blocks.csv` | 4.7 | receipt | `importance` | fold, model, block, n_cols, gain_share, perm_share |
-| `importance_model_blocks.csv` | 58.1 | cited | `importance_models`, `report_checks_R3` | fold, model, method, block, n_cols, share |
-| `importance_model_methods.csv` | 3.4 | receipt | `importance_models` | fold, model, method_a, method_b, rho_column, rho_block |
-| `importance_model_pairs.csv` | 20.0 | audited | `importance_models`, `report_checks_R3` | fold, method, model_a, model_b, rho_a, rho_b, rho_column … |
-| `interp_counterfactual.csv` | 1.0 | cited | `interp_extra`, `report_checks_R3` | edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides, label_sd |
-| `interp_interaction_blocks.csv` | 3.6 | cited | `interp_extra`, `report_checks_R3` | , flank: bases within 10 nt, flank: quantum within 10 nt, flank: window composition, flank: window quantum, protospacer indicators: pos 1-5 (PAM-distal), protospacer indicators: pos 16-20 (seed) … |
-| `interp_interaction_pairs.csv` | 1.1 | cited | `interp_extra`, `report_checks_R3` | col_i, col_j, mean_abs_interaction |
-| `interp_interactions.csv` | 0.3 | cited | `interp_extra`, `report_checks_R3` | rows, columns, var_total, var_main, var_interaction, share_variance_interaction, share_variance_main … |
-| `interp_sensitivity_n.csv` | 2.2 | cited | `interp_extra`, `report_checks_R3`, `report_checks_R7` | unit, n, attribution, pearson, se, subsets, rows |
-| `post_freeze/compact_model_accuracy.csv` | 0.5 | audited | `compact_model`, `paper_numbers_B` | , rho_mean_over_seeds, rho_sd_over_seeds, share_of_full |
-| `post_freeze/compact_model_accuracy_folds.csv` | 1.6 | receipt | `compact_model` | seed, fold, full recipe (base + family A, top 300), guide only (80), guide + four kilobase numbers (84), compact (104) … |
-| `post_freeze/compact_model_flank_shap_by_decile.csv` | 0.4 | audited | `compact_model` | decile, flank_gc, flank_shap, flank_shap_in_sd |
-| `post_freeze/compact_model_shap_columns.csv` | 2.3 | audited | `compact_model`, `paper_numbers_B`, `report_checks_R3` | column, mean_abs_shap |
-| `post_freeze/compact_model_shap_vs_model_free.csv` | 3.9 | audited | `compact_model` | position, base, n, shap_effect_sd, effect_sd |
-| `post_freeze/compact_model_stability.csv` | 0.3 | audited | `compact_model`, `paper_numbers_B` | representation, method, level, agreement, sd_over_splits |
-| `post_freeze/faithfulness_top20_full.csv` | 0.6 | cited | `report_checks_R3` | fold, model, base, top20, delta, share20 |
-| `post_freeze/interp_compare_cross_model.csv` | 0.3 | audited | `vs_crisprhal_interpret`, `paper_numbers_B` | a, b, spearman |
-| `post_freeze/interp_compare_faithfulness.csv` | 2.7 | audited | `vs_crisprhal_interpret`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R3` | n, attribution, pearson, se, subsets, rows, model … |
-| `post_freeze/interp_compare_faithfulness_diff.csv` | 1.1 | audited | `vs_crisprhal_interpret`, `report_checks_R3` | n, model, pearson, crisprhal, diff, lo, hi |
-| `post_freeze/interp_compare_fits.csv` | 1.0 | audited | `vs_crisprhal_interpret` | model, fit, n_train, test_rho |
-| `post_freeze/interp_compare_flank_edits.csv` | 2.1 | audited | `vs_crisprhal_interpret`, `report_checks_R3` | model, edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides … |
-| `post_freeze/interp_compare_readable.csv` | 2.2 | audited | `vs_crisprhal_interpret`, `report_checks_R1`, `report_checks_R3` | population, surrogate, model, n, model_rho, fidelity, surrogate_of_model_rho … |
-| `post_freeze/interp_compare_stability.csv` | 3.9 | audited | `vs_crisprhal_interpret`, `report_checks_R1`, `report_checks_R3` | model, unit, comparison, pairs, mean, min, max … |
-| `post_freeze/interp_compare_validity.csv` | 2.9 | audited | `vs_crisprhal_interpret`, `report_checks_R3` | model, fit, readout, spearman, pearson, cells |
-| `post_freeze/interp_compare_validity_diff.csv` | 0.3 | audited | `vs_crisprhal_interpret`, `report_checks_R1`, `report_checks_R3` | model, readout, fit, spearman_minus_crisprhal, lo, hi |
-| `post_freeze/interp_hal_cache/guides_1500.csv` | 56.5 | receipt | `hal_readout`, `vs_crisprhal_interpret` | protospacer, y |
-| `post_freeze/interp_hal_cache/hal_eg_draws_control.csv` | 0.4 | audited | `hal_readout` | n_blocks_removed, draws, pearson, se |
-| `post_freeze/interp_hal_cache/hal_flank_edits.csv` | 1.0 | receipt | `hal_readout`, `vs_crisprhal_interpret` | edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides, label_sd |
-| `post_freeze/interp_hal_cache/hal_sensitivity_n.csv` | 0.9 | receipt | `hal_readout`, `vs_crisprhal_interpret` | unit, n, attribution, pearson, se, subsets, rows |
-| `post_freeze/interp_hal_cache/slicer_compact_sensitivity_n.csv` | 0.9 | receipt | `vs_crisprhal_interpret` | unit, n, n_blocks, attribution, pearson, se, subsets … |
-| `post_freeze/interp_hal_cache/slicer_flank_edits.csv` | 1.1 | receipt | `vs_crisprhal_interpret` | model, edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides … |
-| `post_freeze/interp_hal_cache/slicer_full_sensitivity_n.csv` | 1.0 | receipt | `vs_crisprhal_interpret` | unit, n, n_blocks, attribution, pearson, se, subsets … |
-| `post_freeze/interpret_data_scaling.csv` | 0.7 | audited | `tuned_settings` | fraction, n_train, seed, model, rho |
-| `post_freeze/interpret_depth.csv` | 0.4 | audited | `tuned_settings`, `report_checks_R7` | max_depth, learning_rate, best_k, dev_rho, confirm_rho |
-| `post_freeze/interpret_gain_groups.csv` | 2.9 | audited | `tuned_settings` | model, block, n_selected, gain_share |
-| `post_freeze/interpret_position_profile.csv` | 3.4 | audited | `tuned_settings`, `report_checks_R4`, `report_checks_R6` | model, region, position, gain_share, n_columns |
-| `post_freeze/interpret_within_between.csv` | 0.8 | audited | `tuned_settings` | model, part, rho, lo, hi, d_vs_champion, d_lo … |
-| `post_freeze/mechanism_position_base.csv` | 6.1 | audited | `compact_model`, `mechanism`, `vs_crisprhal_interpret`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R4` | position, base, n, effect_sd, lo, hi, clear_of_zero |
+| `additivity_reduced.csv` | 0.5 | cited | `cost_boostmec_shipped`, `report_checks_R3`, `report_checks_R7` | arm, n_columns, ridge, lightgbm, xgboost, boosting_minus_ridge |
+| `attribution.csv` | 3.9 | receipt | `attribution`, `cost_boostmec_shipped` | picked_by, column, kind, closest_in_other_set, abs_corr |
+| `attribution_shap.csv` | 1.1 | receipt | `attribution`, `cost_boostmec_shipped` | picked_by, column, kind, closest_in_other_set, abs_corr |
+| `attribution_summary.csv` | 0.3 | cited | `attribution`, `cost_boostmec_shipped`, `report_checks_R3` | kind, xgboost_share, lightgbm_share, difference |
+| `attribution_summary_shap.csv` | 0.3 | cited | `attribution`, `cost_boostmec_shipped`, `report_checks_R3` | kind, xgboost_share, lightgbm_share, difference |
+| `faithfulness_clusters.csv` | 1.3 | receipt | `faithfulness`, `cost_boostmec_shipped` | fold, model, rank, n_columns, seed_column, shap_share |
+| `faithfulness_clusters_reduced.csv` | 1.2 | receipt | `faithfulness`, `cost_boostmec_shipped` | fold, model, rank, n_columns, seed_column, shap_share |
+| `faithfulness_groups.csv` | 9.3 | cited | `faithfulness`, `cost_boostmec_shipped`, `report_checks_R3` | fold, model, arm, things_removed, n_columns_removed, spearman, delta |
+| `faithfulness_groups_reduced.csv` | 10.1 | cited | `faithfulness`, `cost_boostmec_shipped`, `report_checks_R3` | fold, model, arm, things_removed, n_columns_removed, spearman, delta |
+| `faithfulness_shap_share.csv` | 0.6 | cited | `cost_boostmec_shipped`, `report_checks_R3` | representation, n_columns, top_n, pct_of_columns, pct_of_shap |
+| `importance_agreement.csv` | 0.4 | receipt | `importance`, `cost_boostmec_shipped` | fold, level, selected_overlap, selected_kuncheva, gain_vs_gain_rho, xgb_gain_vs_perm_rho, lgb_gain_vs_perm_rho |
+| `importance_blocks.csv` | 4.7 | receipt | `importance`, `cost_boostmec_shipped` | fold, model, block, n_cols, gain_share, perm_share |
+| `importance_model_blocks.csv` | 58.1 | cited | `importance_models`, `cost_boostmec_shipped`, `report_checks_R3` | fold, model, method, block, n_cols, share |
+| `importance_model_methods.csv` | 3.4 | receipt | `importance_models`, `cost_boostmec_shipped` | fold, model, method_a, method_b, rho_column, rho_block |
+| `importance_model_pairs.csv` | 20.0 | audited | `importance_models`, `cost_boostmec_shipped`, `report_checks_R3` | fold, method, model_a, model_b, rho_a, rho_b, rho_column … |
+| `interp_counterfactual.csv` | 1.0 | cited | `interp_extra`, `cost_boostmec_shipped`, `report_checks_R3` | edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides, label_sd |
+| `interp_interaction_blocks.csv` | 3.6 | cited | `interp_extra`, `cost_boostmec_shipped`, `report_checks_R3` | , flank: bases within 10 nt, flank: quantum within 10 nt, flank: window composition, flank: window quantum, protospacer indicators: pos 1-5 (PAM-distal), protospacer indicators: pos 16-20 (seed) … |
+| `interp_interaction_pairs.csv` | 1.1 | cited | `interp_extra`, `cost_boostmec_shipped`, `report_checks_R3` | col_i, col_j, mean_abs_interaction |
+| `interp_interactions.csv` | 0.3 | cited | `interp_extra`, `cost_boostmec_shipped`, `report_checks_R3` | rows, columns, var_total, var_main, var_interaction, share_variance_interaction, share_variance_main … |
+| `interp_sensitivity_n.csv` | 2.2 | cited | `interp_extra`, `cost_boostmec_shipped`, `report_checks_R3`, `report_checks_R7` | unit, n, attribution, pearson, se, subsets, rows |
+| `post_freeze/compact_model_accuracy.csv` | 0.5 | audited | `compact_model`, `cost_boostmec_shipped`, `paper_numbers_B` | , rho_mean_over_seeds, rho_sd_over_seeds, share_of_full |
+| `post_freeze/compact_model_accuracy_folds.csv` | 1.6 | receipt | `compact_model`, `cost_boostmec_shipped` | seed, fold, full recipe (base + family A, top 300), guide only (80), guide + four kilobase numbers (84), compact (104) … |
+| `post_freeze/compact_model_flank_shap_by_decile.csv` | 0.4 | audited | `compact_model`, `cost_boostmec_shipped` | decile, flank_gc, flank_shap, flank_shap_in_sd |
+| `post_freeze/compact_model_shap_columns.csv` | 2.3 | audited | `compact_model`, `cost_boostmec_shipped`, `paper_numbers_B`, `report_checks_R3` | column, mean_abs_shap |
+| `post_freeze/compact_model_shap_vs_model_free.csv` | 3.9 | audited | `compact_model`, `cost_boostmec_shipped` | position, base, n, shap_effect_sd, effect_sd |
+| `post_freeze/compact_model_stability.csv` | 0.3 | audited | `compact_model`, `cost_boostmec_shipped`, `paper_numbers_B` | representation, method, level, agreement, sd_over_splits |
+| `post_freeze/faithfulness_top20_full.csv` | 0.6 | cited | `cost_boostmec_shipped`, `report_checks_R3` | fold, model, base, top20, delta, share20 |
+| `post_freeze/interp_compare_cross_model.csv` | 0.3 | audited | `vs_crisprhal_interpret`, `cost_boostmec_shipped`, `paper_numbers_B` | a, b, spearman |
+| `post_freeze/interp_compare_faithfulness.csv` | 2.7 | audited | `vs_crisprhal_interpret`, `cost_boostmec_shipped`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R3` | n, attribution, pearson, se, subsets, rows, model … |
+| `post_freeze/interp_compare_faithfulness_diff.csv` | 1.1 | audited | `vs_crisprhal_interpret`, `cost_boostmec_shipped`, `report_checks_R3` | n, model, pearson, crisprhal, diff, lo, hi |
+| `post_freeze/interp_compare_fits.csv` | 1.0 | audited | `vs_crisprhal_interpret`, `cost_boostmec_shipped` | model, fit, n_train, test_rho |
+| `post_freeze/interp_compare_flank_edits.csv` | 2.1 | audited | `vs_crisprhal_interpret`, `cost_boostmec_shipped`, `report_checks_R3` | model, edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides … |
+| `post_freeze/interp_compare_readable.csv` | 2.2 | audited | `vs_crisprhal_interpret`, `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R3` | population, surrogate, model, n, model_rho, fidelity, surrogate_of_model_rho … |
+| `post_freeze/interp_compare_stability.csv` | 3.9 | audited | `vs_crisprhal_interpret`, `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R3` | model, unit, comparison, pairs, mean, min, max … |
+| `post_freeze/interp_compare_validity.csv` | 2.9 | audited | `vs_crisprhal_interpret`, `cost_boostmec_shipped`, `report_checks_R3` | model, fit, readout, spearman, pearson, cells |
+| `post_freeze/interp_compare_validity_diff.csv` | 0.3 | audited | `vs_crisprhal_interpret`, `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R3` | model, readout, fit, spearman_minus_crisprhal, lo, hi |
+| `post_freeze/interp_hal_cache/guides_1500.csv` | 56.5 | receipt | `hal_readout`, `vs_crisprhal_interpret`, `cost_boostmec_shipped` | protospacer, y |
+| `post_freeze/interp_hal_cache/hal_eg_draws_control.csv` | 0.4 | audited | `hal_readout`, `cost_boostmec_shipped` | n_blocks_removed, draws, pearson, se |
+| `post_freeze/interp_hal_cache/hal_flank_edits.csv` | 1.0 | receipt | `hal_readout`, `vs_crisprhal_interpret`, `cost_boostmec_shipped` | edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides, label_sd |
+| `post_freeze/interp_hal_cache/hal_sensitivity_n.csv` | 0.9 | receipt | `hal_readout`, `vs_crisprhal_interpret`, `cost_boostmec_shipped` | unit, n, attribution, pearson, se, subsets, rows |
+| `post_freeze/interp_hal_cache/slicer_compact_sensitivity_n.csv` | 0.9 | receipt | `vs_crisprhal_interpret`, `cost_boostmec_shipped` | unit, n, n_blocks, attribution, pearson, se, subsets … |
+| `post_freeze/interp_hal_cache/slicer_flank_edits.csv` | 1.1 | receipt | `vs_crisprhal_interpret`, `cost_boostmec_shipped` | model, edit, mean_change, ci_lo, ci_hi, sd_across_guides, guides … |
+| `post_freeze/interp_hal_cache/slicer_full_sensitivity_n.csv` | 1.0 | receipt | `vs_crisprhal_interpret`, `cost_boostmec_shipped` | unit, n, n_blocks, attribution, pearson, se, subsets … |
+| `post_freeze/interpret_data_scaling.csv` | 0.7 | audited | `tuned_settings`, `cost_boostmec_shipped` | fraction, n_train, seed, model, rho |
+| `post_freeze/interpret_depth.csv` | 0.4 | audited | `tuned_settings`, `cost_boostmec_shipped`, `report_checks_R7` | max_depth, learning_rate, best_k, dev_rho, confirm_rho |
+| `post_freeze/interpret_gain_groups.csv` | 2.9 | audited | `tuned_settings`, `cost_boostmec_shipped` | model, block, n_selected, gain_share |
+| `post_freeze/interpret_position_profile.csv` | 3.4 | audited | `tuned_settings`, `cost_boostmec_shipped`, `report_checks_R4`, `report_checks_R6` | model, region, position, gain_share, n_columns |
+| `post_freeze/interpret_within_between.csv` | 0.8 | audited | `tuned_settings`, `cost_boostmec_shipped` | model, part, rho, lo, hi, d_vs_champion, d_lo … |
+| `post_freeze/mechanism_position_base.csv` | 6.1 | audited | `compact_model`, `mechanism`, `vs_crisprhal_interpret`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R4` | position, base, n, effect_sd, lo, hi, clear_of_zero |
 
 ### Finding 6 — The label's ceiling is about 0.946 (0.942 to 0.946 by estimator), measured from crisprHAL's own replicates
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `curated_ceiling.json` | 0.8 | cited | `curated_ceiling`, `paper_numbers_B`, `report_checks_R3`, `report_checks_R7` |  |
+| `curated_ceiling.json` | 0.8 | cited | `curated_ceiling`, `cost_boostmec_shipped`, `paper_numbers_B`, `report_checks_R3`, `report_checks_R7` |  |
 
 ### Finding 7 — What the signal is made of: GC over a few hundred bases, a seed region that inverts between kingdoms, and the two coupled
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `post_freeze/eukaryote_contrast_g_minus_t.csv` | 5.9 | audited | `eukaryote_rules`, `figures_paper`, `paper_numbers_B`, `paper_numbers_D`, `report_checks_R4` | group, n, species, underpowered, g_minus_t_pos20, pos20_lo, pos20_hi … |
-| `post_freeze/eukaryote_flank_step.csv` | 2.3 | audited | `eukaryote_rules`, `report_checks_R4` | dataset, species, n, flank_gc_at_decile_edge, gap_sd, lo, hi … |
-| `post_freeze/eukaryote_map_pairs.csv` | 10.9 | audited | `eukaryote_rules`, `paper_numbers_B`, `report_checks_R4`, `report_checks_R5` | a, b, species_a, species_b, same_library, rho, lo … |
-| `post_freeze/eukaryote_maps.csv` | 61.9 | receipt | `eukaryote_rules` | dataset, position, base, effect_sd |
-| `post_freeze/eukaryote_orientation.csv` | 4.1 | audited | `eukaryote_rules`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_D`, `report_checks_R4` | dataset, species, library, n, sign, median_tool_rho, tools_agreeing … |
-| `post_freeze/eukaryote_transfer.csv` | 30.0 | audited | `eukaryote_rules`, `transfer_diagonal`, `transfer_vs_crisprhal`, `figures_paper`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R4` | model, trained_on, scored_on, rho, within, species_trained, species_scored … |
-| `post_freeze/hypotheses_audit_gate.csv` | 0.4 | audited | `hypotheses` | base_at_20, n, label_sd, share_in_lowest_quartile, rho_all, rho_above_global_q25, n_above |
-| `post_freeze/hypotheses_audit_scale.csv` | 0.6 | audited | `hypotheses`, `paper_numbers_A` | window_nt, flank_gc_at_decile_edge, deficit, deficit_in_sd, rho_below, rho_above, rho_full |
-| `post_freeze/hypotheses_followup_absolute.csv` | 0.2 | audited | `hypotheses` | dataset, absolute_threshold_gc, n_below, share_below, deficit, lo, hi |
-| `post_freeze/hypotheses_followup_concentration.csv` | 0.2 | audited | `hypotheses`, `paper_numbers_A` | deficit, lo, hi, flank_gc_at_decile_edge, n_lowest_decile, genes_in_lowest_decile, top10_genes_share … |
-| `post_freeze/hypotheses_followup_curve20.csv` | 2.0 | receipt | `hypotheses` | window, bin, flank_gc, mean_label, n |
-| `post_freeze/hypotheses_followup_expression.csv` | 0.3 | audited | `hypotheses`, `report_checks_R4` | stratum, n, n_lowest_decile, share_lowest_decile, mean_expression, deficit |
-| `post_freeze/hypotheses_followup_expression_partial.csv` | 0.2 | audited | `hypotheses`, `paper_numbers_A` | rho_gc_expression, rho_expression_label, gc_label_marginal, gc_label_given_expression, mean_expression_lowest_decile, mean_expression_rest |
-| `post_freeze/hypotheses_followup_hinge.csv` | 0.6 | audited | `hypotheses`, `paper_numbers_A`, `paper_numbers_C` | quantile, threshold_gc, n_below, rho_below, n_above, rho_above, rho_full |
-| `post_freeze/hypotheses_followup_replication.csv` | 0.7 | audited | `hypotheses`, `paper_numbers_C` | dataset, n, mean_flank_gc, flank_gc_at_decile_edge, deficit, lo, hi … |
-| `post_freeze/hypotheses_followup_top_genes.csv` | 0.1 | receipt | `hypotheses`, `report_checks_R4` | , guides_in_lowest_decile |
-| `post_freeze/hypotheses_followup_within.csv` | 0.2 | audited | `hypotheses`, `paper_numbers_C` | excluded_lowest_share, n, rho_within_genes |
-| `post_freeze/hypotheses_h1_contrasts.csv` | 0.3 | audited | `hypotheses`, `paper_numbers_A`, `report_checks_R4` | position, steepest, shallowest, difference, lo, hi |
-| `post_freeze/hypotheses_h1_strata.csv` | 0.9 | audited | `hypotheses`, `paper_numbers_A` | position, base, n, mean_label, rho, ols_slope, lo … |
-| `post_freeze/hypotheses_h2_curve.csv` | 1.2 | audited | `hypotheses`, `paper_numbers_C` | bin, kind, flank_gc, mean_label, n |
-| `post_freeze/hypotheses_h2_thirds.csv` | 0.5 | audited | `hypotheses` | kind, slope_low_third, lo_low, hi_low, slope_high_third, lo_high, hi_high … |
-| `post_freeze/hypotheses_h3_pam_density.csv` | 0.3 | audited | `hypotheses`, `paper_numbers_A` | marginal_gc, marginal_pam, pam_given_gc, gc_given_pam, null_mean, null_sd, null_p2_5 … |
-| `post_freeze/hypotheses_h3_trimer_classes.csv` | 0.9 | receipt | `hypotheses` | class, partial_given_gc |
-| `post_freeze/mechanism_distance_profile.csv` | 1.0 | audited | `mechanism`, `paper_numbers_A` | side, window_nt, statistic, n, marginal, partial_given_target_gc |
-| `post_freeze/mechanism_pairs_blocks.csv` | 6.5 | audited | `mechanism`, `paper_numbers_A` | block_pair, gain_share |
-| `post_freeze/mechanism_pairs_columns.csv` | 1.5 | audited | `mechanism` | col_pair, gain_share |
-| `post_freeze/mechanism_position_base_compare.csv` | 4.9 | audited | `mechanism`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R4` | position, base, ecoli, human, ecoli_clear, human_clear, inverts |
-| `post_freeze/mechanism_position_base_human.csv` | 6.1 | receipt | `mechanism` | position, base, n, effect_sd, lo, hi, clear_of_zero |
-| `post_freeze/novel_relative_composition.csv` | 0.2 | audited | `novel_followups` | columns, crod_rho, home_cv_rho, n_crod, n_home |
-| `post_freeze/novel_resolution.csv` | 0.7 | audited | `novel_followups`, `paper_numbers_A`, `report_checks_R4` | arm, n_cols, rho, sd, n_fits |
+| `post_freeze/eukaryote_contrast_g_minus_t.csv` | 5.9 | audited | `eukaryote_rules`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_B`, `paper_numbers_D`, `report_checks_R4` | group, n, species, underpowered, g_minus_t_pos20, pos20_lo, pos20_hi … |
+| `post_freeze/eukaryote_flank_step.csv` | 2.3 | audited | `eukaryote_rules`, `cost_boostmec_shipped`, `report_checks_R4` | dataset, species, n, flank_gc_at_decile_edge, gap_sd, lo, hi … |
+| `post_freeze/eukaryote_map_pairs.csv` | 10.9 | audited | `eukaryote_rules`, `cost_boostmec_shipped`, `paper_numbers_B`, `report_checks_R4`, `report_checks_R5` | a, b, species_a, species_b, same_library, rho, lo … |
+| `post_freeze/eukaryote_maps.csv` | 61.9 | receipt | `eukaryote_rules`, `cost_boostmec_shipped` | dataset, position, base, effect_sd |
+| `post_freeze/eukaryote_orientation.csv` | 4.1 | audited | `eukaryote_rules`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_D`, `report_checks_R4` | dataset, species, library, n, sign, median_tool_rho, tools_agreeing … |
+| `post_freeze/eukaryote_transfer.csv` | 30.0 | audited | `eukaryote_rules`, `transfer_diagonal`, `transfer_vs_crisprhal`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R4` | model, trained_on, scored_on, rho, within, species_trained, species_scored … |
+| `post_freeze/hypotheses_audit_gate.csv` | 0.4 | audited | `hypotheses`, `cost_boostmec_shipped` | base_at_20, n, label_sd, share_in_lowest_quartile, rho_all, rho_above_global_q25, n_above |
+| `post_freeze/hypotheses_audit_scale.csv` | 0.6 | audited | `hypotheses`, `cost_boostmec_shipped`, `paper_numbers_A` | window_nt, flank_gc_at_decile_edge, deficit, deficit_in_sd, rho_below, rho_above, rho_full |
+| `post_freeze/hypotheses_followup_absolute.csv` | 0.2 | audited | `hypotheses`, `cost_boostmec_shipped` | dataset, absolute_threshold_gc, n_below, share_below, deficit, lo, hi |
+| `post_freeze/hypotheses_followup_concentration.csv` | 0.2 | audited | `hypotheses`, `cost_boostmec_shipped`, `paper_numbers_A` | deficit, lo, hi, flank_gc_at_decile_edge, n_lowest_decile, genes_in_lowest_decile, top10_genes_share … |
+| `post_freeze/hypotheses_followup_curve20.csv` | 2.0 | receipt | `hypotheses`, `cost_boostmec_shipped` | window, bin, flank_gc, mean_label, n |
+| `post_freeze/hypotheses_followup_expression.csv` | 0.3 | audited | `hypotheses`, `cost_boostmec_shipped`, `report_checks_R4` | stratum, n, n_lowest_decile, share_lowest_decile, mean_expression, deficit |
+| `post_freeze/hypotheses_followup_expression_partial.csv` | 0.2 | audited | `hypotheses`, `cost_boostmec_shipped`, `paper_numbers_A` | rho_gc_expression, rho_expression_label, gc_label_marginal, gc_label_given_expression, mean_expression_lowest_decile, mean_expression_rest |
+| `post_freeze/hypotheses_followup_hinge.csv` | 0.6 | audited | `hypotheses`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_C` | quantile, threshold_gc, n_below, rho_below, n_above, rho_above, rho_full |
+| `post_freeze/hypotheses_followup_replication.csv` | 0.7 | audited | `hypotheses`, `cost_boostmec_shipped`, `paper_numbers_C` | dataset, n, mean_flank_gc, flank_gc_at_decile_edge, deficit, lo, hi … |
+| `post_freeze/hypotheses_followup_top_genes.csv` | 0.1 | receipt | `hypotheses`, `cost_boostmec_shipped`, `report_checks_R4` | , guides_in_lowest_decile |
+| `post_freeze/hypotheses_followup_within.csv` | 0.2 | audited | `hypotheses`, `cost_boostmec_shipped`, `paper_numbers_C` | excluded_lowest_share, n, rho_within_genes |
+| `post_freeze/hypotheses_h1_contrasts.csv` | 0.3 | audited | `hypotheses`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R4` | position, steepest, shallowest, difference, lo, hi |
+| `post_freeze/hypotheses_h1_strata.csv` | 0.9 | audited | `hypotheses`, `cost_boostmec_shipped`, `paper_numbers_A` | position, base, n, mean_label, rho, ols_slope, lo … |
+| `post_freeze/hypotheses_h2_curve.csv` | 1.2 | audited | `hypotheses`, `cost_boostmec_shipped`, `paper_numbers_C` | bin, kind, flank_gc, mean_label, n |
+| `post_freeze/hypotheses_h2_thirds.csv` | 0.5 | audited | `hypotheses`, `cost_boostmec_shipped` | kind, slope_low_third, lo_low, hi_low, slope_high_third, lo_high, hi_high … |
+| `post_freeze/hypotheses_h3_pam_density.csv` | 0.3 | audited | `hypotheses`, `cost_boostmec_shipped`, `paper_numbers_A` | marginal_gc, marginal_pam, pam_given_gc, gc_given_pam, null_mean, null_sd, null_p2_5 … |
+| `post_freeze/hypotheses_h3_trimer_classes.csv` | 0.9 | receipt | `hypotheses`, `cost_boostmec_shipped` | class, partial_given_gc |
+| `post_freeze/mechanism_distance_profile.csv` | 1.0 | audited | `mechanism`, `cost_boostmec_shipped`, `paper_numbers_A` | side, window_nt, statistic, n, marginal, partial_given_target_gc |
+| `post_freeze/mechanism_pairs_blocks.csv` | 6.5 | audited | `mechanism`, `cost_boostmec_shipped`, `paper_numbers_A` | block_pair, gain_share |
+| `post_freeze/mechanism_pairs_columns.csv` | 1.5 | audited | `mechanism`, `cost_boostmec_shipped` | col_pair, gain_share |
+| `post_freeze/mechanism_position_base_compare.csv` | 4.9 | audited | `mechanism`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R4` | position, base, ecoli, human, ecoli_clear, human_clear, inverts |
+| `post_freeze/mechanism_position_base_human.csv` | 6.1 | receipt | `mechanism`, `cost_boostmec_shipped` | position, base, n, effect_sd, lo, hi, clear_of_zero |
+| `post_freeze/novel_relative_composition.csv` | 0.2 | audited | `novel_followups`, `cost_boostmec_shipped` | columns, crod_rho, home_cv_rho, n_crod, n_home |
+| `post_freeze/novel_resolution.csv` | 0.7 | audited | `novel_followups`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R4` | arm, n_cols, rho, sd, n_fits |
 
 ### Part 2 — Contributions
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `ablation_curated.csv` | 0.9 | cited | `notebook`, `run_ablation`, `curated_ablation`, `curated_joint`, `txn_interactions`, `rederive`, `window_robustness`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R4`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | family, n_cols, spearman, spearman_sd, d_spearman |
-| `curated_joint.csv` | 1.0 | cited | `curated_joint`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R8` | arm, n_families, n_cols, spearman, spearman_sd, d_spearman, sum_of_singles … |
-| `portability.csv` | 0.3 | cited | `portability`, `paper_numbers_A`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd, r2 |
-| `post_freeze/label_orientation.csv` | 0.2 | cited | `label_orientation`, `paper_numbers` | n_guides, n_multi_copy, n_single_copy, median_label_multi_copy, median_label_single_copy, auc_multi_higher, mannwhitney_p |
-| `recoverability_trend_columns.csv` | 49.7 | cited | `report_checks_R5` | column, family, abs_rho, oof_r2_from_guide, decile |
-| `txn_interactions.csv` | 0.5 | cited | `txn_interactions`, `paper_numbers_A`, `report_checks_R5`, `report_checks_R7` | arm, n_family_cols, spearman, spearman_sd, d_spearman |
-| `window_robustness.csv` | 0.2 | cited | `window_robustness`, `report_checks_R7` | arm, n_cols, spearman, spearman_sd, d_spearman, d_published_windows, difference |
+| `ablation_curated.csv` | 0.9 | cited | `notebook`, `run_ablation`, `curated_ablation`, `curated_joint`, `txn_interactions`, `rederive`, `window_robustness`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R4`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | family, n_cols, spearman, spearman_sd, d_spearman |
+| `curated_joint.csv` | 1.0 | cited | `curated_joint`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R8` | arm, n_families, n_cols, spearman, spearman_sd, d_spearman, sum_of_singles … |
+| `portability.csv` | 0.3 | cited | `portability`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd, r2 |
+| `post_freeze/label_orientation.csv` | 0.2 | cited | `label_orientation`, `cost_boostmec_shipped`, `paper_numbers` | n_guides, n_multi_copy, n_single_copy, median_label_multi_copy, median_label_single_copy, auc_multi_higher, mannwhitney_p |
+| `recoverability_trend_columns.csv` | 49.7 | cited | `cost_boostmec_shipped`, `report_checks_R5` | column, family, abs_rho, oof_r2_from_guide, decile |
+| `txn_interactions.csv` | 0.5 | cited | `txn_interactions`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R5`, `report_checks_R7` | arm, n_family_cols, spearman, spearman_sd, d_spearman |
+| `window_robustness.csv` | 0.2 | cited | `window_robustness`, `cost_boostmec_shipped`, `report_checks_R7` | arm, n_cols, spearman, spearman_sd, d_spearman, d_published_windows, difference |
 
 ### Part 3 — Where this stops
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `kingdom_transfer.csv` | 0.4 | cited | `kingdom_transfer`, `report_checks_R2` | direction, settings, n_shared, n_train, n_test, spearman, spearman_sd … |
-| `kingdom_transfer_boot.csv` | 0.5 | audited | `kingdom_transfer`, `paper_numbers_B`, `report_checks_R2` | direction, settings, n_test, spearman, ci_lo, ci_hi, n_boot … |
+| `kingdom_transfer.csv` | 0.4 | cited | `kingdom_transfer`, `cost_boostmec_shipped`, `report_checks_R2` | direction, settings, n_shared, n_train, n_test, spearman, spearman_sd … |
+| `kingdom_transfer_boot.csv` | 0.5 | audited | `kingdom_transfer`, `cost_boostmec_shipped`, `paper_numbers_B`, `report_checks_R2` | direction, settings, n_test, spearman, ci_lo, ci_hi, n_boot … |
 
 ### Part 4 — The freeze, and what remains
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `metric_panel.csv` | 0.9 | cited | `panel` | model, n, spearman, kendall_tau, pearson, r2, calibration_slope … |
-| `post_freeze/sealed_crossscreen.csv` | 2.0 | cited | `sealed_crossscreen`, `paper_numbers_D` | seal_seed, n_sealed_genes, n_esp_guides, rho_base, rho_A, gain_esp, wt_base … |
-| `post_freeze/sealed_holdout_gene.csv` | 4.1 | cited | `sealed_holdout_gene`, `paper_numbers`, `report_checks_R5` | arm, seal_seed, cv_gene, cv_random, sealed, gap_gene, gap_random … |
-| `post_freeze/sealed_organism.csv` | 0.4 | audited | `sealed_organism`, `paper_numbers_C`, `report_checks_R5` | arm, rho_seed_mean, rho_seed_sd, rho_of_seed_average, minus_champion, lo, hi |
-| `sealed_holdout.csv` | 6.2 | cited | `sealed_holdout`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, n_cols, n_dev, n_sealed, cv_in_pool, sealed, gap … |
+| `metric_panel.csv` | 0.9 | cited | `panel`, `cost_boostmec_shipped` | model, n, spearman, kendall_tau, pearson, r2, calibration_slope … |
+| `post_freeze/sealed_crossscreen.csv` | 2.0 | cited | `sealed_crossscreen`, `cost_boostmec_shipped`, `paper_numbers_D` | seal_seed, n_sealed_genes, n_esp_guides, rho_base, rho_A, gain_esp, wt_base … |
+| `post_freeze/sealed_holdout_gene.csv` | 4.1 | cited | `sealed_holdout_gene`, `cost_boostmec_shipped`, `paper_numbers`, `report_checks_R5` | arm, seal_seed, cv_gene, cv_random, sealed, gap_gene, gap_random … |
+| `post_freeze/sealed_organism.csv` | 0.4 | audited | `sealed_organism`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R5` | arm, rho_seed_mean, rho_seed_sd, rho_of_seed_average, minus_champion, lo, hi |
+| `sealed_holdout.csv` | 6.2 | cited | `sealed_holdout`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, n_cols, n_dev, n_sealed, cv_in_pool, sealed, gap … |
 
 ### Part 5 — Where this sits in the field
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `ablation_main.csv` | 2.4 | cited | `notebook`, `run_ablation`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `complexity.json` | 1.6 | cited | `complexity`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R6` |  |
-| `cost_cpu_seconds.csv` | 0.4 | cited | `cost` | config, columns, rho, cpu_s, wall_s, peak_gb, reps … |
-| `cost_flops.csv` | 0.6 | cited | `cost` | model, forward_flops_per_guide, train_flops, note, vs_crisprHAL |
-| `cost_panel.csv` | 0.7 | cited | `cost`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R6`, `report_checks_R7` | model, train_flops, bytes_moved, flops_per_byte, cpu_seconds, wall_seconds, peak_gb … |
-| `cui_final_exam.csv` | 0.4 | cited | `cui_final_exam`, `report_checks_R2`, `report_checks_R6` | arm, model, n_test, spearman, spearman_within_gene, seconds, ci_lo … |
-| `cui_screen.csv` | 0.5 | cited | `cui_screen`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | cv, arm, n_rows, n_cols, spearman, spearman_sd |
-| `data_ablation.csv` | 0.7 | cited | `data_ablation`, `report_checks_R6` | arm, training_data, n_train, n_cols, label, spearman, vs_crisprhal |
-| `final_eval_espcas9.csv` | 0.6 | cited | `final_eval`, `report_checks_R6`, `report_checks_R7` | arm, model, n_train, n_test, spearman, kendall_tau, pearson … |
-| `folds_ladder_base_full+a_flank.csv` | 1.6 | cited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `paper_numbers_C`, `report_checks_R6`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `headtohead.csv` | 2.8 | cited | `crisprhal_wide_window_folds`, `headtohead`, `figures_paper`, `paper_numbers`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | arm, model, seed, fold, n_rows, n_cols, spearman … |
-| `heldout_compare.csv` | 0.4 | cited | `heldout_compare`, `paper_numbers_C`, `report_checks_R6` | pairing, n, slicer, crisprhal, difference, ci_lo, ci_hi … |
-| `inference_colab.csv` | 2.9 | cited | `report_checks_R6` | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
-| `inference_cost.csv` | 0.5 | cited | `inference_cost`, `report_checks_R6` | model, n_guides, n_columns, n_trees, latency_s, guides_per_s, fit_seconds … |
-| `inference_onecore.csv` | 3.0 | cited | `report_checks_R6` | model, device, n_guides, latency_ms, guides_per_s, source |
-| `inference_onecore_local.csv` | 0.9 | cited | `report_checks_R6` | model, device, n_guides, latency_ms, cpu_seconds_over_wall, best_batch_size, source |
-| `matched_search_folds.csv` | 0.5 | cited | `report_checks_R6` | fold, slicer_tuned, slicer_untuned, hal_default, hal_single_split, hal_matched, d_matched |
-| `noshay_replication.csv` | 0.8 | cited | `noshay_replicate`, `report_checks_CIT`, `report_checks_R6` | model, fold, seed, n_train, n_test, n_features, n_trees … |
-| `post_freeze/blend_with_hal.csv` | 0.5 | audited | `blend_with_hal`, `paper_numbers`, `paper_numbers_C` | split, weight_on_crisprhal, rho, vs_best_single, lo, hi |
-| `post_freeze/ceiling_parametric.csv` | 7.0 | audited | `ceiling_table`, `paper_numbers_B` | replicate_agreement_r, k_replicates, reliability_of_label, ceiling, field_ceiling_quoted_as_r, understated_by, share_of_ceiling_at_rho_0p70 … |
-| `post_freeze/clean_vs_hal.csv` | 1.0 | audited | `clean_vs_hal`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C` | vs, arm, n, n_genes, rho, crisprhal, diff … |
-| `post_freeze/cost_crisprhal.csv` | 0.4 | audited | `cost_bench`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
-| `post_freeze/cost_featurise.csv` | 0.2 | audited | `cost_bench` | part, n_guides, per_guide_ms |
-| `post_freeze/cost_repeats_fit.csv` | 0.9 | cited | `cost_repeats`, `figures_paper`, `paper_numbers_D` | model, rep, cpu_seconds, wall_seconds, n_train |
-| `post_freeze/cost_repeats_inference.csv` | 37.3 | cited | `cost_repeats`, `figures_paper`, `paper_numbers_D` | model, batch, rep, ms_per_guide |
-| `post_freeze/cost_slicer.csv` | 0.9 | audited | `cost_bench`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
-| `post_freeze/data_efficiency.csv` | 3.5 | audited | `data_efficiency`, `paper_numbers_C`, `report_checks_R6` | arm, fold, n_train, trees, rho |
-| `post_freeze/e2e_crisprhal.csv` | 0.4 | audited | `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, batch, ms_per_call, ms_per_guide, encode_ms, model_ms |
-| `post_freeze/e2e_slicer.csv` | 0.7 | audited | `e2e_bench`, `paper_numbers_C` | model, batch, ms_per_call, ms_per_guide |
-| `post_freeze/e2e_slicer_locus.csv` | 0.7 | audited | `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, width_nt, n_guides, ms_per_call, ms_per_guide |
-| `post_freeze/featuriser_equivalence.csv` | 0.5 | audited | `equiv_check` | item, value |
-| `post_freeze/figure_manifest_paper.csv` | 0.2 | receipt | `figures_paper` | figure, width_in, height_in |
-| `post_freeze/flank_locus_bench.csv` | 0.7 | audited | `flank_locus` | width_nt, n_guides, nt_per_guide, a_flank_fast_ms_per_guide, flank_locus_ms_per_guide, precompute_ms, precompute_ms_per_guide … |
-| `post_freeze/flank_scale.csv` | 9.6 | cited | `flank_scale`, `figures_paper`, `paper_numbers_D` | part, arm, seed, fold, rho |
-| `post_freeze/flank_scale_summary.csv` | 3.2 | cited | `flank_scale`, `figures_paper`, `paper_numbers_D` | part, arm, base_rho, n_folds, rho, gain, gain_sd_over_folds … |
-| `post_freeze/fold_distance.csv` | 0.3 | audited | `fold_distance` | scheme, n_guides, guide_len, min, p1, median, frac_identical … |
-| `post_freeze/lit_binary.csv` | 1.8 | audited | `lit_followups` | arm, seed, rho, top_decile_precision, pick10_percentile |
-| `post_freeze/lit_merf.csv` | 0.6 | audited | `lit_followups` | arm, seed, pooled, between, within, n_genes |
-| `post_freeze/lit_merf_trajectory.csv` | 1.8 | receipt | `lit_followups` | seed, iter, lam, sd_b, pooled, between, within |
-| `post_freeze/mix_configs_cat.json` | 6.7 | receipt | `mix_ecoli` |  |
-| `post_freeze/mix_configs_et.json` | 0.3 | receipt | `mix_ecoli` |  |
-| `post_freeze/mix_configs_lgb.json` | 11.6 | receipt | `mix_ecoli` |  |
-| `post_freeze/mix_configs_mlp.json` | 1.4 | receipt | `mix_ecoli` |  |
-| `post_freeze/mix_configs_ridge.json` | 0.0 | receipt | `mix_ecoli` |  |
-| `post_freeze/mix_confirm.csv` | 3.2 | audited | `mix_ecoli` | arm, rho, rho_lo, rho_hi, d_vs_champion, dc_lo, dc_hi … |
-| `post_freeze/mix_finalists.csv` | 0.4 | audited | `mix_ecoli`, `vs_crisprhal`, `cost_bench`, `e2e_bench` | kind, name, k, stage1_rho |
-| `post_freeze/mix_nnls_weights.csv` | 0.2 | audited | `mix_ecoli` | family, weight |
-| `post_freeze/mix_pred_corr.csv` | 0.2 | audited | `mix_ecoli` | , xgb, lgb, cat, et, mlp, ridge |
-| `post_freeze/mix_residual_corr.csv` | 0.2 | audited | `mix_ecoli`, `report_checks_R7` | , xgb, lgb, cat, et, mlp, ridge |
-| `post_freeze/panel_espcas9.csv` | 2.5 | audited | `panel_vs_hal`, `paper_numbers_B`, `paper_numbers_C` | split, arm, n, spearman, kendall_tau, pearson, r2 … |
-| `post_freeze/panel_wt.csv` | 2.4 | audited | `panel_vs_hal`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R6` | split, arm, n, spearman, kendall_tau, pearson, r2 … |
-| `post_freeze/seed_stability.csv` | 0.5 | audited | `topk_panel`, `paper_numbers_C` | split, seed, rho, crisprhal |
-| `post_freeze/shape_ablation.csv` | 13.7 | audited | `shape_ablate`, `shape_analyze`, `report_checks_R8` | arm, n_cols, n_ext, spearman, spearman_sd, r2, n_selected_ext … |
-| `post_freeze/signal_decile.csv` | 0.9 | cited | `signal_profile`, `figures_paper`, `paper_numbers_D` | decile, n, flank_gc, mean_label, lo, hi, gap_vs_rest |
-| `post_freeze/signal_slope.csv` | 2.1 | cited | `signal_profile`, `figures_paper`, `paper_numbers_D` | base, n, spearman, lo, hi, quintile, flank_gc … |
-| `post_freeze/topend_confirm.csv` | 2.3 | audited | `topend`, `paper_numbers_C`, `report_checks_R6` | arm, seed, spearman, top10pct_prec, top1pct_prec, pick10_pctile, pick50_pctile … |
-| `post_freeze/topk_panel.csv` | 4.2 | audited | `topk_panel` | split, arm, top1pct_precision, top5pct_precision, top10pct_precision, pick10_percentile, pick50_percentile … |
-| `post_freeze/tune_stage1.csv` | 270.9 | receipt | `tune_analyze`, `tune_ecoli` | draw, seed, fold, k, rho |
-| `post_freeze/vs_crisprhal_espcas9.csv` | 0.8 | cited | `vs_crisprhal`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
-| `post_freeze/vs_crisprhal_folds.csv` | 1.7 | receipt | `vs_crisprhal`, `paper_numbers_B`, `paper_numbers_C` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
-| `sample_complexity.csv` | 5.0 | audited | `common`, `data_efficiency`, `sample_complexity`, `paper_numbers_C`, `report_checks_R6` | model, seed, fold, n_train, n_test, spearman, r2 … |
-| `their_split_slicer.csv` | 0.4 | cited | `report_checks_R6`, `report_checks_R7` | model, split, n_train, n, spearman, kendall_tau, pearson … |
-| `tuning.csv` | 2.0 | cited | `tune`, `rederive`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, seed, fold, trials, trials_allowed, rho_default, r2_default … |
-| `tuning_trace.csv` | 38.5 | receipt | `tune` | arm, seed, fold, trial, inner_rho, best_so_far, trials_since_improved |
-| `tuning_trials12.csv` | 2.0 | cited | `report_checks_R6` | arm, seed, fold, trials, rho_default, r2_default, rho_tuned … |
+| `ablation_main.csv` | 2.4 | cited | `notebook`, `run_ablation`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `complexity.json` | 1.6 | cited | `complexity`, `cost_boostmec_shipped`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R6` |  |
+| `cost_cpu_seconds.csv` | 0.4 | cited | `cost`, `cost_boostmec_shipped` | config, columns, rho, cpu_s, wall_s, peak_gb, reps … |
+| `cost_flops.csv` | 0.6 | cited | `cost`, `cost_boostmec_shipped` | model, forward_flops_per_guide, train_flops, note, vs_crisprHAL |
+| `cost_panel.csv` | 0.7 | cited | `cost`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R6`, `report_checks_R7` | model, train_flops, bytes_moved, flops_per_byte, cpu_seconds, wall_seconds, peak_gb … |
+| `cui_final_exam.csv` | 0.4 | cited | `cui_final_exam`, `cost_boostmec_shipped`, `report_checks_R2`, `report_checks_R6` | arm, model, n_test, spearman, spearman_within_gene, seconds, ci_lo … |
+| `cui_screen.csv` | 0.5 | cited | `cui_screen`, `cost_boostmec_shipped`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | cv, arm, n_rows, n_cols, spearman, spearman_sd |
+| `data_ablation.csv` | 0.7 | cited | `data_ablation`, `cost_boostmec_shipped`, `report_checks_R6` | arm, training_data, n_train, n_cols, label, spearman, vs_crisprhal |
+| `final_eval_espcas9.csv` | 0.6 | cited | `final_eval`, `cost_boostmec_shipped`, `report_checks_R6`, `report_checks_R7` | arm, model, n_train, n_test, spearman, kendall_tau, pearson … |
+| `folds_ladder_base_full+a_flank.csv` | 1.6 | cited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R6`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `headtohead.csv` | 2.8 | cited | `crisprhal_wide_window_folds`, `headtohead`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | arm, model, seed, fold, n_rows, n_cols, spearman … |
+| `heldout_compare.csv` | 0.4 | cited | `heldout_compare`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R6` | pairing, n, slicer, crisprhal, difference, ci_lo, ci_hi … |
+| `inference_colab.csv` | 2.9 | cited | `cost_boostmec_shipped`, `report_checks_R6` | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
+| `inference_cost.csv` | 0.5 | cited | `cost_boostmec_shipped`, `inference_cost`, `report_checks_R6` | model, n_guides, n_columns, n_trees, latency_s, guides_per_s, fit_seconds … |
+| `inference_onecore.csv` | 3.0 | cited | `cost_boostmec_shipped`, `paper_numbers_D`, `report_checks_R6` | model, device, n_guides, latency_ms, guides_per_s, source |
+| `inference_onecore_local.csv` | 0.9 | cited | `cost_boostmec_shipped`, `report_checks_R6` | model, device, n_guides, latency_ms, cpu_seconds_over_wall, best_batch_size, source |
+| `noshay_replication.csv` | 0.8 | cited | `noshay_replicate`, `cost_boostmec_shipped`, `report_checks_CIT`, `report_checks_R6` | model, fold, seed, n_train, n_test, n_features, n_trees … |
+| `post_freeze/blend_with_hal.csv` | 0.5 | audited | `blend_with_hal`, `cost_boostmec_shipped`, `paper_numbers`, `paper_numbers_C` | split, weight_on_crisprhal, rho, vs_best_single, lo, hi |
+| `post_freeze/ceiling_parametric.csv` | 7.0 | audited | `ceiling_table`, `cost_boostmec_shipped`, `paper_numbers_B` | replicate_agreement_r, k_replicates, reliability_of_label, ceiling, field_ceiling_quoted_as_r, understated_by, share_of_ceiling_at_rho_0p70 … |
+| `post_freeze/clean_vs_hal.csv` | 1.0 | audited | `clean_vs_hal`, `cost_boostmec_shipped`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C` | vs, arm, n, n_genes, rho, crisprhal, diff … |
+| `post_freeze/cost_crisprhal.csv` | 0.4 | audited | `cost_bench`, `cost_boostmec_shipped`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
+| `post_freeze/cost_featurise.csv` | 0.2 | audited | `cost_bench`, `cost_boostmec_shipped` | part, n_guides, per_guide_ms |
+| `post_freeze/cost_slicer.csv` | 0.9 | audited | `cost_bench`, `cost_boostmec_shipped`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
+| `post_freeze/data_efficiency.csv` | 3.5 | audited | `data_efficiency`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R6` | arm, fold, n_train, trees, rho |
+| `post_freeze/featuriser_equivalence.csv` | 0.5 | audited | `equiv_check`, `cost_boostmec_shipped` | item, value |
+| `post_freeze/flank_locus_bench.csv` | 0.7 | audited | `flank_locus`, `cost_boostmec_shipped` | width_nt, n_guides, nt_per_guide, a_flank_fast_ms_per_guide, flank_locus_ms_per_guide, precompute_ms, precompute_ms_per_guide … |
+| `post_freeze/fold_distance.csv` | 0.3 | audited | `fold_distance`, `cost_boostmec_shipped` | scheme, n_guides, guide_len, min, p1, median, frac_identical … |
+| `post_freeze/lit_binary.csv` | 1.8 | audited | `lit_followups`, `cost_boostmec_shipped` | arm, seed, rho, top_decile_precision, pick10_percentile |
+| `post_freeze/lit_merf.csv` | 0.6 | audited | `lit_followups`, `cost_boostmec_shipped` | arm, seed, pooled, between, within, n_genes |
+| `post_freeze/lit_merf_trajectory.csv` | 1.8 | receipt | `lit_followups`, `cost_boostmec_shipped` | seed, iter, lam, sd_b, pooled, between, within |
+| `post_freeze/mix_configs_cat.json` | 6.7 | receipt | `mix_ecoli`, `cost_boostmec_shipped` |  |
+| `post_freeze/mix_configs_et.json` | 0.3 | receipt | `mix_ecoli`, `cost_boostmec_shipped` |  |
+| `post_freeze/mix_configs_lgb.json` | 11.6 | receipt | `mix_ecoli`, `cost_boostmec_shipped` |  |
+| `post_freeze/mix_configs_mlp.json` | 1.4 | receipt | `mix_ecoli`, `cost_boostmec_shipped` |  |
+| `post_freeze/mix_configs_ridge.json` | 0.0 | receipt | `mix_ecoli`, `cost_boostmec_shipped` |  |
+| `post_freeze/mix_confirm.csv` | 3.2 | audited | `mix_ecoli`, `cost_boostmec_shipped` | arm, rho, rho_lo, rho_hi, d_vs_champion, dc_lo, dc_hi … |
+| `post_freeze/mix_finalists.csv` | 0.4 | audited | `mix_ecoli`, `vs_crisprhal`, `cost_bench`, `cost_boostmec_shipped`, `e2e_bench` | kind, name, k, stage1_rho |
+| `post_freeze/mix_nnls_weights.csv` | 0.2 | audited | `mix_ecoli`, `cost_boostmec_shipped` | family, weight |
+| `post_freeze/mix_pred_corr.csv` | 0.2 | audited | `mix_ecoli`, `cost_boostmec_shipped` | , xgb, lgb, cat, et, mlp, ridge |
+| `post_freeze/mix_residual_corr.csv` | 0.2 | audited | `mix_ecoli`, `cost_boostmec_shipped`, `report_checks_R7` | , xgb, lgb, cat, et, mlp, ridge |
+| `post_freeze/panel_espcas9.csv` | 2.5 | audited | `panel_vs_hal`, `cost_boostmec_shipped`, `paper_numbers_B`, `paper_numbers_C` | split, arm, n, spearman, kendall_tau, pearson, r2 … |
+| `post_freeze/panel_wt.csv` | 2.4 | audited | `panel_vs_hal`, `cost_boostmec_shipped`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R6` | split, arm, n, spearman, kendall_tau, pearson, r2 … |
+| `post_freeze/seed_stability.csv` | 0.5 | audited | `topk_panel`, `cost_boostmec_shipped`, `paper_numbers_C` | split, seed, rho, crisprhal |
+| `post_freeze/shape_ablation.csv` | 13.7 | audited | `shape_ablate`, `shape_analyze`, `cost_boostmec_shipped`, `report_checks_R8` | arm, n_cols, n_ext, spearman, spearman_sd, r2, n_selected_ext … |
+| `post_freeze/topend_confirm.csv` | 2.3 | audited | `topend`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R6` | arm, seed, spearman, top10pct_prec, top1pct_prec, pick10_pctile, pick50_pctile … |
+| `post_freeze/topk_panel.csv` | 4.2 | audited | `topk_panel`, `cost_boostmec_shipped` | split, arm, top1pct_precision, top5pct_precision, top10pct_precision, pick10_percentile, pick50_percentile … |
+| `post_freeze/tune_stage1.csv` | 270.9 | receipt | `tune_analyze`, `tune_ecoli`, `cost_boostmec_shipped` | draw, seed, fold, k, rho |
+| `post_freeze/vs_crisprhal_espcas9.csv` | 0.8 | cited | `vs_crisprhal`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
+| `post_freeze/vs_crisprhal_folds.csv` | 1.7 | receipt | `vs_crisprhal`, `cost_boostmec_shipped`, `paper_numbers_B`, `paper_numbers_C` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
+| `sample_complexity.csv` | 5.0 | audited | `common`, `data_efficiency`, `sample_complexity`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R6` | model, seed, fold, n_train, n_test, spearman, r2 … |
+| `their_split_slicer.csv` | 0.4 | cited | `cost_boostmec_shipped`, `report_checks_R6`, `report_checks_R7` | model, split, n_train, n, spearman, kendall_tau, pearson … |
+| `tuning.csv` | 2.0 | cited | `tune`, `rederive`, `cost_boostmec_shipped`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, seed, fold, trials, trials_allowed, rho_default, r2_default … |
+| `tuning_trace.csv` | 38.5 | receipt | `tune`, `cost_boostmec_shipped` | arm, seed, fold, trial, inner_rho, best_so_far, trials_since_improved |
+| `tuning_trials12.csv` | 2.0 | cited | `cost_boostmec_shipped`, `report_checks_R6` | arm, seed, fold, trials, rho_default, r2_default, rho_tuned … |
 
 ### Appendix A — Controls and nulls
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `ablation_curated_gene.csv` | 0.9 | cited | `notebook`, `run_ablation`, `curated_ablation`, `rederive`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R4`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | family, n_cols, spearman, spearman_sd, d_spearman |
-| `ablation_grouped.csv` | 1.5 | cited | `notebook`, `run_ablation`, `report_checks_R7`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `ablation_jper.csv` | 0.7 | cited | `notebook`, `run_ablation`, `paper_numbers_A`, `report_checks_R7`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `ablation_jper_joint.csv` | 0.5 | cited | `notebook`, `run_ablation`, `paper_numbers_A`, `report_checks_R7`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `ablation_label_curated.csv` | 0.5 | cited | `notebook`, `run_ablation`, `paper_numbers_C`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `ablation_label_published.csv` | 0.5 | cited | `notebook`, `run_ablation`, `paper_numbers_C`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `ablation_nfeat600.csv` | 0.5 | receipt | `notebook`, `run_ablation` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `dissection_supercoiling.csv` | 1.5 | cited | `paper_numbers_A`, `report_checks_R5`, `report_checks_R7`, `report_checks_R8` | experiment, columns, grouping, seeds, folds, baseline_r2, r2 … |
-| `final_eval_metric_bootstrap.csv` | 0.6 | cited | `report_checks_R7` | metric, diff, ci_lo, ci_hi, excludes_zero, favours |
-| `folds_base_plus_K562_ATAC.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_base_plus_K562_DNase.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_base_plus_dnase_atac.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_human_a_flank_only.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_human_base_a_cv.csv` | 0.6 | audited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_human_base_cv.csv` | 0.6 | audited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_human_base_plus_a_flank.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_human_regenerated_base.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_human_shared.csv` | 0.5 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_humangc_base.csv` | 0.5 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_humangc_base_plus_gc_gc2.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_humangc_only.csv` | 0.5 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `folds_shift_baseline.csv` | 1.8 | audited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `paper_numbers_A`, `report_checks_R2`, `report_checks_R7`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
-| `permutation_floors.csv` | 1.0 | cited | `floors`, `report_checks_R7` | family, real_folds, real_d_r2, real_d_rho, real_p, floor_folds, floor_d_r2 … |
-| `post_freeze/vs_crisprhal_wt.csv` | 0.8 | cited | `vs_crisprhal`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R6`, `report_checks_R7` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
+| `ablation_curated_gene.csv` | 0.9 | cited | `notebook`, `run_ablation`, `curated_ablation`, `rederive`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R4`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | family, n_cols, spearman, spearman_sd, d_spearman |
+| `ablation_grouped.csv` | 1.5 | cited | `notebook`, `run_ablation`, `cost_boostmec_shipped`, `report_checks_R7`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `ablation_jper.csv` | 0.7 | cited | `notebook`, `run_ablation`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R7`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `ablation_jper_joint.csv` | 0.5 | cited | `notebook`, `run_ablation`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R7`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `ablation_label_curated.csv` | 0.5 | cited | `notebook`, `run_ablation`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `ablation_label_published.csv` | 0.5 | cited | `notebook`, `run_ablation`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `ablation_nfeat600.csv` | 0.5 | receipt | `notebook`, `run_ablation`, `cost_boostmec_shipped` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `dissection_supercoiling.csv` | 1.5 | cited | `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R5`, `report_checks_R7`, `report_checks_R8` | experiment, columns, grouping, seeds, folds, baseline_r2, r2 … |
+| `final_eval_metric_bootstrap.csv` | 0.6 | cited | `cost_boostmec_shipped`, `report_checks_R7` | metric, diff, ci_lo, ci_hi, excludes_zero, favours |
+| `folds_base_plus_K562_ATAC.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_base_plus_K562_DNase.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_base_plus_dnase_atac.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_human_a_flank_only.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_human_base_a_cv.csv` | 0.6 | audited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_human_base_cv.csv` | 0.6 | audited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_human_base_plus_a_flank.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_human_regenerated_base.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_human_shared.csv` | 0.5 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_humangc_base.csv` | 0.5 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_humangc_base_plus_gc_gc2.csv` | 0.6 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_humangc_only.csv` | 0.5 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `folds_shift_baseline.csv` | 1.8 | audited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R2`, `report_checks_R7`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `permutation_floors.csv` | 1.0 | cited | `floors`, `cost_boostmec_shipped`, `report_checks_R7` | family, real_folds, real_d_r2, real_d_rho, real_p, floor_folds, floor_d_r2 … |
+| `post_freeze/vs_crisprhal_wt.csv` | 0.8 | cited | `vs_crisprhal`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R6`, `report_checks_R7` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
 
 ### Appendix B — The methods and controls behind the findings
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `chi_sites.csv` | 1.3 | cited | `chi_sites`, `report_checks_R7` | window, test, rho, beta_alone, se_alone, beta_gc_adjusted, se_gc_adjusted … |
-| `cohort_groups.csv` | 0.3 | cited | `cohort_groups`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_D`, `report_checks_R7`, `report_checks_R8` | cohort, grouping, n, n_groups, guides_per_group, within_share |
-| `crisprhal_matched_folds.csv` | 0.8 | cited | `rederive`, `report_checks_R6`, `report_checks_R7` | stage, fold, draw, spearman, is_published_config |
-| `crisprhal_rerun.csv` | 0.6 | audited | `rederive`, `crisprhal_rerun`, `figures_paper`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R2`, `report_checks_R6`, `report_checks_R7` | arm, model, seed, fold, epochs, n_train, n_val … |
-| `crisprhal_tuned_folds.csv` | 0.9 | cited | `rederive`, `crisprhal_tune`, `report_checks_R6`, `report_checks_R7` | model, draw, fold, seed, n_train, n_val, learning_rate … |
-| `crisprhal_tuning.csv` | 1.2 | receipt | `crisprhal_tune` | draw, is_published_default, learning_rate, drop_rate, CNN_filters, window_size, CNN_drop … |
-| `crisprhal_wide_window.csv` | 0.7 | cited | `crisprhal_wide_window_folds`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R7` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
-| `curated_models.csv` | 0.5 | cited | `curated_models`, `report_checks_R1`, `report_checks_R6`, `report_checks_R7` | model, spearman, spearman_sd, seconds |
-| `human_additivity.csv` | 0.2 | cited | `human_baseline` | arm, n_features, spearman, spearman_sd, n_fits |
-| `human_baseline.csv` | 0.2 | audited | `human_baseline`, `paper_numbers_B`, `report_checks_R2` | arm, n_features, spearman, spearman_sd, n_fits |
-| `human_baseline_knobs.csv` | 0.4 | cited | `human_baseline` | arm, n_features, changed, spearman, spearman_sd, n_fits |
-| `interpretability.csv` | 1.3 | receipt | `evaluate`, `report_checks_R3` | model, importance, stability_kuncheva, importance_rank_agreement, method_agreement, faithfulness, direction_consistency … |
-| `model_comparison.csv` | 30.7 | cited | `evaluate`, `report_checks_R1`, `report_checks_R7` | model, seed, fold, r2, spearman, pearson, top_decile_precision … |
-| `post_freeze/boostmec_released.csv` | 1.1 | cited | `boostmec_replica`, `paper_numbers_D` | seed, fold, rho, trees, leaves, seconds, features_ms_per_guide |
-| `post_freeze/boostmec_search_trace.csv` | 33.4 | cited | `boostmec_replica`, `paper_numbers_D` | step, phase, cv_mse, mean_best_iteration, seconds, u_learning_rate, u_max_depth … |
-| `post_freeze/boostmec_searched.csv` | 0.8 | cited | `boostmec_replica`, `paper_numbers_D` | seed, rho, trees, leaves, seconds, search_seconds, n_confirm … |
-| `post_freeze/boostmec_vs_slicer_confirm.csv` | 0.4 | cited | `boostmec_replica`, `paper_numbers_D` | arm, n_guides, rho, rho_lo, rho_hi, boostmec_minus_arm, diff_lo … |
-| `post_freeze/curation_check.csv` | 1.1 | cited | `curation_check`, `paper_numbers_D` | stratum, n, kept, spearman_flank_gc, label_sd, lowest_decile_deficit_sd, share_in_lowest_decile … |
-| `post_freeze/gate_test.csv` | 1.7 | cited | `gate_test`, `paper_numbers_D` | model, seed, fold, rho, r2 |
-| `post_freeze/human_additivity_twin.csv` | 10.4 | audited | `human_additivity_twin` | folds, arm, seed, fold, shared_protospacers, rho |
-| `post_freeze/human_additivity_twin_claim.csv` | 0.4 | audited | `human_additivity_twin` | folds, ridge, best_boosting_arm, best_boosting, ridge_over_boosting, depth_4_to_6, depth_lo … |
-| `post_freeze/human_additivity_twin_summary.csv` | 0.9 | audited | `human_additivity_twin`, `report_checks_R6`, `report_checks_R7` | folds, arm, mean, std, count |
-| `post_freeze/metrics_panel.csv` | 12.6 | cited | `metrics_panel`, `paper_numbers_D` | split, model, metric, value, lo, hi, n_test … |
-| `post_freeze/model_size.csv` | 0.3 | cited | `model_size`, `paper_numbers_D` | model, trees, nodes, leaves, inner_nodes, columns_used, columns_selected … |
-| `post_freeze/signal_corr.csv` | 6.2 | cited | `signal_profile`, `paper_numbers_D` | window_nt, side, statistic, marginal, partial_given_target_gc |
-| `post_freeze/signal_target_gc.csv` | 0.7 | cited | `signal_profile`, `paper_numbers_D` | quintile, target_gc_mean, n, rho_base, rho_with_flank, gain, gain_lo … |
-| `post_freeze/tune_split2_configs.json` | 14.5 | receipt | `tune_split2` |  |
-| `post_freeze/tune_split2_confirm.csv` | 1.1 | audited | `tune_split2` | arm, rho, rho_lo, rho_hi, d_vs_champion, d_lo, d_hi … |
-| `post_freeze/tune_split2_stage1.csv` | 57.9 | audited | `tune_split2` | draw, seed, fold, k, rho |
-| `post_freeze/tune_split2_stage2.csv` | 7.6 | receipt | `tune_split2` | draw, seed, fold, k, rho |
-| `recoverability_percolumn.csv` | 2.0 | cited | `redescription`, `report_checks_R7` | column, family, oof_r2, abs_rho, spearman, d_spearman |
-| `recoverability_trend.csv` | 0.9 | cited | `redescription`, `report_checks_R7` | band, lo, hi, n_cols, mean_r2, mean_abs_rho, max_abs_rho … |
-| `rederivation_check.csv` | 0.5 | cited | `rederive` | file, status, worst_column, max_rel_diff |
-| `redescription_columns.csv` | 50.4 | cited | `redescription` | family, column, oof_r2_from_guide, kind |
-| `redescription_family_split.csv` | 1.7 | cited | `redescription`, `report_checks_R7`, `report_checks_R8` | family, part, n_cols, spearman, spearman_sd, d_spearman |
-| `redescription_folds.csv` | 1.3 | cited | `redescription`, `report_checks_R5`, `report_checks_R7` | arm, kind, n_cols, table_seed, spearman, spearman_sd, d_spearman |
-| `redescription_nonlinear.csv` | 2.3 | cited | `redescription`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R5`, `report_checks_R7` | arm, order, table_seed, n_terms, oof_r2, spearman, spearman_sd … |
-| `redescription_provenance.csv` | 0.4 | cited | `redescription`, `report_checks_R8` | family, part, n_cols, spearman, spearman_sd, d_spearman |
-| `redescription_random.csv` | 1.2 | cited | `redescription`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R7` | arm, n_random, table_seed, spearman, spearman_sd, d_spearman |
-| `redescription_taxonomy.csv` | 0.5 | cited | `redescription`, `report_checks_R1`, `report_checks_R7` | arm, n_cols, spearman, spearman_sd, d_spearman |
-| `replicate_weight.csv` | 0.6 | cited | `replicate_weight`, `report_checks_R5`, `report_checks_R7` | arm, n_fits, spearman, spearman_sd, train_rows, weight_ratio |
-| `replicate_weight_raw.csv` | 0.3 | cited | `replicate_weight`, `report_checks_R5`, `report_checks_R7` | arm, label, n_fits, spearman, spearman_sd |
-| `selector_audit.csv` | 0.2 | cited | `selector_audit`, `report_checks_R7` | metric, n_selected, binary_cols, binary_share, a_flank_cols, dense_cols, spearman … |
-| `selector_audit_ranks.csv` | 244.7 | cited | `selector_audit` | column, family, binary, gain, shap |
-| `selector_comparison.csv` | 2.0 | cited | `report_checks_R5`, `report_checks_R7` | selector, fold, select_s, fit_s, spearman, r2 |
-| `selector_redundancy.csv` | 0.3 | cited | `selector_audit`, `report_checks_R7` | rule, k, lam, spearman, spearman_sd, binary_cols, a_flank_cols … |
-| `xgb_knobs.csv` | 2.0 | cited | `xgb_knobs`, `report_checks_R7` | knob, value, spearman, spearman_sd, d_spearman, is_default |
-| `xgb_knobs_verify.csv` | 3.2 | cited | `xgb_knobs`, `report_checks_R7` | seed, fold, arm, rho, d_rho |
+| `asymmetry_expression.csv` | 1.3 | receipt | `asymmetry`, `cost_boostmec_shipped` | band, group, n_guides, median_log_tpm, arm, spearman, r2 |
+| `asymmetry_strand_audit.csv` | 0.2 | cited | `asymmetry`, `cost_boostmec_shipped` | source, orientation, guides |
+| `chi_sites.csv` | 1.3 | cited | `chi_sites`, `cost_boostmec_shipped`, `report_checks_R7` | window, test, rho, beta_alone, se_alone, beta_gc_adjusted, se_gc_adjusted … |
+| `cohort_groups.csv` | 0.3 | cited | `cohort_groups`, `cost_boostmec_shipped`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_D`, `report_checks_R7`, `report_checks_R8` | cohort, grouping, n, n_groups, guides_per_group, within_share |
+| `crisprhal_gene_grouped_fcolab_b256.csv` | 0.5 | receipt | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped` | model, fold, spearman, r2, fit_minutes, n_train, n_test … |
+| `crisprhal_matched_folds.csv` | 0.8 | cited | `rederive`, `cost_boostmec_shipped`, `report_checks_R6`, `report_checks_R7` | stage, fold, draw, spearman, is_published_config |
+| `crisprhal_rerun.csv` | 0.6 | audited | `rederive`, `crisprhal_rerun`, `cost_boostmec_shipped`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R2`, `report_checks_R6`, `report_checks_R7` | arm, model, seed, fold, epochs, n_train, n_val … |
+| `crisprhal_tuned_folds.csv` | 0.9 | cited | `rederive`, `crisprhal_tune`, `cost_boostmec_shipped`, `report_checks_R6`, `report_checks_R7` | model, draw, fold, seed, n_train, n_val, learning_rate … |
+| `crisprhal_tuning.csv` | 1.2 | receipt | `crisprhal_tune`, `cost_boostmec_shipped` | draw, is_published_default, learning_rate, drop_rate, CNN_filters, window_size, CNN_drop … |
+| `crisprhal_wide_window.csv` | 0.7 | cited | `crisprhal_wide_window_folds`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R7` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
+| `crisprhal_wide_window_f2.csv` | 0.3 | receipt | `cost_boostmec_shipped` | model, arm, input_nt, batch, fold, spearman, r2 … |
+| `crisprhal_wide_window_f3.csv` | 0.3 | receipt | `cost_boostmec_shipped` | model, arm, input_nt, batch, fold, spearman, r2 … |
+| `crisprhal_wide_window_f4.csv` | 0.2 | receipt | `cost_boostmec_shipped` | model, arm, input_nt, batch, fold, spearman, r2 … |
+| `crisprhal_wide_window_f5.csv` | 0.2 | receipt | `cost_boostmec_shipped` | model, arm, input_nt, batch, fold, spearman, r2 … |
+| `curated_models.csv` | 0.5 | cited | `curated_models`, `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R6`, `report_checks_R7` | model, spearman, spearman_sd, seconds |
+| `d_mechanics_reconstructibility.csv` | 0.3 | cited | `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R7` | oof_r2_from_mono_di |
+| `grouped_retention.csv` | 0.8 | cited | `cost_boostmec_shipped`, `report_checks_R8` | family, random, gene, retained_pct, reach, excess_loss_pp |
+| `human_additivity.csv` | 0.2 | cited | `human_baseline`, `cost_boostmec_shipped` | arm, n_features, spearman, spearman_sd, n_fits |
+| `human_baseline.csv` | 0.2 | audited | `human_baseline`, `cost_boostmec_shipped`, `paper_numbers_B`, `report_checks_R2` | arm, n_features, spearman, spearman_sd, n_fits |
+| `human_baseline_knobs.csv` | 0.4 | cited | `human_baseline`, `cost_boostmec_shipped` | arm, n_features, changed, spearman, spearman_sd, n_fits |
+| `human_transfer.csv` | 0.7 | cited | `cost_boostmec_shipped` | arm, rho, sd, n_train, n_test, seed |
+| `inference_t4.csv` | 0.8 | cited | `cost_boostmec_shipped` | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
+| `interpretability.csv` | 1.3 | receipt | `evaluate`, `cost_boostmec_shipped`, `report_checks_R3` | model, importance, stability_kuncheva, importance_rank_agreement, method_agreement, faithfulness, direction_consistency … |
+| `kmer_order_noselect.csv` | 0.6 | cited | `cost_boostmec_shipped` | arm, n_columns, spearman, sd |
+| `learning_curve.csv` | 0.3 | cited | `expand`, `cost_boostmec_shipped` | , r2, r2, spearman, spearman, pearson, pearson |
+| `matched_search_folds.csv` | 0.5 | cited | `cost_boostmec_shipped`, `report_checks_R6` | fold, slicer_tuned, slicer_untuned, hal_default, hal_single_split, hal_matched, d_matched |
+| `memory_comparison.csv` | 0.5 | cited | `bench`, `cost_boostmec_shipped` | config, columns, peak_gb_median, peak_gb_min, peak_gb_max, select_s_median, rho … |
+| `memory_comparison_runs.csv` | 1.2 | receipt | `bench`, `cost_boostmec_shipped` | config, peak_gb, rep, columns, select_s, rho |
+| `model_comparison.csv` | 30.7 | cited | `evaluate`, `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R7` | model, seed, fold, r2, spearman, pearson, top_decile_precision … |
+| `net_cost.csv` | 0.1 | receipt | `bench`, `cost_boostmec_shipped` | config, columns, params, train_s, rho, peak_gb |
+| `portability_364.csv` | 0.1 | cited | `cost_boostmec_shipped`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd |
+| `post_freeze/boostmec_oracle.csv` | 0.2 | receipt | `cost_boostmec`, `cost_boostmec_shipped`, `paper_numbers_D` | sequence, table, paper_prediction, reproduced_prediction, difference |
+| `post_freeze/boostmec_released.csv` | 1.1 | cited | `boostmec_replica`, `cost_boostmec_shipped`, `paper_numbers_D` | seed, fold, rho, trees, leaves, seconds, features_ms_per_guide |
+| `post_freeze/boostmec_search_trace.csv` | 33.4 | cited | `boostmec_replica`, `cost_boostmec_shipped`, `paper_numbers_D` | step, phase, cv_mse, mean_best_iteration, seconds, u_learning_rate, u_max_depth … |
+| `post_freeze/boostmec_searched.csv` | 0.8 | cited | `boostmec_replica`, `cost_boostmec_shipped`, `paper_numbers_D` | seed, rho, trees, leaves, seconds, search_seconds, n_confirm … |
+| `post_freeze/boostmec_shipped_check.csv` | 0.9 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | item, value |
+| `post_freeze/boostmec_shipped_cohort.csv` | 0.2 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | n_guides, pipeline_seconds, ms_per_guide, rho_released_model_on_ecoli, spearman_python_loader_vs_shipped, max_abs_diff_python_loader_vs_shipped |
+| `post_freeze/boostmec_shipped_rnafold.csv` | 0.2 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | workload, sequences, native_seconds, container_seconds, ratio |
+| `post_freeze/boostmec_shipped_stages.csv` | 1.2 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | batch, stage, seconds |
+| `post_freeze/boostmec_shipped_timings.csv` | 0.5 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | batch, rep, seconds, ms_per_guide, note |
+| `post_freeze/boostmec_vs_slicer_confirm.csv` | 0.4 | cited | `boostmec_replica`, `cost_boostmec_shipped`, `paper_numbers_D` | arm, n_guides, rho, rho_lo, rho_hi, boostmec_minus_arm, diff_lo … |
+| `post_freeze/cost_gpu.csv` | 276.8 | receipt | `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | model, device, placement, what, batch, rep, value … |
+| `post_freeze/cost_repeats_fit.csv` | 2.6 | cited | `cost_boostmec_shipped`, `cost_repeats`, `figures_paper`, `paper_numbers_D` | model, rep, cpu_seconds, wall_seconds, n_train, session, load1_start … |
+| `post_freeze/cost_repeats_inference.csv` | 85.7 | cited | `cost_boostmec_shipped`, `cost_repeats`, `figures_paper`, `paper_numbers_D` | model, batch, rep, ms_per_guide, session, load1_start, load1_end |
+| `post_freeze/cost_repeats_machine.json` | 1.5 | receipt | `cost_boostmec_shipped`, `cost_repeats` |  |
+| `post_freeze/curation_check.csv` | 1.1 | cited | `curation_check`, `cost_boostmec_shipped`, `paper_numbers_D` | stratum, n, kept, spearman_flank_gc, label_sd, lowest_decile_deficit_sd, share_in_lowest_decile … |
+| `post_freeze/e2e_crisprhal.csv` | 0.4 | audited | `cost_boostmec_shipped`, `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, batch, ms_per_call, ms_per_guide, encode_ms, model_ms |
+| `post_freeze/e2e_slicer.csv` | 0.7 | audited | `cost_boostmec_shipped`, `e2e_bench`, `paper_numbers_C` | model, batch, ms_per_call, ms_per_guide |
+| `post_freeze/e2e_slicer_locus.csv` | 0.7 | audited | `cost_boostmec_shipped`, `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, width_nt, n_guides, ms_per_call, ms_per_guide |
+| `post_freeze/figure_manifest_paper.csv` | 0.0 | receipt | `cost_boostmec_shipped`, `figures_paper` | figure, width_in, height_in |
+| `post_freeze/flank_scale.csv` | 9.6 | cited | `flank_scale`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | part, arm, seed, fold, rho |
+| `post_freeze/flank_scale_summary.csv` | 3.2 | cited | `flank_scale`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | part, arm, base_rho, n_folds, rho, gain, gain_sd_over_folds … |
+| `post_freeze/gate_test.csv` | 1.7 | cited | `gate_test`, `cost_boostmec_shipped`, `paper_numbers_D` | model, seed, fold, rho, r2 |
+| `post_freeze/gene_grouped_slicer.csv` | 0.4 | receipt | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped` | model, fold, n_test, spearman |
+| `post_freeze/gene_grouped_vs_crisprhal.csv` | 0.4 | receipt | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped` | model, against, mean, sd, crisprhal_mean, crisprhal_sd, lead_mean … |
+| `post_freeze/human_additivity_twin.csv` | 10.4 | audited | `human_additivity_twin`, `cost_boostmec_shipped` | folds, arm, seed, fold, shared_protospacers, rho |
+| `post_freeze/human_additivity_twin_claim.csv` | 0.4 | audited | `human_additivity_twin`, `cost_boostmec_shipped` | folds, ridge, best_boosting_arm, best_boosting, ridge_over_boosting, depth_4_to_6, depth_lo … |
+| `post_freeze/human_additivity_twin_summary.csv` | 0.9 | audited | `human_additivity_twin`, `cost_boostmec_shipped`, `report_checks_R6`, `report_checks_R7` | folds, arm, mean, std, count |
+| `post_freeze/human_shape_ablation_locus_n900.csv` | 0.9 | audited | `cost_boostmec_shipped` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
+| `post_freeze/import_check.json` | 0.3 | audited | `cost_boostmec_shipped` |  |
+| `post_freeze/interp_hal_cache/hal_full1_fit.csv` | 0.1 | receipt | `cost_boostmec_shipped` | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_full2_fit.csv` | 0.1 | receipt | `cost_boostmec_shipped` | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_halfA1_fit.csv` | 0.1 | receipt | `cost_boostmec_shipped` | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_halfA2_fit.csv` | 0.1 | receipt | `cost_boostmec_shipped` | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_halfB1_fit.csv` | 0.1 | receipt | `cost_boostmec_shipped` | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/interp_hal_cache/hal_halfB2_fit.csv` | 0.1 | receipt | `cost_boostmec_shipped` | tag, n_train, fit_seconds, test_rho, seed |
+| `post_freeze/metrics_panel.csv` | 12.6 | cited | `metrics_panel`, `cost_boostmec_shipped`, `paper_numbers_D` | split, model, metric, value, lo, hi, n_test … |
+| `post_freeze/mix_cat_stage1.csv` | 31.1 | receipt | `cost_boostmec_shipped` | draw, seed, fold, k, rho |
+| `post_freeze/mix_et_stage1.csv` | 0.5 | receipt | `cost_boostmec_shipped` | draw, seed, fold, k, rho |
+| `post_freeze/mix_lgb_stage1.csv` | 48.5 | receipt | `cost_boostmec_shipped` | draw, seed, fold, k, rho |
+| `post_freeze/mix_mlp_stage1.csv` | 1.3 | receipt | `cost_boostmec_shipped` | draw, seed, fold, k, rho |
+| `post_freeze/mix_ridge_stage1.csv` | 0.2 | receipt | `cost_boostmec_shipped` | draw, seed, fold, k, rho |
+| `post_freeze/model_size.csv` | 0.6 | cited | `cost_boostmec`, `cost_boostmec_shipped`, `model_size`, `paper_numbers_D` | model, trees, nodes, leaves, inner_nodes, columns_used, columns_selected … |
+| `post_freeze/reference_genome_versions.csv` | 0.3 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | accession_version, length_bp, status, replaced_by, record_updated, looked_up, source |
+| `post_freeze/signal_corr.csv` | 6.2 | cited | `signal_profile`, `cost_boostmec_shipped`, `paper_numbers_D` | window_nt, side, statistic, marginal, partial_given_target_gc |
+| `post_freeze/signal_decile.csv` | 0.9 | cited | `signal_profile`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | decile, n, flank_gc, mean_label, lo, hi, gap_vs_rest |
+| `post_freeze/signal_slope.csv` | 2.1 | cited | `signal_profile`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | base, n, spearman, lo, hi, quintile, flank_gc … |
+| `post_freeze/signal_target_gc.csv` | 0.7 | cited | `signal_profile`, `cost_boostmec_shipped`, `paper_numbers_D` | quintile, target_gc_mean, n, rho_base, rho_with_flank, gain, gain_lo … |
+| `post_freeze/topend_rank_capacity.csv` | 3.0 | audited | `cost_boostmec_shipped` | lr, depth, k, spearman, top10pct_prec, top1pct_prec, pick10_pctile … |
+| `post_freeze/tune_split2_configs.json` | 14.5 | receipt | `tune_split2`, `cost_boostmec_shipped` |  |
+| `post_freeze/tune_split2_confirm.csv` | 1.1 | audited | `tune_split2`, `cost_boostmec_shipped` | arm, rho, rho_lo, rho_hi, d_vs_champion, d_lo, d_hi … |
+| `post_freeze/tune_split2_stage1.csv` | 57.9 | audited | `tune_split2`, `cost_boostmec_shipped` | draw, seed, fold, k, rho |
+| `post_freeze/tune_split2_stage2.csv` | 7.6 | receipt | `tune_split2`, `cost_boostmec_shipped` | draw, seed, fold, k, rho |
+| `recoverability_groups.csv` | 4.6 | cited | `cost_boostmec_shipped` | key, n_cols, family, mean_r2_from_guide, group_oof_r2_on_label |
+| `recoverability_percolumn.csv` | 2.0 | cited | `redescription`, `cost_boostmec_shipped`, `report_checks_R7` | column, family, oof_r2, abs_rho, spearman, d_spearman |
+| `recoverability_trend.csv` | 0.9 | cited | `redescription`, `cost_boostmec_shipped`, `report_checks_R7` | band, lo, hi, n_cols, mean_r2, mean_abs_rho, max_abs_rho … |
+| `rederivation_check.csv` | 0.5 | cited | `rederive`, `cost_boostmec_shipped` | file, status, worst_column, max_rel_diff |
+| `redescription_columns.csv` | 50.4 | cited | `redescription`, `cost_boostmec_shipped` | family, column, oof_r2_from_guide, kind |
+| `redescription_family_split.csv` | 1.7 | cited | `redescription`, `cost_boostmec_shipped`, `report_checks_R7`, `report_checks_R8` | family, part, n_cols, spearman, spearman_sd, d_spearman |
+| `redescription_folds.csv` | 1.3 | cited | `redescription`, `cost_boostmec_shipped`, `report_checks_R5`, `report_checks_R7` | arm, kind, n_cols, table_seed, spearman, spearman_sd, d_spearman |
+| `redescription_nonlinear.csv` | 2.3 | cited | `redescription`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R5`, `report_checks_R7` | arm, order, table_seed, n_terms, oof_r2, spearman, spearman_sd … |
+| `redescription_provenance.csv` | 0.4 | cited | `redescription`, `cost_boostmec_shipped`, `report_checks_R8` | family, part, n_cols, spearman, spearman_sd, d_spearman |
+| `redescription_random.csv` | 1.2 | cited | `redescription`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R7` | arm, n_random, table_seed, spearman, spearman_sd, d_spearman |
+| `redescription_taxonomy.csv` | 0.5 | cited | `redescription`, `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R7` | arm, n_cols, spearman, spearman_sd, d_spearman |
+| `replicate_weight.csv` | 0.6 | cited | `replicate_weight`, `cost_boostmec_shipped`, `report_checks_R5`, `report_checks_R7` | arm, n_fits, spearman, spearman_sd, train_rows, weight_ratio |
+| `replicate_weight_raw.csv` | 0.3 | cited | `replicate_weight`, `cost_boostmec_shipped`, `report_checks_R5`, `report_checks_R7` | arm, label, n_fits, spearman, spearman_sd |
+| `selector_audit.csv` | 0.2 | cited | `selector_audit`, `cost_boostmec_shipped`, `report_checks_R7` | metric, n_selected, binary_cols, binary_share, a_flank_cols, dense_cols, spearman … |
+| `selector_audit_ranks.csv` | 244.7 | cited | `selector_audit`, `cost_boostmec_shipped` | column, family, binary, gain, shap |
+| `selector_comparison.csv` | 2.0 | cited | `cost_boostmec_shipped`, `report_checks_R5`, `report_checks_R7` | selector, fold, select_s, fit_s, spearman, r2 |
+| `selector_redundancy.csv` | 0.3 | cited | `selector_audit`, `cost_boostmec_shipped`, `report_checks_R7` | rule, k, lam, spearman, spearman_sd, binary_cols, a_flank_cols … |
+| `strand_within_gene.csv` | 0.5 | receipt | `cost_boostmec_shipped` | arm, n, genes, overall, between_genes, within_genes |
+| `strand_within_gene_cui_joint_summary.csv` | 1.0 | cited | `cost_boostmec_shipped` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
+| `strand_within_gene_cui_summary.csv` | 1.9 | cited | `cost_boostmec_shipped`, `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
+| `strand_within_gene_rousset_summary.csv` | 0.7 | cited | `cost_boostmec_shipped`, `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
+| `xgb_knobs.csv` | 2.0 | cited | `xgb_knobs`, `cost_boostmec_shipped`, `report_checks_R7` | knob, value, spearman, spearman_sd, d_spearman, is_default |
+| `xgb_knobs_verify.csv` | 3.2 | cited | `xgb_knobs`, `cost_boostmec_shipped`, `report_checks_R7` | seed, fold, arm, rho, d_rho |
 
 ### Appendix B2 — Why the imported families failed, and why that is not a screen
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `ceiling.json` | 0.3 | cited | `diagnose`, `report_checks_R7` |  |
-| `headroom.csv` | 606.0 | audited | `diagnose` | column, family, used, rho_with_residual, rho_with_label, abs_resid |
-| `post_freeze/shape_redundancy_from_A.csv` | 62.8 | receipt | `redundancy` | source, block, col, r2_from_A |
-| `redundancy.csv` | 38.4 | cited | `diagnose`, `report_checks_R8` | family, column, r2_from_protospacer |
+| `ceiling.json` | 0.3 | cited | `diagnose`, `cost_boostmec_shipped`, `report_checks_R7` |  |
+| `headroom.csv` | 606.0 | audited | `diagnose`, `cost_boostmec_shipped` | column, family, used, rho_with_residual, rho_with_label, abs_resid |
+| `post_freeze/shape_redundancy_from_A.csv` | 62.8 | receipt | `redundancy`, `cost_boostmec_shipped` | source, block, col, r2_from_A |
+| `redundancy.csv` | 38.4 | cited | `diagnose`, `cost_boostmec_shipped`, `report_checks_R8` | family, column, r2_from_protospacer |
 
 ### Appendix B2a — Curation: what it is, and why family A doubled between cohorts
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `curation_variance.csv` | 0.4 | cited | `curation_variance`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R5`, `report_checks_R8` | rows, n, sd_x, sd_y, slope_beta, pearson, spearman … |
-| `post_freeze/mappability_depth.csv` | 1.1 | cited | `mappability_stratum`, `paper_numbers_D` | stratum, n, depth_min, depth_max, rho_base, rho_base+A, rho_base+D … |
-| `post_freeze/mappability_stratum.csv` | 2.2 | cited | `mappability_stratum`, `paper_numbers_D` | stratum, n, genes, rho_base, rho_base+U, rho_base+A, rho_base+U+A … |
-| `post_freeze/mappability_stratum_guides.csv` | 1796.8 | receipt | `mappability_stratum` | sgRNAID, u250, u1000, seed_dup, copies, ctl_depth |
-| `post_freeze/mappability_stratum_oof.csv` | 3459.1 | receipt | `mappability_stratum`, `gate_test`, `signal_profile` | sgRNAID, y, group, base, base+U, base+A, base+U+A … |
-| `why_inflation.csv` | 0.5 | cited | `why_inflation`, `paper_numbers_C`, `report_checks_R8` | sub_seed, n_rows, family, spearman, d_spearman |
+| `curation_variance.csv` | 0.4 | cited | `curation_variance`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R5`, `report_checks_R8` | rows, n, sd_x, sd_y, slope_beta, pearson, spearman … |
+| `post_freeze/mappability_depth.csv` | 1.1 | cited | `mappability_stratum`, `cost_boostmec_shipped`, `paper_numbers_D` | stratum, n, depth_min, depth_max, rho_base, rho_base+A, rho_base+D … |
+| `post_freeze/mappability_stratum.csv` | 2.2 | cited | `mappability_stratum`, `cost_boostmec_shipped`, `paper_numbers_D` | stratum, n, genes, rho_base, rho_base+U, rho_base+A, rho_base+U+A … |
+| `post_freeze/mappability_stratum_guides.csv` | 1796.8 | receipt | `mappability_stratum`, `cost_boostmec_shipped` | sgRNAID, u250, u1000, seed_dup, copies, ctl_depth |
+| `post_freeze/mappability_stratum_oof.csv` | 3459.1 | receipt | `mappability_stratum`, `gate_test`, `signal_profile`, `cost_boostmec_shipped` | sgRNAID, y, group, base, base+U, base+A, base+U+A … |
+| `why_inflation.csv` | 0.5 | cited | `why_inflation`, `cost_boostmec_shipped`, `paper_numbers_C`, `report_checks_R8` | sub_seed, n_rows, family, spearman, d_spearman |
 
 ### Appendix B3 — The family ablations on the curated cohort, and what they measure
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `ablation_curated_shape.csv` | 0.5 | cited | `notebook`, `run_ablation`, `curated_ablation`, `report_checks_R8` | family, n_cols, continuous, continuous_frac, d_spearman |
-| `ablation_shape_joint.csv` | 0.5 | cited | `notebook`, `run_ablation`, `paper_numbers_A`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `base_enrichment.csv` | 0.3 | cited | `base_enrichment`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd |
-| `base_enrichment_published.csv` | 0.3 | cited | `base_enrichment`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd |
+| `ablation_curated_shape.csv` | 0.5 | cited | `notebook`, `run_ablation`, `curated_ablation`, `cost_boostmec_shipped`, `report_checks_R8` | family, n_cols, continuous, continuous_frac, d_spearman |
+| `ablation_shape_joint.csv` | 0.5 | cited | `notebook`, `run_ablation`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `base_enrichment.csv` | 0.3 | cited | `base_enrichment`, `cost_boostmec_shipped`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd |
+| `base_enrichment_published.csv` | 0.3 | cited | `base_enrichment`, `cost_boostmec_shipped`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd |
 
 ### Appendix B4 — The flank's shape and 3D structure add nothing that its composition does not already hold
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `post_freeze/esp_replicate.csv` | 1.2 | audited | `esp_replicate`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd, fold_rho |
-| `post_freeze/geom_importance.csv` | 1.2 | audited | `geom_importance` | column, importance, r2_from_composition, r2_from_dinucleotide_gb, r2_from_dinucleotide_ridge |
-| `post_freeze/human_shape_ablation.csv` | 3.5 | audited | `human_shape`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
-| `post_freeze/human_shape_ablation_locus.csv` | 0.7 | audited | `human_shape` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
-| `post_freeze/human_shape_ablation_twin.csv` | 0.7 | audited | `human_shape`, `report_checks_R5`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
-| `post_freeze/local_sequence_bound.csv` | 5.4 | audited | `local_sequence_bound` | matrix, arm, seed, fold, n_train, n_test, n_sel … |
-| `post_freeze/local_sequence_bound_summary.csv` | 0.7 | audited | `local_sequence_bound` | arm, matrix, base_rho, rho, delta, lo, hi … |
-| `post_freeze/ridge_check.csv` | 1.0 | audited | `ridge_check`, `report_checks_R8` | arm, n_cols, alpha, rho, fold_rho |
-| `post_freeze/shape_ablation_paired.csv` | 6.5 | receipt | `shape_analyze` | arm, n_ext, rho, selected, d_vs_A, seeds_vs_A, ahead_vs_A … |
+| `post_freeze/esp_replicate.csv` | 1.2 | audited | `esp_replicate`, `cost_boostmec_shipped`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd, fold_rho |
+| `post_freeze/geom_importance.csv` | 1.2 | audited | `geom_importance`, `cost_boostmec_shipped` | column, importance, r2_from_composition, r2_from_dinucleotide_gb, r2_from_dinucleotide_ridge |
+| `post_freeze/human_shape_ablation.csv` | 3.5 | audited | `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
+| `post_freeze/human_shape_ablation_locus.csv` | 0.7 | audited | `human_shape`, `cost_boostmec_shipped` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
+| `post_freeze/human_shape_ablation_twin.csv` | 0.7 | audited | `human_shape`, `cost_boostmec_shipped`, `report_checks_R5`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
+| `post_freeze/local_sequence_bound.csv` | 5.4 | audited | `local_sequence_bound`, `cost_boostmec_shipped` | matrix, arm, seed, fold, n_train, n_test, n_sel … |
+| `post_freeze/local_sequence_bound_summary.csv` | 0.7 | audited | `local_sequence_bound`, `cost_boostmec_shipped` | arm, matrix, base_rho, rho, delta, lo, hi … |
+| `post_freeze/ridge_check.csv` | 1.0 | audited | `ridge_check`, `cost_boostmec_shipped`, `report_checks_R8` | arm, n_cols, alpha, rho, fold_rho |
+| `post_freeze/shape_ablation_paired.csv` | 6.5 | receipt | `shape_analyze`, `cost_boostmec_shipped` | arm, n_ext, rho, selected, d_vs_A, seeds_vs_A, ahead_vs_A … |
 
 ### Appendix B5 — A boundary experiment, demoted: the dCas9 / CRISPRi screens
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `crispri_screen_agreement.csv` | 1.0 | cited | `crispri_screens` | pair, a, b, n_shared, subset, spearman, label_sd … |
-| `crispri_screen_family_a.csv` | 1.4 | cited | `crispri_screens`, `report_checks_R8` | screen, subset, arm, n_rows, n_cols, spearman, spearman_sd |
-| `crispri_screen_strand.csv` | 1.0 | cited | `crispri_screens` | screen, subset, n, spearman_coding_strand, n_coding, mean_y_coding, n_noncoding … |
-| `cui_essential_marginals.csv` | 47.8 | cited | `cui_screen`, `report_checks_R8` | subset, column, n, spearman |
-| `cui_essential_position.csv` | 0.3 | cited | `cui_screen` | grouping, arm, spearman, spearman_sd |
-| `cui_essential_strand.csv` | 0.4 | cited | `cui_screen`, `report_checks_R8` | grouping, arm, spearman, spearman_sd |
-| `cui_essentiality_split.csv` | 1.2 | cited | `cui_screen`, `report_checks_R8` | subset, arm, n_rows, label_sd, spearman, spearman_sd |
-| `cui_strand_summary.csv` | 0.9 | cited | `cui_screen`, `report_checks_R8` | subset, coding_strand, n, mean_label, mean_up1000_purine, mean_up500_gc, gap_in_label_sd … |
-| `grouped_retention.csv` | 0.8 | cited | `report_checks_R8` | family, random, gene, retained_pct, reach, excess_loss_pp |
-| `post_freeze/cut_within_gene.csv` | 2.0 | receipt | `cut_within_gene` | screen, arm, seed, overall, between_genes, within_genes |
-| `strand_families.csv` | 3.6 | cited | `strand_families`, `report_checks_R8` | grouping, arm, spearman, spearman_sd |
-| `strand_families_proxies.csv` | 0.7 | receipt | `strand_families` | family, n_cols, max_abs_rho_with_strand, n_proxy_cols, strongest |
-| `strand_families_recoverable.csv` | 0.6 | cited | `strand_recoverable` | family, n_cols, n_proxy, auc_all, auc_after_removal |
-| `strand_families_within.csv` | 3.5 | cited | `strand_families`, `report_checks_R8` | stratum, grouping, arm, n, spearman, spearman_sd |
-| `strand_flip.csv` | 0.5 | cited | `strand_strata` | arm, strand_selected_in, true, flipped, shuffled, constant, true_sd … |
-| `strand_strata_rousset.csv` | 0.9 | cited | `strand_strata` | screen, stratum, grouping, arm, n, spearman, spearman_sd … |
-| `strand_within_gene_cui.csv` | 5.0 | receipt | `strand_within_gene` | screen, arm, seed, overall, between_genes, within_genes |
-| `strand_within_gene_cui_joint.csv` | 2.8 | receipt | `strand_within_gene` | screen, arm, seed, overall, between_genes, within_genes |
-| `strand_within_gene_cui_summary.csv` | 1.9 | cited | `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
-| `strand_within_gene_rousset.csv` | 1.7 | receipt | `strand_within_gene` | screen, arm, seed, overall, between_genes, within_genes |
-| `strand_within_gene_rousset_summary.csv` | 0.7 | cited | `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
+| `crispri_screen_agreement.csv` | 1.0 | cited | `crispri_screens`, `cost_boostmec_shipped` | pair, a, b, n_shared, subset, spearman, label_sd … |
+| `crispri_screen_family_a.csv` | 1.4 | cited | `crispri_screens`, `cost_boostmec_shipped`, `report_checks_R8` | screen, subset, arm, n_rows, n_cols, spearman, spearman_sd |
+| `crispri_screen_strand.csv` | 1.0 | cited | `crispri_screens`, `cost_boostmec_shipped` | screen, subset, n, spearman_coding_strand, n_coding, mean_y_coding, n_noncoding … |
+| `cui_essential_marginals.csv` | 47.8 | cited | `cui_screen`, `cost_boostmec_shipped`, `report_checks_R8` | subset, column, n, spearman |
+| `cui_essential_position.csv` | 0.3 | cited | `cui_screen`, `cost_boostmec_shipped` | grouping, arm, spearman, spearman_sd |
+| `cui_essential_strand.csv` | 0.4 | cited | `cui_screen`, `cost_boostmec_shipped`, `report_checks_R8` | grouping, arm, spearman, spearman_sd |
+| `cui_essentiality_split.csv` | 1.2 | cited | `cui_screen`, `cost_boostmec_shipped`, `report_checks_R8` | subset, arm, n_rows, label_sd, spearman, spearman_sd |
+| `cui_strand_summary.csv` | 0.9 | cited | `cui_screen`, `cost_boostmec_shipped`, `report_checks_R8` | subset, coding_strand, n, mean_label, mean_up1000_purine, mean_up500_gc, gap_in_label_sd … |
+| `post_freeze/cut_within_gene.csv` | 2.0 | receipt | `cut_within_gene`, `cost_boostmec_shipped` | screen, arm, seed, overall, between_genes, within_genes |
+| `strand_families.csv` | 3.6 | cited | `strand_families`, `cost_boostmec_shipped`, `report_checks_R8` | grouping, arm, spearman, spearman_sd |
+| `strand_families_proxies.csv` | 0.7 | receipt | `strand_families`, `cost_boostmec_shipped` | family, n_cols, max_abs_rho_with_strand, n_proxy_cols, strongest |
+| `strand_families_recoverable.csv` | 0.6 | cited | `strand_recoverable`, `cost_boostmec_shipped` | family, n_cols, n_proxy, auc_all, auc_after_removal |
+| `strand_families_within.csv` | 3.5 | cited | `strand_families`, `cost_boostmec_shipped`, `report_checks_R8` | stratum, grouping, arm, n, spearman, spearman_sd |
+| `strand_flip.csv` | 0.5 | cited | `strand_strata`, `cost_boostmec_shipped` | arm, strand_selected_in, true, flipped, shuffled, constant, true_sd … |
+| `strand_strata_rousset.csv` | 0.9 | cited | `strand_strata`, `cost_boostmec_shipped` | screen, stratum, grouping, arm, n, spearman, spearman_sd … |
+| `strand_within_gene_cui.csv` | 5.0 | receipt | `strand_within_gene`, `cost_boostmec_shipped` | screen, arm, seed, overall, between_genes, within_genes |
+| `strand_within_gene_cui_joint.csv` | 2.8 | receipt | `strand_within_gene`, `cost_boostmec_shipped` | screen, arm, seed, overall, between_genes, within_genes |
+| `strand_within_gene_rousset.csv` | 1.7 | receipt | `strand_within_gene`, `cost_boostmec_shipped` | screen, arm, seed, overall, between_genes, within_genes |
 
 ### documents
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `README.md` | 2.0 | document | — |  |
-| `RESULTS.md` | 34.2 | document | — |  |
+| `RESULTS.md` | 34.3 | document | — |  |
 | `RESULTS_archive_2026-10-10.md` | 110.9 | document | — |  |
 
 ### figures
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `post_freeze/figure_manifest.csv` | 0.2 | figure | — | figure, width_in, height_in |
+| `post_freeze/figure_manifest.csv` | 0.2 | figure | `cost_boostmec_shipped` | figure, width_in, height_in |
 | `post_freeze/figures/fig1_representation.pdf` | 15.5 | figure | — |  |
 | `post_freeze/figures/fig1_representation.png` | 153.4 | figure | — |  |
 | `post_freeze/figures/fig2_locality.pdf` | 18.3 | figure | — |  |
@@ -469,41 +511,20 @@ Within a group the order is alphabetical.
 | `post_freeze/figures/p_fig5_ceiling.png` | 345.9 | figure | — |  |
 | `post_freeze/figures/p_fig6_width.pdf` | 21.5 | figure | — |  |
 | `post_freeze/figures/p_fig6_width.png` | 319.7 | figure | — |  |
-| `post_freeze/figures/p_fig7_cost.pdf` | 39.6 | figure | — |  |
-| `post_freeze/figures/p_fig7_cost.png` | 200.9 | figure | — |  |
+| `post_freeze/figures/p_fig7_cost.pdf` | 86.3 | figure | — |  |
+| `post_freeze/figures/p_fig7_cost.png` | 341.7 | figure | — |  |
 
 ### not placed in a section (kept by decision; see REMOVED.md)
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `asymmetry_expression.csv` | 1.3 | receipt | `asymmetry` | band, group, n_guides, median_log_tpm, arm, spearman, r2 |
-| `asymmetry_strand_audit.csv` | 0.2 | cited | `asymmetry` | source, orientation, guides |
-| `crisprhal_wide_window_f2.csv` | 0.3 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |
-| `crisprhal_wide_window_f3.csv` | 0.3 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |
-| `crisprhal_wide_window_f4.csv` | 0.2 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |
-| `crisprhal_wide_window_f5.csv` | 0.2 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |
-| `human_transfer.csv` | 0.7 | cited | — | arm, rho, sd, n_train, n_test, seed |
-| `inference_t4.csv` | 0.8 | cited | — | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
-| `kmer_order_noselect.csv` | 0.6 | cited | — | arm, n_columns, spearman, sd |
-| `learning_curve.csv` | 0.3 | cited | `expand` | , r2, r2, spearman, spearman, pearson, pearson |
-| `memory_comparison.csv` | 0.5 | cited | `bench` | config, columns, peak_gb_median, peak_gb_min, peak_gb_max, select_s_median, rho … |
-| `memory_comparison_runs.csv` | 1.2 | receipt | `bench` | config, peak_gb, rep, columns, select_s, rho |
-| `net_cost.csv` | 0.1 | receipt | `bench` | config, columns, params, train_s, rho, peak_gb |
-| `post_freeze/gene_grouped_slicer.csv` | 0.4 | receipt | `gene_grouped_vs_crisprhal` | model, fold, n_test, spearman |
-| `post_freeze/human_shape_ablation_locus_n900.csv` | 0.9 | audited | — | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
-| `post_freeze/import_check.json` | 0.3 | audited | — |  |
+| `post_freeze/boostmec_shipped_image.txt` | 0.4 | receipt | — |  |
 | `post_freeze/interp_hal_cache/hal_full1.npz` | 348.8 | receipt | — |  |
-| `post_freeze/interp_hal_cache/hal_full1_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
 | `post_freeze/interp_hal_cache/hal_full2.npz` | 349.0 | receipt | — |  |
-| `post_freeze/interp_hal_cache/hal_full2_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
 | `post_freeze/interp_hal_cache/hal_halfA1.npz` | 348.5 | receipt | — |  |
-| `post_freeze/interp_hal_cache/hal_halfA1_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
 | `post_freeze/interp_hal_cache/hal_halfA2.npz` | 348.9 | receipt | — |  |
-| `post_freeze/interp_hal_cache/hal_halfA2_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
 | `post_freeze/interp_hal_cache/hal_halfB1.npz` | 349.0 | receipt | — |  |
-| `post_freeze/interp_hal_cache/hal_halfB1_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
 | `post_freeze/interp_hal_cache/hal_halfB2.npz` | 349.0 | receipt | — |  |
-| `post_freeze/interp_hal_cache/hal_halfB2_fit.csv` | 0.1 | receipt | — | tag, n_train, fit_seconds, test_rho, seed |
 | `post_freeze/interp_hal_cache/hal_shipped.npz` | 354.8 | receipt | — |  |
 | `post_freeze/interp_hal_cache/slicer_compact_full1.npz` | 245.9 | receipt | — |  |
 | `post_freeze/interp_hal_cache/slicer_compact_full2.npz` | 247.0 | receipt | — |  |
@@ -520,31 +541,22 @@ Within a group the order is alphabetical.
 | `post_freeze/interp_hal_cache/slicer_full_halfB2.npz` | 277.6 | receipt | — |  |
 | `post_freeze/interp_hal_cache/slicer_full_shipped.npz` | 277.6 | receipt | — |  |
 | `post_freeze/interp_hal_cache/slicer_oof_folds.npz` | 143.2 | receipt | — |  |
-| `post_freeze/mix_cat_stage1.csv` | 31.1 | receipt | — | draw, seed, fold, k, rho |
-| `post_freeze/mix_et_stage1.csv` | 0.5 | receipt | — | draw, seed, fold, k, rho |
-| `post_freeze/mix_lgb_stage1.csv` | 48.5 | receipt | — | draw, seed, fold, k, rho |
-| `post_freeze/mix_mlp_stage1.csv` | 1.3 | receipt | — | draw, seed, fold, k, rho |
-| `post_freeze/mix_ridge_stage1.csv` | 0.2 | receipt | — | draw, seed, fold, k, rho |
-| `post_freeze/topend_rank_capacity.csv` | 3.0 | audited | — | lr, depth, k, spearman, top10pct_prec, top1pct_prec, pick10_pctile … |
 | `post_freeze/tune_stage1_effects.txt` | 3.2 | cited | — |  |
-| `recoverability_groups.csv` | 4.6 | cited | — | key, n_cols, family, mean_r2_from_guide, group_oof_r2_on_label |
-| `strand_within_gene.csv` | 0.5 | receipt | — | arm, n, genes, overall, between_genes, within_genes |
-| `strand_within_gene_cui_joint_summary.csv` | 1.0 | cited | — | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
 
 ### re-derived result files (kept as evidence they can be rebuilt)
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `rederived/abund_local_vs_mappability.csv` | 1.1 | cited | — | track, uniq.w100, gc.w100, uniq.w500, gc.w500, uniq.w2000, gc.w2000 … |
-| `rederived/additivity_reduced.csv` | 0.5 | cited | `report_checks_R3`, `report_checks_R7` | arm, n_columns, ridge, lightgbm, xgboost, boosting_minus_ridge |
-| `rederived/d_mechanics_reconstructibility.csv` | 0.2 | cited | `report_checks_R1`, `report_checks_R7` | oof_r2_from_mono_di |
-| `rederived/dissection_supercoiling.csv` | 0.5 | cited | `paper_numbers_A`, `report_checks_R5`, `report_checks_R7`, `report_checks_R8` | experiment, columns, spearman, d_spearman, note |
-| `rederived/final_eval_metric_bootstrap.csv` | 0.6 | cited | `report_checks_R7` | metric, diff, ci_lo, ci_hi, excludes_zero, favours |
-| `rederived/grouped_retention.csv` | 0.8 | cited | `report_checks_R8` | family, random, gene, retained_pct, reach, excess_loss_pp |
-| `rederived/kmer_order_noselect.csv` | 0.1 | cited | — | arm, n_columns, spearman, sd |
-| `rederived/matched_search_folds.csv` | 0.6 | cited | `report_checks_R6` | fold, slicer_tuned, slicer_untuned, hal_default, hal_single_split, hal_matched, d_matched |
-| `rederived/portability_364.csv` | 0.1 | cited | `report_checks_R1` | arm, n_columns, spearman, spearman_sd |
-| `rederived/selector_control.csv` | 0.3 | cited | `report_checks_R1`, `report_checks_R7`, `report_checks_R8` | arm, n_cols, selected, spearman, sd |
-| `rederived/seqnet_matched.csv` | 1.3 | cited | `seqnet`, `report_checks_R2` | model, flank, seed, fold, r2, spearman, seconds |
-| `rederived/their_split_slicer.csv` | 0.3 | cited | `report_checks_R6`, `report_checks_R7` | model, split, n_train, n, spearman, kendall_tau, pearson … |
+| `rederived/abund_local_vs_mappability.csv` | 1.1 | cited | `cost_boostmec_shipped` | track, uniq.w100, gc.w100, uniq.w500, gc.w500, uniq.w2000, gc.w2000 … |
+| `rederived/additivity_reduced.csv` | 0.5 | cited | `cost_boostmec_shipped`, `report_checks_R3`, `report_checks_R7` | arm, n_columns, ridge, lightgbm, xgboost, boosting_minus_ridge |
+| `rederived/d_mechanics_reconstructibility.csv` | 0.2 | cited | `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R7` | oof_r2_from_mono_di |
+| `rederived/dissection_supercoiling.csv` | 0.5 | cited | `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R5`, `report_checks_R7`, `report_checks_R8` | experiment, columns, spearman, d_spearman, note |
+| `rederived/final_eval_metric_bootstrap.csv` | 0.6 | cited | `cost_boostmec_shipped`, `report_checks_R7` | metric, diff, ci_lo, ci_hi, excludes_zero, favours |
+| `rederived/grouped_retention.csv` | 0.8 | cited | `cost_boostmec_shipped`, `report_checks_R8` | family, random, gene, retained_pct, reach, excess_loss_pp |
+| `rederived/kmer_order_noselect.csv` | 0.1 | cited | `cost_boostmec_shipped` | arm, n_columns, spearman, sd |
+| `rederived/matched_search_folds.csv` | 0.6 | cited | `cost_boostmec_shipped`, `report_checks_R6` | fold, slicer_tuned, slicer_untuned, hal_default, hal_single_split, hal_matched, d_matched |
+| `rederived/portability_364.csv` | 0.1 | cited | `cost_boostmec_shipped`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd |
+| `rederived/selector_control.csv` | 0.3 | cited | `cost_boostmec_shipped`, `report_checks_R1`, `report_checks_R7`, `report_checks_R8` | arm, n_cols, selected, spearman, sd |
+| `rederived/seqnet_matched.csv` | 1.3 | cited | `seqnet`, `cost_boostmec_shipped`, `report_checks_R2` | model, flank, seed, fold, r2, spearman, seconds |
+| `rederived/their_split_slicer.csv` | 0.3 | cited | `cost_boostmec_shipped`, `report_checks_R6`, `report_checks_R7` | model, split, n_train, n, spearman, kendall_tau, pearson … |
 

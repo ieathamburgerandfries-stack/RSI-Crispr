@@ -1,0 +1,2 @@
+n_guides,pipeline_seconds,ms_per_guide,rho_released_model_on_ecoli,spearman_python_loader_vs_shipped,max_abs_diff_python_loader_vs_shipped
+33567,171.026,5.095063604135014,-0.06607822526307204,1.0,7.105427357601002e-15

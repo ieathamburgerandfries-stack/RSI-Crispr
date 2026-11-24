@@ -8,19 +8,20 @@
 # WHY. The head-to-head of the report is on crisprHAL 2's own random splits. A random split lets a model that reads 378 nt of context recognise the locus of a held-out
 # guide from its neighbours in training. These folds are the ones SLICER's gene-grouped numbers use (seed 41), so the comparison carries no locus leakage for either model.
 # The model is crisprHAL 2's WT-SpCas9 network with its PUBLISHED configuration (48 epochs; nothing re-tuned), input = the 378 nt of its own context
-# (189 nt upstream, the 20-nt guide and PAM, 166 nt downstream), batch 256 (cuDNN cannot allocate the 2,023 nt GRU workspace at its published 1,024; at 378 nt the two
-# batches differ by -0.011 on one fold).
+# (189 nt upstream, the 20-nt guide and PAM, 166 nt downstream), at its PUBLISHED batch size of 1,024. (A first run of this file used batch 256, the batch of the 2,023 nt width
+# experiment, where cuDNN cannot allocate the GRU workspace at 1,024; at 378 nt it can, and 256 cost crisprHAL 2 0.016 on random-row folds, 0.681 against 0.697, so that run
+# handicapped it: it is kept as results/crisprhal_gene_grouped_fcolab_b256.csv and is not the comparison.)
 #
-# AFTER IT RUNS: the cell downloads crisprhal_gene_grouped_fcolab.csv. Save it as results/crisprhal_gene_grouped_fcolab.csv in the project and run
+# AFTER IT RUNS: the cell downloads crisprhal_gene_grouped_fcolab_b1024.csv. Save it as results/crisprhal_gene_grouped_fcolab_b1024.csv in the project and run
 #   python -m sgrna.compare.gene_grouped_vs_crisprhal assemble
 # If the session runs out of compute units first, paste the printed lines back: each fold prints its rho when it finishes and the csv is rewritten after every fold.
 # ============================================================================
 import os, subprocess, sys, time
 
-BATCH, SEED, HALF, CORE = 256, 41, 1000, 23
+BATCH, SEED, HALF, CORE = 1024, 41, 1000, 23
 UP, DOWN = 189, 166
 MODEL = "WT-SPCAS9"
-HAL_DIR, DATA, OUT = "/content/crisprHAL", "/content/crisprhal_widewindow_input_genefolds.csv.gz", "/content/crisprhal_gene_grouped_fcolab.csv"
+HAL_DIR, DATA, OUT = "/content/crisprHAL", "/content/crisprhal_widewindow_input_genefolds.csv.gz", "/content/crisprhal_gene_grouped_fcolab_b1024.csv"
 
 try:
     import tensorflow as tf
@@ -70,7 +71,7 @@ for k in range(5):
     rho = float(spearmanr(y[va], pred).statistic)
     if not np.isfinite(pred).all() or np.std(pred) == 0 or rho < 0.30:
         raise RuntimeError(f"fold {k}: degenerate fit (rho {rho:.4f})")
-    rows.append(dict(model="crisprHAL 2", fold=k, spearman=rho, r2=float(r2_score(y[va], pred)), fit_minutes=round((time.time() - t0) / 60, 2), n_train=len(tr), n_test=len(va), note="Colab T4, 378 nt, batch 256"))
+    rows.append(dict(model="crisprHAL 2", fold=k, spearman=rho, r2=float(r2_score(y[va], pred)), fit_minutes=round((time.time() - t0) / 60, 2), n_train=len(tr), n_test=len(va), note=f"Colab T4, 378 nt, batch {BATCH}"))
     pd.DataFrame(rows).to_csv(OUT, index=False)
     print(f"fold {k}: rho {rho:.4f}   {rows[-1]['fit_minutes']:.1f} min", flush=True)
 

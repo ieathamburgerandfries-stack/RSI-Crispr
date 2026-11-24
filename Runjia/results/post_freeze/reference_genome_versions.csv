@@ -1,0 +1,3 @@
+accession_version,length_bp,status,replaced_by,record_updated,looked_up,source
+NC_000913.2,4639675,replaced,NC_000913.3,2013/07/22,2026-11-24,"NCBI E-utilities esummary, db=nuccore"
+NC_000913.3,4641652,current,,2026/09/02,2026-11-24,"NCBI E-utilities esummary, db=nuccore"

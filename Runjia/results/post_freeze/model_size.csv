@@ -1,4 +1,5 @@
-model,trees,nodes,leaves,inner_nodes,columns_used,columns_selected,max_depth,bytes_file,bytes_json,parameters,n_train
-SLICER default,400.0,12276.0,6338.0,5938.0,284.0,300.0,4.0,682427,812408.0,,26853.0
-SLICER tuned,4000.0,223080.0,113540.0,109540.0,450.0,450.0,5.0,10229364,13560740.0,,26853.0
-crisprHAL 2,,,,,,,,9633304,,790533.0,
+model,trees,nodes,leaves,inner_nodes,columns_used,columns_selected,max_depth,bytes_file,bytes_json,parameters,n_train,bytes_gzip,sha256,commit
+SLICER default,400.0,12276.0,6338.0,5938.0,284.0,300.0,4.0,682427,812408.0,,26853.0,146951.0,,
+SLICER tuned,4000.0,223080.0,113540.0,109540.0,450.0,450.0,5.0,10229364,13560740.0,,26853.0,2714529.0,,
+crisprHAL 2,,,,,,,,9633304,,790533.0,,8763805.0,,
+BoostMEC (released),1582.0,,136142.0,134560.0,,149.0,12.0,11455146,,,23902.0,4141273.0,24ca3f04db06f9ba1c993496dae2ea54f567fc327236078dbdc73a4a92d01720,cdf190c532ad244c9d451ce22a1cf83a6203c8ef
