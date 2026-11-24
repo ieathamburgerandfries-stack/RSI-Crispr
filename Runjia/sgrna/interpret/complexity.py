@@ -1,4 +1,4 @@
-"""What is SLICER's equivalent of a CNN's parameter count?
+"""The default SLICER model stores about 6,300 fitted leaf values, against 790,533 parameters in crisprHAL 2.
 
 A convolutional network is quoted by its trainable parameter count because that
 is what is fitted and what has to be stored: crisprHAL 2's WT-SpCas9 model holds

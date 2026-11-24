@@ -1,4 +1,4 @@
-"""Joint arms on the curated cohort: how much of the eleven family gains overlap?
+"""The family gains overlap heavily: all eleven families together add +0.2030 rho, far less than the +0.7046 their single gains sum to.
 
 Appendix B3 reports eleven single-family increments over one base and warns that
 they must not be added up — summing them gives +0.70 ρ, which is not a real

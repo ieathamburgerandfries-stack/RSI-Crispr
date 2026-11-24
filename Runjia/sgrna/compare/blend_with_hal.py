@@ -1,4 +1,4 @@
-"""Is crisprHAL 2's network complementary to the tuned trees? Equal-weight blends on its own splits (no weight is fitted on test data).
+"""Averaging the tuned trees with crisprHAL 2 at equal weight adds only +0.0085 on SpCas9 and nothing detectable on eSpCas9, so the network adds little beyond the trees. Equal-weight blends on its own splits (no weight is fitted on test data).
 
 If the two models err differently, averaging them beats both; if the trees already capture what the network does, it does not. Uses the
 raw test predictions saved by `panel_vs_hal.py`; z-scored average with weight 1/2 each, plus the Spearman of the correlation between

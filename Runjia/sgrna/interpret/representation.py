@@ -1,4 +1,4 @@
-"""Does the model need all 6,232 published columns, or one spelling of the 20-mer?
+"""Seventy-four mononucleotide columns, a lossless spelling of the 20-mer, recover 96.4% of the full published matrix's rho, so the model does not need the other columns.
 
 Section 10 of RESULTS.md establishes that 6,169 of the 6,232 published columns
 are a deterministic function of the 20 nt protospacer -- the matrix is an

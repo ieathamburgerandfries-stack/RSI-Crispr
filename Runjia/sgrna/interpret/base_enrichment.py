@@ -1,4 +1,4 @@
-"""Is the curated table inflated because the base has no dense summaries?
+"""Adding the published 63 hand-named summary columns to the sparse base takes only 0.0015 off family A's gain, so missing dense summaries do not explain the curated table's larger gains.
 
 Every family's Δρ roughly tripled when the cohort moved, with the ordering
 almost unchanged (rank ρ 0.97, Appendix B3). Two of the four candidate causes

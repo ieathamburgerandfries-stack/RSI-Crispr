@@ -1,4 +1,4 @@
-"""Do objectives aimed at the top of the ranking improve top-end metrics, where crisprHAL 2 still leads on pick percentile?
+"""No objective aimed at the top of the ranking beat plain squared error on top-decile precision (0.291 for squared error, at most 0.289 for the others), and the rank objectives lose Spearman.
 
 The tuned model is trained with squared error, which spends most of its effort on the middle of the label distribution. A design
 tool uses the top: the guides it would pick. Arms (all with the tuned configuration d099x, 4,000 trees, 450 columns):

@@ -1,4 +1,4 @@
-"""Can the 427-column representation be rebuilt for a guide we have never seen?
+"""A model using only the 412 columns that can be computed from any 20-mer plus the genome matches the full published matrix to within 0.00003 in ρ.
 
 Finding 2 says 427 columns do the work of 6,232. That is a claim about
 *sufficiency*, and a pivot to crisprHAL's cohort needs a different property:

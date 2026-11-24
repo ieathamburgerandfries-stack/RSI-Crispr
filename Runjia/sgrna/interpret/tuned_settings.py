@@ -1,4 +1,4 @@
-"""What the tuned hyperparameters say about the signal: four tests, each answering a question the choice of settings raises.
+"""The tuned settings show a mostly additive signal: single-split stumps reach held-out rho 0.6905 against 0.7210 for shallow trees, and deeper trees do no better.
 
 The search preferred shallow trees (depth 4-5), slow learning with many trees, 450-900 columns and ignored every
 regularisation knob. Read as statements about the data rather than about the learner:

@@ -1,4 +1,4 @@
-"""Can the adaptive-overfitting caveat be measured by sealing part of the cohort?
+"""On genes sealed away from column selection and settings, family A's gain is 0.0087 lower than in cross-validation of the pool, and a settings search inside the pool does not enlarge the drop.
 
 Part 4 says the curated five-fold figures "carry an unknown adaptive-overfitting
 component" and leaves it unknown, because no untouched external dataset remains.
@@ -61,9 +61,9 @@ SEAL_SEED = 20261016          # fixed here, once, and not varied afterwards
 
 def _seal(protos: np.ndarray, seed: int = SEAL_SEED, verbose: bool = True):
     """Seal whole genes until ~20% of rows are sealed; intergenic rows stay in."""
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
 
-    idx = load_index(verbose=False).set_index(config.ID_COL)
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL)
     gene = idx["gene_name"].reindex(protos)
     gene = np.array([g if isinstance(g, str) and g else "" for g in gene],
                     dtype=object)

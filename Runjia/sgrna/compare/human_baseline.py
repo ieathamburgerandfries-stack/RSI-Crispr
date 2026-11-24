@@ -1,4 +1,4 @@
-"""Does the human baseline reproduce ρ ≈ 0.472 under this harness?
+"""The teammate's human baseline settings give ρ 0.5076 on this matrix against 0.4036 under the harness, and the gain comes from XGBoost's default tree settings, not the column count.
 
 Part 3 says the cross-kingdom conclusion leans on the human side being weak, and
 cites a teammate's ρ ≈ 0.472 against the 0.404 our harness measures — a figure

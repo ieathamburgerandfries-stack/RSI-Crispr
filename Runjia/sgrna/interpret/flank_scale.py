@@ -1,4 +1,4 @@
-"""How far does the flank signal reach, and how much of it is composition resolved to the base?
+"""The flank signal is a bulk GC effect over a few hundred bases: two GC columns reach +0.106 at 200 nt on each side, while purine and amino fractions add nothing.
 
 Three questions about the largest finding, all asked under one protocol (gene-grouped five-fold CV over the 33,567 curated guides, whole genes in
 a fold and guides outside genes grouped by 100 kb block, the default model with nothing searched, selection inside each training fold):
@@ -110,14 +110,14 @@ def _record(rows, part, arm, seed, fold, y, pred):
 
 def run(parts=("window", "resolution", "displacement"), seeds=(41,), threads: int = 6, verbose: bool = True) -> pd.DataFrame:
     from ..build import genome
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
     from ..cohorts.curated_ablation import _base, _block
     from ..controls import sealed_holdout_gene as sg
     from ..controls.mappability_stratum import _groups
 
     sg.N_JOBS = threads
     X, y, names, protos = _base()
-    idx = load_index(verbose=False).set_index(config.ID_COL).reindex(protos).reset_index()
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos).reset_index()
     groups = _groups(protos)
     comp = flank_composition(idx, PARTITION_WINDOWS)
     done = pd.read_csv(RESULT) if RESULT.exists() and RESULT.stat().st_size else pd.DataFrame(columns=["part", "arm", "seed", "fold", "rho"])
@@ -208,14 +208,14 @@ def _asym_cols(comp, u: int, d: int) -> np.ndarray:
 
 
 def run_asymmetric(threads: int = 9, verbose: bool = True) -> None:
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
     from ..cohorts.curated_ablation import _base
     from ..controls import sealed_holdout_gene as sg
     from ..controls.mappability_stratum import _groups
 
     sg.N_JOBS = threads
     X, y, names, protos = _base()
-    idx = load_index(verbose=False).set_index(config.ID_COL).reindex(protos).reset_index()
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos).reset_index()
     groups = _groups(protos)
     comp = flank_composition(idx, TUNE_GRID)
     done = pd.read_csv(TUNE_RESULT) if TUNE_RESULT.exists() and TUNE_RESULT.stat().st_size else pd.DataFrame(columns=["part", "arm", "up", "down", "seed", "fold", "rho"])

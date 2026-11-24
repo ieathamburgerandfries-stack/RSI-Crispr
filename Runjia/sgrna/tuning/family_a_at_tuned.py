@@ -1,4 +1,4 @@
-"""Is family A still worth +0.164 once the model is tuned? The project's headline biology number, re-measured.
+"""Family A's gain survives tuning and grows: +0.1697 rho at the tuned settings, up from +0.1563 at the original settings. The project's headline biology number, re-measured.
 
 Why this exists. `+0.164 rho` (and `+0.156` on sealed genes) is the flanking-context increment, and every version of it was
 measured with the *champion* configuration (depth 4, lr 0.05, 400 trees, 300 columns). The fork's search then found +0.016

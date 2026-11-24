@@ -85,5 +85,19 @@
   "tf_intra_threads": 0,
   "epochs": 48,
   "n_train": 26853
+ },
+ {
+  "session": "2026-11-24 22:37",
+  "cpu": "Apple M5",
+  "cores": 10,
+  "python": "3.12.15",
+  "load1_at_start": 2.32,
+  "argv": [
+   "featurisers"
+  ],
+  "numpy": "2.5.3",
+  "xgboost": "3.4.1",
+  "lightgbm": "4.7.0",
+  "RNA": "2.7.2"
  }
 ]

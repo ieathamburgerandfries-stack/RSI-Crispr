@@ -1,4 +1,4 @@
-"""Does the head-to-head margin survive hyper-parameter tuning?
+"""The margin survives tuning: a per-fold search adds +0.0131 rho to SLICER's original model, so its lead over crisprHAL 2's best known settings is +0.0161.
 
 The §14 comparison is untuned against untuned. Our LightGBM runs on
 hand-chosen settings; crisprHAL 2 runs on the settings its authors shipped.

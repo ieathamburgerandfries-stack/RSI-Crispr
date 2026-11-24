@@ -1,4 +1,4 @@
-"""Does the tuned model's advantage survive a dataset that no choice in this project ever saw? E. coli -> C. rodentium.
+"""On C. rodentium, which no choice in this project ever saw, the tuned model beats the default model by +0.0172, within the range seen inside E. coli. E. coli -> C. rodentium.
 
 The question. The tuned settings were chosen on 70% of the E. coli curated cohort's genes, and the report's own estimate of how much that
 adaptive selection inflates a gain is +0.0087 rho, measured on genes sealed *inside* E. coli. A sturdier seal is a different organism.

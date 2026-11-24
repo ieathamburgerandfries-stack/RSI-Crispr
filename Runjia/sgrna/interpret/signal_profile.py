@@ -25,9 +25,9 @@ DECILE, SLOPE, CORR = OUT / "signal_decile.csv", OUT / "signal_slope.csv", OUT /
 
 
 def _load():
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
 
-    idx = load_index(verbose=False).reset_index(drop=True)
+    idx = load_curated_index(verbose=False).reset_index(drop=True)
     y = idx["score"].to_numpy(float)
     gene = np.array([g if isinstance(g, str) and g else "" for g in idx["gene_name"]], dtype=object)
     comp = flank_composition(idx, WINDOWS)

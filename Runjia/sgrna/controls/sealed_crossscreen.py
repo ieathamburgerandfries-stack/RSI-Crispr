@@ -40,7 +40,7 @@ def _out_path():
 
 def _esp_matrix():
     """eSpCas9 guides: features (base + family A, 6,517 columns, as cached by `transfer.py`), labels and host genes."""
-    from ..build.build_curated_features import _b_numbers
+    from ..build.build_features import _b_numbers
     from ..compare.transfer import build
 
     X, y, names = build("eSpCas9", verbose=False)
@@ -67,8 +67,8 @@ def run(max_draws: int | None = None, threads: int = 6, verbose: bool = True) ->
         if len(done) and (done.seal_seed == sd).any():
             continue
         sealed = _seal(protos, seed=int(sd), verbose=False)
-        from ..build.build_curated_features import load_index
-        idx = load_index(verbose=False).set_index(config.ID_COL)
+        from ..build.build_features import load_curated_index
+        idx = load_curated_index(verbose=False).set_index(config.ID_COL)
         gw = idx["gene_name"].reindex(protos)
         sealed_genes = {g for g, s in zip(gw, sealed) if s and isinstance(g, str) and g}
         te = np.array([g in sealed_genes for g in gene_e])

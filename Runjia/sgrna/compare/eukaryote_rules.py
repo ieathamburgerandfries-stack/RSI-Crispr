@@ -1,4 +1,4 @@
-"""Do the guide's own design rules, and the flank effect, carry between eukaryotes, and how do they differ from E. coli's?
+"""Eukaryotes share guide rules (corrected correlation +0.59 between human tables) that are unrelated to E. coli's: G at position 20 helps in every eukaryotic table and hurts in E. coli.
 
 Finding 7 found that the guide's own position x base rules are unrelated between E. coli and one human matrix (rank correlation
 -0.052, with G at position 20 disfavoured in E. coli and favoured in human). That is one comparison against one cohort, so it cannot say
@@ -91,9 +91,9 @@ def load_all():
 
 def ecoli():
     from sgrna.cohorts.curated_ablation import _base
-    from sgrna.build.build_curated_features import load_index
+    from sgrna.build.build_features import load_curated_index
     X, y, names, protos = _base()
-    idx = load_index(verbose=False).set_index(config.ID_COL).reindex(protos)
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos)
     ctx = (idx["upstream"].str[-30:] + "N" * 23 + idx["downstream"].str[:47]).to_numpy()       # same geometry as the other tables
     return dict(species="E. coli", library="curated", n=len(y), y=(y - y.mean()) / y.std(), protos=np.asarray(protos, dtype=object), ctx=ctx, X=X,
                 sign=1.0, votes=[], anchor=np.nan, tools_agree=0, names=list(names))

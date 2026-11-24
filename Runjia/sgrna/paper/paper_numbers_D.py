@@ -270,6 +270,38 @@ def run(chk):
         claim(f"[D15] {num} / {den}, batch {b:,}: ratio of medians", e[0], r_)
         claim("[D15]   lower end of the bootstrap interval", e[1], lo_)
         claim("[D15]   upper end", e[2], hi_)
+    # the array featurisers against the original ones, alternating in one session (cost_repeats.py featurisers)
+    ft = pd.read_csv(OUT / "cost_repeats_featurisers.csv")
+    assert ft.session.nunique() == 1, "the two featuriser paths were timed alternately in one session"
+    for b, (o_, a_, r_, lo_, hi_) in {1: ("6.05", "0.617", "9.8", "9.8", "9.9"), 100: ("1.41", "0.0718", "19.6", "19.5", "19.7"),
+                                      10000: ("1.40", "0.0811", "17.3", "16.9", "17.8")}.items():
+        o = ft[(ft.batch == b) & ft.model.str.contains("original")].ms_per_guide.to_numpy()
+        a = ft[(ft.batch == b) & ft.model.str.contains("array")].ms_per_guide.to_numpy()
+        rng = np.random.default_rng(0)
+        r = [np.median(rng.choice(o, len(o))) / np.median(rng.choice(a, len(a))) for _ in range(4000)]
+        claim(f"[D15b] SLICER default through the original featurisers, median ms per guide, batch {b:,}", np.median(o), o_)
+        claim(f"[D15b] SLICER default through the array featurisers, median ms per guide, batch {b:,}", np.median(a), a_)
+        claim(f"[D15b] original / array, batch {b:,}: ratio of medians", np.median(o) / np.median(a), r_)
+        claim("[D15b]   lower end of the bootstrap interval", np.percentile(r, 2.5), lo_)
+        claim("[D15b]   upper end", np.percentile(r, 97.5), hi_)
+    claim("[D15b] load average while the two paths were timed, lowest", min(ft.load1_start.min(), ft.load1_end.min()), "2.3")
+    claim("[D15b]   highest", max(ft.load1_start.max(), ft.load1_end.max()), "2.6")
+    # top-5% precision, tuned SLICER minus crisprHAL 2 as released (topk_panel.csv): the two splits of Appendix A2's table
+    tk = pd.read_csv(OUT / "topk_panel.csv").set_index(["split", "arm"])
+    for sp, (d_, lo_, hi_) in {"wt": ("+0.048", "+0.003", "+0.074"), "espcas9": ("+0.019", "−0.017", "+0.049")}.items():
+        r = tk.loc[(sp, "tuned XGBoost")]
+        claim(f"[D16b] top-5% precision, tuned minus crisprHAL 2, {sp}", r.d_top5pct_precision, d_)
+        claim("[D16b]   lower end", r.lo_top5pct_precision, lo_)
+        claim("[D16b]   upper end", r.hi_top5pct_precision, hi_)
+    for sp, (a_, h_) in {"wt": ("0.164", "0.116"), "espcas9": ("0.362", "0.343")}.items():
+        claim(f"[D16b] top-5% precision of tuned SLICER, {sp}", tk.loc[(sp, "tuned XGBoost")].top5pct_precision, a_)
+        claim(f"[D16b] top-5% precision of crisprHAL 2, {sp}", tk.loc[(sp, "crisprHAL 2")].top5pct_precision, h_)
+    # sensitivity-n over every subset size (interp_extra.py; the four rows quoted individually are audited in report_checks_R3.py)
+    sn = pd.read_csv(OUT.parent / "interp_sensitivity_n.csv")
+    for a_, (lo_, hi_) in {"SHAP": ("+0.928", "+0.969"), "ridge surrogate": ("+0.079", "+0.456"), "SHAP, columns permuted": ("−0.045", "+0.038")}.items():
+        v = sn[sn.attribution == a_].pearson
+        claim(f"[D17] sensitivity-n, {a_}, lowest over all ten subset sizes", v.min(), lo_)
+        claim(f"[D17]   highest", v.max(), hi_)
     # the T4 (colab/cost_gpu.py)
     gp = pd.read_csv(OUT / "cost_gpu.csv")
     gs = gp[gp.unit == "ms/guide"]

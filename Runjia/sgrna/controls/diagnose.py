@@ -1,4 +1,4 @@
-"""Why doesn't adding features help? Three diagnostics that answer it.
+"""Binding energy and duplex stability are mostly functions of the 20-mer (70% and 50% of their columns have R² above 0.9), so they add little, and no other feature family is redundant in this way.
 
 The pattern that prompts this module: eight feature families were added, each
 motivated by a real mechanism and a real dataset, and six of them moved

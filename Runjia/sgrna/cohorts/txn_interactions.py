@@ -1,4 +1,4 @@
-"""Family G's own rule, applied on the curated cohort: do the interactions pay?
+"""The interactions do not pay: adding the four interaction columns to the 15 single-factor columns raises rho by only +0.0004, far below the +0.0175 they earn alone.
 
 `g_transcription` was built with a discipline written into its module docstring:
 *claim nothing unless an interaction term beats both of its parents.* The reason

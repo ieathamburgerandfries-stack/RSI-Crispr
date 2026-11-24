@@ -1,4 +1,4 @@
-"""Is the flank effect a *repair* effect? The Chi-site test.
+"""Chi sites do not explain the flank effect: with flank GC held fixed their coefficient is -0.053, within the spread of other GC-matched octamers (mean -0.022). The Chi-site test.
 
 Three results in this project point the same way and have never been put
 together:

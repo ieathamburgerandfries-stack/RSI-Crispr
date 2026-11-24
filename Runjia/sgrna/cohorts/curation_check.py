@@ -1,4 +1,4 @@
-"""Does the curation manufacture the flank effect? The flank association in the guides the curation discarded.
+"""Curation does not create the flank effect: the discarded guides with the most reads still show it (flank GC correlation 0.159, against 0.175 to 0.188 in kept guides). The flank association in the guides the curation discarded.
 
 crisprHAL 2's curation (`external_data/crisprHAL/rawData/generate_WTSpCas9_cutoff_datasets.R`) keeps the sgRNAs of Guo et al.'s screen that lie at a
 target site in the E. coli genome and whose mean count in the two dead-nuclease (unselected) replicates is at least a cutoff (73 for the 33,567-guide set

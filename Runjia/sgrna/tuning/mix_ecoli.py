@@ -1,4 +1,4 @@
-"""Mixing model families for the E. coli model: does an ensemble that is not all XGBoost beat the tuned XGBoost ensemble?
+"""Mixing model families barely helps: no blend beats the tuned XGBoost ensemble by more than +0.0017 rho on held-out genes, and adding weaker families at equal weight lowers it.
 
 The tuned XGBoost models of `tune_ecoli.py` are close to one another (depth 4-5, slow learning, many trees), so averaging
 five of them adds only +0.003 over the best one. Averaging helps in proportion to how differently the members err, so this

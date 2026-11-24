@@ -1,4 +1,4 @@
-"""Does the tuning payoff replicate on a second gene split? A fresh search, judged on a fresh set of held-out genes.
+"""The tuning payoff replicates on a second gene split: a fresh search gains +0.0121 rho on genes it never saw, against +0.0143 on the first split. A fresh search, judged on a fresh set of held-out genes.
 
 Why a second split is not a formality. Everything the fork claims about tuning rests on one partition of genes
 (`tune_ecoli.SPLIT_SEED = 2026`): the +0.0143 on held-out genes, the configurations d099x/d077x/..., the blend weights,

@@ -25,7 +25,7 @@ MAP = RUNJIA / "CODE_MAP.md"
 BEGIN, END = "<!-- generated:begin -->", "<!-- generated:end -->"
 
 PACKAGES = [
-    ("", "Paths and constants every module shares (`config.py`), the conventions for reading the base matrix and writing feature blocks (`io_utils.py`), and the resolver for the main project's untracked results (`common.py`)."),
+    ("", "Three single files at the root of the package, not folders: `config.py` (project paths and shared constants), `io_utils.py` (reading the base matrix and writing feature blocks) and `common.py` (output folders and the resolver for results this repository does not track). Nearly every other module imports them."),
     ("build", "Decode the published matrix, locate every guide on the genome, rebuild features for guides outside it, and the array featurisers that score a guide in tens of microseconds."),
     ("features", "The eleven feature families A-J (family A, the flanking-DNA composition, is the one that matters) and the shape / 3D descriptors that Appendix B4 tested against it."),
     ("harness", "The leakage-safe cross-validation harness every experiment runs through, plus the notebook front end."),
@@ -269,11 +269,13 @@ def render(data: dict[str, list[dict]]) -> str:
             init = (PKG / pkg / "__init__.py").read_text().strip().strip('"')
             blurb = init
         n, total = len(items), sum(i["lines"] for i in items)
-        lines += [f"### `sgrna/{pkg + '/' if pkg else ''}`  —  {n} modules, {total:,} lines", "", blurb, "",
+        head = f"### `sgrna/{pkg}/`  —  {n} modules, {total:,} lines" if pkg else f"### `sgrna/` (the package root: {n} files, {total:,} lines)"
+        lines += [head, "", blurb, "",
                   "| module | lines | what it does | reported in | writes |", "|---|---:|---|---|---|"]
         for i in items:
             res = ", ".join(f"`{r}`" for r in i["results"][:2]) + (f" +{len(i['results']) - 2}" if len(i["results"]) > 2 else "")
-            lines.append(f"| `{i['module']}` | {i['lines']} | {i['doc']} | {i['where']} | {res or '—'} |")
+            name = i["module"] + (".py" if not pkg else "")
+            lines.append(f"| `{name}` | {i['lines']} | {i['doc']} | {i['where']} | {res or '—'} |")
         lines.append("")
     return "\n".join(lines)
 
@@ -397,7 +399,7 @@ def main(argv=None) -> int:
     all_mods = {i["module"] for items in data.values() for i in items}
     on_disk = {f.stem for f in PKG.rglob("*.py") if f.name != "__init__.py"}
     text = MAP.read_text() if MAP.exists() else ""
-    missing = sorted(m for m in on_disk if f"| `{m}` |" not in text)
+    missing = sorted(m for m in on_disk if f"| `{m}` |" not in text and f"| `{m}.py` |" not in text)
     if a.check:
         print(f"{len(on_disk)} modules on disk; {len(missing)} missing from CODE_MAP.md" + (f": {missing}" if missing else ""))
         return 1 if missing else 0

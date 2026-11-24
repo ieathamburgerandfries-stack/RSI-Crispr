@@ -1,4 +1,4 @@
-"""Does the project's human baseline survive when repeat measurements of a guide are kept in the same fold?
+"""Keeping repeat measurements of a guide in one fold drops the teammate's human baseline from 0.508 to 0.2515, below the harness model, so its lead came from memorising repeated guides.
 
 The human iRF matrix (Noshay et al. 2023, Supplementary Table 3; 17,421 guides) decodes to 13,138 distinct 20-mers: 4,216
 sequences appear more than once (4,149 twice, 67 three times; 8,499 rows, 49% of the matrix have a twin), as separate rows

@@ -1,4 +1,4 @@
-"""Which geometry columns does the model use, and are they re-expressions of composition?
+"""The five most used geometry columns are excess twist over the flanks, which dinucleotide fractions predict out of fold at R² 0.86 to 0.97, so they re-express composition.
 
 Fits the selector + model once on the whole cohort (base + mc geom), lists the geometry columns
 that survive selection with their gain, then asks for each whether base composition in the arm

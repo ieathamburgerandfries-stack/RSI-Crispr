@@ -1,4 +1,4 @@
-"""What BoostMEC costs, measured with its released model, its own feature definitions and the same machine and protocol as SLICER and crisprHAL 2.
+"""BoostMEC scores a guide in 3.07 ms at a batch of 100 on one thread, 42.3 times SLICER's default model, using its released model and the same protocol as SLICER and crisprHAL 2.
 
 BoostMEC (Zarate et al., 2022, BMC Bioinformatics 23:446) reports no run time, memory or model size. Its repository (github.com/oazarate/BoostMEC, commit cdf190c,
 cloned to `external_data/BoostMEC/repo`; nothing in it is executed, only read) holds the released LightGBM model `model/model.txt` and `model/rules.rds`, the
@@ -89,11 +89,11 @@ class Released:
 def thirty_mers(n=None):
     """The 30-mers of the curated cohort (4 nt before the guide, guide, PAM, 3 nt after), in the cohort's order."""
     from .. import config
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
     from ..cohorts.curated_ablation import _base
 
     _, y, _, protos = _base()
-    idx = load_index(verbose=False).set_index(config.ID_COL).reindex(protos)
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos)
     s = [(u[-4:] + p + m + d[:3]).upper() for u, p, m, d in zip(idx.upstream, idx.protospacer, idx.pam, idx.downstream)]
     return (s if n is None else s[:n]), np.asarray(y, float)
 

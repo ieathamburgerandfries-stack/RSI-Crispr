@@ -39,7 +39,7 @@ from scipy.stats import spearmanr
 from sklearn.metrics import r2_score
 
 from .. import config
-from ..build import expand
+from ..build import curated_matrix
 from ..build import genome
 
 INDEX_PATH = config.INTERIM / "curated_guide_index.csv"
@@ -64,7 +64,7 @@ def build_index(chunk: int = 12000, deadline: float | None = None,
     Written incrementally and resumable: locating 33.5k guides takes longer
     than one shell call allows, and re-doing the finished ones is wasted time.
     """
-    hal = expand.load_crisprhal()
+    hal = curated_matrix.load_crisprhal()
     hal[config.ID_COL] = hal["protospacer"]
 
     done = pd.DataFrame()

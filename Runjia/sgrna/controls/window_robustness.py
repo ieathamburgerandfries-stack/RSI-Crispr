@@ -1,4 +1,4 @@
-"""Would a different set of flank windows have given the same answer?
+"""Rebuilding family A on a window set sharing no length with the original gives a gain of +0.1634 against +0.1638, so the choice of windows does not matter.
 
 Family A summarises the flanks in windows of **50, 250, 500 and 1,000 nt**
 (`config.FLANK_WINDOWS`). Those four numbers were chosen on the published cohort
@@ -43,7 +43,7 @@ def build(verbose: bool = True):
     """Family A again, on windows sharing no value with the published set."""
     if BLOCK.exists():
         return pd.read_csv(BLOCK)
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
     from ..features import a_flank
 
     # The module reads its windows from `config` at import time, so the constant
@@ -52,7 +52,7 @@ def build(verbose: bool = True):
     original = a_flank.SUMMARY_WINDOWS
     a_flank.SUMMARY_WINDOWS = ALT_WINDOWS
     try:
-        idx = load_index(verbose=verbose)
+        idx = load_curated_index(verbose=verbose)
         block = a_flank.build(idx)
     finally:
         a_flank.SUMMARY_WINDOWS = original

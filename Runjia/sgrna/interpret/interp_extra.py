@@ -1,4 +1,4 @@
-"""Three interpretability tests the report listed as not yet run.
+"""Three interpretability probes on one fixed model: sensitivity-n of SHAP, SHAP interaction values, and counterfactual flank edits.
 
 All three use the production recipe -- base + family A on the curated cohort,
 gain-ranked top-300 columns, the champion XGBoost -- fitted once on 80% of
@@ -212,7 +212,7 @@ def _edit(seq: str, kind: str, rng, frac: float = 0.05, side: str = "up") -> str
 
 
 def counterfactual(n_guides=1500, verbose=True):
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
     from ..features import a_flank
 
     f = _fit(verbose)
@@ -220,7 +220,7 @@ def counterfactual(n_guides=1500, verbose=True):
     protos, te = f["protos"], f["te"]
     rng = np.random.default_rng(SEED)
     pick = rng.choice(te, min(n_guides, len(te)), replace=False)
-    idx = load_index(verbose=False).drop_duplicates("protospacer") \
+    idx = load_curated_index(verbose=False).drop_duplicates("protospacer") \
         .set_index("protospacer").reindex(protos[pick]).reset_index()
     idx = idx.rename(columns={"index": "protospacer"})
     idx[config.ID_COL] = idx["protospacer"]

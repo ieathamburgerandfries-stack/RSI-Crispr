@@ -1,4 +1,4 @@
-"""How many labelled guides does each method need? The one architecture-free comparison.
+"""crisprHAL 2 needs 1.7 to 2.5 times as many labelled guides as SLICER to reach the same accuracy, at every accuracy level that both models reach. The one architecture-free comparison.
 
 Every cost measure in Part 3 depends on how the computation is organised --
 FLOPs on the architecture, CPU-seconds on the hardware, bytes moved on the

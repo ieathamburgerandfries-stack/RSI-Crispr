@@ -150,9 +150,9 @@ def _interp_extra(chk, RES):
     chk(P + "flank edit, order shuffled", float(cf.loc["order shuffled, composition kept", "mean_change"]), 0.23, 2)
     chk(P + "flank edit, fall over rise (about twice)", float(cf.loc["GC -5 points, both flanks", "mean_change"] / -cf.loc["GC +5 points, both flanks", "mean_change"]), 1.9, 1)
     chk(P + "flank edits: guides", float(cf.guides.iloc[0]), 1500, 0)
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
 
-    ix = load_index(verbose=False).drop_duplicates("protospacer")
+    ix = load_curated_index(verbose=False).drop_duplicates("protospacer")
     gc = lambda s: (s.count("G") + s.count("C")) / len(s) * 100
     chk(P + "sd of upstream 1 kb flank GC across the curated guides (points)", float(ix.upstream.map(gc).std()), 4.5, 1)
     chk(P + "sd of downstream 1 kb flank GC (points)", float(ix.downstream.map(gc).std()), 4.6, 1)
@@ -183,7 +183,7 @@ def _group(c):
 def _shuffle(chk):
     """Which columns carry the response to a shuffle of the flank beyond the near 20 nt: the production recipe, then the shipped model."""
     print("R3 the shuffle edit, by column group")
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
     from ..features import a_flank
     from ..interpret import interp_extra as ie
     from ..interpret import vs_crisprhal_interpret as V
@@ -191,7 +191,7 @@ def _shuffle(chk):
     NAME, EDIT = "order shuffled, composition kept", "shuffle"
 
     def prep_index(protos_pick):
-        idx = load_index(verbose=False).drop_duplicates("protospacer").set_index("protospacer").reindex(protos_pick).reset_index()
+        idx = load_curated_index(verbose=False).drop_duplicates("protospacer").set_index("protospacer").reindex(protos_pick).reset_index()
         idx = idx.rename(columns={"index": "protospacer"}); idx[config.ID_COL] = idx["protospacer"]; idx["located"] = True
         return idx
 

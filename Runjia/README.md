@@ -89,7 +89,7 @@ and `PYTHONPATH` (includes `Runjia`). `run_ext.sh` sets all three, taking the fo
 ./run_ext.sh sgrna.build.build_guide_index                              # step 0
 ./run_ext.sh sgrna.build.build_features --all                           # step 1
 ./run_ext.sh sgrna.harness.run_ablation --families a_flank --permute    # step 3
-./run_ext.sh sgrna.build.expand --build                                 # featurise all 33,567 curated guides; any module, same pattern
+./run_ext.sh sgrna.build.curated_matrix --build                                 # featurise all 33,567 curated guides; any module, same pattern
 ```
 
 **Colab on a local runtime.** The pipeline reads a 198 MB matrix and several GB of external data from local disk, so it runs on a local

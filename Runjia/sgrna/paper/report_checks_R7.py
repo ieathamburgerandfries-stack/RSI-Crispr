@@ -107,7 +107,7 @@ def run(chk):
     chk(P + "between-gene share of label variance, curated, %", 100 * (1 - float(cg[("curated", "gene")])), 29, 0)
     chk(P + "within-gene share, published (their own annotation)", float(cg[("published", "gene (their annotation)")]), 0.844, 3)
     try:
-        from ..build.build_curated_features import _b_numbers
+        from ..build.build_features import _b_numbers
         pub = pd.read_csv(config.GUIDE_INDEX, low_memory=False)
         g = _b_numbers(pub)["gene_name"]
         chk(P + "published rows where the coordinate-based gene equals Noshay's annotation, %", 100 * float((g.fillna("X") == pub["gene_name"].fillna("X")).mean()), 97.7, 1)

@@ -1,4 +1,4 @@
-"""Is there a representation on which SLICER can be read column by column? A 104-column model, its accuracy and its attributions.
+"""A compact model of guide base indicators and flank composition columns keeps 88% of the full model's rho and can be read column by column, with SHAP agreeing across tree families at 0.87. A 104-column model, its accuracy and its attributions.
 
 Finding 5 says per-column importance is unstable on the full matrix because 6,095 of its columns restate about twenty variables, so a
 column's credit moves to a correlated neighbour when the model is refitted. That is an explanation, and it makes a prediction the

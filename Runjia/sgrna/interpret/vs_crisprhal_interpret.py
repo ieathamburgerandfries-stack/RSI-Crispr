@@ -1,4 +1,4 @@
-"""Is SLICER more interpretable than crisprHAL 2? The same readings, taken the same way, from both models.
+"""SLICER is more faithful than crisprHAL 2 (sensitivity-n +0.081 to +0.111) but ties or splits on stability, truth and compressibility, so it is not shown to be more interpretable. The same readings, taken the same way, from both models.
 
 "Interpretable" is not one quantity, so this module does not score it. It asks four questions that a person who wants to learn
 something from a fitted model needs answered, defines each as a measurement that either model can be put through unchanged, and reports
@@ -207,12 +207,12 @@ def sens_n(predict, X, attr, blocks, bgX, seed=41, n_rows=N_FAITH, n_bg=50, ks=(
 
 def flank_edits_full(D, f, y_sd):
     """The flank-edit tests of Finding 5 on the same 1,500 guides and this fit (family A rebuilt from the edited DNA)."""
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
     from ..features import a_flank
     from .interp_extra import _edit
     X, protos, names, nb = D["X"], D["protos"], D["names"], D["n_base"]
     pick = D["pos"]
-    idx = load_index(verbose=False).drop_duplicates("protospacer").set_index("protospacer").reindex(protos[pick]).reset_index()
+    idx = load_curated_index(verbose=False).drop_duplicates("protospacer").set_index("protospacer").reindex(protos[pick]).reset_index()
     idx = idx.rename(columns={"index": "protospacer"}); idx[config.ID_COL] = idx["protospacer"]; idx["located"] = True
     a_names = names[nb:]
 

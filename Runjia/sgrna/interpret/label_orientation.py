@@ -1,4 +1,4 @@
-"""Is a higher curated label more cutting? An anchor for the label's sign that does not come from a sequence rule.
+"""A higher curated label means more cutting: guides with several genomic copies have a median label of 2.11 against 0.27 for single-copy guides. An anchor for the label's sign that does not come from a sequence rule.
 
 Every claim about the direction of an effect (G at position 20 lowers activity in E. coli, flank GC raises it) depends on which way the
 curated label runs. The label is an ALDEx2 log-ratio of Cas9 against dead-nuclease read counts, and the sign convention is the

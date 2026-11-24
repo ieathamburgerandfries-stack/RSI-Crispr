@@ -1,4 +1,4 @@
-"""What the extra accuracy costs: inference latency, model size, and featurisation, on one host thread, same machine.
+"""Times the model alone on one thread: 0.002 ms per guide for SLICER's default model against 1.32 ms for crisprHAL 2 at a batch of 100; its featurisation timing is superseded by cost_repeats.
 
 Model-only timings use random input of the right width (as in the earlier Colab benchmark), one thread for every library
 (XGBoost `n_jobs=1`, LightGBM `n_jobs=1`, CatBoost `thread_count=1`, TensorFlow intra/inter-op threads 1). Models are fitted on

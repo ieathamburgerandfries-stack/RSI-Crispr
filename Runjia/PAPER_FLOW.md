@@ -22,7 +22,7 @@ compares the two fold designs; the family ablation was run on both (`ablation_cu
 | Results: cost by hardware | Part 5 (cost), Appendix B | `cost_repeats_*.csv`, `cost_gpu.csv`, `model_size.csv`, `boostmec_shipped_*.csv` | `paper_numbers_D` [D15] to [D21], [D26] |
 | Appendices A1 to A6 | Findings 2, 5, 7, Appendices A to C | as above, plus `transfer*.csv`, `eukaryote_*.csv` | `paper_numbers_A` to `D` |
 
-**Figures.** The paper has four main figures (1 reach, 2 shape, 3 replicate ceiling and accuracy, 4 cost) and four in the appendix (A1 composition, A2 input width, A3 transfer matrix, A4 position-20 rule), all drawn from stored result
+**Figures.** The paper has four main figures (1 reach, 2 shape, 3 replicate ceiling and accuracy, 4 cost) and four in the appendix (A1 composition, A2 input width, A3 transfer matrix, A4 position-20 rule) and one table (Table A2: tuned SLICER against crisprHAL 2 on every accuracy measure, the two splits side by side), all drawn from stored result
 files by `sgrna/paper/figures_paper.py`. The report's own figures are drawn by `sgrna/paper/figures.py`.
 
-**Reproducibility.** `run_audit.sh`, 3359 checks; `import_check.py` for the code itself. Rounding and coverage: every number in the paper's text is matched to an audit claim or is a setting, a seed or a published constant.
+**Reproducibility.** `run_audit.sh`, 3392 checks; `import_check.py` for the code itself. Rounding and coverage: every number in the paper's text is matched to an audit claim or is a setting, a seed or a published constant.

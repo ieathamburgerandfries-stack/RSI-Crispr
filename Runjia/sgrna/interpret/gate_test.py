@@ -1,4 +1,4 @@
-"""Do the flank and the guide's own score act as a gate (multiplicatively) or add up? Prediction I2 of the report, now tested.
+"""The flank and the guide's own score add up rather than gate: an interaction term improves held-out R² by only +0.0035 and rho by +0.0007. Prediction I2 of the report, now tested.
 
 If the flank's effect is larger where the guide itself is competent, a model with a flank x guide-score interaction should fit better than an additive one.
 The guide score is the base model's out-of-fold prediction (`mappability_stratum_oof.csv`, the 20-mer representation only); the flank is the GC fraction of
@@ -22,11 +22,11 @@ RESULT = OUT / "gate_test.csv"
 
 
 def main() -> int:
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
     from ..controls import sealed_holdout_gene as sg
 
     o = pd.read_csv(OUT / "mappability_stratum_oof.csv")
-    idx = load_index(verbose=False).reset_index(drop=True)
+    idx = load_curated_index(verbose=False).reset_index(drop=True)
     assert (idx[config.ID_COL].to_numpy() == o[config.ID_COL].to_numpy()).all()
     up, dn = flank_composition(idx, (250,))[250]
     f = ((up[:, 1] + up[:, 2]) + (dn[:, 1] + dn[:, 2])) / 2

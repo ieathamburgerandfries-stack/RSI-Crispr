@@ -1,4 +1,4 @@
-"""Is the flanking-context effect just target GC wearing a different hat?
+"""The flank effect is not target GC in disguise: holding target GC fixed raises flank GC's association with activity from +0.176 to +0.221, and the flank gain is positive in every GC stratum.
 
 Finding 6 offers a mechanism as a hypothesis: a duplex-opening step limited by
 local GC. The evidence is correlational -- target GC correlates -0.201 with the

@@ -1,4 +1,4 @@
-"""What has to be stored to run each model: trees, leaves and bytes for SLICER's default and tuned models, parameters and bytes for crisprHAL 2.
+"""SLICER's default model stores 6,338 leaf values against 790,533 parameters for crisprHAL 2, but the tuned SLICER model is larger on disk than crisprHAL 2's file.
 
 SLICER's deployed model is the boosted trees alone (the 300-tree selector that picks the columns is not needed at prediction time, only the list of selected
 columns). Both are refitted here on one training fold of the curated cohort exactly as `vs_crisprhal.train_predict` fits them, and the booster is counted:

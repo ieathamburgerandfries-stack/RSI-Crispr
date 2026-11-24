@@ -1,4 +1,4 @@
-"""Does the flank effect transfer to another nuclease? (Part 10, item 2.)
+"""A model trained on SpCas9 keeps 88% of its own accuracy on eSpCas9, a different nuclease in the same genome, and flank features supply +0.098 of its ρ. (Part 10, item 2.)
 
 Family A is this project's one large effect, established on *E. coli*
 WT-SpCas9. The obvious question is whether it is a property of the DNA or a
@@ -217,7 +217,7 @@ def build(name: str, genome_fasta=None, verbose: bool = True) -> tuple[np.ndarra
         return X, np.asarray(meta["y"], float), list(meta["names"]),
     if verbose:
         print("  regenerating the published representation from protospacers")
-    # `matrix` returns (X, names) -- unpack it, like expand.py does.
+    # `matrix` returns (X, names) -- unpack it, like curated_matrix.py does.
     base, base_names = featurise.matrix(idx["protospacer"].tolist(), verbose=verbose)
     base_names = list(base_names)
 

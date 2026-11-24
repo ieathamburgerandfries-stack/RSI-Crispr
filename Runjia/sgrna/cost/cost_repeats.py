@@ -16,13 +16,14 @@ was timed in, and `cost_repeats_machine.json` the processor and library versions
     .venv-crisprhal/bin/python -m sgrna.cost.cost_repeats hal              # crisprHAL 2, TensorFlow environment
     python -m sgrna.cost.cost_repeats fit                                   # fit times, main environment
     .venv-crisprhal/bin/python -m sgrna.cost.cost_repeats hal_fit          # crisprHAL 2 fit times on this CPU, TensorFlow environment
+    OMP_NUM_THREADS=1 python -m sgrna.cost.cost_repeats featurisers         # the original featurisers against the array ones, alternating, one session
     python -m sgrna.cost.cost_repeats summary
 """
 import os
 import sys
 
 for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "VECLIB_MAXIMUM_THREADS", "MKL_NUM_THREADS"):
-    if sys.argv[1:2] in (["inference"], ["hal"]):
+    if sys.argv[1:2] in (["inference"], ["hal"], ["featurisers"]):
         os.environ[_v] = "1"
 
 import json
@@ -107,6 +108,54 @@ def inference():
             print(f"  {lab:16s} batch {b:6d}: median {np.median([r['ms_per_guide'] for r in rows if r['model'] == lab and r['batch'] == b]):.4f} ms/guide", flush=True)
     old = pd.read_csv(INF) if INF.exists() else pd.DataFrame()
     pd.concat([old[~old.model.isin(models)] if len(old) else old, pd.DataFrame(rows)]).to_csv(INF, index=False)
+
+
+def featurisers():
+    """The same SLICER default model scored through the original per-guide featurisers and through the array-based ones, alternating in one session.
+
+    Both paths give identical columns (`controls/equiv_check.py`), so this isolates what the array rewrite is worth: raw sequence to score, one thread,
+    `featurise.matrix` + `features.a_flank.build` against `base_fast.matrix_fast` + `a_flank_fast.build_matrix`, then the same column selection, imputation and
+    400-tree model. Repeats alternate (original, array, original, ...) so that any drift of the machine hits both alike.
+    """
+    sys.path.insert(0, str(RUNJIA))
+    from sgrna import config
+    from sgrna.build import a_flank_fast as AF
+    from sgrna.build import base_fast as BF
+    from sgrna.build import featurise, qct
+    from sgrna.cost.e2e_bench import _make_models
+    from sgrna.features import a_flank as A
+
+    idx = pd.read_csv(config.INTERIM / "curated_guide_index.csv")
+    idx["located"] = idx["located"].astype(bool)
+    tables, vm = qct.load_tables(), featurise.load_v_mapping()
+    (fn,) = _make_models({"SLICER default": ["champion"]})["SLICER default"]
+    machine()
+    reps = {1: 100, 100: 20, 10_000: 3}
+    rows = []
+    for b, n in reps.items():
+        sub = idx.iloc[:b].copy()
+
+        def original():
+            Mb, _ = featurise.matrix(sub["protospacer"].tolist(), v_mapping=vm, tables=tables, verbose=False)
+            Ma = A.build(sub, tables=tables).drop(columns=config.ID_COL).to_numpy(np.float32)
+            return fn(np.hstack([Mb.astype(np.float32), Ma]))
+
+        def array():
+            Mb, _ = BF.matrix_fast(sub["protospacer"].tolist(), vm, tables)
+            Ma, _ = AF.build_matrix(sub, tables)
+            return fn(np.hstack([Mb, Ma.astype(np.float32)]))
+
+        assert np.allclose(original(), array(), atol=1e-5), "the two paths disagree"
+        l0 = load1()
+        for rep in range(n):
+            for lab, f in (("original featurisers", original), ("array featurisers", array)):
+                t = time.perf_counter()
+                f()
+                rows.append(dict(model="SLICER default, " + lab, batch=b, rep=rep, ms_per_guide=1000 * (time.perf_counter() - t) / b,
+                                 session=SESSION, load1_start=l0, load1_end=load1()))
+        for lab in ("original featurisers", "array featurisers"):
+            print(f"  {lab:22s} batch {b:6d}: median {np.median([r['ms_per_guide'] for r in rows if r['batch'] == b and lab in r['model']]):.4f} ms/guide", flush=True)
+    pd.DataFrame(rows).to_csv(RESULTS / "cost_repeats_featurisers.csv", index=False)
 
 
 def hal():
@@ -242,4 +291,4 @@ def summary():
 
 
 if __name__ == "__main__":
-    {"inference": inference, "hal": hal, "fit": fit, "hal_fit": hal_fit, "summary": summary}.get(sys.argv[1] if len(sys.argv) > 1 else "", lambda: print(__doc__))()
+    {"inference": inference, "featurisers": featurisers, "hal": hal, "fit": fit, "hal_fit": hal_fit, "summary": summary}.get(sys.argv[1] if len(sys.argv) > 1 else "", lambda: print(__doc__))()

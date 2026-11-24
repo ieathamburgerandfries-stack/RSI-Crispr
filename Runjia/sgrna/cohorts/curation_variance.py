@@ -1,4 +1,4 @@
-"""Why did every family's gain rise when the baseline rose too?
+"""The gains rose mainly because the genome-wide guides added in the larger cohort show a steeper flank effect (slope 15.85 against 5.35 on shared guides), not a wider spread.
 
 The objection is sharp and has not been answered properly. Removing label noise
 should raise the baseline and *shrink* each family's increment, because there is
@@ -69,8 +69,8 @@ def _noshay_protospacers() -> set[str]:
 def _panel_split(shared, only):
     """Split the crisprHAL-only rows by whether their gene is in Noshay's panel."""
     try:
-        from ..build.build_curated_features import load_index
-        idx = load_index(verbose=False)
+        from ..build.build_features import load_curated_index
+        idx = load_curated_index(verbose=False)
     except Exception:                                  # noqa: BLE001
         return None, None, None
     key = "protospacer"

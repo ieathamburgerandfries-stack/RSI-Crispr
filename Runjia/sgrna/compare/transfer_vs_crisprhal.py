@@ -73,8 +73,8 @@ def prepare() -> None:
     # ---- kingdom: E. coli 23-mers for training, eukaryotic 23-mers and SLICER base predictions
     D = ER.load_all()
     ec = ER.ecoli()
-    from ..build.build_curated_features import load_index
-    idx = load_index(verbose=False).set_index(config.ID_COL).reindex(ec["protos"])
+    from ..build.build_features import load_curated_index
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(ec["protos"])
     pd.DataFrame({"seq23": (idx.protospacer + idx.pam).to_numpy(), "y": ec["y"]}).to_csv(WORK / "ecoli_23.csv", index=False)
     big = [k for k, v in D.items() if v["n"] >= ER.MIN_BIG]
     rows, slicer_rows = [], []

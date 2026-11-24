@@ -1,4 +1,4 @@
-"""What the stage-1 search says about each hyperparameter (marginal effects on the DEV-fold rho).
+"""Shallower trees and slower learning with more trees score best across 200 random settings (mean rho 0.714 at depth 4, 0.698 at depth 10), and the other settings matter little.
 
 For each draw the tree count with the best mean rho is taken (that count is part of the configuration), so a draw's score
 is the maximum over a tree grid, a small upward bias that is shared by all draws. Marginal effects are the mean score of the

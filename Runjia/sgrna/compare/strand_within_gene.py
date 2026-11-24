@@ -1,4 +1,4 @@
-"""Inside the coding-strand guides, is a family's gain between genes or within them?
+"""Among coding-strand guides, family A's gain is not only gene ranking: it adds +0.102 inside genes on Cui's screen and still +0.096 on top of transcription context.
 
 `strand_families --within` found family A (and transcription context) adding +0.12 to
 +0.27 rho among coding-strand guides, where gene-grouped CV holds whole genes out.

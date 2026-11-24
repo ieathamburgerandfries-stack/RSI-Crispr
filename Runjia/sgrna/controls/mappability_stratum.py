@@ -1,4 +1,4 @@
-"""Is the flank effect read depth or mappability? Family A's gain inside strata of genome uniqueness.
+"""Family A's flank gain does not come from read depth or mappability: it is +0.157 among guides in uniquely mappable sequence and +0.160 with control read depth given to the model.
 
 The objection: a guide in a repeat, an IS element or an rRNA operon has counts that can be wrong in a way that tracks local DNA, so a flank
 composition feature could be predicting read misassignment and not cutting. The label comes from counts of the guide's own spacer (an
@@ -70,10 +70,10 @@ def features(force: bool = False) -> pd.DataFrame:
     if FEATURES.exists() and not force:
         return pd.read_csv(FEATURES)
     from ..build import genome
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
 
     t0 = time.time()
-    idx = load_index(verbose=False)
+    idx = load_curated_index(verbose=False)
     track = _uniqueness_track()
     cs = np.concatenate([[0.0], np.cumsum(track)])
     n = len(track)
@@ -109,9 +109,9 @@ ARMS = ("base", "base+U", "base+A", "base+U+A")
 
 
 def _groups(protos):
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
 
-    idx = load_index(verbose=False).set_index(config.ID_COL)
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL)
     gene = idx["gene_name"].reindex(protos)
     left = idx["left"].reindex(protos).to_numpy(float)
     return np.array([g if isinstance(g, str) and g else f"ig{int(l // 100_000)}" for g, l in zip(gene, left)], dtype=object)

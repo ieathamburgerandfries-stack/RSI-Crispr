@@ -1,4 +1,4 @@
-"""Does model class matter more once the representation has family A in it?
+"""Including family A does not make model class matter more: eight classes span 0.108 rho on the curated cohort, no wider than on the published matrix.
 
 "Sixteen model classes span only 0.116 ρ" is a Finding 2 corollary, and it was
 measured on the published matrix **without** family A — i.e. on a representation

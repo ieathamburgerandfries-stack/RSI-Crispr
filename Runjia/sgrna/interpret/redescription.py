@@ -1,4 +1,4 @@
-"""How much is re-description worth, and does it have to mean anything?
+"""Re-description helps only when it means something: random linear or non-linear functions of the guide add nothing, while the guide's real self-folding energy adds +0.0117.
 
 Finding 2 says a deterministic function of the 20-mer adds no *information* but
 does add *performance* -- about +0.015 to a depth-limited tree, agreed across

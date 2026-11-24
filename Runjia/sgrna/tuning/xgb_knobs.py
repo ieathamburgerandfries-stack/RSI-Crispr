@@ -1,4 +1,4 @@
-"""Which XGBoost knobs has this project never touched, and do they matter?
+"""Of eight XGBoost knobs never tuned before, only tree size matters: depth 6 adds +0.0063 rho, while the rest add at most +0.0024 or lower it.
 
 The champion sets eight of XGBoost's roughly sixteen real tuning parameters and
 inherits the rest from the library. The 627-draw search that the report quotes

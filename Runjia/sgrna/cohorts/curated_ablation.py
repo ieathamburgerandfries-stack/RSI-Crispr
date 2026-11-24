@@ -74,9 +74,9 @@ def _groups(kind: str, protos: np.ndarray):
     internally comparable even though their levels are not comparable to the
     random-row table.
     """
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
 
-    idx = load_index(verbose=False).set_index(config.ID_COL)
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL)
     if kind == "gene":
         g = idx["gene_name"].reindex(protos)
     elif kind == "block100k":

@@ -1,4 +1,4 @@
-"""The last untouched test: does the flanking-context effect appear in a CRISPRi screen?
+"""Family A adds nothing on Cui's dCas9 CRISPRi screen (−0.0093, whole genes held out) against +0.1563 on a cutting screen, although the screens differ in assay, library and laboratory.
 
 Every external check so far has been another Cas9 **cutting** screen, and all of
 them are now used for something. Cui et al. (2018) is a dCas9 **CRISPRi** screen

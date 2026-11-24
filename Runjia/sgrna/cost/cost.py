@@ -1,4 +1,4 @@
-"""How much computation does each model actually cost, and how light can SLICER get?
+"""Measures CPU-seconds and floating-point operations to fit SLICER, a cut-down SLICER and crisprHAL 2; superseded by cost_repeats, as its crisprHAL 2 CPU-seconds were a hand-entered estimate.
 
 Three things the report has been quoting loosely and should quote precisely.
 

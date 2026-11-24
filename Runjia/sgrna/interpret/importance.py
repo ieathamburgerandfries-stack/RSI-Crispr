@@ -1,4 +1,4 @@
-"""At what granularity is "feature importance" actually a property of the data?
+"""Importance is a property of the data only for blocks of columns: the tree families agree on blocks but not on individual columns.
 
 The puzzle this module exists to settle. On this matrix, XGBoost's two standard
 importance methods -- split gain and permutation importance -- rank its own top

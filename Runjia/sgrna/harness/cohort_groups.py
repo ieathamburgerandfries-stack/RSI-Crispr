@@ -1,4 +1,4 @@
-"""Does grouped cross-validation still mean the same thing on the curated cohort?
+"""Grouped cross-validation means something different on the curated cohort: gene identity explains 29% of its label variance against 16% on the published cohort.
 
 The report's grouped-CV choices rest on one number: the share of label variance
 that lies *within* genes rather than between them. If almost all of it is
@@ -27,7 +27,7 @@ from __future__ import annotations
 import pandas as pd
 
 from .. import config
-from ..build.build_curated_features import _b_numbers, load_index
+from ..build.build_features import _b_numbers, load_curated_index
 
 OUT = config.RESULTS / "cohort_groups.csv"
 BLOCK = 100_000
@@ -47,7 +47,7 @@ def _share(df: pd.DataFrame, group: str, y: str):
 def run(verbose: bool = True) -> pd.DataFrame:
     rows = []
     pub = pd.read_csv(config.GUIDE_INDEX, low_memory=False)
-    cur = load_index(verbose=False)
+    cur = load_curated_index(verbose=False)
     pub["gene"] = _b_numbers(pub)["gene_name"]
     cur["gene"] = cur["gene_name"]
 

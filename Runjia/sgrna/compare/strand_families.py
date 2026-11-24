@@ -1,4 +1,4 @@
-"""With the strand call supplied, how do all eleven families compare on the dCas9 screen?
+"""With the strand call given to all families, flank family A adds only +0.007 on the dCas9 screen and only transcription context (+0.028) gains clearly in both groupings.
 
 Family A's +0.27 on Cui's essential-gene guides was the dCas9 strand rule arriving
 through `eng.flank.comp.up1000.purine`, a lossy copy of "which strand the guide
@@ -42,7 +42,7 @@ FLANK = 1000
 
 def index() -> pd.DataFrame:
     """Cui's essential-gene guides as the family builders expect them."""
-    from ..build.build_curated_features import augment
+    from ..build.build_features import augment
     from .cui_screen import _essential_frame
 
     meta = json.loads((config.INTERIM / "cui_crispri" / "meta.json").read_text())

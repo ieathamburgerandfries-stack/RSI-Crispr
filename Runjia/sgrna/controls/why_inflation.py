@@ -1,4 +1,4 @@
-"""Why did every family's Δρ roughly triple when the cohort moved?
+"""Family A's gain is +0.1672 on subsamples of the curated cohort the size of the published matrix and +0.1638 on the whole cohort, so the larger gain is not due to the row count.
 
 Four things changed between the published 13,880-row matrix and crisprHAL's
 33,567 curated guides, and "noise was removed from the label" is only one of

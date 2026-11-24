@@ -1,6 +1,6 @@
-"""Shared paths for the work done after the freeze (the private-fork experiments).
+"""Output folders for the experiment modules, and the resolver for the main project's results that this repository does not track.
 
-Nothing here edits the frozen pipeline: the later modules read it and write only under `results/post_freeze/` and
+The experiment modules read the pipeline and write only under `results/post_freeze/` and
 `data/interim/post_freeze/` (the folder names record when the work was done; the code is organised by function).
 Run with:  RSI09_ROOT=<project root with data/>  PYTHONPATH=<fork>/Runjia
 """

@@ -62,6 +62,7 @@ Within a group the order is alphabetical.
 | `post_freeze/boostmec_shipped_rnafold.csv` | 0.2 | cited | `cost_boostmec_shipped`, `paper_numbers_D` | workload, sequences, native_seconds, container_seconds, ratio |
 | `post_freeze/boostmec_shipped_stages.csv` | 1.2 | cited | `cost_boostmec_shipped`, `paper_numbers_D` | batch, stage, seconds |
 | `post_freeze/boostmec_shipped_timings.csv` | 0.5 | cited | `cost_boostmec_shipped`, `paper_numbers_D` | batch, rep, seconds, ms_per_guide, note |
+| `post_freeze/cost_repeats_featurisers.csv` | 21.3 | cited | `cost_repeats`, `paper_numbers_D` | model, batch, rep, ms_per_guide, session, load1_start, load1_end |
 | `post_freeze/curation_check.csv` | 1.1 | cited | `curation_check`, `paper_numbers_D` | stratum, n, kept, spearman_flank_gc, label_sd, lowest_decile_deficit_sd, share_in_lowest_decile … |
 | `post_freeze/cut_within_gene_summary.csv` | 0.7 | audited | `paper_numbers_A`, `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
 | `post_freeze/gate_test.csv` | 1.7 | cited | `gate_test`, `paper_numbers_D` | model, seed, fold, rho, r2 |
@@ -124,7 +125,7 @@ Within a group the order is alphabetical.
 | `interp_interaction_blocks.csv` | 3.6 | cited | `interp_extra`, `report_checks_R3` | , flank: bases within 10 nt, flank: quantum within 10 nt, flank: window composition, flank: window quantum, protospacer indicators: pos 1-5 (PAM-distal), protospacer indicators: pos 16-20 (seed) … |
 | `interp_interaction_pairs.csv` | 1.1 | cited | `interp_extra`, `report_checks_R3` | col_i, col_j, mean_abs_interaction |
 | `interp_interactions.csv` | 0.3 | cited | `interp_extra`, `report_checks_R3` | rows, columns, var_total, var_main, var_interaction, share_variance_interaction, share_variance_main … |
-| `interp_sensitivity_n.csv` | 2.2 | cited | `interp_extra`, `report_checks_R3`, `report_checks_R7` | unit, n, attribution, pearson, se, subsets, rows |
+| `interp_sensitivity_n.csv` | 2.2 | cited | `interp_extra`, `paper_numbers_D`, `report_checks_R3`, `report_checks_R7` | unit, n, attribution, pearson, se, subsets, rows |
 | `post_freeze/compact_model_accuracy.csv` | 0.5 | audited | `compact_model`, `paper_numbers_B`, `paper_numbers_D` | , rho_mean_over_seeds, rho_sd_over_seeds, share_of_full |
 | `post_freeze/compact_model_accuracy_folds.csv` | 1.6 | receipt | `compact_model` | seed, fold, full recipe (base + family A, top 300), guide only (80), guide + four kilobase numbers (84), compact (104) … |
 | `post_freeze/compact_model_flank_shap_by_decile.csv` | 0.4 | audited | `compact_model`, `paper_numbers_D` | decile, flank_gc, flank_shap, flank_shap_in_sd |
@@ -292,7 +293,7 @@ Within a group the order is alphabetical.
 | `post_freeze/seed_stability.csv` | 0.5 | audited | `topk_panel`, `paper_numbers_C` | split, seed, rho, crisprhal |
 | `post_freeze/shape_ablation.csv` | 13.7 | audited | `shape_ablate`, `shape_analyze`, `report_checks_R8` | arm, n_cols, n_ext, spearman, spearman_sd, r2, n_selected_ext … |
 | `post_freeze/topend_confirm.csv` | 2.3 | audited | `topend`, `paper_numbers_C`, `report_checks_R6` | arm, seed, spearman, top10pct_prec, top1pct_prec, pick10_pctile, pick50_pctile … |
-| `post_freeze/topk_panel.csv` | 4.2 | audited | `topk_panel` | split, arm, top1pct_precision, top5pct_precision, top10pct_precision, pick10_percentile, pick50_percentile … |
+| `post_freeze/topk_panel.csv` | 4.2 | audited | `topk_panel`, `paper_numbers_D` | split, arm, top1pct_precision, top5pct_precision, top10pct_precision, pick10_percentile, pick50_percentile … |
 | `post_freeze/tune_stage1.csv` | 270.9 | receipt | `tune_analyze`, `tune_ecoli` | draw, seed, fold, k, rho |
 | `post_freeze/vs_crisprhal_espcas9.csv` | 0.8 | cited | `vs_crisprhal`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
 | `post_freeze/vs_crisprhal_folds.csv` | 1.7 | receipt | `vs_crisprhal`, `paper_numbers_B`, `paper_numbers_C` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
@@ -455,7 +456,7 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `README.md` | 2.0 | document | — |  |
-| `RESULTS.md` | 37.6 | document | — |  |
+| `RESULTS.md` | 37.5 | document | — |  |
 | `RESULTS_archive_2026-10-10.md` | 110.9 | document | — |  |
 
 ### figures
@@ -508,12 +509,11 @@ Within a group the order is alphabetical.
 | `human_transfer.csv` | 0.7 | cited | — | arm, rho, sd, n_train, n_test, seed |
 | `inference_t4.csv` | 0.8 | cited | — | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
 | `kmer_order_noselect.csv` | 0.6 | cited | — | arm, n_columns, spearman, sd |
-| `learning_curve.csv` | 0.3 | cited | `expand` | , r2, r2, spearman, spearman, pearson, pearson |
 | `memory_comparison.csv` | 0.5 | cited | `bench` | config, columns, peak_gb_median, peak_gb_min, peak_gb_max, select_s_median, rho … |
 | `memory_comparison_runs.csv` | 1.2 | receipt | `bench` | config, peak_gb, rep, columns, select_s, rho |
 | `net_cost.csv` | 0.1 | receipt | `bench` | config, columns, params, train_s, rho, peak_gb |
 | `post_freeze/boostmec_shipped_image.txt` | 0.4 | receipt | — |  |
-| `post_freeze/cost_repeats_machine.json` | 1.5 | cited | `cost_repeats` |  |
+| `post_freeze/cost_repeats_machine.json` | 1.7 | cited | `cost_repeats` |  |
 | `post_freeze/human_shape_ablation_locus_n900.csv` | 0.9 | audited | — | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `post_freeze/import_check.json` | 0.3 | audited | — |  |
 | `post_freeze/interp_hal_cache/hal_full1.npz` | 348.8 | receipt | — |  |

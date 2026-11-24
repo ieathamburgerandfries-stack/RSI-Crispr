@@ -1,4 +1,4 @@
-"""Is the downstream flank's advantage a transcription effect?
+"""The downstream flank's advantage is the same in low, middle and high expression genes (+0.046 to +0.049 in rho), so it is not a transcription effect.
 
 Family A helps more on the PAM side than the other side -- in the sides split,
 +0.072 downstream against +0.027 upstream. Two explanations make different

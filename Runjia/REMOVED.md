@@ -118,3 +118,16 @@ arms read from `flank_scale.csv`) and differed by the table of window pairs it s
 (`results/post_freeze/ablation_paper_folds.csv`, `ablation_paper_folds_summary.csv`) and the merged design resumes from them and reproduces the summary byte for byte. Restore with
 `git checkout pre-merge-2026-11-25 -- Runjia/sgrna/cohorts/ablation_paper_folds.py` (the tag was set before the first merge, so use `git log --diff-filter=D -- Runjia/sgrna/cohorts/ablation_paper_folds.py` to find the commit that holds it).
 
+
+## 26 November 2026: `build_curated_features` merged into `build_features`, `expand` renamed `curated_matrix` and trimmed
+
+`sgrna/build/build_curated_features.py` and `sgrna/build/build_features.py` were the same loop over the same families, differing in the index (curated or published), the
+output suffix (`_curated`) and one guard (a block with no populated column is a failure). They are now one module, `build_features.py`, with `--cohort published|curated`; the guard
+applies to both, `load_curated_index` and `augment` moved with it, and family A is built by `a_flank_fast` (equal to the original after the float32 cast on all 33,567 curated and
+all 13,880 published guides; the float64 difference is 1.4e-14, so a regenerated CSV differs from the stored one in the fourteenth digit). Restore the old module with
+`git checkout 1c61887 -- Runjia/sgrna/build/build_curated_features.py`.
+
+`sgrna/build/expand.py` is renamed `curated_matrix.py`, because the name said nothing about what the module does: it featurises the 33,567 guides of the Guo et al. screen as
+crisprHAL 2 curated them and caches the matrix every experiment loads. Its columns now come from `base_fast.matrix_fast` (identical to the cache on all 33,567 guides, maximum
+absolute difference 0.0). Its learning curve (`--curve`, `results/learning_curve.csv`: the default recipe at 4,000 to 26,000 training guides, three seeds) is removed: no
+paper table, report claim or audit check reads it, and the data-efficiency comparison is `compare/sample_complexity.py`. Restore with `git checkout 1c61887 -- Runjia/sgrna/build/expand.py Runjia/results/learning_curve.csv`.

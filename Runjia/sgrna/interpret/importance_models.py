@@ -1,4 +1,4 @@
-"""Is "feature importance" a property of the data, or of the model asked?
+"""Per-column importance depends on the model asked: five tree families agree on columns at only 0.496 even with SHAP, but on blocks of columns at 0.800.
 
 `importance.py` compared two models (XGBoost, LightGBM) and two methods (split
 gain, permutation) and found the uncomfortable result that they agree about

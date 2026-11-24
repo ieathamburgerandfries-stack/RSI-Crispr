@@ -1,4 +1,4 @@
-"""Why the diagonal of the transfer table is low: how well the six published predictors do on the same tables.
+"""The low diagonal reflects hard data, not a weak model: the 20-mer pipeline's own cross-validation beats the median of six published predictors on all 11 tables and the best of them on 3.
 
 The diagonal of `eukaryote_transfer.csv` is five-fold cross-validation of SLICER's 20-mer pipeline on each eukaryotic table itself, 0.18 to 0.55. To see whether that is a weak
 model or hard data, each table is scored by the six published predictors that the orientation rule of `eukaryote_rules.py` already reads from the CRISPOR files (Fusi, CRISPRscan,

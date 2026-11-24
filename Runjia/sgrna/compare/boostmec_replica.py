@@ -104,12 +104,12 @@ def _from_shipped(thirty, y, protos):
 
 
 def build(features=None):
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
     from ..cohorts.curated_ablation import _base
 
     features = features or FEATURES
     X, y, names, protos = _base()
-    idx = load_index(verbose=False).set_index(config.ID_COL).reindex(protos)
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos)
     thirty = [(up + sp + pam + dn).upper() for up, sp, pam, dn in zip(idx.upstream.str[-4:], idx.protospacer, idx.pam, idx.downstream.str[:3])]
     if features == "shipped":
         return _from_shipped(thirty, np.asarray(y, float), np.asarray(protos, dtype=object))

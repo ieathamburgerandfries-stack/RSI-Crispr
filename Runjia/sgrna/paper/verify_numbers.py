@@ -732,7 +732,7 @@ def main():
     from . import code_map
     _on_disk = {f.stem for f in _sg.rglob("*.py") if f.name != "__init__.py"}
     _text = (_sg.parent / "CODE_MAP.md").read_text()
-    chk("CODE_MAP.md: modules on disk that the map does not list", float(len([m for m in _on_disk if f"| `{m}` |" not in _text])), 0, 0)
+    chk("CODE_MAP.md: modules on disk that the map does not list", float(len([m for m in _on_disk if f"| `{m}` |" not in _text and f"| `{m}.py` |" not in _text])), 0, 0)
     chk("sgrna: packages, by function", float(sum(1 for d in _sg.iterdir() if d.is_dir() and (d / "__init__.py").exists())), 10, 0)
     chk("sgrna: folders left over from the old layouts (post_freeze, strand, screens, ext)",
         float(sum((_sg / n_).exists() for n_ in ("post_freeze", "strand", "screens", "ext"))), 0, 0)

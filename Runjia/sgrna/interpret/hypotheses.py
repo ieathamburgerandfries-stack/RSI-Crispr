@@ -60,11 +60,11 @@ for _i, _c in enumerate("ACGT"):
 def _data():
     """Genic guides only (so genes can be resampled): label, the seed base at positions 20 and 18, flank GC, flank sequences, gene."""
     from sgrna.cohorts.curated_ablation import _groups
-    from sgrna.build.build_curated_features import load_index
+    from sgrna.build.build_features import load_curated_index
     from sgrna import config
     X, y, protos, A, an = _cohort()
     g, ok = _groups("gene", protos)
-    idx = load_index(verbose=False).set_index(config.ID_COL).reindex(protos)
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos)
     col = {n: A[:, i] for i, n in enumerate(an)}
     gc = {w: (col[f"eng.flank.comp.up{w}.gc"] + col[f"eng.flank.comp.dn{w}.gc"]) / 2 for w in (50, 250, 500, 1000)}
     p = np.frombuffer("".join(protos).encode(), np.uint8).reshape(len(protos), 20)

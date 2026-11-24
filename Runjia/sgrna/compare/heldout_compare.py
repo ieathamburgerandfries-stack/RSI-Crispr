@@ -1,4 +1,4 @@
-"""How do the two models compare on a held-out fold? Paired on guides, not on folds.
+"""Paired on the same held-out guides, SLICER's default model beats crisprHAL 2 by +0.0115 with its published settings and by +0.0043 with the best settings found for it. Paired on guides, not on folds.
 
 The curated five-fold head-to-head is reported two ways elsewhere: as a
 fold-level mean (Appendix B) and as a pooled nine-metric panel (`metric_panel`).

@@ -138,9 +138,9 @@ def run(chk):
     chk(P + "[4] tuned version: trees (tune_configs.json d099x n_estimators)", float(tc["d099x"]["n_estimators"]), 4000, 0)
     chk(P + "[4] tuned version: depth (tune_configs.json d099x max_depth)", float(tc["d099x"]["max_depth"]), 5, 0)
     # the 70% / 30% split of the 4,013 genes, rebuilt exactly as `tune_ecoli.Cohort` does (one fixed seed, 30% of genes confirm)
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
     from ..tuning.tune_ecoli import SPLIT_SEED
-    g = load_index(verbose=False)["gene_name"]
+    g = load_curated_index(verbose=False)["gene_name"]
     genes = np.array(sorted(set(g[g.notna()])))
     conf = set(np.random.default_rng(SPLIT_SEED).choice(genes, size=int(round(0.3 * len(genes))), replace=False))
     chk(P + "[4] genes holding the search: share of genes (the tuning part, DEV)", 100 * (1 - len(conf) / len(genes)), 70, 0)
@@ -177,7 +177,7 @@ def run(chk):
     chk(P + "[7]   fraction of ROWS to seal (controls.sealed_holdout.SEAL_FRACTION; the code seals whole genes until it is reached)", SEAL_FRACTION * 100, 20, 0)
     from ..controls.sealed_holdout import _seal
     protos = ci.protospacer.to_numpy()
-    gmap = load_index(verbose=False).set_index("protospacer")["gene_name"].reindex(protos)
+    gmap = load_curated_index(verbose=False).set_index("protospacer")["gene_name"].reindex(protos)
     gshare = [gmap[_seal(protos, seed=int(sd), verbose=False)].nunique() / gmap.nunique() * 100 for sd in sorted(sh.seal_seed.unique())]
     chk(P + "[7]   share of the 4,013 genes inside the sealed guides, % mean over the 15 sealings (the paper says whole genes holding 20% of guides)", float(np.mean(gshare)), 22, 0)
 

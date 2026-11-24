@@ -1,4 +1,4 @@
-"""Splitting the sealed-gene drop: adaptive overfitting, or what unseen genes cost a feature that reads the locus?
+"""Holding out whole genes in the pool cross-validation leaves the sealed-gene drop at +0.0081 against +0.0088 with random rows, so unseen genes explain almost none of it.
 
 `sealed_holdout.py` measures an "adaptive component" as a difference of differences,
 
@@ -96,7 +96,7 @@ def _cv_gene(X, y, groups, params, n_features, seed=41, verbose=True):
 
 
 def run(max_draws: int | None = None, arms=("base_only", "frozen", "dev_tuned"), verbose: bool = True) -> pd.DataFrame:
-    from ..build.build_curated_features import load_index
+    from ..build.build_features import load_curated_index
 
     ref = pd.read_csv(SEALED_CSV)
     out_path = _out_path()
@@ -104,7 +104,7 @@ def run(max_draws: int | None = None, arms=("base_only", "frozen", "dev_tuned"),
     X, y, names, protos = _base()
     A, anames = _block("a_flank", protos)
     XA = np.hstack([X, A])
-    idx = load_index(verbose=False).set_index(config.ID_COL)
+    idx = load_curated_index(verbose=False).set_index(config.ID_COL)
     gene = idx["gene_name"].reindex(protos)
     left = idx["left"].reindex(protos).to_numpy(float)
     groups = np.array([g if isinstance(g, str) and g else f"ig{int(l // 100_000)}" for g, l in zip(gene, left)], dtype=object)
