@@ -2,11 +2,12 @@
 
 The paper is the point-form write-up in the project's Google Doc (tabs "Paper (point form)" and "Appendix (point form)"); `PROGRESS_REPORT.md` is the full report. They state the same results in different
 words: the paper is concise, uses no internal vocabulary (no freeze, DEV or CONFIRM; "default" and "tuned" instead), and keeps one protocol for every effect, while the report keeps the
-history. `PROGRESS_REPORT.md` Appendix E repeats the paper's bullets in the paper's own wording, so every number the paper states is also in the report with the same protocol label.
+history. `PROGRESS_REPORT.md` Appendix E repeats the paper's Results, Discussion and appendix bullets as the Doc states them, so every number the paper states is also in the report. The paper is at most 7 pages including its introduction: Methods are two data bullets and one protocol sentence, and every protocol with the controls run on it is in Appendix A3.
 
 **One protocol.** Five-fold cross-validation that holds whole genes out (all 33,567 curated guides; guides outside genes grouped in 100 kb blocks), three seeds, the default model (400 trees, 300 columns
 chosen inside each training fold), the 20-mer alone as the baseline. The team's shared harness assigns rows at random (five seeds of five-fold `KFold`); only the fold assignment differs. Appendix A3 of the paper
-compares them, and the family ablation was run on both (`ablation_curated.csv`, `ablation_paper_folds.csv`).
+lists the protocols (paper folds, the team's harness, whole genes of the genic guides, sealed genes, development and confirmation genes, crisprHAL 2's own splits, an unseen genome), says which control ran on which, and
+compares the two fold designs; the family ablation was run on both (`ablation_curated.csv`, `ablation_paper_folds.csv`).
 
 **Where each part of the paper comes from.**
 
