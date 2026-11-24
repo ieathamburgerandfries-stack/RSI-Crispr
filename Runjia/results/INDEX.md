@@ -19,7 +19,7 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**432 files** in 22 groups.
+**434 files** in 22 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
@@ -293,6 +293,8 @@ Within a group the order is alphabetical.
 | `folds_humangc_only.csv` | 0.5 | receipt | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
 | `folds_shift_baseline.csv` | 1.8 | audited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `cost_boostmec_shipped`, `paper_numbers_A`, `report_checks_R2`, `report_checks_R7`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
 | `permutation_floors.csv` | 1.0 | cited | `floors`, `cost_boostmec_shipped`, `report_checks_R7` | family, real_folds, real_d_r2, real_d_rho, real_p, floor_folds, floor_d_r2 … |
+| `post_freeze/ablation_paper_folds.csv` | 8.6 | cited | `notebook`, `run_ablation`, `ablation_paper_folds`, `cost_boostmec_shipped` | arm, seed, fold, rho, n_cols |
+| `post_freeze/ablation_paper_folds_summary.csv` | 2.3 | cited | `notebook`, `run_ablation`, `ablation_paper_folds`, `cost_boostmec_shipped`, `paper_numbers_D` | family, n_folds, seeds, rho, gain_same_selection, gain_same_selection_sd, folds_positive_same_selection … |
 | `post_freeze/vs_crisprhal_wt.csv` | 0.8 | cited | `vs_crisprhal`, `cost_boostmec_shipped`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R6`, `report_checks_R7` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
 
 ### Appendix B — The methods and controls behind the findings

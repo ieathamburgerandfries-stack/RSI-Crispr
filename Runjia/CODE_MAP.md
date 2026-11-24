@@ -72,8 +72,8 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Part 3 | Where this stops | 1 | 179 | 2 | compare |
 | Part 4 | The freeze, and what remains | 5 | 792 | 5 | compare, controls |
 | Part 5 | Where this sits in the field | 37 | 6,515 | 117 | build, cohorts, compare, controls, cost, interpret, paper, tuning |
-| Appendix A | Controls and nulls | 4 | 1,609 | 64 | controls, harness, paper |
-| Appendix B | The methods and controls behind the findings | 18 | 5,880 | 365 | cohorts, compare, controls, cost, harness, interpret, paper, tuning |
+| Appendix A | Controls and nulls | 4 | 1,609 | 66 | controls, harness, paper |
+| Appendix B | The methods and controls behind the findings | 18 | 5,880 | 367 | cohorts, compare, controls, cost, harness, interpret, paper, tuning |
 | Appendix B2 | Why the imported families failed, and why that is not a screen | 2 | 472 | 4 | controls, interpret |
 | Appendix B2a | Curation: what it is, and why family A doubled between cohorts | 3 | 562 | 6 | cohorts, controls |
 | Appendix B3 | The family ablations on the curated cohort, and what they measure | 13 | 2,528 | 5 | cohorts, features, interpret |
@@ -82,7 +82,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Appendix C0 | Reproducibility: versions, seeds and protocol | 1 | 199 | 0 | (top) |
 | tooling | the audit, the figures, the guards and this map | 5 | 2,120 | 0 | paper |
 | library | shared code the experiments are built on | 9 | 1,352 | 2 | (top), build |
-| — | no section of the report points at it | 19 | 2,745 | 35 | cohorts, compare, cost, interpret, paper |
+| — | no section of the report points at it | 19 | 2,745 | 37 | cohorts, compare, cost, interpret, paper |
 
 Read the table above as the price list for the report: each claim carries its code and its result files with it. A module is placed in the section that cites it (or the result files it writes) most often. The `—` row, if there is one, is completed work that no section of the report points at. Each such module is listed in `REMOVED.md` under "Considered for removal and kept", with what it found; they were kept by decision, not by oversight.
 
@@ -151,8 +151,8 @@ The leakage-safe cross-validation harness every experiment runs through, plus th
 |---|---:|---|---|---|
 | `cohort_groups` | 74 | Does grouped cross-validation still mean the same thing on the curated cohort? | Appendix B | `cohort_groups.csv` |
 | `evaluate` | 708 | Quantifying the two things a model is judged on: prediction and explanation. | Appendix B | `interpretability.csv`, `model_comparison.csv` |
-| `notebook` | 532 | Notebook front end -- everything the pipeline does, callable from a cell. | Appendix A | `ablation_abund_split.csv`, `ablation_curated.csv` +11 |
-| `run_ablation` | 560 | Step 3 -- the ablation harness. | Appendix A | `ablation_abund_split.csv`, `ablation_curated.csv` +25 |
+| `notebook` | 532 | Notebook front end -- everything the pipeline does, callable from a cell. | Appendix A | `ablation_abund_split.csv`, `ablation_curated.csv` +13 |
+| `run_ablation` | 560 | Step 3 -- the ablation harness. | Appendix A | `ablation_abund_split.csv`, `ablation_curated.csv` +27 |
 | `seqnet` | 282 | Does a convolutional net on raw sequence beat gradient boosting on 6,580 engineered columns? | Finding 2 | `seqnet.csv`, `seqnet_matched.csv` |
 
 ### `sgrna/tuning/`  —  8 modules, 1,633 lines
@@ -176,7 +176,7 @@ Ablations on the curated cohort and the arguments about what its numbers mean (c
 
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
-| `ablation_paper_folds` | 125 | Feature-family ablation on the paper's own folds. | — | `flank_scale.csv` |
+| `ablation_paper_folds` | 125 | Feature-family ablation on the paper's own folds. | — | `ablation_paper_folds.csv`, `ablation_paper_folds_summary.csv` +1 |
 | `ceiling_table` | 109 | The corrected ceiling as a function of replicate agreement and replicate count -- the parametric form of Finding 6. | Part 5 | `ceiling_parametric.csv` |
 | `curated_ablation` | 246 | Feature-family ablations on crisprHAL's curated cohort. | Appendix B3 | `ablation_curated.csv`, `ablation_curated_gene.csv` +1 |
 | `curated_ceiling` | 122 | The ceiling for the label we actually train on, from replicate agreement. | Finding 6 | `curated_ceiling.json` |
@@ -308,7 +308,7 @@ What each model costs to train and to run, measured rather than estimated.
 | `cost` | 372 | How much computation does each model actually cost, and how light can SLICER get? | Part 5 | `cost_cpu_seconds.csv`, `cost_flops.csv` +1 |
 | `cost_bench` | 129 | What the extra accuracy costs: inference latency, model size, and featurisation, on one host thread, same machine. | Part 5 | `cost_crisprhal.csv`, `cost_featurise.csv` +3 |
 | `cost_boostmec` | 188 | What BoostMEC costs, measured with its released model, its own feature definitions and the same machine and protocol as SLICER and crisprHAL 2. | — | `boostmec_oracle.csv`, `model_size.csv` |
-| `cost_boostmec_shipped` | 240 | BoostMEC as shipped: the authors' own pipeline, run unmodified in their Docker image, timed and compared with the Python version of `cost_boostmec.py`. | Appendix B | `ablation_abund_split.csv`, `ablation_curated.csv` +363 |
+| `cost_boostmec_shipped` | 240 | BoostMEC as shipped: the authors' own pipeline, run unmodified in their Docker image, timed and compared with the Python version of `cost_boostmec.py`. | Appendix B | `ablation_abund_split.csv`, `ablation_curated.csv` +365 |
 | `cost_repeats` | 246 | Cost with its spread: every timing repeated, every repeat kept, so a ratio comes with a distribution and not a bare range. | — | `cost_repeats_fit.csv`, `cost_repeats_inference.csv` +1 |
 | `e2e_bench` | 175 | End-to-end scoring cost per guide, one thread: featurisation + column selection + imputation + model, against crisprHAL 2 with its input encoding. | Part 5 | `e2e_crisprhal.csv`, `e2e_slicer.csv` +3 |
 | `inference_cost` | 141 | Training cost is the wrong clock for a guide-design tool. | Part 5 | `inference_cost.csv` |
@@ -330,7 +330,7 @@ The tooling the paper rests on: the audit, the figures, the import and reference
 | `paper_numbers_A` | 431 | Audit of the numbers in the draft paper's claims [0]-[19], [35]-[45] (group A): data sets and methods, the flank effect, its mechanism and the appendix constraints. | Appendix A | `ablation_curated.csv`, `ablation_curated_gene.csv` +41 |
 | `paper_numbers_B` | 231 | Audit of the numbers in the draft paper's claims [20]-[28], [32]-[34] and [49] (group B): every number is recomputed from a stored result file and compared with the value the paper prints. | Finding 3 | `ablation_curated.csv`, `ceiling_parametric.csv` +25 |
 | `paper_numbers_C` | 326 | Audit of paper claims [29]-[31], [46]-[48], [50]-[55] (group C): every number is recomputed from a stored result file. | Part 5 | `ablation_curated.csv`, `ablation_label_curated.csv` +38 |
-| `paper_numbers_D` | 536 | Audit of the numbers added to the paper (point form) in the second pass of 23 Nov 2026: one protocol, the reach of the flank signal, controls, the transfer matrix, SLICER against crisprHAL 2 on more metrics … | Appendix B | `ablation_curated.csv`, `boostmec_oracle.csv` +40 |
+| `paper_numbers_D` | 536 | Audit of the numbers added to the paper (point form) in the second pass of 23 Nov 2026: one protocol, the reach of the flank signal, controls, the transfer matrix, SLICER against crisprHAL 2 on more metrics … | Appendix B | `ablation_curated.csv`, `ablation_paper_folds_summary.csv` +41 |
 | `report_checks_CIT` | 90 | Checks on the report's citation-related numbers (tag CIT): each `got` is computed from a stored file. | Part 5 | `noshay_replication.csv` |
 | `report_checks_R1` | 305 | Report checks R1: numbers of PROGRESS_REPORT.md lines 1-120 (the Summary, 'How to read', 'What earns a place', Finding 1) that had no line in the audit, recomputed from a stored file or from the repository's own code. | Finding 1 | `ablation_curated.csv`, `ablation_curated_gene.csv` +25 |
 | `report_checks_R2` | 339 | Audit of PROGRESS_REPORT.md lines 121-307 (Finding 2 on the flank effect, Finding 3 on transfer and confound controls, Finding 4 on the model being out of material): the headline numbers that `verify_numbers` did not recompute … | Finding 2 | `ablation_curated.csv`, `ablation_main.csv` +26 |
