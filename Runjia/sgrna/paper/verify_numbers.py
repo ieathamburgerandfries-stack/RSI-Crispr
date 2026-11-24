@@ -19,12 +19,14 @@ from sgrna import config
 RUNJIA = pathlib.Path(OUT).parent.parent      # the fork's Runjia/, which holds the documents these checks read
 
 bad, n = [], 0
+RAW = []          # (label, computed, claimed, decimals) in full precision, written to $AUDIT_RAW when that is set (the printed lines keep only five decimals)
 
 
 def chk(label, got, claimed, dec):
     global n
     n += 1
     ok = abs(got - claimed) <= 0.5 * 10 ** (-dec) + 1e-9
+    RAW.append((label, float(got), float(claimed), int(dec)))
     if not ok:
         bad.append((label, got, claimed))
     print(f"  {'ok ' if ok else 'BAD'} {label:58s} computed {got:+.5f}  report {claimed:+.{max(dec, 0)}f}")
@@ -985,6 +987,9 @@ def main():
         m_ = re.search(pat, _docs[pathlib.Path(fname).name])
         chk(f"{fname} quotes the audit's own check count", float(m_.group(1)) if m_ else -1.0, _total, 0)
 
+    import os
+    if os.environ.get("AUDIT_RAW"):
+        json.dump(RAW, open(os.environ["AUDIT_RAW"], "w"))
     print(f"\n{n} checks, {len(bad)} mismatches")
     for b in bad:
         print("  MISMATCH", b)

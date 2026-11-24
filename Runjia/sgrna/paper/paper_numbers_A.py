@@ -90,6 +90,7 @@ def run(chk):
     chk(P + "[2] SpCas9 used train + test equals the curated cohort", float(vw.n_train + vw.n_test), 33567, 0)
     chk(P + "[2] eSpCas9 training FILE, rows", float(len(es_tr)), 47591, 0)
     chk(P + "[2] eSpCas9 testing FILE, rows", float(len(es_te)), 11898, 0)
+    chk(P + "[2] eSpCas9 screen guides (training and testing files together)", float(len(es_tr) + len(es_te)), 59489, 0)
     chk(P + "[2] eSpCas9 train guides used (vs_crisprhal_espcas9.csv n_train)", float(ve.n_train), 47591, 0)
     chk(P + "[2] eSpCas9 test guides used (vs_crisprhal_espcas9.csv n_test)", float(ve.n_test), 11898, 0)
     from ..compare.eukaryote_rules import MIN_BIG
@@ -321,6 +322,10 @@ def run(chk):
     chk(P + "[36] 200 columns = 2 stats x 2 sides x (1,000 / 20) bins", 4 * 1000 / float(re.search(r"\((\d+) nt bins\)", l200).group(1)), 200, 0)
     chk(P + "[36] 200 columns of 20 nt bins do no better than 16 (gain over 16 columns below one fold sd)", float(r200 - r16 < s16), 1, 0)
     chk(P + "[36]   share of the 200-column arm, % (the table prints 96.0)", (r200 - b0) / (ref - b0) * 100, 96.0, 1)
+    l32, r32, _ = bins(32)
+    l80, r80, _ = bins(80)
+    chk(P + "[36] share carried by the 32 columns of 125 nt bins, %", (r32 - b0) / (ref - b0) * 100, 97.2, 1)
+    chk(P + "[36] share carried by the 80 columns of 50 nt bins, %", (r80 - b0) / (ref - b0) * 100, 98.7, 1)
     chk(P + "[45] columns at which the curve saturates (Figure A1c)", float(res.loc[l16, "n_cols"]), 16, 0)
     chk(P + "[45] columns at which it turns over", float(res.loc[l200, "n_cols"]), 200, 0)
     chk(P + "[45] the 200-column arm scores below the 32- and 80-column arms",

@@ -213,6 +213,9 @@ def run(chk):
     chk(P + "[D13]   crisprHAL 2", g("eSpCas9", "crisprHAL 2", "calibration_slope"), 1.05, 2)
     chk(P + "[D13] pick percentile of the 100 best, SpCas9: tuned minus crisprHAL 2", g("SpCas9", "SLICER tuned", "pick100_pctile", "diff_vs_crisprhal"), 1.0, 1)
     chk(P + "[D13]   eSpCas9", g("eSpCas9", "SLICER tuned", "pick100_pctile", "diff_vs_crisprhal"), -0.8, 1)
+    for sp_, lo_, hi_ in (("SpCas9", -3.1, 5.2), ("eSpCas9", -3.2, 1.4)):
+        chk(P + f"[D13]   pick percentile interval, {sp_}, lower end", g(sp_, "SLICER tuned", "pick100_pctile", "diff_lo"), lo_, 1)
+        chk(P + f"[D13]   upper end", g(sp_, "SLICER tuned", "pick100_pctile", "diff_hi"), hi_, 1)
     chk(P + "[D13] tuned SLICER rho on the SpCas9 split (this panel and vs_crisprhal_wt.csv agree)", g("SpCas9", "SLICER tuned", "spearman"),
         float(pd.read_csv(OUT / "vs_crisprhal_wt.csv").query("arm.str.startswith('tuned')").rho.iloc[0]), 3)
 
@@ -230,6 +233,7 @@ def run(chk):
     chk(P + "[D14]   largest", float(cb.g_minus_ac_pos20.max()), 0.568, 3)
     chk(P + "[D14]   datasets with a positive value", float((cb.g_minus_ac_pos20 > 0).sum()), 11, 0)
     chk(P + "[D14]   E. coli", float(c[c.group == "E. coli"].g_minus_ac_pos20.iloc[0]), -0.333, 3)
+    chk(P + "[D14]   E. coli, as printed in the appendix (two decimals)", float(c[c.group == "E. coli"].g_minus_ac_pos20.iloc[0]), -0.33, 2)
 
     # ---------------------------------------------------------------------------------------------------- the cost (cost_repeats.py, cost_boostmec.py, cost_boostmec_shipped.py, model_size.py, colab/cost_gpu.py)
     # One quiet laptop session and one Colab T4 session; every claimed value below is typed as the Doc prints it (three significant figures), and its number of decimals is read from it.
@@ -375,6 +379,60 @@ def run(chk):
     claim("[D20]   NCBI's length for NC_000913.2", rg.loc["NC_000913.2", "length_bp"], "4,639,675")
     claim("[D20]   NCBI's length for the replacing version NC_000913.3", rg.loc["NC_000913.3", "length_bp"], "4,641,652")
     assert rg.loc["NC_000913.2", "status"] == "replaced" and rg.loc["NC_000913.2", "replaced_by"] == "NC_000913.3", "NCBI no longer lists NC_000913.2 as replaced by NC_000913.3"
+    # ---------------------------------------------------------------------------------------------------- coverage additions (numbers that were printed in the Doc without a check)
+    from .. import config as _c
+    dd = _c.EXTERNAL / "crisprHAL" / "data"
+    claim("[D21] C. rodentium TevSpCas9 files: rows (training 20,195 and testing 5,049)", len(pd.read_csv(dd / "TevSpCas9_training_data.csv", header=None)) + len(pd.read_csv(dd / "TevSpCas9_testing_data.csv", header=None)), "25,244")
+    from ..compare import transfer as _tr
+    _x, _y, _ = _tr.build("TevSpCas9", genome_fasta=_c.EXTERNAL / "C_rodentium" / "NC_013716.1.fasta")
+    claim("[D21]   unique guides located in the genome", len(_y), "25,210")
+    import re as _re
+    mt = (_c.EXTERNAL / "BoostMEC" / "repo" / "model" / "model.txt").read_text()
+    par = {k: float(v) for k, v in _re.findall(r"\[(\w+): ([-\d.e+]+)\]", mt.split("parameters:")[-1])}
+    claim("[D21] BoostMEC released model: learning rate", par["learning_rate"], "0.0099")
+    claim("[D21]   leaves per tree (limit)", par["num_leaves"], "701")
+    claim("[D21]   maximum depth", par["max_depth"], "12")
+    claim("[D21]   rows per leaf", par["min_data_in_leaf"], "203")
+    claim("[D21]   share of columns per tree, %", 100 * par["feature_fraction"], "48")
+    claim("[D21]   L2 penalty", par["lambda_l2"], "1.48")
+    claim("[D21]   histogram bins", par["max_bin"], "343")
+    claim("[D21]   features of the model file", int(_re.search(r"max_feature_idx=(\d+)", mt).group(1)) + 1, "149")
+    img = (OUT / "boostmec_shipped_image.txt").read_text()
+    claim("[D21] BoostMEC Docker image size, GB", float(_re.search(r"amd64 (\d+)", img).group(1)) / 1e9, "1.2")
+    for want in ("x86_64", "Ubuntu", "18.04", "R version 4.1.0", "RNAfold 2.4.14", "Python 3.7.1"):
+        assert want in img, f"{want} missing from the stored image description"
+    orc2 = pd.read_csv(OUT / "boostmec_oracle.csv")
+    claim("[D21] the paper's worked examples, published predictions", orc2.paper_prediction.iloc[0], "49.53")
+    claim("[D21]   second", orc2.paper_prediction.iloc[1], "28.42")
+    # ---------------------------------------------------------------------------------------------------- the head-to-head on whole-gene folds, and the window sweep
+    gg = pd.read_csv(OUT / "gene_grouped_vs_crisprhal.csv").set_index(["model", "against"])
+    pub = gg.loc[("SLICER default", "crisprHAL 2")]
+    claim("[D22] whole-gene folds, crisprHAL 2 at its published batch (1,024): mean rho over the five folds", pub.crisprhal_mean, "0.693")
+    claim("[D22]   SLICER default model on the same folds", pub["mean"], "0.707")
+    claim("[D22]   lead of the default model", pub.lead_mean, "0.014")
+    claim("[D22]     sd of the lead over the folds", pub.lead_sd, "0.006")
+    claim("[D22]     folds in which SLICER default is ahead", pub.folds_ahead, "5")
+    tu = gg.loc[("SLICER tuned", "crisprHAL 2")]
+    claim("[D22]   SLICER tuned model", tu["mean"], "0.723")
+    claim("[D22]   lead of the tuned model", tu.lead_mean, "0.031")
+    claim("[D22]     folds ahead", tu.folds_ahead, "5")
+    b256 = gg.loc[("SLICER default", "crisprHAL 2 (batch 256)")]
+    claim("[D22] the earlier run at batch 256: crisprHAL 2 mean", b256.crisprhal_mean, "0.680")
+    claim("[D22]   below its published batch by", pub.crisprhal_mean - b256.crisprhal_mean, "0.013")
+    claim("[D22]   the default model's lead then", b256.lead_mean, "0.027")
+    claim("[D22]   the tuned model's lead then", gg.loc[("SLICER tuned", "crisprHAL 2 (batch 256)")].lead_mean, "0.044")
+    rr2 = pd.read_csv(OUT.parent / "crisprhal_rerun.csv")
+    claim("[D22] crisprHAL 2 at its published configuration on our five random-row folds (seed 41)", rr2[(rr2.arm == "our_folds") & (rr2.seed == 41) & rr2.model.str.startswith("crisprHAL2")].spearman.mean(), "0.697")
+    fsd = pd.read_csv(OUT / "flank_scale.csv")
+    fsd = fsd[fsd.seed == 41]
+    wg = lambda W: fsd[fsd.arm == f"gc W={W}"].set_index("fold").rho
+    bs0 = fsd[fsd.arm == "base"].set_index("fold").rho
+    claim("[D23] window sweep (seed 41, five folds), two GC columns: gain at 100 nt", (wg(100) - bs0).mean(), "0.095")
+    claim("[D23]   at 250 nt", (wg(250) - bs0).mean(), "0.105")
+    claim("[D23]   at 500 nt", (wg(500) - bs0).mean(), "0.097")
+    claim("[D23]   folds in which 250 nt beats both 100 and 500 nt", ((wg(250) > wg(100)) & (wg(250) > wg(500))).sum(), "5")
+    claim("[D23]   250 nt is within 0.01 of 100 and of 500 nt (1 = yes)", float(max((wg(250) - wg(100)).mean(), (wg(250) - wg(500)).mean()) < 0.01), "1")
+    claim("[D23]   windows tried (10, 25, 50, 100, 250, 500, 1,000, 2,000, 5,000)", fsd[fsd.part == "window"].arm.str.extract(r"gc W=(\d+)").dropna()[0].nunique(), "9")
     # BoostMEC retrained on the cohort as its authors trained it (boostmec_replica.py), on the features of their own pipeline; released hyperparameters, same folds and seeds as the flank-scale arms
     bm = pd.read_csv(OUT / "boostmec_released.csv").set_index(["seed", "fold"])
     base_ = fr[fr.arm == "base"].set_index(["seed", "fold"]).rho

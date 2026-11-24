@@ -19,7 +19,7 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**429 files** in 22 groups.
+**430 files** in 22 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
@@ -303,7 +303,8 @@ Within a group the order is alphabetical.
 | `asymmetry_strand_audit.csv` | 0.2 | cited | `asymmetry`, `cost_boostmec_shipped` | source, orientation, guides |
 | `chi_sites.csv` | 1.3 | cited | `chi_sites`, `cost_boostmec_shipped`, `report_checks_R7` | window, test, rho, beta_alone, se_alone, beta_gc_adjusted, se_gc_adjusted … |
 | `cohort_groups.csv` | 0.3 | cited | `cohort_groups`, `cost_boostmec_shipped`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_D`, `report_checks_R7`, `report_checks_R8` | cohort, grouping, n, n_groups, guides_per_group, within_share |
-| `crisprhal_gene_grouped_fcolab_b256.csv` | 0.5 | receipt | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped` | model, fold, spearman, r2, fit_minutes, n_train, n_test … |
+| `crisprhal_gene_grouped_fcolab_b1024.csv` | 0.5 | cited | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped` | model, fold, spearman, r2, fit_minutes, n_train, n_test … |
+| `crisprhal_gene_grouped_fcolab_b256.csv` | 0.5 | cited | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped` | model, fold, spearman, r2, fit_minutes, n_train, n_test … |
 | `crisprhal_matched_folds.csv` | 0.8 | cited | `rederive`, `cost_boostmec_shipped`, `report_checks_R6`, `report_checks_R7` | stage, fold, draw, spearman, is_published_config |
 | `crisprhal_rerun.csv` | 0.6 | audited | `rederive`, `crisprhal_rerun`, `cost_boostmec_shipped`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R2`, `report_checks_R6`, `report_checks_R7` | arm, model, seed, fold, epochs, n_train, n_val … |
 | `crisprhal_tuned_folds.csv` | 0.9 | cited | `rederive`, `crisprhal_tune`, `cost_boostmec_shipped`, `report_checks_R6`, `report_checks_R7` | model, draw, fold, seed, n_train, n_val, learning_rate … |
@@ -334,16 +335,16 @@ Within a group the order is alphabetical.
 | `post_freeze/boostmec_released.csv` | 1.1 | cited | `boostmec_replica`, `cost_boostmec_shipped`, `paper_numbers_D` | seed, fold, rho, trees, leaves, seconds, features_ms_per_guide |
 | `post_freeze/boostmec_search_trace.csv` | 33.4 | cited | `boostmec_replica`, `cost_boostmec_shipped`, `paper_numbers_D` | step, phase, cv_mse, mean_best_iteration, seconds, u_learning_rate, u_max_depth … |
 | `post_freeze/boostmec_searched.csv` | 0.8 | cited | `boostmec_replica`, `cost_boostmec_shipped`, `paper_numbers_D` | seed, rho, trees, leaves, seconds, search_seconds, n_confirm … |
-| `post_freeze/boostmec_shipped_check.csv` | 0.9 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | item, value |
-| `post_freeze/boostmec_shipped_cohort.csv` | 0.2 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | n_guides, pipeline_seconds, ms_per_guide, rho_released_model_on_ecoli, spearman_python_loader_vs_shipped, max_abs_diff_python_loader_vs_shipped |
-| `post_freeze/boostmec_shipped_rnafold.csv` | 0.2 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | workload, sequences, native_seconds, container_seconds, ratio |
-| `post_freeze/boostmec_shipped_stages.csv` | 1.2 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | batch, stage, seconds |
-| `post_freeze/boostmec_shipped_timings.csv` | 0.5 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | batch, rep, seconds, ms_per_guide, note |
+| `post_freeze/boostmec_shipped_check.csv` | 0.9 | cited | `cost_boostmec_shipped`, `paper_numbers_D` | item, value |
+| `post_freeze/boostmec_shipped_cohort.csv` | 0.2 | cited | `cost_boostmec_shipped`, `paper_numbers_D` | n_guides, pipeline_seconds, ms_per_guide, rho_released_model_on_ecoli, spearman_python_loader_vs_shipped, max_abs_diff_python_loader_vs_shipped |
+| `post_freeze/boostmec_shipped_rnafold.csv` | 0.2 | cited | `cost_boostmec_shipped`, `paper_numbers_D` | workload, sequences, native_seconds, container_seconds, ratio |
+| `post_freeze/boostmec_shipped_stages.csv` | 1.2 | cited | `cost_boostmec_shipped`, `paper_numbers_D` | batch, stage, seconds |
+| `post_freeze/boostmec_shipped_timings.csv` | 0.5 | cited | `cost_boostmec_shipped`, `paper_numbers_D` | batch, rep, seconds, ms_per_guide, note |
 | `post_freeze/boostmec_vs_slicer_confirm.csv` | 0.4 | cited | `boostmec_replica`, `cost_boostmec_shipped`, `paper_numbers_D` | arm, n_guides, rho, rho_lo, rho_hi, boostmec_minus_arm, diff_lo … |
-| `post_freeze/cost_gpu.csv` | 276.8 | receipt | `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | model, device, placement, what, batch, rep, value … |
+| `post_freeze/cost_gpu.csv` | 276.8 | cited | `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | model, device, placement, what, batch, rep, value … |
 | `post_freeze/cost_repeats_fit.csv` | 2.6 | cited | `cost_boostmec_shipped`, `cost_repeats`, `figures_paper`, `paper_numbers_D` | model, rep, cpu_seconds, wall_seconds, n_train, session, load1_start … |
 | `post_freeze/cost_repeats_inference.csv` | 85.7 | cited | `cost_boostmec_shipped`, `cost_repeats`, `figures_paper`, `paper_numbers_D` | model, batch, rep, ms_per_guide, session, load1_start, load1_end |
-| `post_freeze/cost_repeats_machine.json` | 1.5 | receipt | `cost_boostmec_shipped`, `cost_repeats` |  |
+| `post_freeze/cost_repeats_machine.json` | 1.5 | cited | `cost_boostmec_shipped`, `cost_repeats` |  |
 | `post_freeze/curation_check.csv` | 1.1 | cited | `curation_check`, `cost_boostmec_shipped`, `paper_numbers_D` | stratum, n, kept, spearman_flank_gc, label_sd, lowest_decile_deficit_sd, share_in_lowest_decile … |
 | `post_freeze/e2e_crisprhal.csv` | 0.4 | audited | `cost_boostmec_shipped`, `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, batch, ms_per_call, ms_per_guide, encode_ms, model_ms |
 | `post_freeze/e2e_slicer.csv` | 0.7 | audited | `cost_boostmec_shipped`, `e2e_bench`, `paper_numbers_C` | model, batch, ms_per_call, ms_per_guide |
@@ -353,7 +354,7 @@ Within a group the order is alphabetical.
 | `post_freeze/flank_scale_summary.csv` | 3.2 | cited | `flank_scale`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | part, arm, base_rho, n_folds, rho, gain, gain_sd_over_folds … |
 | `post_freeze/gate_test.csv` | 1.7 | cited | `gate_test`, `cost_boostmec_shipped`, `paper_numbers_D` | model, seed, fold, rho, r2 |
 | `post_freeze/gene_grouped_slicer.csv` | 0.4 | receipt | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped` | model, fold, n_test, spearman |
-| `post_freeze/gene_grouped_vs_crisprhal.csv` | 0.4 | receipt | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped` | model, against, mean, sd, crisprhal_mean, crisprhal_sd, lead_mean … |
+| `post_freeze/gene_grouped_vs_crisprhal.csv` | 0.7 | cited | `gene_grouped_vs_crisprhal`, `cost_boostmec_shipped`, `paper_numbers_D` | model, against, mean, sd, crisprhal_mean, crisprhal_sd, lead_mean … |
 | `post_freeze/human_additivity_twin.csv` | 10.4 | audited | `human_additivity_twin`, `cost_boostmec_shipped` | folds, arm, seed, fold, shared_protospacers, rho |
 | `post_freeze/human_additivity_twin_claim.csv` | 0.4 | audited | `human_additivity_twin`, `cost_boostmec_shipped` | folds, ridge, best_boosting_arm, best_boosting, ridge_over_boosting, depth_4_to_6, depth_lo … |
 | `post_freeze/human_additivity_twin_summary.csv` | 0.9 | audited | `human_additivity_twin`, `cost_boostmec_shipped`, `report_checks_R6`, `report_checks_R7` | folds, arm, mean, std, count |
@@ -372,7 +373,7 @@ Within a group the order is alphabetical.
 | `post_freeze/mix_mlp_stage1.csv` | 1.3 | receipt | `cost_boostmec_shipped` | draw, seed, fold, k, rho |
 | `post_freeze/mix_ridge_stage1.csv` | 0.2 | receipt | `cost_boostmec_shipped` | draw, seed, fold, k, rho |
 | `post_freeze/model_size.csv` | 0.6 | cited | `cost_boostmec`, `cost_boostmec_shipped`, `model_size`, `paper_numbers_D` | model, trees, nodes, leaves, inner_nodes, columns_used, columns_selected … |
-| `post_freeze/reference_genome_versions.csv` | 0.3 | receipt | `cost_boostmec_shipped`, `paper_numbers_D` | accession_version, length_bp, status, replaced_by, record_updated, looked_up, source |
+| `post_freeze/reference_genome_versions.csv` | 0.3 | cited | `cost_boostmec_shipped`, `paper_numbers_D` | accession_version, length_bp, status, replaced_by, record_updated, looked_up, source |
 | `post_freeze/signal_corr.csv` | 6.2 | cited | `signal_profile`, `cost_boostmec_shipped`, `paper_numbers_D` | window_nt, side, statistic, marginal, partial_given_target_gc |
 | `post_freeze/signal_decile.csv` | 0.9 | cited | `signal_profile`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | decile, n, flank_gc, mean_label, lo, hi, gap_vs_rest |
 | `post_freeze/signal_slope.csv` | 2.1 | cited | `signal_profile`, `cost_boostmec_shipped`, `figures_paper`, `paper_numbers_D` | base, n, spearman, lo, hi, quintile, flank_gc … |
@@ -477,7 +478,7 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `README.md` | 2.0 | document | — |  |
-| `RESULTS.md` | 34.3 | document | — |  |
+| `RESULTS.md` | 36.1 | document | — |  |
 | `RESULTS_archive_2026-10-10.md` | 110.9 | document | — |  |
 
 ### figures

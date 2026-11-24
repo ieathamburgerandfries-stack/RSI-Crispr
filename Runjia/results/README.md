@@ -18,7 +18,7 @@ paths by name (about 500 references in 98 modules) and the same names exist in t
 gives the conceptual view instead. `.npy` prediction caches are gitignored and regenerable by re-running the module that made them.
 
 `../run_audit.sh` recomputes every post-freeze number quoted in the report from the files here and
-exits non-zero on any mismatch (3122 checks as of 23 November 2026). It also checks that the count in
+exits non-zero on any mismatch (3263 checks as of 24 November 2026). It also checks that the count in
 this sentence is the one it actually ran, in this file and in three others, so the four cannot drift
 apart again. `sgrna/paper/import_check.py`, which it runs, asserts separately that every module
 in the package imports and that importing one writes nothing.
