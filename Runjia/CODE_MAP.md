@@ -55,7 +55,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 
 <!-- generated:begin -->
 
-**173 modules, 37,695 lines** of Python in 11 folders (not counting the `__init__.py` markers).
+**174 modules, 37,838 lines** of Python in 11 folders (not counting the `__init__.py` markers).
 
 #### By the report section each module supports
 
@@ -73,7 +73,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Part 4 | The freeze, and what remains | 5 | 792 | 5 | compare, controls |
 | Part 5 | Where this sits in the field | 37 | 6,515 | 117 | build, cohorts, compare, controls, cost, interpret, paper, tuning |
 | Appendix A | Controls and nulls | 4 | 1,609 | 64 | controls, harness, paper |
-| Appendix B | The methods and controls behind the findings | 18 | 5,862 | 365 | cohorts, compare, controls, cost, harness, interpret, paper, tuning |
+| Appendix B | The methods and controls behind the findings | 18 | 5,880 | 365 | cohorts, compare, controls, cost, harness, interpret, paper, tuning |
 | Appendix B2 | Why the imported families failed, and why that is not a screen | 2 | 472 | 4 | controls, interpret |
 | Appendix B2a | Curation: what it is, and why family A doubled between cohorts | 3 | 562 | 6 | cohorts, controls |
 | Appendix B3 | The family ablations on the curated cohort, and what they measure | 13 | 2,528 | 5 | cohorts, features, interpret |
@@ -82,7 +82,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Appendix C0 | Reproducibility: versions, seeds and protocol | 1 | 199 | 0 | (top) |
 | tooling | the audit, the figures, the guards and this map | 5 | 2,120 | 0 | paper |
 | library | shared code the experiments are built on | 9 | 1,352 | 2 | (top), build |
-| — | no section of the report points at it | 18 | 2,620 | 35 | cohorts, compare, cost, interpret, paper |
+| — | no section of the report points at it | 19 | 2,745 | 35 | cohorts, compare, cost, interpret, paper |
 
 Read the table above as the price list for the report: each claim carries its code and its result files with it. A module is placed in the section that cites it (or the result files it writes) most often. The `—` row, if there is one, is completed work that no section of the report points at. Each such module is listed in `REMOVED.md` under "Considered for removal and kept", with what it found; they were kept by decision, not by oversight.
 
@@ -170,12 +170,13 @@ Hyperparameter search and model mixing: the joint search on development genes, i
 | `tune_split2` | 231 | Does the tuning payoff replicate on a second gene split? | Appendix B | `tune_configs.json`, `tune_split2_configs.json` +3 |
 | `xgb_knobs` | 243 | Which XGBoost knobs has this project never touched, and do they matter? | Appendix B | `xgb_knobs.csv`, `xgb_knobs_verify.csv` |
 
-### `sgrna/cohorts/`  —  16 modules, 2,249 lines
+### `sgrna/cohorts/`  —  17 modules, 2,374 lines
 
 Ablations on the curated cohort and the arguments about what its numbers mean (ceilings, inflation, label noise), including the shape ablations of Appendix B4.
 
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
+| `ablation_paper_folds` | 125 | Feature-family ablation on the paper's own folds. | — | `flank_scale.csv` |
 | `ceiling_table` | 109 | The corrected ceiling as a function of replicate agreement and replicate count -- the parametric form of Finding 6. | Part 5 | `ceiling_parametric.csv` |
 | `curated_ablation` | 246 | Feature-family ablations on crisprHAL's curated cohort. | Appendix B3 | `ablation_curated.csv`, `ablation_curated_gene.csv` +1 |
 | `curated_ceiling` | 122 | The ceiling for the label we actually train on, from replicate agreement. | Finding 6 | `curated_ceiling.json` |
@@ -314,7 +315,7 @@ What each model costs to train and to run, measured rather than estimated.
 | `model_size` | 91 | What has to be stored to run each model: trees, leaves and bytes for SLICER's default and tuned models, parameters and bytes for crisprHAL 2. | — | `model_size.csv` |
 | `rds_read` | 106 | Minimal read-only parser for R's XDR serialisation (.rds), enough for plain data (lists, vectors, attributes). | — | — |
 
-### `sgrna/paper/`  —  21 modules, 7,150 lines
+### `sgrna/paper/`  —  21 modules, 7,168 lines
 
 The tooling the paper rests on: the audit, the figures, the import and reference guards, and the code map.
 
@@ -329,7 +330,7 @@ The tooling the paper rests on: the audit, the figures, the import and reference
 | `paper_numbers_A` | 431 | Audit of the numbers in the draft paper's claims [0]-[19], [35]-[45] (group A): data sets and methods, the flank effect, its mechanism and the appendix constraints. | Appendix A | `ablation_curated.csv`, `ablation_curated_gene.csv` +41 |
 | `paper_numbers_B` | 231 | Audit of the numbers in the draft paper's claims [20]-[28], [32]-[34] and [49] (group B): every number is recomputed from a stored result file and compared with the value the paper prints. | Finding 3 | `ablation_curated.csv`, `ceiling_parametric.csv` +25 |
 | `paper_numbers_C` | 326 | Audit of paper claims [29]-[31], [46]-[48], [50]-[55] (group C): every number is recomputed from a stored result file. | Part 5 | `ablation_curated.csv`, `ablation_label_curated.csv` +38 |
-| `paper_numbers_D` | 518 | Audit of the numbers added to the paper (point form) in the second pass of 23 Nov 2026: one protocol, the reach of the flank signal, controls, the transfer matrix, SLICER against crisprHAL 2 on more metrics … | Appendix B | `boostmec_oracle.csv`, `boostmec_released.csv` +39 |
+| `paper_numbers_D` | 536 | Audit of the numbers added to the paper (point form) in the second pass of 23 Nov 2026: one protocol, the reach of the flank signal, controls, the transfer matrix, SLICER against crisprHAL 2 on more metrics … | Appendix B | `ablation_curated.csv`, `boostmec_oracle.csv` +40 |
 | `report_checks_CIT` | 90 | Checks on the report's citation-related numbers (tag CIT): each `got` is computed from a stored file. | Part 5 | `noshay_replication.csv` |
 | `report_checks_R1` | 305 | Report checks R1: numbers of PROGRESS_REPORT.md lines 1-120 (the Summary, 'How to read', 'What earns a place', Finding 1) that had no line in the audit, recomputed from a stored file or from the repository's own code. | Finding 1 | `ablation_curated.csv`, `ablation_curated_gene.csv` +25 |
 | `report_checks_R2` | 339 | Audit of PROGRESS_REPORT.md lines 121-307 (Finding 2 on the flank effect, Finding 3 on transfer and confound controls, Finding 4 on the model being out of material): the headline numbers that `verify_numbers` did not recompute … | Finding 2 | `ablation_curated.csv`, `ablation_main.csv` +26 |

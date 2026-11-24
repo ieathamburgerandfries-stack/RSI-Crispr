@@ -463,6 +463,24 @@ def run(chk):
     claim("[D24] largest difference between the upstream and the downstream change at any window", max(gaps), "0.004")
     claim("[D24] gain of 250/250 on the two new fold assignments (mean over 10 folds)", wsm.loc["gc up=250 down=250", "gain_rep"], "0.106")
     claim("[D24] gain of 200/250 on the two new fold assignments", wsm.loc[top, "gain_rep"], "0.106")
+    # the family ablation on the paper's own folds (ablation_paper_folds.py), against the same ablation on random rows (the team's shared harness, ablation_curated.csv)
+    apf = pd.read_csv(OUT / "ablation_paper_folds_summary.csv").set_index("family")
+    arf = pd.read_csv(OUT.parent / "ablation_curated.csv").set_index("family")
+    claim("[D25] family ablation, paper folds: folds per family (3 seeds x 5)", apf.n_folds.min(), "15")
+    claim("[D25]   20-mer with the same 300-column selection, mean rho over folds", apf.base_selected_rho.iloc[0], "0.5461")
+    claim("[D25]   20-mer with no selection (the headline baseline)", apf.base_no_selection_rho.iloc[0], "0.5466")
+    for fam, txt in (("a_flank", "0.1612"), ("b_energy", "0.0181"), ("c_folding", "0.0143"), ("f_methylation", "0.0077"), ("j_periodicity", "0.0081"),
+                     ("h_offtarget", "\u22120.0003"), ("d_mechanics", "0.0972"), ("d_mechanics, guide columns only", "0.0103"), ("d_mechanics, flank columns only", "0.0963"),
+                     ("e_nucleoid", "0.0651"), ("g_transcription", "0.0455")):
+        claim(f"[D25]   gain over the selected 20-mer: {fam}", apf.loc[fam, "gain_same_selection"], txt)
+    claim("[D25]   energy, folding, methylation and periodicity: folds with a positive gain (the smallest of the four, of 15)", apf.loc[["b_energy", "c_folding", "f_methylation", "j_periodicity"], "folds_positive_same_selection"].min(), "15")
+    claim("[D25]   off-target: folds with a positive gain", apf.loc["h_offtarget", "folds_positive_same_selection"], "7")
+    claim("[D25]   share of the thermodynamics gain owed to the 8 flank columns, %", 100 * apf.loc["d_mechanics, flank columns only", "gain_same_selection"] / apf.loc["d_mechanics", "gain_same_selection"], "99")
+    claim("[D25]   largest gain of the guide-derived families (energy, folding, methylation, periodicity, off-target) is below 0.02 (1 = yes)", float(apf.loc[["b_energy", "c_folding", "f_methylation", "j_periodicity", "h_offtarget"], "gain_same_selection"].max() < 0.02), "1")
+    for fam, txt in (("a_flank", "0.164"), ("b_energy", "0.0187"), ("c_folding", "0.0144"), ("f_methylation", "0.0078"), ("j_periodicity", "0.0108"), ("e_nucleoid", "0.0720"), ("g_transcription", "0.0581")):
+        claim(f"[D25] the same family on random rows (5 seeds x 5 folds): {fam}", arf.loc[fam, "d_spearman"], txt)
+    for fam, txt in (("a_flank", "98"), ("b_energy", "97"), ("c_folding", "99"), ("f_methylation", "99"), ("d_mechanics", "98"), ("i_shape", "98"), ("d_supercoiling", "98"), ("e_nucleoid", "90"), ("g_transcription", "78"), ("j_periodicity", "75")):
+        claim(f"[D25] share of the random-row gain kept on the paper's folds, %: {fam}", 100 * apf.loc[fam, "gain_same_selection"] / arf.loc[fam, "d_spearman"], txt)
     # BoostMEC retrained on the cohort as its authors trained it (boostmec_replica.py), on the features of their own pipeline; released hyperparameters, same folds and seeds as the flank-scale arms
     bm = pd.read_csv(OUT / "boostmec_released.csv").set_index(["seed", "fold"])
     base_ = fr[fr.arm == "base"].set_index(["seed", "fold"]).rho

@@ -204,7 +204,7 @@ def run(chk):
         chk(P + f"[51]   {arm}: folds with a positive increment", float(r.folds_positive), 15, 0)
         chk(P + f"[51]   {arm}: folds measured", float(r.n_folds), 15, 0)
         if arm == "champion":
-            chk(P + "[51]   the 20-mer alone under the same 300-column selection (the paper's 0.559, against 0.547 with no selection)", float(r.base), 0.559, 3)
+            chk(P + "[51]   the 20-mer alone under the same 300-column selection, 30,203 genic guides (0.559; on the paper's folds selection leaves the 20-mer at 0.546, see [D25])", float(r.base), 0.559, 3)
     fr = pd.read_csv(OUT / "family_a_at_tuned.csv")
     chk(P + "[51] genic guides in that protocol (test rows over the five folds of one seed)",
         float(fr[(fr.matrix == "base+A") & (fr.arm == "champion") & (fr.seed == 41)].n_test.sum()), 30203, 0)
