@@ -53,6 +53,21 @@ def _seed41_gains(prefix_part):
     return pd.DataFrame(rows)
 
 
+def _tune_symmetric_gains():
+    """Gain over the 20-mer of the symmetric arms (same window on both sides) that `flank_window_tune.py` added to those of `flank_scale.py`; seed 41, five folds."""
+    f = R / "post_freeze" / "flank_window_tune.csv"
+    if not f.exists():
+        return pd.DataFrame(columns=["arm", "gain", "gain_sd_over_folds", "W"])
+    t = pd.read_csv(f)
+    t = t[t.seed == 41]
+    base = t[t.arm == "base"].set_index("fold").rho
+    rows = []
+    for arm, g in t[(t.arm != "base") & (t.up == t.down)].groupby("arm", sort=False):
+        d = g.drop_duplicates("fold").set_index("fold").rho - base
+        rows.append(dict(arm=f"gc W={int(g.up.iloc[0])}", gain=float(d.mean()), gain_sd_over_folds=float(d.std(ddof=1)), W=float(g.up.iloc[0])))
+    return pd.DataFrame(rows)
+
+
 def fig_reach():
     _style()
     fig, ax = plt.subplots(1, 2, figsize=(DOUBLE * 0.92, 2.25))
@@ -72,6 +87,9 @@ def fig_reach():
     _clean(ax[0])
     w = _seed41_gains("window")
     w["W"] = w.arm.str.extract(r"W=(\d+)").astype(float)
+    wt = _tune_symmetric_gains()                                         # the finer windows of flank_window_tune.py (75 to 400 nt), same folds and model
+    wt = wt[~wt.W.isin(w[w.arm.str.startswith("gc ")].W)]
+    w = pd.concat([w, wt], ignore_index=True)
     for kind, col, mk, lab in (("gc", BLUE, "o", "GC fraction of each side (2 columns)"), ("base4", ORANGE, "s", "A, C, G, T fractions of each side (8 columns)")):
         q = w[w.arm.str.startswith(kind + " ")].sort_values("W")
         _sd_bars(ax[1], q.W, q.gain, q.gain_sd_over_folds, col, mk, lab)

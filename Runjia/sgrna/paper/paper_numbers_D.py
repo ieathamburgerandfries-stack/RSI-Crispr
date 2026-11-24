@@ -70,7 +70,7 @@ def run(chk):
     fs = pd.read_csv(OUT / "flank_scale_summary.csv").set_index("arm")
     for W in (250, 5000):
         chk(P + f"[D5] gain from two GC columns at W = {W} nt", float(fs.loc[f"gc W={W}", "gain"]), {250: 0.105, 5000: 0.042}[W], 3)
-    chk(P + "[D5] the best window of the single-window GC sweep is 250 nt (1 = yes)", float(fs[fs.index.str.startswith("gc W=")].gain.idxmax() == "gc W=250"), 1, 0)
+    chk(P + "[D5] the best window of the first single-window GC sweep (nine windows) is 250 nt (1 = yes)", float(fs[fs.index.str.startswith("gc W=")].gain.idxmax() == "gc W=250"), 1, 0)
     for k, claimed in (("gc", 0.113), ("gcpur", 0.113), ("base4", 0.108)):
         chk(P + f"[D5] gain from the {k} composition of the four windows", float(fs.loc[f"{k} at 50/250/500/1000", "gain"]), claimed, 3)
     sh = fs[fs.index.str.startswith("family A shifted")]
@@ -432,7 +432,37 @@ def run(chk):
     claim("[D23]   at 500 nt", (wg(500) - bs0).mean(), "0.097")
     claim("[D23]   folds in which 250 nt beats both 100 and 500 nt", ((wg(250) > wg(100)) & (wg(250) > wg(500))).sum(), "5")
     claim("[D23]   250 nt is within 0.01 of 100 and of 500 nt (1 = yes)", float(max((wg(250) - wg(100)).mean(), (wg(250) - wg(500)).mean()) < 0.01), "1")
-    claim("[D23]   windows tried (10, 25, 50, 100, 250, 500, 1,000, 2,000, 5,000)", fsd[fsd.part == "window"].arm.str.extract(r"gc W=(\d+)").dropna()[0].nunique(), "9")
+    claim("[D23]   windows of the first sweep (10, 25, 50, 100, 250, 500, 1,000, 2,000, 5,000)", fsd[fsd.part == "window"].arm.str.extract(r"gc W=(\d+)").dropna()[0].nunique(), "9")
+    # tuning the two windows separately (flank_window_tune.py): the five symmetric windows it adds to the nine above, one-sided scans, a 3 x 3 refinement, a replication on two new fold assignments
+    wtn = pd.read_csv(OUT / "flank_window_tune.csv").drop_duplicates(["arm", "seed", "fold"])
+    wsm = pd.read_csv(OUT / "flank_window_tune_summary.csv").set_index("arm")
+    sym = {W: float((wg(W) - bs0).mean()) for W in (10, 25, 50, 100, 250, 500, 1000, 2000, 5000)}
+    sym.update({W: float(wsm.loc[f"gc up={W} down={W}", "gain_41"]) for W in (75, 150, 200, 300, 400)})
+    best_w = max(sym, key=sym.get)
+    claim("[D24] symmetric windows tried, same window on both sides (seed 41, five folds)", len(sym), "14")
+    claim("[D24]   the highest is 200 nt (1 = yes)", float(best_w == 200), "1")
+    claim("[D24]   gain at 200 nt", sym[200], "0.106")
+    claim("[D24]   windows within 0.01 of the highest are exactly 150, 200, 250, 300, 400 and 500 nt (1 = yes)", float(sorted(W for W in sym if sym[best_w] - sym[W] < 0.01) == [150, 200, 250, 300, 400, 500]), "1")
+    cells41 = wsm[wsm.n_folds_41 == 5]
+    claim("[D24] combinations of an upstream and a downstream window tried (seed 41; 50 to 1,000 nt)", len(cells41), "33")
+    top = cells41.gain_41.idxmax()
+    claim("[D24]   the best is 200 nt upstream and 250 nt downstream (1 = yes)", float(top == "gc up=200 down=250"), "1")
+    claim("[D24]   its lead over 250/250 on the folds it was chosen on", wsm.loc[top, "minus_250_250_41"], "0.0021")
+    claim("[D24]     folds ahead of 250/250 (of 5)", wsm.loc[top, "folds_ahead_41"], "5")
+    claim("[D24]   its lead over 250/250 on two new fold assignments (seeds 42, 43)", wsm.loc[top, "minus_250_250_rep"], "0.0001")
+    claim("[D24]     folds ahead of 250/250 (of 10)", wsm.loc[top, "folds_ahead_rep"], "5")
+    claim("[D24]     folds on the new assignments", wsm.loc[top, "n_folds_rep"], "10")
+    near = cells41[(cells41.up.between(150, 300)) & (cells41.down.between(150, 300))]
+    claim("[D24] combinations with both windows from 150 to 300 nt", len(near), "13")
+    claim("[D24]   the largest shortfall of any of them from the best", cells41.gain_41.max() - near.gain_41.min(), "0.004")
+    for side, u_, d_ in (("upstream", 1, 0), ("downstream", 0, 1)):
+        for W, txt in ((100, {"upstream": "\u22120.0031", "downstream": "\u22120.0028"}), (50, {"upstream": "\u22120.0107", "downstream": "\u22120.0121"}), (750, {"upstream": "\u22120.0097", "downstream": "\u22120.0056"}), (1000, {"upstream": "\u22120.0114", "downstream": "\u22120.0085"})):
+            arm = f"gc up={W} down=250" if u_ else f"gc up=250 down={W}"
+            claim(f"[D24] change from 250/250 when only the {side} window is {W} nt", wsm.loc[arm, "minus_250_250_41"], txt[side])
+    gaps = [abs(wsm.loc[f"gc up={W} down=250", "minus_250_250_41"] - wsm.loc[f"gc up=250 down={W}", "minus_250_250_41"]) for W in (50, 75, 100, 150, 200, 300, 400, 500, 750, 1000)]
+    claim("[D24] largest difference between the upstream and the downstream change at any window", max(gaps), "0.004")
+    claim("[D24] gain of 250/250 on the two new fold assignments (mean over 10 folds)", wsm.loc["gc up=250 down=250", "gain_rep"], "0.106")
+    claim("[D24] gain of 200/250 on the two new fold assignments", wsm.loc[top, "gain_rep"], "0.106")
     # BoostMEC retrained on the cohort as its authors trained it (boostmec_replica.py), on the features of their own pipeline; released hyperparameters, same folds and seeds as the flank-scale arms
     bm = pd.read_csv(OUT / "boostmec_released.csv").set_index(["seed", "fold"])
     base_ = fr[fr.arm == "base"].set_index(["seed", "fold"]).rho
