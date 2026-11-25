@@ -340,6 +340,25 @@ def run(chk):
     import os as _os
     for _f, _div, _txt in (("curated_guide_index.csv", 1e6, "70"), ("expanded_X.npy", 1e6, "828"), ("features/a_flank_curated.csv", 1e6, "85"), ("qct_lookup_tables.json", 1e3, "27")):
         claim(f"[D19] size of {_f}", _os.path.getsize(_I / _f) / _div, _txt)
+    # the design tool (sgrna/design): the check against the stored matrices and the pick-by-score benchmark
+    _dc = pd.read_csv(OUT / "design_check.csv").set_index("item").value
+    for _k, _txt in (("guides checked", "600"), ("guides on the minus strand", "294"), ("protospacer read from the genome equals the index", "600"), ("PAM equals the index", "600"),
+                     ("upstream flank equals the index", "600"), ("downstream flank equals the index", "600"), ("columns compared", "6,517"),
+                     ("missing-value pattern equal", "1"), ("maximum absolute difference in a column", "0"), ("maximum absolute difference in the prediction", "0"),
+                     ("guides listed at distance 0 by their own cut site", "600")):
+        claim(f"[D20] design check: {_k}", _dc[_k], _txt)
+    _db = pd.read_csv(OUT / "design_benchmark.csv").set_index(["window_bp", "model"])
+    for _w, _t in ((250, ("3,044", "5.07", "0.771", "0.760", "0.782", "0.487", "0.209", "0.764")), (500, ("4,150", "6.35", "0.778", "0.768", "0.788", "0.436", "0.176", "0.771")),
+                   (1000, ("3,396", "9.33", "0.784", "0.773", "0.795", "0.355", "0.130", "0.780"))):
+        _r = _db.loc[(_w, "tuned")]
+        claim(f"[D20] benchmark {_w} bp: windows with at least four curated guides", _r.windows, _t[0])
+        claim(f"[D20]   guides per window", _r.guides_per_window, _t[1])
+        claim(f"[D20]   percentile of the tuned model's pick", _r.pick_percentile, _t[2])
+        claim(f"[D20]     lower end", _r.pick_percentile_lo, _t[3])
+        claim(f"[D20]     upper end", _r.pick_percentile_hi, _t[4])
+        claim(f"[D20]   share of windows where the pick is the best guide", _r.pick_is_best, _t[5])
+        claim(f"[D20]   the same by chance", _r.chance_is_best, _t[6])
+        claim(f"[D20]   percentile of the default model's pick", _db.loc[(_w, "default")].pick_percentile, _t[7])
     # the T4 (colab/cost_gpu.py)
     gp = pd.read_csv(OUT / "cost_gpu.csv")
     gs = gp[gp.unit == "ms/guide"]

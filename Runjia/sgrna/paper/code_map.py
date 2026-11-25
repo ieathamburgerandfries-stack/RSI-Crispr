@@ -35,6 +35,7 @@ PACKAGES = [
     ("interpret", "What the model uses and what the signal is made of: importance, attribution, redundancy, the mechanism work of Finding 7, and what the tuned settings say."),
     ("compare", "Every comparison with something else (Part 5 of the report): crisprHAL 2, the inherited baseline, other organisms and the human matrix, and other assays (the dCas9 boundary experiment of Appendix B5)."),
     ("cost", "What each model costs to train and to run, measured rather than estimated."),
+    ("design", "The tool the project is for: give it a genome and a cut site and it returns the SpCas9 guide SLICER predicts will cut best there, with the shipped models, the check that it reads the same DNA and builds the same columns as the training matrices, and a benchmark of picking by score."),
     ("paper", None),
 ]
 

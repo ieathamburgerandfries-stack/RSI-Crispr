@@ -1,0 +1,13 @@
+item,value
+guides checked,600.0
+guides on the minus strand,294.0
+protospacer read from the genome equals the index,600.0
+PAM equals the index,600.0
+upstream flank equals the index,600.0
+downstream flank equals the index,600.0
+columns compared,6517.0
+missing-value pattern equal,1.0
+maximum absolute difference in a column,0.0
+maximum absolute difference in the prediction,0.0
+guides listed at distance 0 by their own cut site,600.0
+Spearman rho of the prediction against the measured score (these guides were in training),0.8920474779096607

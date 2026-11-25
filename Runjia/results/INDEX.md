@@ -92,7 +92,7 @@ Within a group the order is alphabetical.
 | `post_freeze/family_a_at_tuned.csv` | 6.0 | audited | `family_a_at_tuned`, `paper_numbers_C`, `report_checks_R2` | matrix, arm, seed, fold, n_train, n_test, n_flank_cols … |
 | `post_freeze/family_a_at_tuned_summary.csv` | 1.0 | audited | `family_a_at_tuned`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R3`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | comparison, base, with_a, delta, lo, hi, folds_positive … |
 | `post_freeze/tune_budget_check.csv` | 0.5 | audited | `tune_ecoli` | nf, k, rho, n_nonzero_gain |
-| `post_freeze/tune_configs.json` | 69.0 | cited | `family_a_at_tuned`, `mix_ecoli`, `tune_analyze`, `tune_ecoli`, `tune_split2`, `local_sequence_bound`, `equiv_check`, `mechanism`, `novel_followups`, `tuned_settings`, `data_efficiency`, `lit_followups`, `topend`, `vs_crisprhal`, `cost_bench`, `e2e_bench`, `paper_numbers_A`, `report_checks_R2` |  |
+| `post_freeze/tune_configs.json` | 69.0 | cited | `family_a_at_tuned`, `mix_ecoli`, `tune_analyze`, `tune_ecoli`, `tune_split2`, `local_sequence_bound`, `equiv_check`, `mechanism`, `novel_followups`, `tuned_settings`, `data_efficiency`, `lit_followups`, `topend`, `vs_crisprhal`, `cost_bench`, `e2e_bench`, `design_benchmark`, `train_model`, `paper_numbers_A`, `report_checks_R2` |  |
 | `post_freeze/tune_confirm.csv` | 1.3 | audited | `tune_ecoli`, `report_checks_R3` | arm, rho, rho_lo, rho_hi, d_vs_champion, d_lo, d_hi … |
 | `post_freeze/tune_external.csv` | 1.5 | audited | `tune_ecoli`, `report_checks_R7` | arm, seed, fold, rho |
 | `post_freeze/tune_fullcv.csv` | 2.0 | audited | `tune_ecoli`, `paper_numbers_A`, `report_checks_R6`, `report_checks_R7` | arm, seed, fold, rho |

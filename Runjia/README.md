@@ -9,6 +9,30 @@ around the target, and fits a small gradient-boosted model to them. This folder 
 top-level [`README.md`](../README.md) of the repository and in [`PROGRESS_REPORT.md`](PROGRESS_REPORT.md) (Summary and Part 5).
 Where this guide and either of them differ, this guide is stale.
 
+## Design a guide
+
+The point of the project: give it a genome and a cut site, get the SpCas9 guide SLICER predicts will cut best there.
+
+```bash
+python -m sgrna.design.design_guide --genome genome.fasta --cut-site 1234567            # exactly at the site; widens if no NGG guide cuts there
+python -m sgrna.design.design_guide --genome genome.fasta --cut-site 1234567 --window 15 --top 5 --out guides.csv
+```
+
+Run it from this folder with `PYTHONPATH=.`; it needs only numpy, pandas, scipy and xgboost, no project data. The cut site is the 1-based coordinate of the base before the cut on the plus strand.
+It lists every NGG guide on either strand that cuts within `--window` bp of the site, reads the 1,000 nt on each side of each (the model's input), scores them with the shipped model
+(`models/slicer_tuned.ubj`, 10 MB; `--model default` uses the 0.7 MB default one; `python -m sgrna.design.train_model` refits both) and prints the best 20-nt spacer with its PAM,
+coordinates, predicted score and the number of NGG sites its 20-mer has in the genome (guides with more than one are set aside, or flagged when none is left).
+`--linear` treats the sequence as linear, `--contig` picks a record of a multi-record FASTA, `.gz` is read directly.
+
+What it has been checked for (`python -m sgrna.design.check_design`, `results/post_freeze/design_check.csv`): given only the genome and the coordinates of 600 curated guides (294 on the minus strand),
+it reads the same protospacer, PAM and both flanks as the curated index in 600 of 600, builds the same 6,517 columns (largest difference 0.0) and the same predictions, and asking for each guide's cut site lists that guide at distance 0.
+What picking by score buys (`python -m sgrna.design.design_benchmark`, `design_benchmark.csv`; out-of-fold predictions on the paper's whole-gene folds, the genome cut into disjoint windows):
+in the 3,044 windows of 250 bp that hold at least four curated guides (5.07 on average) the tuned model's pick sits at the 0.771 percentile of the measured scores [0.760, 0.782] (a random pick: 0.5) and is the best guide of its window in 48.7% of them (chance 20.9%);
+in 1,000 bp windows, 0.784 and 35.5% (chance 13.0%); the default model is 0.764 and 0.780.
+
+Limits: the score is SLICER's prediction of the *E. coli* screen's depletion score, a ranking aid (held-out rho about 0.73 in the paper) and not a probability of cutting; validated for SpCas9 in *E. coli* and one other bacterium, not for eukaryotes;
+there is no off-target model (`seed_sites` is a coarse count of NGG sites sharing the 12 PAM-proximal nt); the benchmark compares guides of the curated library only.
+
 ## Which document to read for what
 
 | file | read it for |

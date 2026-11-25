@@ -31,3 +31,6 @@ __pycache__/
 __pycache__/
 *.pyc
 Runjia/results/ext/pam_variants/oof_*.npy
+
+# the design tool makes an empty project root for sgrna.config when none is set
+Runjia/.slicer_root/
