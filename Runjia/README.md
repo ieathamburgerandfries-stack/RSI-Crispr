@@ -30,6 +30,8 @@ What picking by score buys (`python -m sgrna.design.design_benchmark`, `design_b
 in the 3,044 windows of 250 bp that hold at least four curated guides (5.07 on average) the tuned model's pick sits at the 0.771 percentile of the measured scores [0.760, 0.782] (a random pick: 0.5) and is the best guide of its window in 48.7% of them (chance 20.9%);
 in 1,000 bp windows, 0.784 and 35.5% (chance 13.0%); the default model is 0.764 and 0.780.
 
+Third-party terms for the files in `models/` (the lookup tables are Noshay et al.'s, MIT; the models were trained on CC BY-NC data) are in [`models/NOTICE.md`](models/NOTICE.md).
+
 Limits: the score is SLICER's prediction of the *E. coli* screen's depletion score, a ranking aid (held-out rho about 0.73 in the paper) and not a probability of cutting; validated for SpCas9 in *E. coli* and one other bacterium, not for eukaryotes;
 there is no off-target model (`seed_sites` is a coarse count of NGG sites sharing the 12 PAM-proximal nt); the benchmark compares guides of the curated library only.
 
