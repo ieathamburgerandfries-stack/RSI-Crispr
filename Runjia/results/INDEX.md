@@ -69,7 +69,6 @@ Within a group the order is alphabetical.
 | `family_a_by_organism.csv` | 1.2 | cited | `family_a_by_organism`, `paper_numbers_D` | organism, screen, guides, protocol, model, unit, n … |
 | `family_a_table_check.csv` | 3.9 | cited | `check_family_a_table`, `paper_numbers_D` | item, value |
 | `gate_test.csv` | 1.7 | cited | `gate_test`, `paper_numbers_D` | model, seed, fold, rho, r2 |
-| `gene_grouped_vs_crisprhal.csv` | 0.7 | cited | `gene_grouped_vs_crisprhal`, `paper_numbers_D` | model, against, mean, sd, crisprhal_mean, crisprhal_sd, lead_mean … |
 | `human_twin_check.csv` | 0.2 | audited | `human_baseline`, `report_checks_R2` | arm, folds, spearman, spearman_sd, n_fits |
 | `hybrid.csv` | 4.8 | receipt | `transfer` | source, target, arm, fold, cv, seed, spearman … |
 | `mappability_depth.csv` | 1.1 | cited | `mappability_stratum`, `paper_numbers_D` | stratum, n, depth_min, depth_max, rho_base, rho_base+A, rho_base+D … |
@@ -170,7 +169,6 @@ Within a group the order is alphabetical.
 | `cost_gpu.csv` | 276.8 | cited | `figures_paper`, `paper_numbers_D` | model, device, placement, what, batch, rep, value … |
 | `cost_repeats_fit.csv` | 2.6 | cited | `cost_repeats`, `figures_paper`, `paper_numbers_D` | model, rep, cpu_seconds, wall_seconds, n_train, session, load1_start … |
 | `cost_repeats_inference.csv` | 85.7 | cited | `cost_repeats`, `figures_paper`, `paper_numbers_D` | model, batch, rep, ms_per_guide, session, load1_start, load1_end |
-| `crisprhal_gene_grouped_fcolab_b1024.csv` | 0.5 | cited | `gene_grouped_vs_crisprhal`, `figures_paper` | model, fold, spearman, r2, fit_minutes, n_train, n_test … |
 | `eukaryote_contrast_g_minus_t.csv` | 5.9 | audited | `eukaryote_rules`, `figures_paper`, `paper_numbers_B`, `paper_numbers_D`, `report_checks_R4` | group, n, species, underpowered, g_minus_t_pos20, pos20_lo, pos20_hi … |
 | `eukaryote_flank_step.csv` | 2.3 | audited | `eukaryote_rules`, `report_checks_R4` | dataset, species, n, flank_gc_at_decile_edge, gap_sd, lo, hi … |
 | `eukaryote_map_pairs.csv` | 10.9 | audited | `eukaryote_rules`, `paper_numbers_B`, `report_checks_R4`, `report_checks_R5` | a, b, species_a, species_b, same_library, rho, lo … |
@@ -182,7 +180,6 @@ Within a group the order is alphabetical.
 | `flank_scale_summary.csv` | 6.2 | cited | `flank_scale`, `paper_numbers_D` | part, arm, base_rho, n_folds, rho, gain, gain_sd_over_folds … |
 | `flank_window_tune.csv` | 11.5 | cited | `flank_scale`, `figures_paper`, `paper_numbers_D` | part, arm, up, down, seed, fold, rho |
 | `flank_window_tune_summary.csv` | 4.5 | cited | `flank_scale`, `paper_numbers_D` | arm, part, up, down, n_folds_41, gain_41, gain_sd_41 … |
-| `gene_grouped_slicer.csv` | 0.4 | receipt | `gene_grouped_vs_crisprhal`, `figures_paper` | model, fold, n_test, spearman |
 | `hypotheses_audit_gate.csv` | 0.4 | audited | `hypotheses` | base_at_20, n, label_sd, share_in_lowest_quartile, rho_all, rho_above_global_q25, n_above |
 | `hypotheses_audit_scale.csv` | 0.6 | audited | `hypotheses`, `paper_numbers_A` | window_nt, flank_gc_at_decile_edge, deficit, deficit_in_sd, rho_below, rho_above, rho_full |
 | `hypotheses_followup_absolute.csv` | 0.2 | audited | `hypotheses` | dataset, absolute_threshold_gc, n_below, share_below, deficit, lo, hi |
@@ -252,7 +249,7 @@ Within a group the order is alphabetical.
 | `ablation_main.csv` | 2.4 | cited | `notebook`, `run_ablation`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
 | `boostmec_oracle.csv` | 0.2 | receipt | `cost_boostmec`, `paper_numbers_D` | sequence, table, paper_prediction, reproduced_prediction, difference |
 | `ceiling_parametric.csv` | 7.0 | audited | `ceiling`, `paper_numbers_B` | replicate_agreement_r, k_replicates, reliability_of_label, ceiling, field_ceiling_quoted_as_r, understated_by, share_of_ceiling_at_rho_0p70 … |
-| `clean_vs_hal.csv` | 1.0 | audited | `clean_vs_hal`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C` | vs, arm, n, n_genes, rho, crisprhal, diff … |
+| `clean_vs_hal.csv` | 1.0 | audited | `vs_crisprhal`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C` | vs, arm, n, n_genes, rho, crisprhal, diff … |
 | `complexity.json` | 1.6 | cited | `complexity`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R6` |  |
 | `cost_cpu_seconds.csv` | 0.4 | cited | `cost` | config, columns, rho, cpu_s, wall_s, peak_gb, reps … |
 | `cost_crisprhal.csv` | 0.4 | audited | `latency`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
@@ -260,6 +257,8 @@ Within a group the order is alphabetical.
 | `cost_flops.csv` | 0.6 | cited | `cost` | model, forward_flops_per_guide, train_flops, note, vs_crisprHAL |
 | `cost_panel.csv` | 0.7 | cited | `cost`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R6`, `report_checks_R7` | model, train_flops, bytes_moved, flops_per_byte, cpu_seconds, wall_seconds, peak_gb … |
 | `cost_slicer.csv` | 0.9 | audited | `latency`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
+| `crisprhal_gene_grouped_fcolab_b1024.csv` | 0.5 | cited | `vs_crisprhal`, `figures_paper` | model, fold, spearman, r2, fit_minutes, n_train, n_test … |
+| `crisprhal_gene_grouped_fcolab_b256.csv` | 0.5 | cited | `vs_crisprhal` | model, fold, spearman, r2, fit_minutes, n_train, n_test … |
 | `cui_final_exam.csv` | 0.4 | cited | `cui_final_exam`, `report_checks_R2`, `report_checks_R6` | arm, model, n_test, spearman, spearman_within_gene, seconds, ci_lo … |
 | `cui_screen.csv` | 0.5 | cited | `cui_screen`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | cv, arm, n_rows, n_cols, spearman, spearman_sd |
 | `curated_ceiling.json` | 0.8 | cited | `ceiling`, `paper_numbers_B`, `report_checks_R3`, `report_checks_R7` |  |
@@ -273,8 +272,10 @@ Within a group the order is alphabetical.
 | `flank_locus_bench.csv` | 0.7 | audited | `flank_locus`, `paper_numbers_D` | width_nt, n_guides, nt_per_guide, a_flank_fast_ms_per_guide, flank_locus_ms_per_guide, precompute_ms, precompute_ms_per_guide … |
 | `fold_distance.csv` | 0.3 | audited | `fold_distance` | scheme, n_guides, guide_len, min, p1, median, frac_identical … |
 | `folds_ladder_base_full+a_flank.csv` | 1.6 | cited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `paper_numbers_C`, `report_checks_R6`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
+| `gene_grouped_slicer.csv` | 0.4 | receipt | `vs_crisprhal`, `figures_paper` | model, fold, n_test, spearman |
+| `gene_grouped_vs_crisprhal.csv` | 0.7 | cited | `vs_crisprhal`, `paper_numbers_D` | model, against, mean, sd, crisprhal_mean, crisprhal_sd, lead_mean … |
 | `headtohead.csv` | 2.8 | cited | `crisprhal_wide_window_folds`, `headtohead`, `figures_paper`, `paper_numbers`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | arm, model, seed, fold, n_rows, n_cols, spearman … |
-| `heldout_compare.csv` | 0.4 | cited | `heldout_compare`, `paper_numbers_C`, `report_checks_R6` | pairing, n, slicer, crisprhal, difference, ci_lo, ci_hi … |
+| `heldout_compare.csv` | 0.4 | cited | `vs_crisprhal`, `paper_numbers_C`, `report_checks_R6` | pairing, n, slicer, crisprhal, difference, ci_lo, ci_hi … |
 | `inference_colab.csv` | 2.9 | cited | `report_checks_R6` | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
 | `inference_cost.csv` | 0.5 | cited | `latency`, `report_checks_R6` | model, n_guides, n_columns, n_trees, latency_s, guides_per_s, fit_seconds … |
 | `inference_onecore.csv` | 3.0 | cited | `paper_numbers_D`, `report_checks_R6` | model, device, n_guides, latency_ms, guides_per_s, source |
@@ -501,7 +502,6 @@ Within a group the order is alphabetical.
 | `asymmetry_strand_audit.csv` | 0.2 | cited | `asymmetry` | source, orientation, guides |
 | `boostmec_shipped_image.txt` | 0.4 | receipt | — |  |
 | `cost_repeats_machine.json` | 1.7 | cited | `cost_repeats` |  |
-| `crisprhal_gene_grouped_fcolab_b256.csv` | 0.5 | cited | `gene_grouped_vs_crisprhal` | model, fold, spearman, r2, fit_minutes, n_train, n_test … |
 | `crisprhal_wide_window_f2.csv` | 0.3 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |
 | `crisprhal_wide_window_f3.csv` | 0.3 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |
 | `crisprhal_wide_window_f4.csv` | 0.2 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |

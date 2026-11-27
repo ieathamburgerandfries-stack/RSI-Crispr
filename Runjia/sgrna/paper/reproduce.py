@@ -61,6 +61,9 @@ CASES = [
     dict(name="curated-ladder", cmd=["sgrna.cohorts.curated_ablation", "--ladder"], writes=["curated_ladder.csv"], project=True),
     dict(name="panel-saved-predictions", cmd=["sgrna.compare.panel", "--parts", "topk", "blend", "raw", "--no-train"], writes=["topk_panel.csv", "blend_with_hal.csv", "panel_espcas9.csv", "panel_wt.csv"]),
     dict(name="family-a-controls", cmd=["sgrna.controls.family_a_controls", "--parts", "rows", "windows", "shift", "chi"], writes=["why_inflation.csv", "window_robustness.csv", "shift_null.csv", "chi_sites.csv"], project=True, rtol=1e-9),
+    dict(name="vs-crisprhal-paired", cmd=["sgrna.compare.vs_crisprhal", "--condition", "paired"], writes=["heldout_compare.csv"]),
+    dict(name="vs-crisprhal-confirm", cmd=["sgrna.compare.vs_crisprhal", "--condition", "confirm"], writes=["clean_vs_hal.csv"]),
+    dict(name="vs-crisprhal-gene-assemble", cmd=["sgrna.compare.vs_crisprhal", "--condition", "gene-assemble"], writes=["gene_grouped_vs_crisprhal.csv"]),
     dict(name="strand-flip", cmd=["sgrna.compare.strand", "--parts", "flip"], writes=["strand_flip.csv"], project=True),
 ]
 

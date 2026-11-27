@@ -207,8 +207,8 @@ if len(f) == 5:
 
 # --- cell 4: bring it home --------------------------------------------------
 # Download /content/crisprhal_tune_matched.csv and put it in results/, then:
-#   python -m sgrna.compare.heldout_compare        # re-run the paired bootstrap
+#   python -m sgrna.compare.vs_crisprhal --condition paired        # re-run the paired bootstrap
 # The pooled out-of-fold comparison needs per-guide predictions, so if the
 # matched search wins, re-export them as preds_crisprhal_matched_fold*.csv
 # (columns y,pred, one file per fold, validation rows in fold order) -- that is
-# the format heldout_compare.py reconstructs the alignment for.
+# the format `vs_crisprhal --condition paired` reconstructs the alignment for.

@@ -13,7 +13,7 @@
 # handicapped it: it is kept as results/crisprhal_gene_grouped_fcolab_b256.csv and is not the comparison.)
 #
 # AFTER IT RUNS: the cell downloads crisprhal_gene_grouped_fcolab_b1024.csv. Save it as results/crisprhal_gene_grouped_fcolab_b1024.csv in the project and run
-#   python -m sgrna.compare.gene_grouped_vs_crisprhal assemble
+#   python -m sgrna.compare.vs_crisprhal --condition gene-assemble
 # If the session runs out of compute units first, paste the printed lines back: each fold prints its rho when it finishes and the csv is rewritten after every fold.
 # ============================================================================
 import os, subprocess, sys, time

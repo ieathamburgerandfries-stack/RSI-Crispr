@@ -1796,7 +1796,7 @@ columns, with predictions written into the docstring first.
 
 **Corrections made on the way.** The width figure's axis said "gene-blind folds" for what are random-row folds (fixed); the replicate-agreement figure first gave ρ 0.804 because counts per million were computed after filtering (now over the whole library: 0.8097); a depth control used the numerator of the label (ρ 0.998) and was redone with the control counts only; flank windows were off by one and were validated exactly against the index flanks.
 
-**Still open.** The head-to-head on crisprHAL 2's own splits is on random rows; the gene-grouped version needs `colab/crisprhal_gene_grouped.py` on a GPU (five folds of about six minutes), then `python -m sgrna.compare.gene_grouped_vs_crisprhal assemble`.
+**Still open.** The head-to-head on crisprHAL 2's own splits is on random rows; the gene-grouped version needs `colab/crisprhal_gene_grouped.py` on a GPU (five folds of about six minutes), then `python -m sgrna.compare.vs_crisprhal --condition gene-assemble`.
 
 
 ## 30. The cost split by hardware, BoostMEC run as its authors ship it, and the gene-grouped head-to-head (24 Nov; the user: "download boostMEC and check its cost ... split into quiet CPU and colab GPU times ... compared against boostmec ... does that mean our computational cost is lowest in this niche? ... check the rounding again"; then "surely the github repo is usable as-shipped")
@@ -2041,3 +2041,8 @@ dropped, the part run, the output compared byte by byte, then numerically with t
 printed digit differs, in the old code too) and `shift_null.csv` (6e-16). **Partly:** `human_additivity_twin.csv` (two folds refitted; summary and claim files byte-identical), `data_efficiency.csv` (six of 75 rows refitted, equal). **One bug of my own** was caught by the oracle on the first try: `curated_ablation --joint` read `OUT / "ablation_curated.csv"` where `OUT` was already that file.
 New `reproduce` cases: `eukaryote-diagonal`, `ceiling`, `curation`, `curated-joint`, `curated-ladder`, `panel-saved-predictions`, `family-a-controls`; `human-additivity-twin` now calls the merged module. Not merged, on purpose: `mappability_stratum` (six modules import its helpers), the TensorFlow modules (`crisprhal_rerun`, `crisprhal_tune`, `crisprhal_wide_window_folds`, `cui_final_exam`,
 `vs_crisprhal_wt_hal`, which run under another interpreter and cannot be tested here), the dCas9 group (`cui_screen`, `crispri_screens`, `strand`: large, and their data are partly downloads) and `interpret/` (24 modules, one analysis each).
+
+## 46. The comparisons with crisprHAL 2 in one module (28 Nov)
+
+`heldout_compare`, `clean_vs_hal` and `gene_grouped_vs_crisprhal` are conditions of `compare/vs_crisprhal.py` (`paired`, `confirm`, `gene-folds`, `gene-assemble`), so "SLICER against crisprHAL 2" has seven conditions, one table at the top of one file and one result file each. Verified with the same oracle as section 45: all four result files byte-identical when
+regenerated from nothing, including the retraining of the default and tuned models on five whole-gene folds. Not merged with them: `headtohead` (tuning imports it), `final_eval` and the `crisprhal_*` modules (TensorFlow interpreter), `transfer_vs_crisprhal`, `sample_complexity`'s crisprHAL arm (also TensorFlow).

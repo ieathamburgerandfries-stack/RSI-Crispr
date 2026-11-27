@@ -231,3 +231,12 @@ How it was checked: every part was run from nothing (its result file deleted, or
 `human_baseline_knobs.csv`, `vs_crisprhal_wt.csv` and `vs_crisprhal_espcas9.csv` (relative difference 0), `curated_models.csv` (0), `shift_null.csv` (6e-16). For `human_additivity_twin.csv` two folds were refitted and the summary and claim files were byte-identical to the stored ones; for `data_efficiency.csv` the six rows of fold 1 at 4,000 and 8,000
 guides were refitted and equal the stored rows (the full curve takes hours and was not repeated). Seven new `reproduce` cases cover them (`eukaryote-diagonal`, `ceiling`, `curation`, `curated-joint`, `curated-ladder`, `panel-saved-predictions`, `family-a-controls`), and `human-additivity-twin` now calls the merged module. Not repeated: the full
 `human_additivity_twin.csv` (210 rows) and `sample_complexity --model tuned` beyond the six rows. The two TensorFlow modules (`crisprhal_*`, `cui_final_exam`) and `mappability_stratum` (six other modules import its helpers) were deliberately not merged.
+
+## 28 November 2026 (later): the three other comparisons with crisprHAL 2 merged into `vs_crisprhal.py`
+
+* `sgrna/compare/heldout_compare.py`, `sgrna/compare/clean_vs_hal.py` and `sgrna/compare/gene_grouped_vs_crisprhal.py` are `compare/vs_crisprhal.py --condition paired | confirm | gene-folds | gene-assemble`, next to the module's own `espcas9`, `wt` and `folds`. All seven conditions of Part 5's comparison with crisprHAL 2 are now in one module with one table at its head
+  (the old `gene_grouped_vs_crisprhal.py folds` is `gene-folds`, since `folds` was already a condition of its own). The commands in `colab/crisprhal_gene_grouped.py`, `colab/crisprhal_tune_matched.py` and `results/RESULTS.md` were updated.
+Restore any of them with `git checkout pre-merge-2026-11-27 -- <path>`.
+
+How it was checked: each condition was run from nothing (its result file deleted) in a scratch copy of the project and compared with the tracked file; `heldout_compare.csv`, `clean_vs_hal.csv`, `gene_grouped_vs_crisprhal.csv` and `gene_grouped_slicer.csv` (both default and tuned models refitted on five whole-gene folds) are byte-identical. `gene-folds` also rewrites the Colab input file
+`data/interim/crisprhal_widewindow_input_genefolds.csv.gz` (its content is identical to the stored one; the gzip header's timestamp is new). Three new `reproduce` cases (`vs-crisprhal-paired`, `vs-crisprhal-confirm`, `vs-crisprhal-gene-assemble`).
