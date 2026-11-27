@@ -93,13 +93,19 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `kmer_order_paired.csv` | 1.8 | audited | `report_checks_R1`, `report_checks_R7` | seed, fold, arm, n_columns, spearman |
-| `post_freeze/family_a_at_tuned.csv` | 6.0 | audited | `family_a_at_tuned`, `paper_numbers_C`, `report_checks_R2` | matrix, arm, seed, fold, n_train, n_test, n_flank_cols … |
-| `post_freeze/family_a_at_tuned_summary.csv` | 1.0 | audited | `family_a_at_tuned`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R3`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | comparison, base, with_a, delta, lo, hi, folds_positive … |
+| `post_freeze/family_a_at_tuned.csv` | 6.0 | audited | `tuned_ablation`, `paper_numbers_C`, `report_checks_R2` | matrix, arm, seed, fold, n_train, n_test, n_flank_cols … |
+| `post_freeze/family_a_at_tuned_summary.csv` | 1.0 | audited | `tuned_ablation`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R3`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | comparison, base, with_a, delta, lo, hi, folds_positive … |
+| `post_freeze/local_sequence_bound.csv` | 5.4 | audited | `tuned_ablation` | matrix, arm, seed, fold, n_train, n_test, n_sel … |
+| `post_freeze/local_sequence_bound_summary.csv` | 0.7 | audited | `tuned_ablation` | arm, matrix, base_rho, rho, delta, lo, hi … |
 | `post_freeze/tune_budget_check.csv` | 0.5 | audited | `tune_ecoli` | nf, k, rho, n_nonzero_gain |
-| `post_freeze/tune_configs.json` | 69.0 | cited | `family_a_at_tuned`, `mix_ecoli`, `tune_analyze`, `tune_ecoli`, `tune_split2`, `local_sequence_bound`, `equiv_check`, `mechanism`, `novel_followups`, `tuned_settings`, `data_efficiency`, `lit_followups`, `topend`, `vs_crisprhal`, `cost_bench`, `e2e_bench`, `design_benchmark`, `train_model`, `paper_numbers_A`, `report_checks_R2` |  |
 | `post_freeze/tune_confirm.csv` | 1.3 | audited | `tune_ecoli`, `report_checks_R3` | arm, rho, rho_lo, rho_hi, d_vs_champion, d_lo, d_hi … |
 | `post_freeze/tune_external.csv` | 1.5 | audited | `tune_ecoli`, `report_checks_R7` | arm, seed, fold, rho |
 | `post_freeze/tune_fullcv.csv` | 2.0 | audited | `tune_ecoli`, `paper_numbers_A`, `report_checks_R6`, `report_checks_R7` | arm, seed, fold, rho |
+| `post_freeze/tune_split2_configs.json` | 14.5 | receipt | `tune_ecoli` |  |
+| `post_freeze/tune_split2_confirm.csv` | 1.1 | audited | `tune_ecoli` | arm, rho, rho_lo, rho_hi, d_vs_champion, d_lo, d_hi … |
+| `post_freeze/tune_split2_stage1.csv` | 57.9 | audited | `tune_ecoli` | draw, seed, fold, k, rho |
+| `post_freeze/tune_split2_stage2.csv` | 7.6 | receipt | `tune_ecoli` | draw, seed, fold, k, rho |
+| `post_freeze/tune_stage1.csv` | 270.9 | receipt | `tune_ecoli` | draw, seed, fold, k, rho |
 | `post_freeze/tune_stage2.csv` | 69.4 | receipt | `tune_ecoli`, `report_checks_R7` | draw, seed, fold, k, rho |
 | `representation.csv` | 0.9 | receipt | `representation`, `paper_numbers_B` | arm, n_columns, spearman, spearman_sd, r2, r2_sd, complete |
 | `representation_depth.csv` | 1.1 | cited | `representation`, `report_checks_R2` | arm, n_columns, max_depth, spearman, spearman_sd, r2, complete |
@@ -298,7 +304,7 @@ Within a group the order is alphabetical.
 | `post_freeze/shape_ablation.csv` | 13.7 | audited | `shape_ablate`, `shape_analyze`, `report_checks_R8` | arm, n_cols, n_ext, spearman, spearman_sd, r2, n_selected_ext … |
 | `post_freeze/topend_confirm.csv` | 2.3 | audited | `topend`, `paper_numbers_C`, `report_checks_R6` | arm, seed, spearman, top10pct_prec, top1pct_prec, pick10_pctile, pick50_pctile … |
 | `post_freeze/topk_panel.csv` | 4.2 | audited | `topk_panel`, `paper_numbers_D` | split, arm, top1pct_precision, top5pct_precision, top10pct_precision, pick10_percentile, pick50_percentile … |
-| `post_freeze/tune_stage1.csv` | 270.9 | receipt | `tune_analyze`, `tune_ecoli` | draw, seed, fold, k, rho |
+| `post_freeze/tune_configs.json` | 69.0 | cited | `mix_ecoli`, `tune_ecoli`, `tuned_ablation`, `equiv_check`, `mechanism`, `novel_followups`, `tuned_settings`, `data_efficiency`, `lit_followups`, `topend`, `vs_crisprhal`, `cost_bench`, `e2e_bench`, `design_benchmark`, `train_model`, `paper_numbers_A`, `report_checks_R2` |  |
 | `post_freeze/vs_crisprhal_espcas9.csv` | 0.8 | cited | `vs_crisprhal`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
 | `post_freeze/vs_crisprhal_folds.csv` | 1.7 | receipt | `vs_crisprhal`, `paper_numbers_B`, `paper_numbers_C` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
 | `sample_complexity.csv` | 5.0 | audited | `common`, `data_efficiency`, `sample_complexity`, `paper_numbers_C`, `report_checks_R6` | model, seed, fold, n_train, n_test, spearman, r2 … |
@@ -358,10 +364,6 @@ Within a group the order is alphabetical.
 | `post_freeze/human_additivity_twin.csv` | 10.4 | audited | `human_additivity_twin` | folds, arm, seed, fold, shared_protospacers, rho |
 | `post_freeze/human_additivity_twin_claim.csv` | 0.4 | audited | `human_additivity_twin` | folds, ridge, best_boosting_arm, best_boosting, ridge_over_boosting, depth_4_to_6, depth_lo … |
 | `post_freeze/human_additivity_twin_summary.csv` | 0.9 | audited | `human_additivity_twin`, `report_checks_R6`, `report_checks_R7` | folds, arm, mean, std, count |
-| `post_freeze/tune_split2_configs.json` | 14.5 | receipt | `tune_split2` |  |
-| `post_freeze/tune_split2_confirm.csv` | 1.1 | audited | `tune_split2` | arm, rho, rho_lo, rho_hi, d_vs_champion, d_lo, d_hi … |
-| `post_freeze/tune_split2_stage1.csv` | 57.9 | audited | `tune_split2` | draw, seed, fold, k, rho |
-| `post_freeze/tune_split2_stage2.csv` | 7.6 | receipt | `tune_split2` | draw, seed, fold, k, rho |
 | `recoverability_percolumn.csv` | 2.0 | cited | `redescription`, `report_checks_R7` | column, family, oof_r2, abs_rho, spearman, d_spearman |
 | `recoverability_trend.csv` | 0.9 | cited | `redescription`, `report_checks_R7` | band, lo, hi, n_cols, mean_r2, mean_abs_rho, max_abs_rho … |
 | `rederivation_check.csv` | 0.5 | cited | `rederive` | file, status, worst_column, max_rel_diff |
@@ -415,8 +417,6 @@ Within a group the order is alphabetical.
 | `post_freeze/human_shape_ablation.csv` | 3.5 | audited | `human_shape`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `post_freeze/human_shape_ablation_locus.csv` | 0.7 | audited | `human_shape` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `post_freeze/human_shape_ablation_twin.csv` | 0.7 | audited | `family_a_by_organism`, `human_shape`, `report_checks_R5`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
-| `post_freeze/local_sequence_bound.csv` | 5.4 | audited | `local_sequence_bound` | matrix, arm, seed, fold, n_train, n_test, n_sel … |
-| `post_freeze/local_sequence_bound_summary.csv` | 0.7 | audited | `local_sequence_bound` | arm, matrix, base_rho, rho, delta, lo, hi … |
 | `post_freeze/ridge_check.csv` | 1.0 | audited | `ridge_check`, `report_checks_R8` | arm, n_cols, alpha, rho, fold_rho |
 | `post_freeze/shape_ablation_paired.csv` | 6.5 | receipt | `shape_analyze` | arm, n_ext, rho, selected, d_vs_A, seeds_vs_A, ahead_vs_A … |
 

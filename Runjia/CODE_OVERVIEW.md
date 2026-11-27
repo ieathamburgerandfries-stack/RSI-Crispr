@@ -121,10 +121,10 @@ finer than about 250 nt, so four columns (GC and purine over the whole kilobase 
 `hypotheses.py` then asks what the *response* to that composition looks like, with each prediction written into the file before it was run. Of three, two held (the flank's effect is steeper beside a favourable seed base, and PAM density does not carry it) and one failed, which was the informative one: pooled across the genome the response to flank GC is not a slope but a **step at the AT-rich end** (the lowest tenth of guides, below 44.4% GC, sit 3.10 label units lower, and nothing varies above it), with a gentler graded component inside genes. The report turns this into four hypotheses with the test that would settle each; the leading one is that nucleoid proteins shield AT-rich DNA, which needs an occupancy track that is not on disk.
 
 ### 9. Ideas that were tested and failed, and why that counts *(Appendix B4)*
-`sgrna/features/geom.py`, `sgrna/cohorts/shape_ablate.py`, `sgrna/cohorts/local_sequence_bound.py`, `sgrna/compare/lit_followups.py`
+`sgrna/features/geom.py`, `sgrna/cohorts/shape_ablate.py`, `sgrna/cohorts/tuned_ablation.py` (`--design local_sequence`), `sgrna/compare/lit_followups.py`
 
 DNA shape and 3D structure were tested in the form an earlier null had left open: vectors with direction, including a rigid-body reconstruction of the helical path from the six step parameters. They add −0.0008 to +0.0006 ρ over family A,
-and their standalone gains are composition (shuffling the flank keeps them). `local_sequence_bound.py` closes the question for any local shape predictor by handing the model the inner ±50 nt directly: it adds
+and their standalone gains are composition (shuffling the flank keeps them). `tuned_ablation.py --design local_sequence` closes the question for any local shape predictor by handing the model the inner ±50 nt directly: it adds
 +0.0002 ρ. Two methods taken from the published literature, a mixed-effect model and a
 binarised classifier, were also null, each with a mechanism. The shape null was re-run at larger model capacity and against shuffled-flank controls before being believed.
 

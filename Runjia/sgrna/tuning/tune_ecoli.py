@@ -20,12 +20,34 @@ is a free dimension: each model is fitted with up to 2,000 trees and scored at a
     python -m sgrna.tuning.tune_ecoli --stage 1 --draws 200
     python -m sgrna.tuning.tune_ecoli --stage 2 --top 15
     python -m sgrna.tuning.tune_ecoli --confirm
+    python -m sgrna.tuning.tune_ecoli --analyze            # what the 200 draws say about each knob (writes nothing; the stored copy is tune_stage1_effects.txt)
+
+**A second gene split** (`--split 2`) replicates the whole procedure, not the winner. Everything the first split claims rests on one partition of genes
+(`SPLIT_SEED = 2026`): the +0.0143 on held-out genes, the configurations d099x/d077x/..., the blend weights, and the untouched-genes comparison against
+crisprHAL 2. The bootstrap intervals resample genes *within* that split, so they cannot show split-to-split variation. Re-scoring d099x on a different
+CONFIRM set would be contaminated (d099x was chosen on genes that a new split reshuffles into both halves), so the claim at risk -- "a search on 70% of
+the genes yields a configuration that beats the champion on the other 30%" -- is tested by re-running the search: genes re-divided with seed 7 (asserted
+to share no gene across the halves), 40 fresh configurations (a different stream of the same space), the best 3 re-scored on one further DEV partition,
+and champion, the new winner and the top-3 average scored on the new CONFIRM genes. d099x is also scored there as a row flagged `contaminated`. The two
+splits differ only in the `Plan` they run (seed, result files, cache folder, search size, labels); results go to `tune_split2_*` files.
+
+    python -m sgrna.tuning.tune_ecoli --split 2 --stage 1 --draws 40
+    python -m sgrna.tuning.tune_ecoli --split 2 --stage 2
+    python -m sgrna.tuning.tune_ecoli --split 2 --confirm
+
+What the 200 draws say (`--analyze`, `tune_stage1_effects.txt`): shallower trees and slower learning with more trees score best (mean rho 0.714 at depth
+4, 0.698 at depth 10) and the other settings matter little. For each draw the tree count with the best mean rho is taken (that count is part of the
+configuration), so a draw's score is the maximum over a tree grid, a small upward bias shared by all draws. Marginal effects are the mean score of the
+draws in each level of a hyperparameter; because draws vary in all dimensions at once, a ridge regression of the score on the standardised
+hyperparameters gives the effect of each one holding the others fixed.
 """
 from __future__ import annotations
 
 import argparse
 import json
 import time
+from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -46,11 +68,48 @@ KGRID_EXT = KGRID + (2400, 3000, 4000)       # for configurations whose best tre
 CHAMPION = dict(max_depth=4, learning_rate=0.05, n_estimators=400, subsample=0.8, colsample_bytree=0.8,
                 min_child_weight=1, reg_lambda=1.0, reg_alpha=0.0, gamma=0.0, max_bin=256, nf=300, target="raw")
 DEPTH6 = dict(CHAMPION, max_depth=6, n_estimators=800)
+ANCHORS = ("champion", "depth6")
+
+
+@dataclass(frozen=True)
+class Plan:
+    """One run of the search: which genes are held out, where the results and caches go, how large the search is, and how its rows are labelled."""
+    split_seed: int            # seeds the 70/30 division of genes
+    configs: str               # result files, in `results/post_freeze/`: the configurations drawn, ...
+    stage1: str                # ... the stage-1 scores, ...
+    stage2: str                # ... the stage-2 scores, ...
+    confirm: str               # ... and the held-out confirmation (named in full so that a search for a file finds the code that writes it)
+    cache: Path                # fold rankings and held-out predictions, kept apart per split
+    draw_label: str            # stage-1 draw names: d000, s2d000
+    draw_offset: int           # which stream of the search space (so that split 2's configurations are fresh)
+    draws: int                 # default search size
+    seed1: int                 # fold seed of stage 1
+    seeds2: tuple              # fold seeds of stage 2
+    top: int                   # finalists kept by stage 2
+    members: int               # finalists in the ensemble
+    winner_label: str          # confirm-table row of the best finalist
+    winner_by_name: bool       # ... and whether it is also listed under its own name (split 1 does, split 2 does not)
+    ensemble_label: str        # confirm-table row of the ensemble
+    contaminated: str | None = None      # a configuration from another split, scored as a flagged row
+
+
+PLANS = {
+    1: Plan(SPLIT_SEED, "tune_configs.json", "tune_stage1.csv", "tune_stage2.csv", "tune_confirm.csv", DIR, "d", 0, 200, 41, (42, 43, 44), 15, 5,
+            "tuned best ({})", True, "ensemble of top {}"),
+    2: Plan(7, "tune_split2_configs.json", "tune_split2_stage1.csv", "tune_split2_stage2.csv", "tune_split2_confirm.csv", DIR / "split2", "s2d", 50_000, 40, 51, (52,),
+            3, 3, "split-2 winner ({})", False, "average of top {}", "d099x"),
+}
 
 
 # ------------------------------------------------------------------ data
+def _confirm_genes(genes, seed: int) -> set:
+    return set(np.random.default_rng(seed).choice(genes, size=int(round(0.3 * len(genes))), replace=False))
+
+
 class Cohort:
-    def __init__(self):
+    def __init__(self, plan: Plan | None = None):
+        self.plan = plan or PLANS[1]
+        self.plan.cache.mkdir(parents=True, exist_ok=True)
         X, y, _, protos = _base()
         A, _ = _block("a_flank", protos)
         g, ok = _groups("gene", protos)
@@ -58,16 +117,17 @@ class Cohort:
         self.y = y[ok]
         self.g = np.asarray(g[ok], dtype=object)
         genes = np.array(sorted(set(self.g)))
-        rng = np.random.default_rng(SPLIT_SEED)
-        conf = set(rng.choice(genes, size=int(round(0.3 * len(genes))), replace=False))
+        conf = _confirm_genes(genes, self.plan.split_seed)
         self.is_conf = np.array([x in conf for x in self.g])
         self.dev = np.where(~self.is_conf)[0]
         self.conf = np.where(self.is_conf)[0]
+        assert not (set(self.g[self.dev]) & set(self.g[self.conf])), "the two halves share a gene"
+        self.shared_with_split1 = len(conf & _confirm_genes(genes, SPLIT_SEED))     # CONFIRM genes that were also CONFIRM in split 1
 
 
 def rankings(co: Cohort, seed: int, n_splits=5):
-    """Per DEV fold: train rows, validation rows, top-900 column ranking (cached)."""
-    path = DIR / f"rank_dev_s{seed}.npz"
+    """Per DEV fold: train rows, validation rows, top-900 column ranking (cached, under the split's own cache folder)."""
+    path = getattr(co, "plan", PLANS[1]).cache / f"rank_dev_s{seed}.npz"
     if path.exists():
         z = np.load(path, allow_pickle=True)
         return [(z[f"tr{i}"], z[f"va{i}"], z[f"top{i}"]) for i in range(n_splits)]
@@ -134,18 +194,21 @@ def best_k(rows):
 
 
 # ------------------------------------------------------------------ stages
-def stage1(co, draws, seed=41):
-    cfgf, resf = OUT / "tune_configs.json", OUT / "tune_stage1.csv"
+def stage1(co, draws=None, seed=None):
+    plan = co.plan
+    draws = plan.draws if draws is None else draws
+    seed = plan.seed1 if seed is None else seed
+    cfgf, resf = OUT / plan.configs, OUT / plan.stage1
     cfgs = json.loads(cfgf.read_text()) if cfgf.exists() else {}
     res = pd.read_csv(resf) if resf.exists() else pd.DataFrame()
     done = set(res.draw.unique()) if len(res) else set()
-    todo = [("champion", CHAMPION), ("depth6", DEPTH6)] + [(f"d{i:03d}", sample(i)) for i in range(draws)]
+    todo = [("champion", CHAMPION), ("depth6", DEPTH6)] + [(f"{plan.draw_label}{i:03d}", sample(plan.draw_offset + i)) for i in range(draws)]
     t0 = time.time()
     for name, cfg in todo:
+        cfgs[name] = cfg
         if name in done:
             continue
-        cfgs[name] = cfg
-        rows = score_dev(co, cfg, seed, KGRID if name not in ("champion", "depth6") else KGRID)
+        rows = score_dev(co, cfg, seed, KGRID)
         df = pd.DataFrame(rows); df.insert(0, "draw", name)
         res = pd.concat([res, df], ignore_index=True)
         res.to_csv(resf, index=False); cfgf.write_text(json.dumps(cfgs, indent=1))
@@ -154,19 +217,22 @@ def stage1(co, draws, seed=41):
               f"best k {k:4d} rho {r:.4f}   ({time.time() - t0:.0f}s)", flush=True)
 
 
-def stage2(co, top, seeds=(42, 43, 44)):
-    cfgf = OUT / "tune_configs.json"
+def stage2(co, top=None, seeds=None):
+    plan = co.plan
+    top = plan.top if top is None else top
+    seeds = plan.seeds2 if seeds is None else seeds
+    cfgf = OUT / plan.configs
     cfgs = json.loads(cfgf.read_text())
-    s1 = pd.read_csv(OUT / "tune_stage1.csv")
+    s1 = pd.read_csv(OUT / plan.stage1)
     m = s1.groupby(["draw", "k"]).rho.mean().reset_index().sort_values("rho", ascending=False)
     best = m.drop_duplicates("draw").set_index("draw")
-    names = [n for n in best.index if n not in ("champion", "depth6")][:top]
-    res_f = OUT / "tune_stage2.csv"
+    names = [n for n in best.index if n not in ANCHORS][:top]
+    res_f = OUT / plan.stage2
     res = pd.read_csv(res_f) if res_f.exists() else pd.DataFrame()
     done = set(res.draw.unique()) if len(res) else set()
-    for name in ["champion", "depth6"] + names:
+    for name in list(ANCHORS) + names:
         cfg, ks, label = cfgs[name], KGRID, name
-        if name in best.index and int(best.loc[name, "k"]) >= int(cfg["n_estimators"]) and name not in ("champion", "depth6"):
+        if name in best.index and int(best.loc[name, "k"]) >= int(cfg["n_estimators"]) and name not in ANCHORS:
             # the best tree count sat at the cap: allow more trees, kept under a new name so the original stays on record
             label = name + "x"; cfg = dict(cfg, n_estimators=4000); cfgs[label] = cfg; ks = KGRID_EXT
             cfgf.write_text(json.dumps(cfgs, indent=1))
@@ -182,9 +248,9 @@ def stage2(co, top, seeds=(42, 43, 44)):
               f"-> stage-2 best k {k} rho {r:.4f}", flush=True)
 
 
-def selected(top_ens=5):
+def selected(plan: Plan | None = None):
     """Stage-2 ranking: (name, best tree count, mean rho) for the anchors and the finalists."""
-    s2 = pd.read_csv(OUT / "tune_stage2.csv")
+    s2 = pd.read_csv(OUT / (plan or PLANS[1]).stage2)
     m = s2.groupby(["draw", "k"]).rho.mean().reset_index().sort_values("rho", ascending=False).drop_duplicates("draw")
     return m.set_index("draw")
 
@@ -207,25 +273,33 @@ def _boot_rho(y, genes, preds, B=2000, seed=0):
     return point, {a: np.array(v) for a, v in bs.items()}
 
 
-def confirm(co, seeds=(41, 42, 43), members=5, B=1000):
-    """Train on all of DEV, score CONFIRM genes. Arms: champion, depth6, best finalist, ensemble of the best `members`."""
-    cfgs = json.loads((OUT / "tune_configs.json").read_text())
-    sel = selected()
-    finalists = [n for n in sel.index if n not in ("champion", "depth6")]
+def confirm(co, seeds=(41, 42, 43), members=None, B=1000):
+    """Train on all of DEV, score CONFIRM genes. Arms: champion, depth6, best finalist, the next finalists, and the ensemble of the best `members`
+    (on split 2 also a split-1 configuration, flagged contaminated because its genes overlap this CONFIRM set)."""
+    plan = co.plan
+    members = plan.members if members is None else members
+    cfgs = json.loads((OUT / plan.configs).read_text())
+    if plan.contaminated:
+        cfgs.update(json.loads((OUT / "tune_configs.json").read_text()))
+    sel = selected(plan)
+    finalists = [n for n in sel.index if n not in ANCHORS]
     best = finalists[0]
     arms = {"champion": ("champion", int(sel.loc["champion", "k"])), "depth6": ("depth6", int(sel.loc["depth6", "k"])),
-            f"tuned best ({best})": (best, int(sel.loc[best, "k"]))}
+            plan.winner_label.format(best): (best, int(sel.loc[best, "k"]))}
     for n in finalists[:members]:
-        arms.setdefault(n, (n, int(sel.loc[n, "k"])))
+        if n != best or plan.winner_by_name:
+            arms.setdefault(n, (n, int(sel.loc[n, "k"])))
+    if plan.contaminated:
+        arms[f"{plan.contaminated} (contaminated)"] = (plan.contaminated, int(selected(PLANS[1]).loc[plan.contaminated, "k"]))
     preds = {}
     for arm, (name, k) in arms.items():
         cfg = dict(cfgs[name], n_estimators=k)
         P = []
         for sd in seeds:
-            f = DIR / f"conf_{name}_k{k}_s{sd}.npy"
+            f = plan.cache / f"conf_{name}_k{k}_s{sd}.npy"
             if f.exists():
                 P.append(np.load(f)); continue
-            rk = DIR / f"rank_devall_s{sd}.npy"
+            rk = plan.cache / f"rank_devall_s{sd}.npy"
             if rk.exists():
                 top = np.load(rk)
             else:
@@ -237,8 +311,8 @@ def confirm(co, seeds=(41, 42, 43), members=5, B=1000):
             p = fit_predict(cfg, A, co.y[co.dev], B_, sd)[k]
             np.save(f, p); P.append(p)
         preds[arm] = np.array(P)
-    ens = [n for n in finalists[:members]]
-    preds[f"ensemble of top {members}"] = np.array([np.mean([_z(preds[n][i]) for n in ens], axis=0) for i in range(len(seeds))])
+    ens = [n if (n != best or plan.winner_by_name) else plan.winner_label.format(best) for n in finalists[:members]]
+    preds[plan.ensemble_label.format(members)] = np.array([np.mean([_z(preds[n][i]) for n in ens], axis=0) for i in range(len(seeds))])
     y, g = co.y[co.conf], co.g[co.conf]
     point, bs = _boot_rho(y, g, preds, B=B)
     rows = []
@@ -247,7 +321,7 @@ def confirm(co, seeds=(41, 42, 43), members=5, B=1000):
         rows.append(dict(arm=a, rho=point[a], rho_lo=np.percentile(bs[a], 2.5), rho_hi=np.percentile(bs[a], 97.5),
                          d_vs_champion=point[a] - point["champion"], d_lo=np.percentile(d, 2.5), d_hi=np.percentile(d, 97.5),
                          per_seed=";".join(f"{spearmanr(y, p).statistic:.4f}" for p in preds[a])))
-    out = pd.DataFrame(rows); out.to_csv(OUT / "tune_confirm.csv", index=False)
+    out = pd.DataFrame(rows); out.to_csv(OUT / plan.confirm, index=False)
     return out
 
 
@@ -324,19 +398,72 @@ def budget_check(co, name="d077x", seed=42):
     return out
 
 
+def stage1_table(plan: Plan | None = None) -> pd.DataFrame:
+    """One row per stage-1 draw: its configuration, its best mean rho over the tree grid, and the tree count that gave it."""
+    plan = plan or PLANS[1]
+    cfgs = json.loads((OUT / plan.configs).read_text())
+    s = pd.read_csv(OUT / plan.stage1)
+    m = s.groupby(["draw", "k"]).rho.mean().reset_index().sort_values("rho", ascending=False).drop_duplicates("draw")
+    m = m.set_index("draw")
+    d = pd.DataFrame({n: cfgs[n] for n in m.index}).T
+    d["rho"] = m.rho.astype(float); d["best_k"] = m.k.astype(int)
+    for c in d.columns:
+        if c not in ("target",):
+            d[c] = pd.to_numeric(d[c])
+    return d
+
+
+def analyze() -> None:
+    """Print what the stage-1 draws say about each knob: marginal means, and a ridge regression of the score on the standardised settings."""
+    from sklearn.linear_model import RidgeCV
+    pd.set_option("display.width", 200)
+    d = stage1_table()
+    ref = d.loc["champion", "rho"]
+    draws = d.drop(index=list(ANCHORS))
+    print(f"{len(draws)} draws; champion {ref:.4f}, depth6 {d.loc['depth6', 'rho']:.4f}; best draw {draws.rho.max():.4f}; "
+          f"median draw {draws.rho.median():.4f}; draws above champion: {(draws.rho > ref).sum()}")
+    for c in ("max_depth", "nf", "target", "max_bin", "gamma", "reg_alpha"):
+        print(f"\nby {c}:"); print(draws.groupby(c).rho.agg(["mean", "max", "count"]).round(4).to_string())
+    for c in ("learning_rate", "subsample", "colsample_bytree", "min_child_weight", "reg_lambda"):
+        q = pd.qcut(draws[c], 4, duplicates="drop")
+        print(f"\nby {c} (quartiles):"); print(draws.groupby(q, observed=True).rho.agg(["mean", "max", "count"]).round(4).to_string())
+    feats = ["max_depth", "learning_rate", "subsample", "colsample_bytree", "min_child_weight", "reg_lambda", "reg_alpha",
+             "gamma", "nf", "best_k"]
+    X = draws[feats].astype(float).copy()
+    for c in ("learning_rate", "min_child_weight", "reg_lambda", "nf", "best_k"):
+        X[c] = np.log(X[c])
+    X["rankgauss"] = (draws.target == "rankgauss").astype(float); X["bin64"] = (draws.max_bin == 64).astype(float)
+    Z = (X - X.mean()) / X.std()
+    r = RidgeCV(alphas=np.logspace(-2, 2, 9)).fit(Z, draws.rho.astype(float))
+    eff = pd.Series(r.coef_, index=Z.columns).sort_values(key=abs, ascending=False)
+    print("\nridge effect of +1 sd of each hyperparameter on rho (others held fixed):"); print(eff.round(4).to_string())
+
+
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--split", type=int, choices=sorted(PLANS), default=1,
+                    help="1: the gene split of the main search (seed 2026); 2: the replication on a second split (seed 7)")
     ap.add_argument("--stage", type=int)
-    ap.add_argument("--draws", type=int, default=200)
-    ap.add_argument("--top", type=int, default=15)
+    ap.add_argument("--draws", type=int, default=None, help="stage 1: configurations to draw (default: 200 on split 1, 40 on split 2)")
+    ap.add_argument("--top", type=int, default=None, help="stage 2: finalists kept (default: 15 on split 1, 3 on split 2)")
     ap.add_argument("--confirm", action="store_true")
-    ap.add_argument("--fullcv", action="store_true")
-    ap.add_argument("--budget", action="store_true")
-    ap.add_argument("--external", nargs="*", default=None, help="draw names to run on the eSpCas9 screen")
+    ap.add_argument("--analyze", action="store_true", help="print what the split-1 stage-1 draws say about each knob (needs no data)")
+    ap.add_argument("--fullcv", action="store_true", help="split 1 only")
+    ap.add_argument("--budget", action="store_true", help="split 1 only")
+    ap.add_argument("--external", nargs="*", default=None, help="split 1 only: draw names to run on the eSpCas9 screen")
     a = ap.parse_args()
-    co = Cohort()
+    if a.split != 1 and (a.fullcv or a.budget or a.external is not None or a.analyze):
+        ap.error("--fullcv, --budget, --external and --analyze belong to split 1")
+    if a.analyze:
+        analyze()
+        if a.stage is None and not (a.confirm or a.fullcv or a.budget or a.external is not None):
+            return
+    plan = PLANS[a.split]
+    co = Cohort(plan)
     print(f"cohort {co.X.shape}; DEV {len(co.dev):,} guides / CONFIRM {len(co.conf):,} guides "
           f"({len(set(co.g[co.dev]))} / {len(set(co.g[co.conf]))} genes)", flush=True)
+    if a.split != 1:
+        print(f"{co.shared_with_split1:,} of the {len(set(co.g[co.conf])):,} CONFIRM genes were also CONFIRM in split 1", flush=True)
     if a.stage == 1:
         stage1(co, a.draws)
     elif a.stage == 2:

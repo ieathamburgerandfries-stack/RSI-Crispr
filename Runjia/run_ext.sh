@@ -8,8 +8,8 @@
 # The interpreter also lives outside both repositories. Override it with PY=... if yours is elsewhere.
 #
 #   ./run_ext.sh sgrna.paper.verify_numbers
-#   ./run_ext.sh sgrna.tuning.family_a_at_tuned --seeds 41
-#   PY=/path/to/python ./run_ext.sh sgrna.tuning.tune_split2 --draws 40
+#   ./run_ext.sh sgrna.cohorts.tuned_ablation --design family_a --seeds 41
+#   PY=/path/to/python ./run_ext.sh sgrna.tuning.tune_ecoli --split 2 --stage 1 --draws 40
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"    # .../RSI-Crispr-fork/Runjia

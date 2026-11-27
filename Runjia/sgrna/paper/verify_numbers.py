@@ -145,7 +145,7 @@ def main():
     chk("selector columns with nonzero gain", float(tb.n_nonzero_gain.dropna().iloc[0]), 878, 0)
     for nf, v in ((450, 0.7208), (900, 0.7205), (1500, 0.7202), (2500, 0.7199)):
         chk(f"budget {nf}: best-tree rho", float(tb[tb.nf == nf].rho.max()), v, 4)
-    from ..tuning.tune_analyze import table as _tt
+    from ..tuning.tune_ecoli import stage1_table as _tt
     tt = _tt(); dr = tt.drop(index=["champion", "depth6"])
     chk("stage-1 champion rho", float(tt.loc["champion", "rho"]), 0.7107, 4)
     for dep, v in ((3, 0.712), (4, 0.714), (5, 0.713), (6, 0.707), (7, 0.706), (8, 0.704), (9, 0.700), (10, 0.698)):

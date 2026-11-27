@@ -131,3 +131,21 @@ all 13,880 published guides; the float64 difference is 1.4e-14, so a regenerated
 crisprHAL 2 curated them and caches the matrix every experiment loads. Its columns now come from `base_fast.matrix_fast` (identical to the cache on all 33,567 guides, maximum
 absolute difference 0.0). Its learning curve (`--curve`, `results/learning_curve.csv`: the default recipe at 4,000 to 26,000 training guides, three seeds) is removed: no
 paper table, report claim or audit check reads it, and the data-efficiency comparison is `compare/sample_complexity.py`. Restore with `git checkout 1c61887 -- Runjia/sgrna/build/expand.py Runjia/results/learning_curve.csv`.
+
+## 27 November 2026: `tune_split2`, `tune_analyze`, `family_a_at_tuned` and `local_sequence_bound` merged
+
+Four modules ran an existing pipeline with one thing changed, and are now flags or a table row of a module that stays. Safety tag `pre-merge-2026-11-27`; restore any of them with
+`git checkout pre-merge-2026-11-27 -- Runjia/sgrna/tuning/tune_split2.py` (and likewise the other three paths below).
+
+* `sgrna/tuning/tune_split2.py` (the tuning replication on a second gene split) is `tune_ecoli.py --split 2`. A `Plan` object in `tune_ecoli.py` holds what differed: the gene-split seed (7 instead of 2026),
+  the result files (`tune_split2_*`), a cache folder of its own, 40 fresh draws from another stream of the search space, one stage-2 partition, the top-3 average and the flagged split-1 row. It had
+  re-implemented six functions of `tune_ecoli` (`Cohort`, `rankings`, `score_dev`, `stage1`, `stage2`, `confirm`) and imported twelve names from it.
+* `sgrna/tuning/tune_analyze.py` (what the 200 stage-1 draws say about each knob) is `tune_ecoli.py --analyze`; the audit imports `stage1_table` from `tune_ecoli` instead of `table` from `tune_analyze`.
+* `sgrna/tuning/family_a_at_tuned.py` and `sgrna/cohorts/local_sequence_bound.py` were the same loop (a gene-grouped 5 x 3 ablation of a block of columns at the tuned configurations, with a paired bootstrap over
+  folds) on two blocks of columns. They are `cohorts/tuned_ablation.py --design family_a` and `--design local_sequence`; the first moved out of `tuning/`, which it never belonged in (it tunes nothing).
+
+How each was checked: every stored output is reproduced byte for byte by re-running the merged command from the stored rows and caches (`git status` shows no change under `results/`): `tune_stage1_effects.txt`, `tune_confirm.csv`,
+`tune_split2_confirm.csv`, `family_a_at_tuned_summary.csv`, `local_sequence_bound_summary.csv`; and fresh fits written to a scratch folder equal the stored rows exactly (largest difference 0.0 in rho and in every count):
+both ablation designs (seed 41, fold 0: 8 and 6 rows), stage 1 on split 1 (champion, depth6 and two draws: 140 rows), stage 1 on split 2 (the same: 125 rows) and stage 2 on split 2 (champion, depth6 and the best finalist: 95 rows).
+Not merged, with reasons: `tune.py` (the original LightGBM search: another model and protocol), `mix_ecoli.py` (other model families and blending) and `mlp_worker.py` (PyTorch, XGBoost and LightGBM each load an OpenMP
+runtime, and loading them in one process stalled at 0% CPU on macOS, so the neural net must run in its own process); `xgb_knobs.py` (one knob at a time under the older random-fold design) is a candidate for a later pass.
