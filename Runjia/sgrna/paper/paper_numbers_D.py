@@ -359,6 +359,27 @@ def run(chk):
         claim(f"[D20]   share of windows where the pick is the best guide", _r.pick_is_best, _t[5])
         claim(f"[D20]   the same by chance", _r.chance_is_best, _t[6])
         claim(f"[D20]   percentile of the default model's pick", _db.loc[(_w, "default")].pick_percentile, _t[7])
+    # the family A table for any genome (sgrna/design/family_a_table.py): rebuilt from coordinates, whole genomes, a second genome, linear mode
+    _ft = pd.read_csv(OUT / "family_a_table_check.csv").set_index("item").value
+    for _k, _txt in (("A: curated guides given as coordinates", "33,567"), ("A: protospacer equals the stored one", "33,567"), ("A: PAM equals the stored one", "33,567"),
+                     ("A: genome copy count equals the stored one", "33,567"), ("A: columns compared", "348"), ("A: missing-value pattern equal", "1"),
+                     ("A: cells that differ after the float32 cast", "3"),
+                     ("B: E. coli NGG sites", "541,810"), ("B: on the plus strand", "270,137"), ("B: on the minus strand", "271,673"), ("B: nucleotides per site", "8.6"),
+                     ("B: sites whose 20-mer has more than one NGG site", "17,221"), ("B: curated guides found among the sites", "33,567"), ("B: columns in the table", "355"),
+                     ("B: seconds for the whole genome, written as .csv.gz", "58"), ("B: milliseconds per guide, featurising and writing", "0.11"),
+                     ("B: size of the .csv.gz, MB", "246"), ("B: size as plain CSV, GB", "1.25"),
+                     ("C: C. rodentium length, bp", "5,346,659"), ("C: NGG sites", "707,896"), ("C: seconds for the whole genome, written as .csv.gz", "76"),
+                     ("C: sites sampled (first 40, last 40 and 320 random, repeats removed)", "400"), ("C: protospacer equals the one read from the sequence", "400"),
+                     ("C: PAM equals the one read from the sequence", "400"), ("C: genome copy count equals the design tool's", "400"), ("C: columns compared", "348"),
+                     ("C: missing-value pattern equal", "1"), ("C: cells that differ after the float32 cast", "0"), ("C: maximum relative difference in a column", "0"),
+                     ("D: E. coli sites when circular", "541,810"), ("D: sites when linear (those wrapping the origin are dropped)", "541,809"),
+                     ("D: linear sites within the margin of an end", "223"), ("D: guides near the ends compared with circular", "14,286"),
+                     ("D: flanks with 50 to 249 nt of DNA", "33"), ("D: of these, the 1,000 nt window equals the 250 nt window (GC)", "33")):
+        claim(f"[D21] family A table: {_k}", _ft[_k], _txt)
+    claim("[D21] family A table: A: maximum absolute difference in a column, in units of 1e-7 (one float32 step)", _ft["A: maximum absolute difference in a column"] * 1e7, "1.2")
+    claim("[D21] family A table: share of E. coli sites whose 20-mer has more than one NGG site, %", 100 * _ft["B: sites whose 20-mer has more than one NGG site"] / _ft["B: E. coli NGG sites"], "3.2")
+    claim("[D21] family A table: D: maximum absolute difference for guides with a full margin, in units of 1e-11", _ft["D: maximum absolute difference for guides with a full margin"] * 1e11, "2.6")
+    claim("[D21] family A table: cells compared in A (33,567 guides x 348 columns)", _ft["A: curated guides given as coordinates"] * _ft["A: columns compared"], "11,681,316")
     # the T4 (colab/cost_gpu.py)
     gp = pd.read_csv(OUT / "cost_gpu.csv")
     gs = gp[gp.unit == "ms/guide"]

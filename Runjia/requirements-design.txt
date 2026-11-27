@@ -1,3 +1,4 @@
+# sgrna.design.family_a_table (the family A table for any genome) needs only numpy and pandas; the guide design tool needs all five
 numpy
 pandas
 scipy

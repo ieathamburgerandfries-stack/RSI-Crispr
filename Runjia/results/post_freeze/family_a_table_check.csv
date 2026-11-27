@@ -1,0 +1,39 @@
+item,value
+A: curated guides given as coordinates,33567.0
+A: protospacer equals the stored one,33567.0
+A: PAM equals the stored one,33567.0
+A: genome copy count equals the stored one,33567.0
+A: columns compared,348.0
+A: missing-value pattern equal,1.0
+A: cells that differ after the float32 cast,3.0
+A: maximum absolute difference in a column,1.1920928955078125e-07
+A: maximum relative difference in a column,9.766037004686135e-08
+B: E. coli NGG sites,541810.0
+B: on the plus strand,270137.0
+B: on the minus strand,271673.0
+B: nucleotides per site,8.563287868440966
+B: sites whose 20-mer has more than one NGG site,17221.0
+B: curated guides found among the sites,33567.0
+B: columns in the table,355.0
+"B: seconds for the whole genome, written as .csv.gz",58.25007366668433
+"B: milliseconds per guide, featurising and writing",0.10751014869914606
+"B: size of the .csv.gz, MB",246.094948
+"B: size as plain CSV, GB",1.25347912
+"C: C. rodentium length, bp",5346659.0
+C: NGG sites,707896.0
+"C: seconds for the whole genome, written as .csv.gz",76.25369991688058
+"C: sites sampled (first 40, last 40 and 320 random, repeats removed)",400.0
+C: protospacer equals the one read from the sequence,400.0
+C: PAM equals the one read from the sequence,400.0
+C: genome copy count equals the design tool's,400.0
+C: columns compared,348.0
+C: missing-value pattern equal,1.0
+C: cells that differ after the float32 cast,0.0
+C: maximum relative difference in a column,0.0
+D: E. coli sites when circular,541810.0
+D: sites when linear (those wrapping the origin are dropped),541809.0
+D: linear sites within the margin of an end,223.0
+D: guides near the ends compared with circular,14286.0
+D: maximum absolute difference for guides with a full margin,2.6288304866284307e-11
+D: flanks with 50 to 249 nt of DNA,33.0
+"D: of these, the 1,000 nt window equals the 250 nt window (GC)",33.0

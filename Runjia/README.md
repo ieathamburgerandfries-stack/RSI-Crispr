@@ -43,6 +43,32 @@ Third-party terms for the files in `models/` (the lookup tables are Noshay et al
 Limits: the score is SLICER's prediction of the *E. coli* screen's depletion score, a ranking aid (held-out rho about 0.73 in the paper) and not a probability of cutting; validated for SpCas9 in *E. coli* and one other bacterium, not for eukaryotes;
 there is no off-target model (`seed_sites` is a coarse count of NGG sites sharing the 12 PAM-proximal nt); the benchmark compares guides of the curated library only.
 
+## The family A table for any genome
+
+The release (`family_A_v1.zip`) is the 348 flank columns (family A) of the 33,567 curated *E. coli* guides. `sgrna/design/family_a_table.py` makes the same table for any genome:
+a FASTA in, one row per NGG guide (both strands, every record of at least 2,023 nt) out, with the release's 348 columns in the release's order after seven identifying ones
+(`contig`, `left`, `right`, `strand`, `protospacer`, `pam`, `n_genome_copies`; `left` is the 1-based plus-strand start of the 20-mer and `protospacer` is the release's `sgRNAID`).
+It needs only numpy and pandas and no project data (checked on a clean export of the tracked files; the lookup tables are `models/resources/qct_lookup_tables.json`, the file the release also holds):
+
+```bash
+git clone https://github.com/ieathamburgerandfries-stack/RSI-Crispr && cd RSI-Crispr/Runjia
+pip install numpy pandas
+PYTHONPATH=. python -m sgrna.design.family_a_table --genome genome.fasta --out family_A_genome.csv.gz
+```
+
+`--contig NAME [NAME ...]` keeps some records, `--start N --end M` one stretch of one record (a locus takes a fraction of a second), `--guides guides.csv` featurises only the guides listed
+(columns `left`, `strand` and, for a multi-record FASTA, `contig`), `--linear` treats records as linear (default: circular, as a bacterial chromosome), `--tables` points at other lookup tables.
+Flanks wrap around the origin when circular; when linear, the 223 guides of the *E. coli* genome within about 1 kb of an end use the DNA that exists (their windows are cut to it) and are computed one at a time.
+`n_genome_copies` counts the NGG sites in the whole FASTA (all records, both strands) with the same 20-mer. The columns describe the DNA around a target, they are not a score: to score a guide, use the design tool above.
+
+Checks (`python -m sgrna.design.check_family_a_table`, `results/post_freeze/family_a_table_check.csv`):
+* Given only the coordinates of the 33,567 curated guides, it rebuilds the stored table: protospacer, PAM and genome copy count equal in 33,567 of 33,567, the same missing-value pattern, and 3 of 11,681,316 cells differ, each by one float32 step (at most 1.2e-7; the two programs add the same numbers in a different order).
+* The *E. coli* genome has 541,810 NGG sites (270,137 on the plus strand, 271,673 on the minus, one per 8.6 nt), and every curated guide is among them; 3.2% share their 20-mer with another site. The whole table takes 58 s (0.11 ms per guide, featurising and writing) and is 246 MB as `.csv.gz`, 1.25 GB as plain CSV.
+* A second genome, *Citrobacter rodentium* (5,346,659 bp, 707,896 sites, 76 s): 400 sites (the first 40 and last 40, which cross the origin, and 320 at random) are featurised again one at a time from their flanking sequence by `a_flank_fast`, the code the release was made with, and agree in all 348 columns (0 cells differ); the copy counts equal the design tool's.
+* Linear mode on *E. coli*: 541,809 sites (one wraps the origin and is dropped); guides with a full margin of DNA give the same columns as when circular (largest difference 2.6e-11, floating point); the 33 flanks checked that have 50 to 249 nt of DNA all have the same 1,000 nt and 250 nt windows, as they must.
+
+Validated for SpCas9 in *E. coli* (and the one other bacterium the paper tests); the columns say nothing about eukaryotic guides.
+
 ## Which document to read for what
 
 | file | read it for |

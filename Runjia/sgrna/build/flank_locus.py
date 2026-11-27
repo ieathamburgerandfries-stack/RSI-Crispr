@@ -391,7 +391,7 @@ def check(n: int = 4000, tol: float = 1e-9) -> dict:
 def ngg_sites(codes: np.ndarray, lo: int = 0, hi: int | None = None):
     """Every NGG-flanked 20-mer whose protospacer starts in [lo, hi): plus-strand 0-based starts and strand signs.
 
-    This is the set a design tool is actually handed -- about one site every 11 nt in *E. coli*, against one every 138 nt in the
+    This is the set a design tool is actually handed -- about one site every 8.6 nt in *E. coli* (541,810 on the genome), against one every 138 nt in the
     curated screen -- so it is the density the per-locus precompute has to be judged at.
     """
     hi = len(codes) if hi is None else hi

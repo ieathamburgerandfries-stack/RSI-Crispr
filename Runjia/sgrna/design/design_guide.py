@@ -52,8 +52,8 @@ def revcomp(s: str) -> str:
 
 
 # ---------------------------------------------------------------------------------------------------------------- genome
-def read_fasta(path, contig: str | None = None) -> tuple[str, str]:
-    """(name, upper-case sequence) of one record of a FASTA file (plain or .gz); the first record unless `contig` names another."""
+def read_records(path) -> dict[str, str]:
+    """{name: upper-case sequence} for every record of a FASTA file (plain or .gz), in file order."""
     opener = gzip.open if str(path).endswith(".gz") else open
     name, chunks, found = None, [], {}
     with opener(path, "rt") as fh:
@@ -68,6 +68,12 @@ def read_fasta(path, contig: str | None = None) -> tuple[str, str]:
         found[name] = "".join(chunks).upper()
     if not found:
         raise ValueError(f"no sequence in {path}")
+    return found
+
+
+def read_fasta(path, contig: str | None = None) -> tuple[str, str]:
+    """(name, upper-case sequence) of one record of a FASTA file (plain or .gz); the first record unless `contig` names another."""
+    found = read_records(path)
     if contig is None:
         if len(found) > 1:
             print(f"note: {path} holds {len(found)} records; using the first, {next(iter(found))} (name another with --contig)", file=sys.stderr)

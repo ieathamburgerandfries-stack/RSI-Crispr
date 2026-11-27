@@ -19,7 +19,7 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**438 files** in 23 groups.
+**439 files** in 23 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
@@ -67,6 +67,7 @@ Within a group the order is alphabetical.
 | `post_freeze/cut_within_gene_summary.csv` | 0.7 | audited | `paper_numbers_A`, `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
 | `post_freeze/design_benchmark.csv` | 1.2 | cited | `design_benchmark`, `paper_numbers_D` | window_bp, model, windows, guides_per_window, pick_percentile, pick_percentile_lo, pick_percentile_hi … |
 | `post_freeze/design_check.csv` | 0.5 | cited | `check_design`, `paper_numbers_D` | item, value |
+| `post_freeze/family_a_table_check.csv` | 1.8 | cited | `check_family_a_table`, `paper_numbers_D` | item, value |
 | `post_freeze/gate_test.csv` | 1.7 | cited | `gate_test`, `paper_numbers_D` | model, seed, fold, rho, r2 |
 | `post_freeze/gene_grouped_vs_crisprhal.csv` | 0.7 | cited | `gene_grouped_vs_crisprhal`, `paper_numbers_D` | model, against, mean, sd, crisprhal_mean, crisprhal_sd, lead_mean … |
 | `post_freeze/human_twin_check.csv` | 0.2 | audited | `human_twin_check`, `report_checks_R2` | arm, folds, spearman, spearman_sd, n_fits |
