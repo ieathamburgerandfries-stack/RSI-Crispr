@@ -175,66 +175,6 @@ def redundancy(families=("a_flank", "b_energy", "c_folding", "d_mechanics",
     return df
 
 
-def cross_redundancy(target: str, basis_families=("a_flank",),
-                     verbose: bool = True) -> pd.DataFrame:
-    """Is one feature family computable from another?
-
-    `redundancy` asks whether a family is implied by the 20 nt protospacer.
-    This asks the more general question the rule actually needs: whether a
-    candidate family is implied by **the features the model already has**.
-
-    Both directions are reported, because they answer different things. If
-    `i_shape` is recoverable from `a_flank` then it carries no new information
-    and its failure to add anything confirms the rule rather than breaking it.
-    If `a_flank` is *also* recoverable from `i_shape`, the two are simply two
-    parameterisations of one variable and the question becomes which is the
-    better-shaped one.
-    """
-    from ..build.build_matrix import load_block
-
-    index = pd.read_csv(config.INTERIM / "guide_index.csv")
-    ids = index[config.ID_COL].to_numpy()
-
-    def frame(fam):
-        b = load_block(fam).set_index(config.ID_COL).reindex(ids)
-        v = b.to_numpy(dtype=float)
-        keep = ~np.all(~np.isfinite(v), axis=0)
-        return b.columns[keep].tolist(), v[:, keep]
-
-    tgt_cols, Y = frame(target)
-    basis_cols, B = [], []
-    for fam in basis_families:
-        c, v = frame(fam)
-        basis_cols += c
-        B.append(v)
-    B = np.hstack(B)
-
-    # Mean-fill the basis; a basis column that is missing for a row cannot be
-    # allowed to drop the row, or the two directions would be scored on
-    # different subsets.
-    mu = np.nanmean(B, axis=0)
-    B = np.where(np.isfinite(B), B, np.where(np.isfinite(mu), mu, 0.0))
-    # Standardise so one wide-ranged column does not dominate the ridge.
-    sd = B.std(axis=0); sd[sd == 0] = 1.0
-    B = (B - B.mean(axis=0)) / sd
-
-    if verbose:
-        print(f"  basis: {B.shape[1]:,} columns from {list(basis_families)}")
-        print(f"  target: {Y.shape[1]:,} columns from {target}")
-
-    r2 = _oof_r2_batch(B.astype(np.float32), Y, alpha=10.0)
-    df = pd.DataFrame(dict(target_family=target, column=tgt_cols,
-                           r2_from_basis=r2))
-    ok = df["r2_from_basis"].dropna()
-    if verbose and len(ok):
-        print(f"  median R2 {ok.median():.3f}   "
-              f"share > 0.9: {(ok > 0.9).mean():.0%}   "
-              f"share > 0.5: {(ok > 0.5).mean():.0%}")
-    out = config.RESULTS / f"cross_redundancy_{target}_from_{'_'.join(basis_families)}.csv"
-    df.to_csv(out, index=False)
-    return df
-
-
 def load_block_safe(fam: str) -> pd.DataFrame:
     from ..build.build_matrix import load_block
     return load_block(fam)

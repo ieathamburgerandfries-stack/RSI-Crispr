@@ -45,11 +45,6 @@ def topmetrics(y, p):
     return out
 
 
-def _qid(n, size=256, seed=0):
-    rng = np.random.default_rng(seed)
-    return np.sort(rng.integers(0, max(n // size, 1), n)), rng
-
-
 def fit_predict(arm, cfg, Xa, ya, Xb, seed):
     p = T.xgb_params(cfg, seed)
     p.update(importance_type="gain")

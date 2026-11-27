@@ -124,7 +124,7 @@ So yes, in every organism where it has been built and tested, and the sign never
 Runjia/                 the documents above, run_audit.sh, run_ext.sh
 ├── baseline_ecoli_sgRNA_model_swappable.py   five-seed baseline, MODEL_NAME switch (xgboost, lightgbm, catboost, random_forest, ridge);
 │                                             selector stays XGBoost; for a local Colab runtime, edit DATA_PATH
-├── sync_to_shared.sh   copies documents from the author's working folder into a nested shared repository; not used in this fork
+├── mirror_to_shared.py copies the committed changes of this folder from the fork into the shared repository, checking every file first (a dry run unless --apply)
 ├── sgrna/              the pipeline, organised by function (sgrna/README.md has the layout notes)
 │   ├── config.py  io_utils.py  common.py   paths, constants, shared helpers; almost every module imports them
 │   ├── build/       sequence to columns: published-matrix decoder, guide index, genome and QCT tables, feature matrix, array featurisers

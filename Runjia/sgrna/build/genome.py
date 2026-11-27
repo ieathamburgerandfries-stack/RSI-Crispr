@@ -18,7 +18,6 @@ A guide record means:
 from __future__ import annotations
 
 import functools
-from typing import Iterator
 
 import numpy as np
 
@@ -74,26 +73,9 @@ def circular_distance(a: int, b: int, n: int | None = None) -> int:
     return min(d, n - d)
 
 
-def signed_circular_offset(pos: int, ref: int, n: int | None = None) -> int:
-    """Offset of `pos` from `ref`, in (-n/2, n/2]. Positive = clockwise."""
-    n = n or genome_length()
-    d = (pos - ref) % n
-    return d - n if d > n // 2 else d
-
-
 # --------------------------------------------------------------------------
 # Locating protospacers
 # --------------------------------------------------------------------------
-
-
-def find_all(sub: str, genome: str | None = None) -> list[int]:
-    """All 1-based start positions of `sub` on the plus strand."""
-    g = genome if genome is not None else load_genome()
-    out, i = [], g.find(sub)
-    while i >= 0:
-        out.append(i + 1)
-        i = g.find(sub, i + 1)
-    return out
 
 
 @functools.lru_cache(maxsize=2)
@@ -247,8 +229,3 @@ def replication_fork_direction(pos: int) -> int:
     leading-strand template; on the other replichore it is the lagging one.
     """
     return 1 if replichore(pos) == "right" else -1
-
-
-def iter_kmers(seq: str, k: int) -> Iterator[str]:
-    for i in range(len(seq) - k + 1):
-        yield seq[i : i + k]

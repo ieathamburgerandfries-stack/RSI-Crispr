@@ -74,14 +74,3 @@ def load_base_matrix(usecols=None, nrows=None) -> pd.DataFrame:
         low_memory=False,
     )
 
-
-def base_matrix_columns() -> list[str]:
-    return list(load_base_matrix(nrows=0).columns)
-
-
-def one_hot(values: pd.Series, prefix: str, categories) -> pd.DataFrame:
-    """Deterministic one-hot encoding: always the same columns, in order."""
-    out = {}
-    for cat in categories:
-        out[f"{prefix}.{cat}"] = (values == cat).astype("int8")
-    return pd.DataFrame(out, index=values.index)

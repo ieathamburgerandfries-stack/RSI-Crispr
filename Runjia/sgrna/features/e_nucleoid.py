@@ -42,7 +42,6 @@ import numpy as np
 import pandas as pd
 
 from .. import config
-from ..build import genome
 from ..io_utils import save_block
 
 PREFIX = "eng.nuc"
@@ -86,11 +85,6 @@ def load_coordinates() -> np.ndarray | None:
     if not config.LIOY_XYZ.exists():
         return None
     return np.loadtxt(config.LIOY_XYZ, dtype=np.float64)
-
-
-def _bin_of(position: float, n_bins: int) -> int:
-    """5 kb bin index for a 1-based genomic position."""
-    return int((position - 1) // config.LIOY_BIN_SIZE) % n_bins
 
 
 def _coordinate_features(xyz: np.ndarray) -> pd.DataFrame:

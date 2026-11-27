@@ -149,3 +149,16 @@ How each was checked: every stored output is reproduced byte for byte by re-runn
 both ablation designs (seed 41, fold 0: 8 and 6 rows), stage 1 on split 1 (champion, depth6 and two draws: 140 rows), stage 1 on split 2 (the same: 125 rows) and stage 2 on split 2 (champion, depth6 and the best finalist: 95 rows).
 Not merged, with reasons: `tune.py` (the original LightGBM search: another model and protocol), `mix_ecoli.py` (other model families and blending) and `mlp_worker.py` (PyTorch, XGBoost and LightGBM each load an OpenMP
 runtime, and loading them in one process stalled at 0% CPU on macOS, so the neural net must run in its own process); `xgb_knobs.py` (one knob at a time under the older random-fold design) is a candidate for a later pass.
+
+## 27 November 2026 (later): `sync_to_shared.sh` and nine unreferenced functions removed; the mirror procedure is now a tool
+
+* `sync_to_shared.sh` is removed. Its premise (the shared repository nested inside the working folder, so every document had to exist twice) ended when the fork became a separate checkout; it never deleted what the
+  fork deleted and wrote stale mirrors, and it was not used. The procedure that is used, a check of every file against the fork's last mirrored version before it is changed, is now `mirror_to_shared.py` (a dry run unless
+  `--apply`; it reads the last mirrored commit from the shared repository's own history and stages without committing). Restore the old script with `git checkout pre-merge-2026-11-27 -- Runjia/sync_to_shared.sh`.
+* Nine functions that no file anywhere mentions beyond their own definition are removed (109 lines): `genome.signed_circular_offset`, `genome.find_all`, `genome.iter_kmers`, `io_utils.base_matrix_columns`, `io_utils.one_hot`,
+  `make_diagnostic_blocks.build_abundance_split`, `e_nucleoid._bin_of`, `diagnose.cross_redundancy` (58 lines), `topend._qid`, and the two imports they left unused. The search covered both repositories, the teammates'
+  folders and the two notebooks of the working copy. It also showed that five functions the 25 November analysis had listed as unreferenced are used outside `Runjia/` and stay: `evaluate.bootstrap_interval_grouped`,
+  `within_gene_spearman` and `expected_pick_percentile_within_gene` and `make_diagnostic_blocks.build_mapgc` (called by `Jacky/agent-notes/scripts/workplan.py`), and `notebook.feature_block` (called by `notebooks/RSI09_pipeline.ipynb`).
+
+What was *not* deleted, against the review of the same day, after reading the reasons recorded above: `baseline_ecoli_sgRNA_model_swappable.py` (the report names it as where `N_FEATURES = 300` and the champion settings were inherited from),
+`results/RESULTS_archive_2026-10-10.md` (the report cites it, and the audit's i_shape +0.0356 is recorded only there) and `harness/notebook.py` (the front end of the working copy's `RSI09_pipeline.ipynb` and `RSI09_quickstart.ipynb`).

@@ -122,29 +122,6 @@ if __name__ == "__main__":
 SMOOTH_BIN = 100_000
 
 
-def build_abundance_split(index: pd.DataFrame | None = None,
-                          bin_size: int = SMOOTH_BIN,
-                          verbose: bool = True) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Split every abundance track into binned-positional and local parts."""
-    idx = load_guide_index() if index is None else index
-    sc = load_block("d_supercoiling")
-    df = idx[[config.ID_COL, "left"]].merge(sc, on=config.ID_COL, how="left")
-    tracks = [c for c in df.columns if c.startswith("eng.sc.abund.")]
-
-    bin_id = (df["left"].to_numpy(float) // bin_size)
-    smooth = pd.DataFrame({config.ID_COL: df[config.ID_COL]})
-    local = pd.DataFrame({config.ID_COL: df[config.ID_COL]})
-    for c in tracks:
-        stem = c.replace("eng.sc.abund.", "")
-        binned = pd.Series(df[c].to_numpy(float)).groupby(bin_id).transform("mean")
-        smooth[f"eng.absm.{stem}"] = binned.to_numpy()
-        local[f"eng.abloc.{stem}"] = df[c].to_numpy(float) - binned.to_numpy()
-    if verbose:
-        print(f"  split {len(tracks)} tracks at {bin_size:,} bp bins "
-              f"({int(np.nanmax(bin_id)) + 1} bins)")
-    return smooth, local
-
-
 # `z_mapgc`: the abundance signal's two sequence-intrinsic candidate causes,
 # computed from the reference genome alone -- no sequencing data at all.
 #
