@@ -1,4 +1,4 @@
-"""Feature-family ablations on crisprHAL's curated cohort (designs: one family at a time on random rows or whole genes, and `--paper-folds`).
+"""Feature-family ablations on crisprHAL's curated cohort (one family at a time on random rows or whole genes, `--paper-folds`), and three questions asked of the same cohort: the family gains overlap heavily (all eleven families together add +0.2030 rho, far less than the +0.7046 their single gains sum to), the 412-column portable representation still reaches the full one with no selection, and model class does not matter more once family A is in (eight classes span 0.108 rho).
 
 Every Δρ in Appendix C was measured on the published 13,880-row matrix against
 the published label. The model layer moved to crisprHAL's 33,567 curated guides
@@ -13,15 +13,84 @@ seeds by five folds, feature selection fitted inside each training split.
 
     python -m sgrna.cohorts.curated_ablation --families b_energy c_folding
     python -m sgrna.cohorts.curated_ablation --all
+    python -m sgrna.cohorts.curated_ablation --joint [--arms a_flank+i_shape ...]
+    python -m sgrna.cohorts.curated_ablation --ladder
+    python -m sgrna.cohorts.curated_ablation --model-classes [--models xgboost ridge ...]
+
+--joint
+-------
+Appendix B3 reports eleven single-family increments over one base and warns that
+they must not be added up — summing them gives +0.70 ρ, which is not a real
+quantity. That warning rests on the *published* cohort's joint arms, where
+`i_shape` on top of family A was worth +0.001 against +0.036 alone, and the three
+positional families collapsed into one variable. Neither has been checked here,
+so the warning is inherited rather than measured.
+
+The arms are chosen to answer specific suspicions rather than to enumerate:
+
+    a+i             `i_shape` is flank bendability and `a_flank` is flank
+                    composition over the same DNA -- the suspected duplicate
+    a+d_sup         the largest external family on top of the largest flank one
+    d_sup+e+g       the three positional families, which collapsed to one
+                    variable on the published matrix
+    a+d_sup+i       the three biggest effects together
+    all_eleven      every family at once: the ceiling on stacking them
+    guide_only      `b_energy` + `c_folding` + `f_methylation`, the three that
+                    read nothing outside the guide, as a control -- they should
+                    be close to additive because they overlap only through the
+                    20-mer
+
+Everything else matches `curated_ablation`: same base, same folds, same seeds,
+selection fitted inside each training split.
+
+--ladder
+--------
+Finding 2's ladder — 74 mononucleotide indicators, 364 with dinucleotides, 412
+portable, 6,232 full — was measured on the published matrix, and it carries a
+protocol caveat: every arm selected 300 columns from its candidate pool, so the
+74-column arm used all of its candidates while the 6,232-column arm used 300 of
+6,232. The ladder measured candidate pools under a fixed budget, not
+representations.
+
+This re-runs it on the curated cohort and removes the caveat: **no selection in
+any arm**, `n_features` set to each arm's own column count. Two questions at
+once, both open rows in Part 4:
+
+  * does the reduced set still reach the full representation on this cohort,
+    where the 63 hand-named columns are absent by construction?
+  * is `n_features = 300` costing anything? The arms below use every column
+    they have, so the 6,169- and 6,517-column arms answer it directly.
+
+Columns are chosen from the decoded mapping (`decode_v_columns`), so "74
+mononucleotide indicators" means exactly the columns that decode to
+(position, single base) and nothing else.
+
+Three seeds × five folds rather than five × five: no arm selects, so each fit
+is over every column it holds, and the ladder is internally consistent at three.
+
+--model-classes
+---------------
+"Sixteen model classes span only 0.116 ρ" is a Finding 2 corollary, and it was
+measured on the published matrix **without** family A — i.e. on a representation
+with no large effect in it. The reading it supports ("the representation matters
+and the model class barely does") is therefore circular unless it survives on a
+representation that *does* contain the effect.
+
+Same registry (`evaluate._make`), same folds, curated cohort, every model given
+base + family A. One seed × five folds, because the question is the *spread*
+across classes and not a per-class estimate to three decimals.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import time
 
 import numpy as np
 import pandas as pd
+from scipy.stats import spearmanr
+from sklearn.model_selection import KFold
 
 from .. import config
 from ..harness.curated import load_base, load_block, load_groups
@@ -254,6 +323,214 @@ def summary_paper_folds() -> pd.DataFrame:
     return s
 
 
+# ======================================================================================================  the cohort's other experiments
+# Three more questions on the same curated cohort, base and folds as the designs above. Each writes its own file.
+#
+#   joint            how the family gains combine -> curated_joint.csv
+#   ladder           the reduced-representation ladder without selection -> curated_ladder.csv
+#   model-classes    does model class matter more once family A is in? -> curated_models.csv
+
+JOINT_OUT = OUT_PF / "curated_joint.csv"
+LADDER_OUT = OUT_PF / "curated_ladder.csv"
+MODELS_OUT = OUT_PF / "curated_models.csv"
+LADDER_SEEDS = (41, 42, 43)
+
+
+JOINT_ARMS = {
+    "a_flank+i_shape": ("a_flank", "i_shape"),
+    "a_flank+d_supercoiling": ("a_flank", "d_supercoiling"),
+    "d_supercoiling+e_nucleoid+g_transcription": ("d_supercoiling", "e_nucleoid",
+                                                  "g_transcription"),
+    "a_flank+d_supercoiling+i_shape": ("a_flank", "d_supercoiling", "i_shape"),
+    "guide_only_three": ("b_energy", "c_folding", "f_methylation"),
+    "all_eleven": ("a_flank", "b_energy", "c_folding", "d_mechanics",
+                   "d_supercoiling", "e_nucleoid", "f_methylation",
+                   "g_transcription", "h_offtarget", "i_shape", "j_periodicity"),
+}
+
+
+def joint(arms=None, seeds=None, n_splits=None, n_features=300,
+        verbose: bool = True):
+    from ..harness.run_ablation import cross_validate
+
+    arms = arms or JOINT_ARMS
+    seeds = list(seeds or config.SEEDS)
+    n_splits = n_splits or config.N_SPLITS
+    X, y, names, protos = load_base()
+
+    singles = pd.read_csv(OUT).set_index("family")
+    base_rho = float(singles.loc["baseline", "spearman"])
+
+    rows = []
+    if JOINT_OUT.exists() and JOINT_OUT.stat().st_size:
+        rows = [r for r in pd.read_csv(JOINT_OUT).to_dict("records")
+                if r["arm"] not in arms]
+
+    for arm, fams in arms.items():
+        if any(r["arm"] == arm for r in rows):
+            continue
+        vals, nm, fam_of = [], [], []
+        for f in fams:
+            v, fn = load_block(f, protos)
+            vals.append(v)
+            nm += fn
+            fam_of += [f] * len(fn)
+        Xa = np.hstack([X] + vals)
+        res = cross_validate(Xa, y, names + nm,
+                             ["base"] * len(names) + fam_of,
+                             n_features=n_features, seeds=seeds,
+                             n_splits=n_splits, verbose=False,
+                             tag=f"joint_{len(fams)}_{fams[0]}",
+                             experiment=arm)
+        rho = res["summary"]["spearman"]["mean"]
+        additive = float(sum(singles.loc[f, "d_spearman"] for f in fams))
+        rows.append(dict(arm=arm, n_families=len(fams), n_cols=Xa.shape[1],
+                         spearman=rho, spearman_sd=res["summary"]["spearman"]["sd"],
+                         d_spearman=rho - base_rho,
+                         sum_of_singles=additive,
+                         overlap=additive - (rho - base_rho),
+                         share_realised=(rho - base_rho) / additive))
+        if verbose:
+            r = rows[-1]
+            print(f"  {arm:<44} rho {rho:.4f}  joint {r['d_spearman']:+.4f}  "
+                  f"sum {additive:+.4f}  realised {r['share_realised']:.0%}",
+                  flush=True)
+        pd.DataFrame(rows).to_csv(JOINT_OUT, index=False)
+
+    out = pd.DataFrame(rows)
+    out.to_csv(JOINT_OUT, index=False)
+    if verbose:
+        print()
+        print(out.round(4).to_string(index=False))
+        print(f"written -> {JOINT_OUT}")
+    return out
+
+
+def _unit_columns(names, units) -> np.ndarray:
+    from ..build import decode_v_columns as dv
+
+    mp = dv.load()["mapping"]
+    return np.array([n in mp and mp[n].get("unit") in units
+                     and not mp[n].get("ambiguous") for n in names])
+
+
+def ladder(seeds=LADDER_SEEDS, n_splits=None, verbose: bool = True):
+    from ..harness.run_ablation import cross_validate
+
+    n_splits = n_splits or config.N_SPLITS
+    X, y, names, protos = load_base()
+    mono = _unit_columns(names, ("monomer",))
+    mono_di = _unit_columns(names, ("monomer", "dimer"))
+    A, anames = load_block("a_flank", protos)
+
+    mono_di_tri = _unit_columns(names, ("monomer", "dimer", "trimer"))
+    all_kmers = _unit_columns(names, ("monomer", "dimer", "trimer", "tetramer"))
+    sel = lambda m: [n for n, k in zip(names, m) if k]
+    arms = {
+        "mono": (X[:, mono], sel(mono)),
+        "mono_di": (X[:, mono_di], sel(mono_di)),
+        # Finding 4 says higher-order k-mers help once selection is removed, and
+        # that was measured on the published matrix. These two arms re-ask it
+        # here, where no arm selects: trimers add 1,146 columns and tetramers a
+        # further 4,343, so if the trimer step pays and the tetramer step does
+        # not, the usable order stops at three on this cohort too.
+        "mono_di_tri": (X[:, mono_di_tri], sel(mono_di_tri)),
+        # The step from mono_di_tri to base_full adds two different things at
+        # once -- 4,343 tetramer indicators and 316 quantum-table columns -- so
+        # a gain there cannot be attributed to either. This arm is the k-mers
+        # without the quantum columns, which is what Finding 4's "the usable
+        # order stops at three" is actually a claim about.
+        "all_kmers": (X[:, all_kmers], sel(all_kmers)),
+        "base_full": (X, names),
+        "mono_di+a_flank": (np.hstack([X[:, mono_di], A]), sel(mono_di) + anames),
+        "mono_di_tri+a_flank": (np.hstack([X[:, mono_di_tri], A]),
+                                sel(mono_di_tri) + anames),
+        "all_kmers+a_flank": (np.hstack([X[:, all_kmers], A]),
+                              sel(all_kmers) + anames),
+        "base_full+a_flank": (np.hstack([X, A]), names + anames),
+    }
+
+    rows = []
+    for arm, (Xa, nm) in arms.items():
+        res = cross_validate(Xa, y, nm, ["arm"] * len(nm),
+                             n_features=Xa.shape[1],      # every column, no selection
+                             seeds=list(seeds), n_splits=n_splits, verbose=False,
+                             tag=f"ladder_{arm}", experiment=arm)
+        rows.append(dict(arm=arm, n_cols=Xa.shape[1],
+                         spearman=res["summary"]["spearman"]["mean"],
+                         spearman_sd=res["summary"]["spearman"]["sd"]))
+        if verbose:
+            print(f"  {arm:>18} {Xa.shape[1]:>5} cols: rho "
+                  f"{rows[-1]['spearman']:.4f} ± {rows[-1]['spearman_sd']:.4f}",
+                  flush=True)
+        pd.DataFrame(rows).to_csv(LADDER_OUT, index=False)
+
+    out = pd.DataFrame(rows)
+    if verbose:
+        full = out.set_index("arm").loc["base_full", "spearman"]
+        out["vs_base_full"] = out["spearman"] - full
+        print()
+        print(out.round(4).to_string(index=False))
+        print(f"written -> {LADDER_OUT}")
+    out.to_csv(LADDER_OUT, index=False)
+    return out
+
+
+CLASSES = ("xgboost", "lightgbm", "random_forest", "extra_trees", "ridge",
+          "elastic_net", "knn", "pls")
+
+
+def model_classes(models=CLASSES, seed: int = 41, n_splits: int = 5, verbose: bool = True):
+    from ..harness.evaluate import _make, _standardise
+    from ..harness.run_ablation import _impute, make_selector
+
+    X, y, names, protos = load_base()
+    A, _ = load_block("a_flank", protos)
+    X = np.hstack([X, A])
+    if verbose:
+        print(f"  curated base + family A: {X.shape[0]:,} x {X.shape[1]:,}")
+
+    done = set()
+    if MODELS_OUT.exists() and MODELS_OUT.stat().st_size:
+        done = set(pd.read_csv(MODELS_OUT)["model"])
+
+    rows = [] if not done else pd.read_csv(MODELS_OUT).to_dict("records")
+    folds = list(KFold(n_splits, shuffle=True, random_state=seed).split(X))
+    for name in models:
+        if name in done:
+            continue
+        t0, rhos = time.time(), []
+        for tr, va in folds:
+            X_tr, X_va = _impute(X[tr], X[va])
+            sel = make_selector(seed)
+            sel.fit(X_tr, y[tr])
+            top = np.argsort(sel.feature_importances_)[::-1][:config.N_FEATURES]
+            X_tr, X_va = X_tr[:, top], X_va[:, top]
+            model, scale = _make(name, seed)
+            if scale:
+                X_tr, X_va = _standardise(X_tr, X_va)
+            model.fit(X_tr, y[tr])
+            rhos.append(float(spearmanr(y[va], model.predict(X_va)).statistic))
+        rows.append(dict(model=name, spearman=float(np.mean(rhos)),
+                         spearman_sd=float(np.std(rhos, ddof=1)),
+                         seconds=round(time.time() - t0, 1)))
+        if verbose:
+            print(f"  {name:>14}: rho {rows[-1]['spearman']:.4f} "
+                  f"± {rows[-1]['spearman_sd']:.4f}  ({rows[-1]['seconds']:.0f}s)",
+                  flush=True)
+        pd.DataFrame(rows).to_csv(MODELS_OUT, index=False)
+
+    out = pd.DataFrame(rows).sort_values("spearman", ascending=False)
+    out.to_csv(MODELS_OUT, index=False)
+    if verbose:
+        span = out["spearman"].max() - out["spearman"].min()
+        print()
+        print(out.round(4).to_string(index=False))
+        print(f"\n  spread across {len(out)} classes: {span:.4f} rho")
+        print(f"written -> {MODELS_OUT}")
+    return out
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--families", nargs="*", default=None)
@@ -269,7 +546,21 @@ def main(argv=None) -> int:
     ap.add_argument("--paper-folds", action="store_true", help="design paper_folds: the ablation on the paper's own folds (see the section above)")
     ap.add_argument("--threads", type=int, default=9, help="paper_folds only")
     ap.add_argument("--summary-only", action="store_true", help="paper_folds only")
+    ap.add_argument("--joint", action="store_true", help="how the family gains combine (see the section above)")
+    ap.add_argument("--arms", nargs="*", default=None, help="--joint: only these arms")
+    ap.add_argument("--ladder", action="store_true", help="the reduced-representation ladder without selection")
+    ap.add_argument("--model-classes", action="store_true", help="model class with family A in the representation")
+    ap.add_argument("--models", nargs="*", default=None, help="--model-classes: only these classes")
     a = ap.parse_args(argv)
+    if a.joint:
+        joint(arms={k: v for k, v in JOINT_ARMS.items() if k in a.arms} if a.arms else None, seeds=a.seeds)
+        return 0
+    if a.ladder:
+        ladder(seeds=tuple(a.seeds) if a.seeds else LADDER_SEEDS)
+        return 0
+    if a.model_classes:
+        model_classes(models=tuple(a.models) if a.models else CLASSES)
+        return 0
     if a.paper_folds:
         if not a.summary_only:
             run_paper_folds(tuple(a.seeds or (41, 42, 43)), a.threads)

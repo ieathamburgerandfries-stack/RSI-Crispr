@@ -282,7 +282,7 @@ def _fold_scores():
 def fig_ceiling():
     _style()
     d = pd.read_csv(config.EXTERNAL / "crisprHAL" / "rawData" / "E_coli_WTSpCas9_counts.tsv", sep="\t")
-    tot = d[["Cas1_S", "Cas2_S", "dCas1_NS", "dCas2_NS"]].sum()        # counts per million over the whole library, then the control-count filter, as in curated_ceiling.py
+    tot = d[["Cas1_S", "Cas2_S", "dCas1_NS", "dCas2_NS"]].sum()        # counts per million over the whole library, then the control-count filter, as in cohorts/ceiling.py
     d = d[(d.dCas1_NS + d.dCas2_NS) / 2 >= 73]
     cpm = lambda c: c / tot[c.name] * 1e6
     u = np.log2((cpm(d.Cas1_S) + 0.5) / (cpm(d.dCas1_NS) + 0.5))

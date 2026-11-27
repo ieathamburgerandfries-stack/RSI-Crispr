@@ -30,7 +30,7 @@ HOOKS = {
     "transfer": ("compare.transfer", None),
     "SEAL_FRACTION": ("controls.sealed", 'SEAL_FRACTION'),
     "_seal": ("controls.sealed", '_seal'),
-    "_shifted_block": ("controls.shiftnull", '_shifted_block'),
+    "_shifted_block": ("controls.family_a_controls", '_shifted_block'),
     "a_flank": ("features.a_flank", None),
     "dnashape": ("features.dnashape", None),
     "BLOCK": ("harness.cohort_groups", 'BLOCK'),

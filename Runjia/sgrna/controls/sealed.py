@@ -1,14 +1,16 @@
-"""On genes sealed away from column selection and settings, family A's gain is 0.0087 lower than in cross-validation of the pool; holding whole genes out of the pool too leaves +0.0081, so unseen genes explain almost none of it, and the gain survives a change of screen (+0.103 on eSpCas9 labels of sealed genes, positive in 15 of 15 draws).
+"""On genes sealed away from column selection and settings, family A's gain is 0.0087 lower than in cross-validation of the pool; holding whole genes out of the pool too leaves +0.0081, so unseen genes explain almost none of it, and the gain survives a change of screen (+0.103 on eSpCas9 labels of sealed genes, positive in 15 of 15 draws); on C. rodentium, which no choice in this project ever saw, the tuned model beats the default model by +0.0172, within the range seen inside E. coli.
 
-One question in three steps: how much of family A's cross-validated gain is the pipeline inflating its own estimates, and does the gain survive genes and a screen that no step ever saw?
+One question in four steps: how much of family A's cross-validated gain (and of the tuning's) is the pipeline inflating its own estimates, and does it survive genes, a screen and an organism that no step ever saw?
 
   holdout       Is there adaptive overfitting? Seal whole genes (20% of rows) away from column selection and hyperparameters, re-derive the mechanisable choices inside the development pool, score once on the sealed genes. -> sealed_holdout.csv
   gene          Is that gap just the cost of unseen genes? Re-run only the pool cross-validation with whole genes held out, for the same sealing draws.                                                                   -> sealed_holdout_gene.csv
   crossscreen   Does the gain survive a change of screen? Train on SpCas9 guides in the development genes, score the eSpCas9 labels of guides in the sealed genes (15 draws).                                    -> sealed_crossscreen.csv
+  organism      Does the tuning survive a change of organism? Train on all of E. coli WT-SpCas9, score C. rodentium zero-shot with the champion, the tuned XGBoost and the average of five.                  -> sealed_organism.csv
 
     python -m sgrna.controls.sealed --parts holdout --seal-seeds 20261016 20261017
     OMP_NUM_THREADS=3 python -m sgrna.controls.sealed --parts gene [--max-draws N] [--arms base_only frozen dev_tuned]
     OMP_NUM_THREADS=6 python -m sgrna.controls.sealed --parts crossscreen [--max-draws N] [--threads T]
+    python -m sgrna.controls.sealed --parts organism
 
 **holdout.** Part 4 says the curated five-fold figures "carry an unknown adaptive-overfitting component" and leaves it unknown, because no untouched external dataset remains. Sealing rows *now* cannot undo the history: every choice in the pipeline
 was made while looking at numbers computed on all 33,567 guides. So this does not measure our actual history; it measures the procedure. Re-derive the mechanisable choices (column selection and hyperparameters) using only a development pool, then score
@@ -39,7 +41,15 @@ whole gene) and scored on the eSpCas9 labels of every eSpCas9 guide in a sealed 
 the loci are still the same genome, so a guide in a sealed gene can have training neighbours whose 1 kb flank windows overlap its own (the claim is that the gain survives a change of enzyme and of gene, not independence of loci; that is the C. rodentium check).
 Prediction, fixed before the run (23 Nov 2026): the gain is positive in at least 14 of the 15 draws with a mean of at least +0.08 (about half of the WT screen's +0.156 on its own sealed genes). Result: positive in 15 of 15, mean +0.103.
 
-Replaced `sealed_holdout`, `sealed_holdout_gene` and `sealed_crossscreen`; the fold helpers they shared (and nine other modules imported from `sealed_holdout_gene`) are `harness/folds.py`.
+**organism.** The tuned settings were chosen on 70% of the E. coli curated cohort's genes, and the report's estimate of how much that adaptive selection inflates a gain is +0.0087 rho, measured on genes sealed *inside* E. coli. A sturdier seal is a different
+organism. The C. rodentium TevSpCas9 screen (25,210 guides, a 5.35 Mb genome) was used only to test the frozen champion's transfer; no feature, setting, column count or model was ever chosen on it. (The other E. coli screen, eSpCas9, is not untouched: it scores the
+same guide library at the same loci, so it can be held out as a *label* but not as a *locus*.) Train on the whole E. coli WT-SpCas9 cohort, score C. rodentium zero-shot, with three arms that share a protocol: the frozen champion, the tuned XGBoost (d099x) and the
+XGBoost average of five (the arms of the head-to-head). Only this direction is clean: training on C. rodentium and scoring E. coli would score the very genes the settings were chosen on.
+Prediction, written before the run: the tuned arm is at least as good as the champion (probability about 0.65), by less than it is within E. coli (+0.014 on genes it never saw, +0.019 and +0.026 on crisprHAL 2's two splits), because part of that gain is the data
+it was chosen on. Decision rule: the difference (tuned minus champion), paired on guides and bootstrapped over 100 kb blocks (neighbouring guides share DNA and are not independent), three seeds averaged. Lower bound above 0: the tuning's benefit survives a sealed
+organism. Interval spanning 0: inconclusive. Upper bound below 0: tuning hurt outside the data it was chosen on, which would be evidence of adaptive overfitting in the settings.
+
+Replaced `sealed_holdout`, `sealed_holdout_gene`, `sealed_crossscreen` and `compare/sealed_organism`; the fold helpers they shared (and nine other modules imported from `sealed_holdout_gene`) are `harness/folds.py`.
 
 Report section: Part 4.
 """
@@ -273,9 +283,66 @@ def crossscreen(max_draws: int | None = None, threads: int = 6, verbose: bool = 
     return done
 
 
+ORGANISM_ARMS = {"champion": ["champion"], "tuned XGBoost (d099x)": ["d099x"], "XGBoost average of 5": ["d099x", "d077x", "d021x", "d080x", "d000x"]}
+N_BOOT = 1000
+
+
+def _block_boot(y, a, b, block, rng):
+    """Spearman(a) - Spearman(b), resampling 100 kb blocks of the target genome; 95% interval."""
+    u, inv = np.unique(block, return_inverse=True)
+    rows = [np.flatnonzero(inv == k) for k in range(len(u))]
+    out = np.empty(N_BOOT)
+    for i in range(N_BOOT):
+        ix = np.concatenate([rows[k] for k in rng.integers(0, len(u), len(u))])
+        out[i] = spearmanr(y[ix], a[ix]).statistic - spearmanr(y[ix], b[ix]).statistic
+    return float(np.percentile(out, 2.5)), float(np.percentile(out, 97.5))
+
+
+def organism(seeds=(41, 42, 43), verbose: bool = True) -> pd.DataFrame:
+    from ..compare.vs_crisprhal import member_specs, train_predict
+    from ..harness.metrics import zscore as _z
+
+    def cached(name):
+        """The stored matrix and label of one screen (the cache `compare.transfer.build` writes); the C. rodentium genome is not needed to read it."""
+        d = config.INTERIM / ("transfer_%s" % name)
+        meta = json.loads((d / "meta.json").read_text())
+        return np.asarray(np.load(d / "X.npy", mmap_mode="r"), np.float32), np.asarray(meta["y"], float), list(meta["names"]), meta
+
+    rho = lambda y, p: float(spearmanr(y, p).statistic)
+    Xs, ys, names, _ = cached("WT-SpCas9")
+    Xt, yt, names_t, meta = cached("TevSpCas9")
+    assert names == names_t, "feature names differ between the two screens"
+    block = (np.asarray(meta["left"], float) // 100_000).astype(int)
+    specs = member_specs(sorted({n for v in ORGANISM_ARMS.values() for n in v}))
+    if verbose:
+        print(f"train {Xs.shape[0]:,} E. coli guides, score {Xt.shape[0]:,} C. rodentium guides in {len(set(block))} 100 kb blocks", flush=True)
+    per_seed = {s: {} for s in seeds}
+    for s in seeds:
+        preds, _ = train_predict(specs, Xs, ys, Xt, seed=s)
+        for arm, members in ORGANISM_ARMS.items():
+            per_seed[s][arm] = np.mean([_z(preds[m]) for m in members], axis=0)
+        if verbose:
+            print("  seed", s, {a: round(rho(yt, p), 4) for a, p in per_seed[s].items()}, flush=True)
+    mean_pred = {arm: np.mean([per_seed[s][arm] for s in seeds], axis=0) for arm in ORGANISM_ARMS}
+    rng = np.random.default_rng(0)
+    rows = []
+    for arm in ORGANISM_ARMS:
+        r_seeds = [rho(yt, per_seed[s][arm]) for s in seeds]
+        row = dict(arm=arm, rho_seed_mean=float(np.mean(r_seeds)), rho_seed_sd=float(np.std(r_seeds)), rho_of_seed_average=rho(yt, mean_pred[arm]))
+        if arm != "champion":
+            lo, hi = _block_boot(yt, mean_pred[arm], mean_pred["champion"], block, rng)
+            row.update(minus_champion=row["rho_of_seed_average"] - rho(yt, mean_pred["champion"]), lo=lo, hi=hi)
+        rows.append(row)
+    out = pd.DataFrame(rows)
+    out.to_csv(OUT / "sealed_organism.csv", index=False)
+    if verbose:
+        print(out.round(4).to_string(index=False))
+    return out
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--parts", nargs="+", choices=("holdout", "gene", "crossscreen"), required=True, help="which steps to run, in this order")
+    ap.add_argument("--parts", nargs="+", choices=("holdout", "gene", "crossscreen", "organism"), required=True, help="which steps to run, in this order")
     ap.add_argument("--seal-seeds", type=int, nargs="*", default=[SEAL_SEED], help="holdout: repeat with several sealing draws (one draw of 872 genes is itself a sample)")
     ap.add_argument("--no-match-train-size", action="store_true", help="holdout: reproduce the first, confounded version")
     ap.add_argument("--arms", nargs="*", default=list(ARMS), help="holdout and gene: which arms")
@@ -290,6 +357,8 @@ def main(argv=None) -> int:
                 holdout(match_train_size=not a.no_match_train_size, seal_seed=sd, arms=tuple(a.arms))
         elif part == "gene":
             gene(a.max_draws, tuple(a.arms))
+        elif part == "organism":
+            organism()
         else:
             d = crossscreen(a.max_draws, a.threads or 6)
             print(f"\n{len(d)} draws: mean gain on eSpCas9 labels {d.gain_esp.mean():+.4f} (positive in {int((d.gain_esp > 0).sum())}), "

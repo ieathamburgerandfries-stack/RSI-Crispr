@@ -20,7 +20,7 @@ Two arms, cheap then expensive:
             Seconds.
   --run     The full ablation inside each stratum: baseline against
             baseline + family A, grouped CV in 100 kb blocks (the same
-            precaution as `shiftnull.py` -- a positional feature under random
+            precaution as `family_a_controls.py` (part shift) -- a positional feature under random
             KFold can score by locus recognition). Minutes to an hour.
 
 A flank effect that is a target-GC proxy collapses inside the strata. One that

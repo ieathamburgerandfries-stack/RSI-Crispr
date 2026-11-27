@@ -1,33 +1,33 @@
-"""The teammate's human baseline settings give ρ 0.5076 on this matrix against 0.4036 under the harness, and the gain comes from XGBoost's default tree settings, not the column count.
+"""The human boosting baseline (rho 0.5076 against the harness's 0.4036) is a memorisation artefact: with repeat measurements of a guide kept in one fold it falls to 0.2515, and the "human signal is less additive" claim built on it goes with it.
 
-Part 3 says the cross-kingdom conclusion leans on the human side being weak, and
-cites a teammate's ρ ≈ 0.472 against the 0.404 our harness measures — a figure
-whose provenance was missing for days (item 4). The settings arrived on
-17 October (`Jacky/human-boundary/HUMAN_BASELINE_SETTINGS.md`): **400 selected
-columns, 1,000 estimators, every other XGBoost knob at library defaults**, from
-an early personal script that predates the merged pipeline.
+The question was whether a teammate's human baseline (`Jacky/human-boundary/HUMAN_BASELINE_SETTINGS.md`: 400 selected columns, 1,000 estimators, every other XGBoost knob at library defaults) reproduces on the
+human iRF matrix (Noshay et al. 2023, Supplementary Table 3; 17,421 guides; `data/raw/human_feature_matrix.csv`), and what it would mean. Five parts answer it in order, each writing one file under `results/`:
 
-So the question is whether that configuration reproduces here. Three arms on the
-same folds of the human iRF matrix (Noshay et al.'s Supplemental Table 3,
-`data/raw/human_feature_matrix.csv`):
+    arms           the three arms on random row folds                 human_baseline.csv         harness_default 300 columns and the champion; jacky_400_1000; jacky_cols_only (400 columns, champion)
+    knobs          which of the three differences does the work       human_baseline_knobs.csv   one knob at a time on the 400 columns: trees, depth + learning rate, no subsampling
+    additivity     ridge against boosting on the same columns         human_additivity.csv       the E. coli figure is 95.6%
+    twin           the same two arms with twin-grouped folds          human_twin_check.csv       ONE FOLD DESIGN CHANGED; this is where 0.5076 becomes 0.2515
+    twin-additivity  knobs and ridge under both fold designs          human_additivity_twin*.csv the claim re-tested, with the row-wise arms as a positive control
 
-    harness_default   300 columns, the champion settings -- what produces 0.404
-    jacky_400_1000    400 columns, n_estimators=1000, XGBoost defaults otherwise
-    jacky_cols_only   400 columns, champion settings -- separates the column
-                      count from the tree count, since only one of them can be
-                      doing the work
+Why the fold design matters. The matrix decodes to 13,138 distinct 20-mers: 4,216 sequences appear more than once (4,149 twice, 67 three times), as separate rows at the same genomic position, so 8,499 rows (49%) have a
+twin, and twin labels agree at Spearman 0.80. With `KFold(shuffle=True)` on rows a test guide's twin is usually in the training folds, so a model that can memorise sequences (deep trees, fast learning rate, no
+subsampling) scores well without generalising. Every knob that "helped" on human is a memorisation knob (depth 4 to 6 +0.0585, learning rate 0.05 to 0.3 +0.0416, trees 400 to 1,000 +0.0361; turning subsampling
+off cost -0.0075), so the depth result that suggested human is "less additive" is the artefact's own signature, and the ridge/boosting ratio (63.7% in human against 95.6% in E. coli) had the leaked 0.5076 in its
+denominator. `twin-additivity` runs both fold schemes in one pass with the same columns, seeds and code, so the only thing that differs is the folds; the row-wise arms reproduce the published numbers as the
+positive control for the harness.
 
-Library defaults matter here and are not a detail: XGBoost's defaults are
-`max_depth=6, learning_rate=0.3`, far deeper and faster-learning than the
-champion's `max_depth=4, learning_rate=0.05`. On a 17,421-row matrix that is a
-different model, not a tweak.
+    python -m sgrna.compare.human_baseline --parts arms knobs additivity twin
+    python -m sgrna.compare.human_baseline --parts twin-additivity [--summarise-only]
 
-    python -m sgrna.compare.human_baseline
+`arms`, `knobs` and `additivity` rewrite their file from scratch; `twin-additivity` resumes from `human_additivity_twin.csv` (one row per arm and fold) and then writes the summary and the claim (ridge over
+boosting, and the depth effect with its bootstrap interval) under each scheme.
+
+Report section: Part 2.
 """
-
 from __future__ import annotations
 
 import argparse
+import time
 
 import numpy as np
 import pandas as pd
@@ -35,17 +35,38 @@ from scipy.stats import spearmanr
 from sklearn.model_selection import KFold
 
 from .. import config
+from ..common import OUT
+from ..harness import folds as fh
+from ..harness.run_ablation import _impute, grouped_folds
+from .human_flank import decode
 
-OUT = config.RESULTS / "human_baseline.csv"
 MATRIX = config.DATA / "raw" / "human_feature_matrix.csv"
 TARGET = "cut.score"
+SEEDS = (41, 42, 43)
+
+# what each arm changes in the champion (an empty change is the champion itself); the order is the order the files list them in
+CHANGES = {
+    "champion": {},
+    "plus_trees": dict(n_estimators=1000),
+    "plus_shape": dict(max_depth=6, learning_rate=0.3),
+    "plus_nosubsample": dict(subsample=1.0, colsample_bytree=1.0),
+    "plus_depth": dict(max_depth=6),                     # `plus_shape` moves depth and learning rate together; these two separate them
+    "plus_lr": dict(learning_rate=0.3),
+    "boosting_defaults": dict(n_estimators=1000, max_depth=6, learning_rate=0.3, subsample=1.0, colsample_bytree=1.0),
+}
+# the teammate's arms: (selected columns, what changes). `jacky_400_1000` is the library's defaults on 400 columns.
+ARMS = {
+    "harness_default": (config.N_FEATURES, {}),
+    "jacky_400_1000": (400, dict(n_estimators=1000, max_depth=6, learning_rate=0.3, subsample=1.0, colsample_bytree=1.0, reg_lambda=1.0, min_child_weight=1)),
+    "jacky_cols_only": (400, {}),
+}
 
 
 def load(verbose: bool = True):
+    """The matrix with a measured target: (X, y), float32 and float."""
     d = pd.read_csv(MATRIX, skiprows=1, low_memory=False)
     y = pd.to_numeric(d[TARGET], errors="coerce").to_numpy(float)
-    X = d.drop(columns=[c for c in (config.ID_COL, "sgRNAID", TARGET)
-                        if c in d.columns])
+    X = d.drop(columns=[c for c in (config.ID_COL, "sgRNAID", TARGET) if c in d.columns])
     X = X.apply(pd.to_numeric, errors="coerce").to_numpy(np.float32)
     ok = np.isfinite(y)
     if verbose:
@@ -53,217 +74,195 @@ def load(verbose: bool = True):
     return X[ok], y[ok]
 
 
-def run(seeds=(41, 42, 43), n_splits=5, verbose: bool = True):
-    import xgboost as xgb
+def twin_groups(y) -> np.ndarray:
+    """One id per distinct protospacer (decoded from the electron-count columns), so repeat measurements of a guide can be kept together."""
+    dec = decode()
+    yy = pd.to_numeric(dec.y, errors="coerce").to_numpy(float)
+    ok = np.isfinite(yy)
+    assert ok.sum() == len(y) and np.allclose(yy[ok], y), "decoded table is not aligned with the matrix rows"
+    return pd.factorize(dec.protospacer[ok])[0]
 
-    from ..harness.run_ablation import _impute, champion_params, make_selector
 
-    X, y = load(verbose=verbose)
-    arms = {
-        "harness_default": dict(n_features=config.N_FEATURES, params=None),
-        "jacky_400_1000": dict(n_features=400,
-                               params=dict(n_estimators=1000, max_depth=6,
-                                           learning_rate=0.3, subsample=1.0,
-                                           colsample_bytree=1.0, reg_lambda=1.0,
-                                           min_child_weight=1)),
-        "jacky_cols_only": dict(n_features=400, params=None),
-    }
+def _splits(scheme, X, groups, seed, n_splits=5):
+    """'row-wise' is KFold(shuffle) on rows (what produced the published figures); 'twin-grouped' never lets a protospacer be on both sides."""
+    if scheme == "row-wise":
+        return list(KFold(n_splits, shuffle=True, random_state=seed).split(X))
+    return list(grouped_folds(groups, n_splits, seed))
 
-    rows = []
-    for arm, cfg in arms.items():
-        rhos = []
-        for seed in seeds:
-            for tr, va in KFold(n_splits, shuffle=True, random_state=seed).split(X):
-                X_tr, X_va = _impute(X[tr], X[va])
-                sel = make_selector(seed)
-                sel.fit(X_tr, y[tr])
-                top = np.argsort(sel.feature_importances_)[::-1][:cfg["n_features"]]
-                p = dict(champion_params(seed))
-                p.update(cfg["params"] or {})
-                m = xgb.XGBRegressor(**p)
-                m.fit(X_tr[:, top], y[tr])
-                rhos.append(float(spearmanr(y[va], m.predict(X_va[:, top])).statistic))
-        rows.append(dict(arm=arm, n_features=cfg["n_features"],
-                         spearman=float(np.mean(rhos)),
-                         spearman_sd=float(np.std(rhos, ddof=1)),
-                         n_fits=len(rhos)))
-        if verbose:
-            print(f"  {arm:>16}: rho {rows[-1]['spearman']:.4f} "
-                  f"± {rows[-1]['spearman_sd']:.4f}", flush=True)
-        pd.DataFrame(rows).to_csv(OUT, index=False)
 
-    out = pd.DataFrame(rows)
-    if verbose:
-        print(f"\n  the figure to reproduce is 0.472; our harness reports 0.404")
-        print(f"written -> {OUT}")
+def _rho(y, pred) -> float:
+    return float(spearmanr(y, pred).statistic)
+
+
+def _fold(X, y, tr, va, seed, arms, ridge=None) -> dict:
+    """Held-out rho of every arm on one fold. The columns are ranked once and each arm takes its own top n (a shorter list is a prefix of a longer one), so arms share the selection that costs the most.
+    `arms` maps a name to (number of columns, change to the champion's settings); `ridge` adds a ridge fitted on that many top columns."""
+    X_tr, X_va = _impute(X[tr], X[va])
+    order = fh.rank_columns(X_tr, y[tr], seed, n_jobs=None)
+    out = {}
+    for arm, (n, change) in arms.items():
+        top = order[:n]
+        out[arm] = _rho(y[va], fh.boost(X_tr[:, top], y[tr], X_va[:, top], seed, change, n_jobs=None))
+    if ridge:
+        from sklearn.linear_model import RidgeCV
+        from sklearn.preprocessing import StandardScaler
+        top = order[:ridge]
+        sc = StandardScaler().fit(X_tr[:, top])
+        r = RidgeCV(alphas=np.logspace(-2, 4, 25)).fit(sc.transform(X_tr[:, top]), y[tr])
+        out["ridge"] = _rho(y[va], r.predict(sc.transform(X_va[:, top])))
     return out
 
 
-def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--decompose", action="store_true",
-                    help="separate the knobs instead of running the arms")
-    ap.add_argument("--arms", nargs="*", default=None,
-                    help="restrict --decompose to these arms")
-    ap.add_argument("--additivity", action="store_true",
-                    help="ridge against boosting on the same selected columns")
-    a = ap.parse_args(argv)
-    if a.additivity:
-        additivity()
-    elif a.decompose:
-        decompose(only=tuple(a.arms) if a.arms else None)
-    else:
-        run()
-    return 0
+def _cv(X, y, scheme, arms, groups=None, ridge=None, seeds=SEEDS, n_splits=5) -> dict:
+    """Arm -> list of held-out rhos over seeds x folds."""
+    rhos: dict[str, list] = {}
+    for seed in seeds:
+        for tr, va in _splits(scheme, X, groups, seed, n_splits):
+            for arm, r in _fold(X, y, tr, va, seed, arms, ridge).items():
+                rhos.setdefault(arm, []).append(r)
+    return rhos
 
 
-
-# --------------------------------------------------------------------------
-# Which knob does the work?
-# --------------------------------------------------------------------------
-#
-# `jacky_400_1000` differs from the champion in three ways at once -- 1,000
-# trees instead of 400, max_depth 6 and learning_rate 0.3 instead of 4 and 0.05,
-# and no row/column subsampling. The first is capacity, which is what the
-# teammate's note describes ("n_estimators kept improving with no clear
-# plateau, unlike bacteria") and which would be a statement about the human
-# dataset. The second is model shape, which would be a statement about our
-# hyperparameters. These predict different things, so they are worth separating.
-#
-# Each arm below changes exactly one of the three, on the same folds and the
-# same 400 columns as `jacky_cols_only`, which is the reference.
-
-KNOBS = config.RESULTS / "human_baseline_knobs.csv"
+def _row(arm, rhos, **extra) -> dict:
+    return dict(arm=arm, **extra, spearman=float(np.mean(rhos)), spearman_sd=float(np.std(rhos, ddof=1)), n_fits=len(rhos))
 
 
-def _merge(rows, out) -> None:
+def _merge(rows, path) -> None:
     """Add these arms to the file without dropping arms already measured."""
     new = pd.DataFrame(rows)
-    if out.exists():
-        old = pd.read_csv(out)
-        old = old[~old["arm"].isin(new["arm"])]
-        new = pd.concat([old, new], ignore_index=True)
-    new.to_csv(out, index=False)
+    if path.exists():
+        old = pd.read_csv(path)
+        new = pd.concat([old[~old["arm"].isin(new["arm"])], new], ignore_index=True)
+    new.to_csv(path, index=False)
 
 
-def decompose(seeds=(41, 42, 43), n_splits=5, verbose: bool = True,
-              only: tuple[str, ...] | None = None):
-    import xgboost as xgb
-
-    from ..harness.run_ablation import _impute, champion_params, make_selector
-
-    X, y = load(verbose=verbose)
-    arms = {
-        "plus_trees": dict(n_estimators=1000),
-        "plus_shape": dict(max_depth=6, learning_rate=0.3),
-        "plus_nosubsample": dict(subsample=1.0, colsample_bytree=1.0),
-        # `plus_shape` moves depth and learning rate together, so it cannot say
-        # whether human wants more interaction order or just less shrinkage.
-        # These two separate them; only the first is a claim about the signal.
-        "plus_depth": dict(max_depth=6),
-        "plus_lr": dict(learning_rate=0.3),
-    }
-    if only:
-        arms = {k: v for k, v in arms.items() if k in only}
-
-    rows = []
-    for arm, delta in arms.items():
-        rhos = []
-        for seed in seeds:
-            for tr, va in KFold(n_splits, shuffle=True, random_state=seed).split(X):
-                X_tr, X_va = _impute(X[tr], X[va])
-                sel = make_selector(seed)
-                sel.fit(X_tr, y[tr])
-                top = np.argsort(sel.feature_importances_)[::-1][:400]
-                p = dict(champion_params(seed))
-                p.update(delta)
-                m = xgb.XGBRegressor(**p)
-                m.fit(X_tr[:, top], y[tr])
-                rhos.append(float(spearmanr(y[va], m.predict(X_va[:, top])).statistic))
-        rows.append(dict(arm=arm, n_features=400, changed=";".join(delta),
-                         spearman=float(np.mean(rhos)),
-                         spearman_sd=float(np.std(rhos, ddof=1)),
-                         n_fits=len(rhos)))
-        if verbose:
-            print(f"  {arm:>16}: rho {rows[-1]['spearman']:.4f} "
-                  f"± {rows[-1]['spearman_sd']:.4f}", flush=True)
-        _merge(rows, KNOBS)
-
+def arms(verbose=True):
+    """The teammate's configuration against the harness's, on random row folds."""
+    X, y = load(verbose)
+    rhos = _cv(X, y, "row-wise", ARMS)
+    out = pd.DataFrame([_row(a, rhos[a], n_features=ARMS[a][0]) for a in ARMS])
+    out.to_csv(OUT / "human_baseline.csv", index=False)
     if verbose:
-        print(f"  reference (400 cols, champion) is 0.4074; all three is 0.5076")
-        print(f"written -> {KNOBS}")
+        print(out.round(4).to_string(index=False), "\n  the figure to reproduce is 0.472; our harness reports 0.404")
+    return out
+
+
+def knobs(only=None, verbose=True):
+    """`jacky_400_1000` differs from the champion in three ways at once: capacity (1,000 trees, which the teammate's note reads as a statement about human data), model shape (depth 6, learning rate 0.3,
+    a statement about our settings), and no subsampling. Each arm changes one of them on the 400 columns of `jacky_cols_only`, the reference (0.4074; all three together is 0.5076)."""
+    X, y = load(verbose)
+    names = [n for n in ("plus_trees", "plus_shape", "plus_nosubsample", "plus_depth", "plus_lr") if not only or n in only]
+    rhos = _cv(X, y, "row-wise", {n: (400, CHANGES[n]) for n in names})
+    rows = [_row(n, rhos[n], n_features=400, changed=";".join(CHANGES[n])) for n in names]
+    _merge(rows, OUT / "human_baseline_knobs.csv")
+    if verbose:
+        print(pd.DataFrame(rows).round(4).to_string(index=False))
     return pd.DataFrame(rows)
 
 
-# --------------------------------------------------------------------------
-# Is the human signal less additive than E. coli's?
-# --------------------------------------------------------------------------
-#
-# `plus_depth` is the largest single knob (+0.0585 of the +0.1002), and depth is
-# the interaction-order knob. That suggests human efficiency carries interaction
-# structure that E. coli's does not -- but depth also buys plain capacity, so the
-# hyperparameter alone cannot say it.
-#
-# The direct test is the one Appendix B already ran on E. coli: fit ridge on the
-# same selected columns and see how close a straight line gets. There, ridge
-# reaches 95% of boosting's rho, which is why "the signal is overwhelmingly
-# additive" is in the report. If human's ratio is much lower, the depth result
-# has a reading; if it matches, depth is buying capacity and nothing more.
-
-ADDITIVITY = config.RESULTS / "human_additivity.csv"
-
-
-def additivity(seeds=(41, 42, 43), n_splits=5, n_features=400,
-               verbose: bool = True):
-    import xgboost as xgb
-    from sklearn.linear_model import RidgeCV
-    from sklearn.preprocessing import StandardScaler
-
-    from ..harness.run_ablation import _impute, champion_params, make_selector
-
-    X, y = load(verbose=verbose)
-    out = {"boosting_defaults": [], "boosting_champion": [], "ridge": []}
-    for seed in seeds:
-        for tr, va in KFold(n_splits, shuffle=True, random_state=seed).split(X):
-            X_tr, X_va = _impute(X[tr], X[va])
-            sel = make_selector(seed)
-            sel.fit(X_tr, y[tr])
-            top = np.argsort(sel.feature_importances_)[::-1][:n_features]
-            A, B = X_tr[:, top], X_va[:, top]
-
-            p = dict(champion_params(seed))
-            out["boosting_champion"].append(
-                _rho(xgb.XGBRegressor(**p), A, y[tr], B, y[va]))
-            p.update(n_estimators=1000, max_depth=6, learning_rate=0.3,
-                     subsample=1.0, colsample_bytree=1.0)
-            out["boosting_defaults"].append(
-                _rho(xgb.XGBRegressor(**p), A, y[tr], B, y[va]))
-
-            sc = StandardScaler().fit(A)
-            out["ridge"].append(
-                _rho(RidgeCV(alphas=np.logspace(-2, 4, 25)),
-                     sc.transform(A), y[tr], sc.transform(B), y[va]))
-
-    rows = [dict(arm=k, n_features=n_features, spearman=float(np.mean(v)),
-                 spearman_sd=float(np.std(v, ddof=1)), n_fits=len(v))
-            for k, v in out.items()]
-    d = pd.DataFrame(rows)
-    d.to_csv(ADDITIVITY, index=False)
+def additivity(verbose=True):
+    """`plus_depth` is the largest single knob, and depth is the interaction-order knob, but it also buys plain capacity. The direct test is the one Appendix B ran on E. coli: ridge on the same
+    selected columns, and how close a straight line gets to boosting (95.6% on 427 columns there)."""
+    X, y = load(verbose)
+    rhos = _cv(X, y, "row-wise", {"boosting_champion": (400, {}), "boosting_defaults": (400, CHANGES["boosting_defaults"])}, ridge=400)
+    out = pd.DataFrame([_row(a, rhos[a], n_features=400) for a in ("boosting_defaults", "boosting_champion", "ridge")])
+    out.to_csv(OUT / "human_additivity.csv", index=False)
     if verbose:
-        for r in rows:
-            print(f"  {r['arm']:>18}: rho {r['spearman']:.4f} "
-                  f"± {r['spearman_sd']:.4f}")
-        best = max(r["spearman"] for r in rows if r["arm"].startswith("boost"))
-        ridge = next(r["spearman"] for r in rows if r["arm"] == "ridge")
-        print(f"  ridge reaches {100 * ridge / best:.1f}% of boosting "
-              f"(E. coli: 95.6% on 427 columns)")
-        print(f"written -> {ADDITIVITY}")
-    return d
+        best = out[out.arm.str.startswith("boost")].spearman.max()
+        print(out.round(4).to_string(index=False), f"\n  ridge reaches {100 * out.spearman[out.arm == 'ridge'].iloc[0] / best:.1f}% of boosting (E. coli: 95.6% on 427 columns)")
+    return out
 
 
-def _rho(model, X_tr, y_tr, X_va, y_va) -> float:
-    model.fit(X_tr, y_tr)
-    return float(spearmanr(y_va, model.predict(X_va)).statistic)
+def twin(verbose=True):
+    """The first two arms of `arms` with folds that keep identical protospacers together."""
+    X, y = load(verbose)
+    groups = twin_groups(y)
+    if verbose:
+        print(f"{len(y):,} guides, {groups.max() + 1:,} distinct protospacers")
+    use = {a: ARMS[a] for a in ("harness_default", "jacky_400_1000")}
+    rhos = _cv(X, y, "twin-grouped", use, groups=groups)
+    out = pd.DataFrame([dict(arm=a, folds="twin-grouped", spearman=float(np.mean(r)), spearman_sd=float(np.std(r, ddof=1)), n_fits=len(r)) for a, r in rhos.items()])
+    out.to_csv(OUT / "human_twin_check.csv", index=False)
+    if verbose:
+        print(out.round(4).to_string(index=False))
+    return out
+
+
+def twin_additivity(seeds=SEEDS, n_splits=5, summarise_only=False):
+    """Knob sweep and ridge, per arm and fold, under both fold schemes (resumable); then the summary."""
+    f_out = OUT / "human_additivity_twin.csv"
+    if not summarise_only:
+        X, y = load(False)
+        groups = twin_groups(y)
+        print(f"{len(y):,} rows, {groups.max() + 1:,} distinct protospacers, {int(pd.Series(groups).duplicated(keep=False).sum()):,} rows have a twin", flush=True)
+        names = ["champion", "plus_depth", "plus_lr", "plus_trees", "plus_nosubsample", "boosting_defaults"]
+        use = {n: (400, CHANGES[n]) for n in names}
+        rows = pd.read_csv(f_out).to_dict("records") if f_out.exists() else []
+        done = {(r["folds"], r["arm"], r["seed"], r["fold"]) for r in rows}
+        t0 = time.time()
+        for scheme in ("twin-grouped", "row-wise"):          # the one that matters first, in case the night runs out
+            for seed in seeds:
+                for fold, (tr, va) in enumerate(_splits(scheme, X, groups, seed, n_splits)):
+                    if all((scheme, a, seed, fold) in done for a in names + ["ridge"]):
+                        continue
+                    leak = len(set(groups[tr]) & set(groups[va]))
+                    if scheme == "twin-grouped":
+                        assert leak == 0, f"a protospacer appears on both sides of a twin-grouped fold ({leak})"
+                    scores = _fold(X, y, tr, va, seed, {a: u for a, u in use.items() if (scheme, a, seed, fold) not in done}, ridge=400 if (scheme, "ridge", seed, fold) not in done else None)
+                    new = [dict(folds=scheme, arm=a, seed=seed, fold=fold, shared_protospacers=leak, rho=r) for a, r in scores.items()]
+                    rows += new
+                    pd.DataFrame(rows).to_csv(f_out, index=False)
+                    print(f"  {scheme:13s} seed {seed} fold {fold}: " + "  ".join(f"{r['arm']}={r['rho']:.4f}" for r in new) + f"   ({time.time() - t0:.0f}s)", flush=True)
+    return _summarise(f_out)
+
+
+def _summarise(f_out, B=4000, seed=0):
+    """Per arm and scheme the mean rho; then the two numbers the claim rests on under each scheme: ridge over the best boosting arm, and depth 4 to 6 with a bootstrap interval over the folds."""
+    d = pd.read_csv(f_out)
+    g = d.groupby(["folds", "arm"]).rho.agg(["mean", "std", "count"]).reset_index()
+    g.to_csv(OUT / "human_additivity_twin_summary.csv", index=False)
+    piv = d.pivot_table(index=["seed", "fold"], columns=["folds", "arm"], values="rho")
+    rng = np.random.default_rng(seed)
+    rows = []
+    boosting = ["champion", "plus_depth", "plus_lr", "plus_trees", "plus_nosubsample", "boosting_defaults"]
+    for scheme in [s for s in ("row-wise", "twin-grouped") if s in piv.columns.get_level_values(0)]:
+        p = piv[scheme]
+        best = p[boosting].mean().idxmax()
+        dep = (p["plus_depth"] - p["champion"]).to_numpy(float)
+        bs = [dep[rng.integers(0, len(dep), len(dep))].mean() for _ in range(B)]
+        rows.append(dict(folds=scheme, ridge=p["ridge"].mean(), best_boosting_arm=best, best_boosting=p[best].mean(), ridge_over_boosting=p["ridge"].mean() / p[best].mean(),
+                         depth_4_to_6=dep.mean(), depth_lo=np.percentile(bs, 2.5), depth_hi=np.percentile(bs, 97.5), n_folds=len(p)))
+    claim = pd.DataFrame(rows)
+    claim.to_csv(OUT / "human_additivity_twin_claim.csv", index=False)
+    pd.set_option("display.width", 220)
+    print(g.round(4).to_string(index=False), flush=True)
+    print(claim.round(4).to_string(index=False), flush=True)
+    return g, claim
+
+
+PARTS = ("arms", "knobs", "additivity", "twin", "twin-additivity")
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--parts", nargs="+", choices=PARTS, required=True)
+    ap.add_argument("--knobs-only", nargs="*", help="restrict `knobs` to these arms")
+    ap.add_argument("--summarise-only", action="store_true", help="twin-additivity: write the summary and the claim from the stored rows, fit nothing")
+    ap.add_argument("--seeds", type=int, nargs="*", default=list(SEEDS), help="twin-additivity only")
+    a = ap.parse_args(argv)
+    for part in a.parts:
+        if part == "arms":
+            arms()
+        elif part == "knobs":
+            knobs(only=a.knobs_only)
+        elif part == "additivity":
+            additivity()
+        elif part == "twin":
+            twin()
+        else:
+            twin_additivity(tuple(a.seeds), summarise_only=a.summarise_only)
+    return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

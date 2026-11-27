@@ -151,7 +151,7 @@ These read the stored results and the genome, so they need no GPU and no re-trai
 ```bash
 ./run_audit.sh                                          # re-compute every number the report quotes from its file (about 2 seconds)
 ./run_ext.sh sgrna.build.a_flank_fast       # the fast featuriser equals the original on 300 guides (under 1 second)
-./run_ext.sh sgrna.cohorts.ceiling_table     # the ceiling correction, as arithmetic (about 1 second)
+./run_ext.sh sgrna.cohorts.ceiling --parts table     # the ceiling correction, as arithmetic (about 1 second)
 ```
 
 ## What this code does not show

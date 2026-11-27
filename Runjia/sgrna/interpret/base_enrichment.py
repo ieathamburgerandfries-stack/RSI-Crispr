@@ -5,7 +5,7 @@ almost unchanged (rank ρ 0.97, Appendix B3). Two of the four candidate causes
 are already eliminated: the **label** moves family A by 0.004 at fixed rows
 (`ablation_label_*.csv`), and the **row count** by nothing at all --
 13,880 curated rows give +0.170 against 33,567 rows' +0.164
-(`why_inflation.py`). What remains is the row population and the base
+(`family_a_controls.py`, part rows). What remains is the row population and the base
 representation.
 
 The base is testable directly. The published base carried 63 hand-named columns

@@ -22,6 +22,12 @@ Protocol, identical for both models so the curves are comparable:
 
     python -m sgrna.compare.sample_complexity --model slicer
     .venv-crisprhal/bin/python src/sgrna/sample_complexity.py --model crisprhal
+
+`--model tuned` is the same curve again with the tuned model (`data_efficiency.csv`): fold k of the same split, the same nested subsets of 4,000 to 26,853 guides (seed 41), selection refitted at every size, against
+crisprHAL 2's stored curve above (seed 41). Its arms are the champion, the tuned XGBoost d099x, and a size-scaled variant that keeps the tuned settings but sets the tree count by a 10% inner validation split (early
+stopping), since 4,000 trees at a small n may overfit:
+
+    python -m sgrna.compare.sample_complexity --model tuned [--folds 1 2] [--sizes 4000 8000]
 """
 
 from __future__ import annotations
@@ -164,6 +170,60 @@ def crisprhal(sizes=SIZES, seeds=(41,), folds=(1, 2, 3, 4, 5), verbose: bool = T
                       flush=True)
 
 
+def tuned(sizes=SIZES, folds=(1, 2, 3, 4, 5), seed: int = 41):
+    """The data-efficiency curve of the tuned model: champion, tuned d099x, and d099x with early stopping, on the same folds and nested subsets as `slicer` (written to data_efficiency.csv)."""
+    import xgboost as xgb
+
+    from sgrna.harness.curated import load_base, load_block
+    from sgrna.harness.run_ablation import _impute, make_selector
+
+    from ..common import OUT as EXT_OUT
+    from ..tuning import tune_ecoli as T
+
+    X, y, _, protos = load_base()
+    A, _ = load_block("a_flank", protos)
+    X = np.hstack([X, A])
+    cfgs = json.loads((EXT_OUT / "tune_configs.json").read_text())
+    sel = T.selected()
+    rows = []
+    splits = list(KFold(5, shuffle=True, random_state=41).split(np.arange(len(y))))
+    for fold, (tr_all, va) in enumerate(splits, start=1):
+        if fold not in folds:
+            continue
+        order = np.random.default_rng(seed).permutation(tr_all)
+        for n in sizes:
+            idx = order[:n]
+            Xa, Xb = _impute(X[idx], X[va])
+            s = make_selector(seed)
+            s.fit(Xa, y[idx])
+            top = np.argsort(s.feature_importances_)[::-1][:900]
+            for arm, name, early in (("champion", "champion", False), ("tuned d099x", "d099x", False), ("tuned d099x, early-stopped", "d099x", True)):
+                cfg = dict(cfgs[name], n_estimators=int(sel.loc[name, "k"]))
+                cols = top[:int(cfg["nf"])]
+                if early:
+                    rng = np.random.default_rng(seed)
+                    p = rng.permutation(n)
+                    nv = n // 10
+                    va_i, tr_i = p[:nv], p[nv:]
+                    m = xgb.XGBRegressor(**dict(T.xgb_params(cfg, seed), early_stopping_rounds=200)).fit(
+                        Xa[tr_i][:, cols], y[idx][tr_i], eval_set=[(Xa[va_i][:, cols], y[idx][va_i])], verbose=False)
+                    pred = m.predict(Xb[:, cols])
+                    trees = int(m.best_iteration) + 1
+                else:
+                    pred = T.fit_predict(cfg, Xa[:, cols], y[idx], Xb[:, cols], seed)[cfg["n_estimators"]]
+                    trees = cfg["n_estimators"]
+                rows.append(dict(arm=arm, fold=fold, n_train=n, trees=trees, rho=float(spearmanr(y[va], pred).statistic)))
+            print(f"  fold {fold} n {n}: " + " ".join(f"{r['arm'][:14]} {r['rho']:.4f}" for r in rows[-3:]), flush=True)
+            pd.DataFrame(rows).to_csv(EXT_OUT / "data_efficiency.csv", index=False)
+    d = pd.DataFrame(rows)
+    hal = pd.read_csv(OUT)
+    hal = hal[(hal.model == "crisprHAL 2") & (hal.seed == 41)]
+    t = d.pivot_table(index="n_train", columns="arm", values="rho")
+    t["crisprHAL 2 (stored)"] = hal.groupby("n_train").spearman.mean()
+    print(t.round(4))
+    return d
+
+
 def summary():
     d = pd.read_csv(OUT)
     piv = d.pivot_table(index="n_train", columns="model", values="spearman")
@@ -200,14 +260,18 @@ def summary():
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--model", choices=["slicer", "crisprhal", "none"],
+    ap.add_argument("--model", choices=["slicer", "crisprhal", "tuned", "none"],
                     default="none")
     ap.add_argument("--seeds", type=int, nargs="*", default=None)
     ap.add_argument("--folds", type=int, nargs="*", default=None)
+    ap.add_argument("--sizes", type=int, nargs="*", default=None, help="tuned: training sizes (default: the five of the curve)")
     a = ap.parse_args(argv)
     if a.model == "slicer":
         slicer(seeds=tuple(a.seeds) if a.seeds else (41, 42),
                folds=tuple(a.folds) if a.folds else (1, 2, 3, 4, 5))
+    elif a.model == "tuned":
+        tuned(sizes=tuple(a.sizes) if a.sizes else SIZES, folds=tuple(a.folds) if a.folds else (1, 2, 3, 4, 5))
+        return 0
     elif a.model == "crisprhal":
         crisprhal(seeds=tuple(a.seeds) if a.seeds else (41,),
                   folds=tuple(a.folds) if a.folds else (1, 2, 3, 4, 5))

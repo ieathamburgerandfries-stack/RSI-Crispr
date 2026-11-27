@@ -787,7 +787,7 @@ def main():
     chk("H3 null mean", float(h3.null_mean), 0.005, 3); chk("H3 null sd", float(h3.null_sd), 0.040, 3); chk("H3 null 97.5th percentile", float(h3.null_p97_5), 0.060, 3)
     chk("H3 GC given PAM density", float(h3.gc_given_pam), 0.092, 3); chk("H3 GC marginal", float(h3.marginal_gc), 0.158, 3); chk("H3 correlation of the two densities", float(h3.corr_pam_gc), 0.733, 3)
 
-    print("the sealed organism (sealed_organism.py)")
+    print("the sealed organism (sealed.py, part organism)")
     so = pd.read_csv(OUT / "sealed_organism.csv").set_index("arm")
     chk("sealed organism: champion rho, mean of seeds", float(so.loc["champion", "rho_seed_mean"]), 0.6986, 4)
     chk("sealed organism: champion rho, sd of seeds", float(so.loc["champion", "rho_seed_sd"]), 0.0038, 4)

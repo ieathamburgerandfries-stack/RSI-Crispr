@@ -62,7 +62,7 @@ ARMS = ("unweighted", "inverse_variance", "inverse_variance_permuted",
 def replicate_noise(protos) -> pd.DataFrame:
     """Per-guide disagreement between the two independent log-ratio estimates."""
     if not COUNTS.exists():
-        raise FileNotFoundError(f"{COUNTS} not found -- see curated_ceiling.py")
+        raise FileNotFoundError(f"{COUNTS} not found -- see ceiling.py")
     d = pd.read_csv(COUNTS, sep="\t")
     for c in ("Cas1_S", "Cas2_S", "dCas1_NS", "dCas2_NS"):
         d[c + "_cpm"] = d[c] / d[c].sum() * 1e6

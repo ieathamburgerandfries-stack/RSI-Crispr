@@ -94,34 +94,45 @@ def paired(y, ps, ph, n_boot=4000, seed=0):
     return float(spearmanr(y, ps).statistic - spearmanr(y, ph).statistic), float(lo), float(hi)
 
 
-# ------------------------------------------------------------------ the three conditions
-def espcas9(families, specs):
-    from sgrna.compare.final_eval import CACHE, _split_frames
-    tr, te, _ = _split_frames()
-    X = np.asarray(np.load(CACHE / "X.npy", mmap_mode="r"), np.float32)
-    meta = json.loads((CACHE / "meta.json").read_text())
-    protos = pd.Index(meta["protospacers"]); y_all = np.asarray(meta["y"], float)
-    i_tr, i_te = np.unique(protos.get_indexer(tr["protospacer"])), np.unique(protos.get_indexer(te["protospacer"]))
-    i_tr = np.setdiff1d(i_tr, np.intersect1d(i_tr, i_te))
-    preds, secs = train_predict(specs, X[i_tr], y_all[i_tr], X[i_te])
-    hal = pd.read_csv(SRC / "preds_final_espcas9_crisprhal.csv").set_index("protospacer")
-    order = pd.Index(protos[i_te]); both = hal.loc[hal.index.intersection(order)]
-    pos = order.get_indexer(both.index); y = y_all[i_te][pos]
-    assert np.allclose(y, both["y"].to_numpy(), atol=1e-9), "label alignment with crisprHAL's predictions failed"
-    arms = arms_from({k: v[pos] for k, v in preds.items()}, families)
-    return _rows("espcas9", y, arms, both["pred"].to_numpy(), "crisprHAL 2 (shipped ESPCAS9)", secs, len(i_tr), families)
-
-
-def wt(families, specs):
+# ------------------------------------------------------------------ crisprHAL 2's two test splits
+def hal_split(split):
+    """crisprHAL 2's own train/test partition of one screen, as SLICER's matrices, with the shipped crisprHAL 2 predictions: `espcas9` (their eSpCas9 files) or `wt` (the WT-SpCas9 cohort's test flag).
+    -> (X_train, y_train, X_test, y_test, test protospacers as an Index, crisprHAL's predictions indexed by protospacer with columns y and pred). Every comparison on these splits starts here."""
+    if split == "espcas9":
+        from sgrna.compare.final_eval import CACHE, _split_frames
+        tr, te, _ = _split_frames()
+        X = np.asarray(np.load(CACHE / "X.npy", mmap_mode="r"), np.float32)
+        meta = json.loads((CACHE / "meta.json").read_text())
+        protos = pd.Index(meta["protospacers"]); y_all = np.asarray(meta["y"], float)
+        i_tr, i_te = np.unique(protos.get_indexer(tr["protospacer"])), np.unique(protos.get_indexer(te["protospacer"]))
+        i_tr = np.setdiff1d(i_tr, np.intersect1d(i_tr, i_te))
+        hal = pd.read_csv(SRC / "preds_final_espcas9_crisprhal.csv").set_index("protospacer")
+        return X[i_tr], y_all[i_tr], X[i_te], y_all[i_te], pd.Index(protos[i_te]), hal
     from sgrna.cohorts.data_ablation import load
     X, y, names, protos, in_test, is_noshay, nos, n_base = load(verbose=False)
     te, tr = np.where(in_test)[0], np.where(~in_test)[0]
-    preds, secs = train_predict(specs, X[tr], y[tr], X[te])
     hal = pd.read_csv(SRC / "preds_final_wt_crisprhal.csv").set_index("protospacer")
-    order = pd.Index(np.asarray(protos)[te]); keep = order.isin(hal.index) & ~order.duplicated()
-    pos = np.where(keep)[0]; ph = hal.loc[order[pos], "pred"].to_numpy(); yy = y[te][pos]
+    return X[tr], y[tr], X[te], y[te], pd.Index(np.asarray(protos)[te]), hal
+
+
+# ------------------------------------------------------------------ the three conditions
+def espcas9(families, specs):
+    Xtr, ytr, Xte, yte, order, hal = hal_split("espcas9")
+    preds, secs = train_predict(specs, Xtr, ytr, Xte)
+    both = hal.loc[hal.index.intersection(order)]
+    pos = order.get_indexer(both.index); y = yte[pos]
+    assert np.allclose(y, both["y"].to_numpy(), atol=1e-9), "label alignment with crisprHAL's predictions failed"
     arms = arms_from({k: v[pos] for k, v in preds.items()}, families)
-    return _rows("wt", yy, arms, ph, "crisprHAL 2 (shipped WT-SPCAS9)", secs, len(tr), families)
+    return _rows("espcas9", y, arms, both["pred"].to_numpy(), "crisprHAL 2 (shipped ESPCAS9)", secs, len(ytr), families)
+
+
+def wt(families, specs):
+    Xtr, ytr, Xte, yte, order, hal = hal_split("wt")
+    preds, secs = train_predict(specs, Xtr, ytr, Xte)
+    keep = order.isin(hal.index) & ~order.duplicated()
+    pos = np.where(keep)[0]; ph = hal.loc[order[pos], "pred"].to_numpy(); yy = yte[pos]
+    arms = arms_from({k: v[pos] for k, v in preds.items()}, families)
+    return _rows("wt", yy, arms, ph, "crisprHAL 2 (shipped WT-SPCAS9)", secs, len(ytr), families)
 
 
 def folds(families, specs, seed=41):
