@@ -366,20 +366,52 @@ def run(chk):
                      ("A: cells that differ after the float32 cast", "3"),
                      ("B: E. coli NGG sites", "541,810"), ("B: on the plus strand", "270,137"), ("B: on the minus strand", "271,673"), ("B: nucleotides per site", "8.6"),
                      ("B: sites whose 20-mer has more than one NGG site", "17,221"), ("B: curated guides found among the sites", "33,567"), ("B: columns in the table", "355"),
-                     ("B: seconds for the whole genome, written as .csv.gz", "58"), ("B: milliseconds per guide, featurising and writing", "0.11"),
+                     ("B: seconds for the whole genome, written as .csv.gz", "59"), ("B: milliseconds per guide, featurising and writing", "0.11"),
                      ("B: size of the .csv.gz, MB", "246"), ("B: size as plain CSV, GB", "1.25"),
-                     ("C: C. rodentium length, bp", "5,346,659"), ("C: NGG sites", "707,896"), ("C: seconds for the whole genome, written as .csv.gz", "76"),
+                     ("C: C. rodentium length, bp", "5,346,659"), ("C: NGG sites", "707,896"), ("C: seconds for the whole genome, written as .csv.gz", "78"),
                      ("C: sites sampled (first 40, last 40 and 320 random, repeats removed)", "400"), ("C: protospacer equals the one read from the sequence", "400"),
                      ("C: PAM equals the one read from the sequence", "400"), ("C: genome copy count equals the design tool's", "400"), ("C: columns compared", "348"),
                      ("C: missing-value pattern equal", "1"), ("C: cells that differ after the float32 cast", "0"), ("C: maximum relative difference in a column", "0"),
                      ("D: E. coli sites when circular", "541,810"), ("D: sites when linear (those wrapping the origin are dropped)", "541,809"),
                      ("D: linear sites within the margin of an end", "223"), ("D: guides near the ends compared with circular", "14,286"),
-                     ("D: flanks with 50 to 249 nt of DNA", "33"), ("D: of these, the 1,000 nt window equals the 250 nt window (GC)", "33")):
+                     ("D: flanks with 50 to 249 nt of DNA", "33"), ("D: of these, the 1,000 nt window equals the 250 nt window (GC)", "33"),
+                     ("E: human chr21: length, bp", "46,709,983"), ("E: human chr21: bases that are N (assembly gaps)", "6,621,364"), ("E: human chr21: NGG sites (linear)", "4,106,000"),
+                     ("E: human chr21: sites sampled (first 40, last 40, up to 120 within a kb of a gap and 200 random, repeats removed)", "399"),
+                     ("E: human chr21: of these, with an N within reach of a flank", "200"), ("E: human chr21: protospacer equals the one read from the sequence", "399"),
+                     ("E: human chr21: PAM equals the one read from the sequence", "399"), ("E: human chr21: genome copy count equals the design tool's", "399"),
+                     ("E: human chr21: columns compared", "348"), ("E: human chr21: missing-value pattern equal", "1"),
+                     ("E: human chr21: cells that differ after the float32 cast", "0"), ("E: human chr21: maximum absolute difference in a column", "0"),
+                     ("G: cat chromosome E3: length, bp", "41,437,797"), ("G: cat chromosome E3: bases that are N (assembly gaps)", "100"), ("G: cat chromosome E3: NGG sites (linear)", "5,969,487"),
+                     ("G: cat chromosome E3: sites sampled (first 40, last 40, up to 120 within a kb of a gap and 200 random, repeats removed)", "400"),
+                     ("G: cat chromosome E3: of these, with an N within reach of a flank", "120"), ("G: cat chromosome E3: protospacer equals the one read from the sequence", "400"),
+                     ("G: cat chromosome E3: PAM equals the one read from the sequence", "400"), ("G: cat chromosome E3: genome copy count equals the design tool's", "400"),
+                     ("G: cat chromosome E3: columns compared", "348"), ("G: cat chromosome E3: missing-value pattern equal", "1"),
+                     ("G: cat chromosome E3: cells that differ after the float32 cast", "0"), ("G: cat chromosome E3: maximum absolute difference in a column", "0"),
+                     ("F: planted tracts and gaps", "410"), ("F: bases that are not A, C, G or T", "6,040"), ("F: lower-case bases in the FASTA", "1,546,675"),
+                     ("F: sites within 200 nt of a planted tract", "15,576"), ("F: sites sampled", "400"), ("F: protospacer equals the one read from the sequence", "400"),
+                     ("F: PAM equals the one read from the sequence", "400"), ("F: genome copy count equals the design tool's", "400"), ("F: columns compared", "348"),
+                     ("F: missing-value pattern equal", "1"), ("F: cells that differ after the float32 cast", "21")):
         claim(f"[D21] family A table: {_k}", _ft[_k], _txt)
     claim("[D21] family A table: A: maximum absolute difference in a column, in units of 1e-7 (one float32 step)", _ft["A: maximum absolute difference in a column"] * 1e7, "1.2")
     claim("[D21] family A table: share of E. coli sites whose 20-mer has more than one NGG site, %", 100 * _ft["B: sites whose 20-mer has more than one NGG site"] / _ft["B: E. coli NGG sites"], "3.2")
     claim("[D21] family A table: D: maximum absolute difference for guides with a full margin, in units of 1e-11", _ft["D: maximum absolute difference for guides with a full margin"] * 1e11, "2.6")
+    claim("[D21] family A table: F: maximum absolute difference in a column, in units of 1e-9 (rounding noise of the reference on constant windows)", _ft["F: maximum absolute difference in a column"] * 1e9, "0.9")
     claim("[D21] family A table: cells compared in A (33,567 guides x 348 columns)", _ft["A: curated guides given as coordinates"] * _ft["A: columns compared"], "11,681,316")
+    # family A in every organism it was built for (sgrna/compare/family_a_by_organism.py, from the stored results)
+    _fo = pd.read_csv(OUT / "family_a_by_organism.csv")
+    for _i, (_g, _n, _b, _a, _d, _m) in enumerate((("33,567", "15", "0.546", "0.707", "0.161", None), ("59,489", "15", "0.685", "0.789", "0.104", "0.093"),
+                                                   ("25,210", "15", "0.705", "0.763", "0.059", "0.025"), ("16,490", "15", "0.306", "0.329", "0.023", "0.011"),
+                                                   ("25,210", "3", "0.626", "0.698", "0.072", "0.069"), ("33,567", "3", "0.479", "0.628", "0.149", "0.147"))):
+        _r = _fo.iloc[_i]
+        _lab = f"[D22] family A by organism, row {_i + 1} ({_r.screen})"
+        claim(f"{_lab}: guides", _r.guides, _g)
+        claim(f"{_lab}: folds or seeds", _r.n, _n)
+        claim(f"{_lab}: rho of the base columns", _r.base_rho, _b)
+        claim(f"{_lab}: rho with family A", _r.with_family_A_rho, _a)
+        claim(f"{_lab}: gain", _r.gain, _d)
+        claim(f"{_lab}: folds or seeds where the gain is positive", _r.n_positive, _n)
+        if _m:
+            claim(f"{_lab}: smallest gain over the folds or seeds", _r.gain_min, _m)
     # the T4 (colab/cost_gpu.py)
     gp = pd.read_csv(OUT / "cost_gpu.csv")
     gs = gp[gp.unit == "ms/guide"]

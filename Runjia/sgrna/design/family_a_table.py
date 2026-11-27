@@ -8,15 +8,17 @@ makes the same table for any genome, with the same column names and order.
     python -m sgrna.design.family_a_table --genome genome.fasta --out family_A_genome.csv.gz
     python -m sgrna.design.family_a_table --genome genome.fasta --contig NC_000913.2 --start 1000000 --end 1010000 --out locus.csv
     python -m sgrna.design.family_a_table --genome genome.fasta --guides guides.csv --out table.csv     # only the guides listed (columns: left, strand; contig if several)
+    python -m sgrna.design.family_a_table --genome hg38.fa.gz --contig chr21 --linear --start 20000000 --end 20050000 --out locus.csv     # a mammalian chromosome: one record, linear, one stretch
 
 Every guide is a 20-nt protospacer followed by NGG, on either strand; `left` is the 1-based plus-strand coordinate of the protospacer's first base and `right = left + 19`,
 as in the released `guide_flanks.csv`. Each row also carries the protospacer and PAM read on the guide's own strand and `n_genome_copies`, the number of NGG sites in the
-whole FASTA (all records, both strands) with that exact 20-mer. The 348 columns come after those seven.
+records read (the whole FASTA unless `--contig` is given, both strands) with that exact 20-mer. The 348 columns come after those seven.
 
 Sequences are circular by default, as a bacterial chromosome is: flanks wrap around the origin. With `--linear` a guide within about 1 kb of a record's end uses the DNA that exists
 (its windows are cut to what is there) and is computed one guide at a time; every other guide is computed exactly as in the circular case. Records shorter than 2,023 nt are skipped
-(their two flanks would overlap the guide). Bases other than A, C, G, T are allowed in the flanks (the columns that read them are left empty); a guide whose protospacer holds one is
-not a guide and is dropped.
+(their two flanks would overlap the guide). Any character other than A, C, G, T (N, ambiguity codes; lower case is upper-cased) is read as N: allowed in the flanks, where the columns that read it are left empty, and a guide whose
+protospacer or PAM's N holds one is not a guide and is dropped. A record is read, scanned and featurised on its own, so a mammalian chromosome (hundreds of Mb) needs a few GB; name it with
+`--contig` (the other records are skipped as the file is read) and write a stretch of it with `--start/--end`, because a whole chromosome has tens of millions of sites.
 
 The lookup tables that turn a k-mer into its quantum-chemical value are `models/resources/qct_lookup_tables.json` (the values published by Noshay et al. 2023; the release holds the
 same file). Only numpy and pandas are needed. The E. coli genome (4.6 Mb) has 541,810 sites and takes about a minute; its table is 1.25 GB as plain CSV and 246 MB as `.csv.gz`, so write `.csv.gz`.
@@ -44,6 +46,7 @@ TABLES = D.MODELS / "resources" / "qct_lookup_tables.json"
 CHUNK = 100_000
 ID_COLUMNS = ["contig", "left", "right", "strand", "protospacer", "pam", "n_genome_copies"]
 _LETTERS = np.frombuffer(b"ACGT", np.uint8)
+_LETTERS_N = np.frombuffer(b"ACGTN", np.uint8)
 
 
 # ---------------------------------------------------------------------------------------------------------------- sites
@@ -70,19 +73,39 @@ def spacer_keys(pc: np.ndarray) -> np.ndarray:
     return k
 
 
-def sites(codes: np.ndarray, circular: bool = True) -> tuple[np.ndarray, np.ndarray]:
-    """(plus-strand 0-based protospacer starts, +1/-1 strands) of every complete NGG guide of one record, in coordinate order.
+def scan(codes: np.ndarray, circular: bool = True, block: int = 4_000_000) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """(plus-strand 0-based protospacer starts, +1/-1 strands, 20-mer keys) of every complete NGG guide of one record, in coordinate order.
 
-    Complete: the 20-mer and the PAM lie inside the record (always true when circular), and the protospacer and the PAM's N are A, C, G or T.
+    Complete: the 20-mer and the PAM lie inside the record (always true when circular), and the protospacer and the PAM's N are A, C, G or T. The record is scanned a
+    block at a time, so the working memory is a few hundred MB on a chromosome of hundreds of Mb.
     """
     n = len(codes)
-    left0, sign = FL.ngg_sites(codes)
-    plus = sign > 0
-    if not circular:
-        keep = np.where(plus, left0 + 23 <= n, (left0 >= 3) & (left0 + 20 <= n))
-        left0, sign, plus = left0[keep], sign[keep], plus[keep]
-    ok = (FL.protospacer_codes(codes, left0, plus) < 4).all(axis=1) & (pam_codes(codes, left0, plus)[:, 0] < 4)
-    return left0[ok], sign[ok]
+    parts = []
+    for lo in range(0, n, block):
+        left0, sign = FL.ngg_sites(codes, lo, min(lo + block, n))
+        plus = sign > 0
+        if not circular:
+            keep = np.where(plus, left0 + 23 <= n, (left0 >= 3) & (left0 + 20 <= n))
+            left0, sign, plus = left0[keep], sign[keep], plus[keep]
+        pc = FL.protospacer_codes(codes, left0, plus)
+        ok = (pc < 4).all(axis=1) & (pam_codes(codes, left0, plus)[:, 0] < 4)
+        parts.append((left0[ok], sign[ok], spacer_keys(pc[ok])))
+    return tuple(np.concatenate(x) for x in zip(*parts))
+
+
+def sites(codes: np.ndarray, circular: bool = True) -> tuple[np.ndarray, np.ndarray]:
+    """`scan` without the keys: (plus-strand 0-based protospacer starts, +1/-1 strands)."""
+    left0, sign, _ = scan(codes, circular)
+    return left0, sign
+
+
+def normalise(seq: str) -> tuple[str, np.ndarray]:
+    """(the sequence with every character other than A, C, G, T turned into N, its base codes with 255 for N).
+
+    One alphabet for both ways of reading a flank (arrays here, strings in the per-guide builder), so that ambiguity codes and assembly gaps give the same columns in each.
+    """
+    codes = FL.genome_codes(seq)
+    return _LETTERS_N[np.minimum(codes, 4)].tobytes().decode("ascii"), codes
 
 
 # ---------------------------------------------------------------------------------------------------------------- columns
@@ -142,27 +165,28 @@ def build_table(genome, out, contigs=None, start=None, end=None, guides=None, ci
     t0 = time.perf_counter()
     tables = json.loads(Path(tables_path or TABLES).read_text())
     names = AF._plan(tables)["names"]
-    records = D.read_records(genome)
+    records = D.read_records(genome, only=contigs)
     skipped = [k for k, v in records.items() if len(v) < MIN_LENGTH]
     records = {k: v for k, v in records.items() if len(v) >= MIN_LENGTH}
     if skipped:
         log(f"note: skipped {len(skipped)} record(s) shorter than {MIN_LENGTH} nt: {', '.join(skipped[:5])}{' ...' if len(skipped) > 5 else ''}")
     if not records:
         raise ValueError(f"no record of {genome} is at least {MIN_LENGTH} nt long")
-    chosen = list(records) if not contigs else list(contigs)
-    missing = [c for c in chosen if c not in records]
-    if missing:
-        raise KeyError(f"{missing} not in {genome}; records: {', '.join(list(records)[:10])}")
+    chosen = list(records)
     if (start is not None or end is not None) and (len(chosen) != 1 or guides is not None):
         raise ValueError("--start/--end need exactly one record (name it with --contig) and no --guides file")
 
-    # every NGG site of the whole FASTA, for the copy counts
-    codes = {k: FL.genome_codes(v) for k, v in records.items()}
-    found = {k: sites(codes[k], circular) for k in records}
-    keys = {k: spacer_keys(FL.protospacer_codes(codes[k], found[k][0], found[k][1] > 0)) for k in records}
+    # every NGG site of the records read, for the copy counts
+    codes, found, keys = {}, {}, {}
+    for k in list(records):
+        records[k], codes[k] = normalise(records[k])
+        left0, sign, keys[k] = scan(codes[k], circular)
+        found[k] = (left0, sign)
     counted = np.unique(np.concatenate(list(keys.values())), return_counts=True)
     log(f"{len(records)} record(s), {sum(len(v) for v in records.values()):,} bp, {sum(len(f[0]) for f in found.values()):,} NGG sites, "
         f"{'circular' if circular else 'linear'}")
+    if circular and max(len(v) for v in records.values()) > 20_000_000:
+        log("note: a record this long is usually a linear (eukaryotic) chromosome; pass --linear if it is, or its ends will be joined")
 
     if guides is not None:
         gd = _read_guides(guides, records)
@@ -216,11 +240,11 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--genome", required=True, help="FASTA file (plain or .gz); every record of at least 2,023 nt is used")
     ap.add_argument("--out", required=True, help="CSV to write; a name ending in .gz is gzip-compressed")
-    ap.add_argument("--contig", nargs="+", help="only these records (default: all)")
+    ap.add_argument("--contig", nargs="+", help="only these records, which are the only ones read (default: all); n_genome_copies counts within them")
     ap.add_argument("--start", type=int, help="first 1-based `left` to include (needs one --contig)")
     ap.add_argument("--end", type=int, help="last 1-based `left` to include (needs one --contig)")
     ap.add_argument("--guides", help="CSV of the guides to featurise instead of every NGG site: columns left (1-based plus-strand start of the protospacer), strand (+ or -), contig")
-    ap.add_argument("--linear", action="store_true", help="treat records as linear (default: circular, as a bacterial chromosome)")
+    ap.add_argument("--linear", action="store_true", help="treat records as linear, as eukaryotic chromosomes are (default: circular, as a bacterial chromosome)")
     ap.add_argument("--tables", help=f"quantum lookup tables (JSON); default {TABLES}")
     a = ap.parse_args(argv)
     try:

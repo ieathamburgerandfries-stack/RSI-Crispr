@@ -111,7 +111,9 @@ class Locus:
 
         # base counts, 1 longer than the stretch so a window is cum[hi] - cum[lo]
         self._gc = np.concatenate([[0], np.cumsum((safe == 1) | (safe == 2))]).astype(np.int64)
-        self._pur = np.concatenate([[0], np.cumsum((safe == 0) | (safe == 2))]).astype(np.int64)
+        # purines and pyrimidines are counted from the real codes: an N (or any non-ACGT base) is neither, on either strand
+        self._pur = np.concatenate([[0], np.cumsum((c == 0) | (c == 2))]).astype(np.int64)
+        self._pyr = np.concatenate([[0], np.cumsum((c == 1) | (c == 3))]).astype(np.int64)
 
         # k-mer indices per span, with the positions whose k-mer is not all-ACGT marked
         self._kidx, self._kok = {}, {}
@@ -155,9 +157,14 @@ class Locus:
         v = dense[self._kidx[span]]
         ok = self._kok[span] & np.isfinite(v)
         vc = np.where(ok, v - spec["mu"], 0.0)
+        # where each finite value differs from the finite value before it: a window with no such change after its first finite value is constant
+        fidx = np.flatnonzero(ok)
+        chg = np.zeros(len(v), np.int64)
+        chg[fidx[1:]] = v[fidx[1:]] != v[fidx[:-1]]
         out = (np.concatenate([[0.0], np.cumsum(vc)]),
                np.concatenate([[0.0], np.cumsum(vc * vc)]),
-               np.concatenate([[0], np.cumsum(ok)]).astype(np.int64))
+               np.concatenate([[0], np.cumsum(ok)]).astype(np.int64),
+               np.concatenate([[0], np.cumsum(chg)]).astype(np.int64), fidx)
         self._cum[ck] = out
         return out
 
@@ -182,15 +189,18 @@ class Locus:
 
     def _stats(self, key, strand_sign: int, lo: np.ndarray, hi: np.ndarray):
         """Mean and population sd of one tensor series over each half-open k-mer range [lo, hi)."""
-        s1, s2, cnt = self._tracks(key, strand_sign)
+        s1, s2, cnt, chg, fidx = self._tracks(key, strand_sign)
         d1, d2 = s1[hi] - s1[lo], s2[hi] - s2[lo]
         c = (cnt[hi] - cnt[lo]).astype(float)
+        first = fidx[np.minimum(cnt[lo], max(len(fidx) - 1, 0))] if len(fidx) else lo          # first finite value inside the window (when there is one)
+        constant = (c > 0) & (chg[hi] - chg[np.minimum(first + 1, len(chg) - 1)] == 0)
         with np.errstate(invalid="ignore", divide="ignore"):
             m = d1 / c
             mean = self.plan[key]["mu"] + m
             sd = np.sqrt(np.maximum(d2 / c - m * m, 0.0))
         mean[c == 0] = np.nan
         sd[c == 0] = np.nan
+        sd[constant] = 0.0       # a window of one value, or of equal values, has no spread; the cumulative sums would leave up to ~1e-4 of rounding there
         return mean, sd
 
     def _stats_by_strand(self, key, lo, hi, plus):
@@ -219,8 +229,7 @@ class Locus:
                     lo = np.where(plus, right0 + 4, left0 - 3 - w)
                     hi = np.where(plus, right0 + 3 + w, left0 - 4)
                 gc = (self._gc[hi + 1] - self._gc[lo]) / w
-                pur = (self._pur[hi + 1] - self._pur[lo]).astype(float)
-                pur = np.where(plus, pur, w - pur) / w          # a purine on the minus strand reads as a pyrimidine here
+                pur = np.where(plus, self._pur[hi + 1] - self._pur[lo], self._pyr[hi + 1] - self._pyr[lo]) / w     # a purine on the minus strand reads as a pyrimidine here
                 cols += [gc, pur, self._maxrun(lo, hi) / w]
                 for unit, prop in A.SUMMARY_SERIES:
                     span = self.plan[(unit, prop)]["span"]

@@ -19,7 +19,7 @@ Within a group the order is alphabetical.
 * All files are distinct: no two have identical bytes. (Files that teammates added to the shared repository, `folds_h6_*`, `folds_hstrand_*` and
   `folds_hdisc_*`, are not this project's and are not indexed.)
 
-**439 files** in 23 groups.
+**440 files** in 23 groups.
 
 ### Finding 1 — The published representation is a re-encoding of the guide, and holds about twenty variables
 
@@ -67,7 +67,8 @@ Within a group the order is alphabetical.
 | `post_freeze/cut_within_gene_summary.csv` | 0.7 | audited | `paper_numbers_A`, `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
 | `post_freeze/design_benchmark.csv` | 1.2 | cited | `design_benchmark`, `paper_numbers_D` | window_bp, model, windows, guides_per_window, pick_percentile, pick_percentile_lo, pick_percentile_hi … |
 | `post_freeze/design_check.csv` | 0.5 | cited | `check_design`, `paper_numbers_D` | item, value |
-| `post_freeze/family_a_table_check.csv` | 1.8 | cited | `check_family_a_table`, `paper_numbers_D` | item, value |
+| `post_freeze/family_a_by_organism.csv` | 1.2 | cited | `family_a_by_organism`, `paper_numbers_D` | organism, screen, guides, protocol, model, unit, n … |
+| `post_freeze/family_a_table_check.csv` | 3.9 | cited | `check_family_a_table`, `paper_numbers_D` | item, value |
 | `post_freeze/gate_test.csv` | 1.7 | cited | `gate_test`, `paper_numbers_D` | model, seed, fold, rho, r2 |
 | `post_freeze/gene_grouped_vs_crisprhal.csv` | 0.7 | cited | `gene_grouped_vs_crisprhal`, `paper_numbers_D` | model, against, mean, sd, crisprhal_mean, crisprhal_sd, lead_mean … |
 | `post_freeze/human_twin_check.csv` | 0.2 | audited | `human_twin_check`, `report_checks_R2` | arm, folds, spearman, spearman_sd, n_fits |
@@ -84,8 +85,8 @@ Within a group the order is alphabetical.
 | `post_freeze/transfer_to_ecoli.csv` | 0.7 | cited | `transfer`, `transfer_to_ecoli`, `figures_paper`, `paper_numbers_D` | trained_on, scored_on, rho, within, species_trained |
 | `post_freeze/transfer_vs_crisprhal_kingdom.csv` | 1.5 | cited | `transfer`, `transfer_vs_crisprhal`, `figures_paper`, `paper_numbers_D` | dataset, species, n, slicer_base, crisprhal_core23, own_cv_rho, slicer_retained … |
 | `post_freeze/transfer_vs_crisprhal_nuclease.csv` | 1.4 | cited | `transfer`, `transfer_vs_crisprhal`, `paper_numbers_D` | part, subset, n, model, rho, crisprhal, diff … |
-| `transfer.csv` | 17.5 | audited | `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | dataset, arm, model, seed, fold, n_rows, n_cols … |
-| `transfer_model.csv` | 4.8 | cited | `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | source, target, arm, model, seed, n_train, n_test … |
+| `transfer.csv` | 17.5 | audited | `family_a_by_organism`, `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | dataset, arm, model, seed, fold, n_rows, n_cols … |
+| `transfer_model.csv` | 4.8 | cited | `family_a_by_organism`, `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | source, target, arm, model, seed, n_train, n_test … |
 
 ### Finding 4 — The model is out of *material*, and the tuning gain is evidence for it
 
@@ -334,7 +335,7 @@ Within a group the order is alphabetical.
 | `folds_shift_baseline.csv` | 1.8 | audited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `paper_numbers_A`, `report_checks_R2`, `report_checks_R7`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
 | `permutation_floors.csv` | 1.0 | cited | `floors`, `report_checks_R7` | family, real_folds, real_d_r2, real_d_rho, real_p, floor_folds, floor_d_r2 … |
 | `post_freeze/ablation_paper_folds.csv` | 8.6 | cited | `notebook`, `run_ablation`, `curated_ablation` | arm, seed, fold, rho, n_cols |
-| `post_freeze/ablation_paper_folds_summary.csv` | 2.3 | cited | `notebook`, `run_ablation`, `curated_ablation`, `paper_numbers_D` | family, n_folds, seeds, rho, gain_same_selection, gain_same_selection_sd, folds_positive_same_selection … |
+| `post_freeze/ablation_paper_folds_summary.csv` | 2.3 | cited | `notebook`, `run_ablation`, `curated_ablation`, `family_a_by_organism`, `paper_numbers_D` | family, n_folds, seeds, rho, gain_same_selection, gain_same_selection_sd, folds_positive_same_selection … |
 | `post_freeze/vs_crisprhal_wt.csv` | 0.8 | cited | `vs_crisprhal`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R6`, `report_checks_R7` | condition, arm, n_test, n_train, rho, crisprhal, diff … |
 
 ### Appendix B — The methods and controls behind the findings
@@ -413,7 +414,7 @@ Within a group the order is alphabetical.
 | `post_freeze/geom_importance.csv` | 1.2 | audited | `geom_importance` | column, importance, r2_from_composition, r2_from_dinucleotide_gb, r2_from_dinucleotide_ridge |
 | `post_freeze/human_shape_ablation.csv` | 3.5 | audited | `human_shape`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `post_freeze/human_shape_ablation_locus.csv` | 0.7 | audited | `human_shape` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
-| `post_freeze/human_shape_ablation_twin.csv` | 0.7 | audited | `human_shape`, `report_checks_R5`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
+| `post_freeze/human_shape_ablation_twin.csv` | 0.7 | audited | `family_a_by_organism`, `human_shape`, `report_checks_R5`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `post_freeze/local_sequence_bound.csv` | 5.4 | audited | `local_sequence_bound` | matrix, arm, seed, fold, n_train, n_test, n_sel … |
 | `post_freeze/local_sequence_bound_summary.csv` | 0.7 | audited | `local_sequence_bound` | arm, matrix, base_rho, rho, delta, lo, hi … |
 | `post_freeze/ridge_check.csv` | 1.0 | audited | `ridge_check`, `report_checks_R8` | arm, n_cols, alpha, rho, fold_rho |

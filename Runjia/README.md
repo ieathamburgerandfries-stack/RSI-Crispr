@@ -59,15 +59,35 @@ PYTHONPATH=. python -m sgrna.design.family_a_table --genome genome.fasta --out f
 `--contig NAME [NAME ...]` keeps some records, `--start N --end M` one stretch of one record (a locus takes a fraction of a second), `--guides guides.csv` featurises only the guides listed
 (columns `left`, `strand` and, for a multi-record FASTA, `contig`), `--linear` treats records as linear (default: circular, as a bacterial chromosome), `--tables` points at other lookup tables.
 Flanks wrap around the origin when circular; when linear, the 223 guides of the *E. coli* genome within about 1 kb of an end use the DNA that exists (their windows are cut to it) and are computed one at a time.
-`n_genome_copies` counts the NGG sites in the whole FASTA (all records, both strands) with the same 20-mer. The columns describe the DNA around a target, they are not a score: to score a guide, use the design tool above.
+`n_genome_copies` counts the NGG sites in the records read (the whole FASTA unless `--contig` is given, both strands) with the same 20-mer. Any character other than A, C, G, T (N, ambiguity codes; lower case is upper-cased) is read as N: not GC, not a purine, not a pyrimidine, and the columns that read it are left empty.
+The columns describe the DNA around a target, they are not a score: to score a guide, use the design tool above.
+
+For a mammalian genome run one chromosome at a time, linear, and write a stretch of it (a whole chromosome has millions of sites): `--genome hg38.fa.gz --contig chr21 --linear --start 20000000 --end 20050000`. The other records are skipped as the file is read, so a chromosome of hundreds of Mb needs a few GB of memory; the default is circular, so without `--linear` a long record's two ends would be joined (the tool says so for records over 20 Mb).
 
 Checks (`python -m sgrna.design.check_family_a_table`, `results/post_freeze/family_a_table_check.csv`):
 * Given only the coordinates of the 33,567 curated guides, it rebuilds the stored table: protospacer, PAM and genome copy count equal in 33,567 of 33,567, the same missing-value pattern, and 3 of 11,681,316 cells differ, each by one float32 step (at most 1.2e-7; the two programs add the same numbers in a different order).
-* The *E. coli* genome has 541,810 NGG sites (270,137 on the plus strand, 271,673 on the minus, one per 8.6 nt), and every curated guide is among them; 3.2% share their 20-mer with another site. The whole table takes 58 s (0.11 ms per guide, featurising and writing) and is 246 MB as `.csv.gz`, 1.25 GB as plain CSV.
-* A second genome, *Citrobacter rodentium* (5,346,659 bp, 707,896 sites, 76 s): 400 sites (the first 40 and last 40, which cross the origin, and 320 at random) are featurised again one at a time from their flanking sequence by `a_flank_fast`, the code the release was made with, and agree in all 348 columns (0 cells differ); the copy counts equal the design tool's.
+* The *E. coli* genome has 541,810 NGG sites (270,137 on the plus strand, 271,673 on the minus, one per 8.6 nt), and every curated guide is among them; 3.2% share their 20-mer with another site. The whole table takes 59 s (0.11 ms per guide, featurising and writing) and is 246 MB as `.csv.gz`, 1.25 GB as plain CSV.
+* A second genome, *Citrobacter rodentium* (5,346,659 bp, 707,896 sites, 78 s): 400 sites (the first 40 and last 40, which cross the origin, and 320 at random) are featurised again one at a time from their flanking sequence by `a_flank_fast`, the code the release was made with, and agree in all 348 columns (0 cells differ); the copy counts equal the design tool's.
+* Two mammalian chromosomes, linear, with assembly gaps: human chr21 (hg38, soft-masked; 46,709,983 bp, 6,621,364 of them N, 4,106,000 sites) and domestic cat chromosome E3 (RefSeq F.catus_Fca126_mat1.0, 41,437,797 bp, 100 N, 5,969,487 sites; sequence downloaded once from NCBI). In each, 399 and 400 sites (the first 40, the last 40, up to 120 within a kb of an assembly gap, 200 at random; 200 and 120 of them have N within reach of a flank) agree with the per-guide code in all 348 columns (0 cells differ) and have the design tool's copy counts.
+* A stress genome, which a bacterium cannot supply: *E. coli* with 410 planted tracts (poly-A, poly-T, (AC)n, N gaps, ambiguity codes), 40 stray N or Y, and a third of the sequence soft-masked. 400 sites within 200 nt of a tract agree; 21 cells differ, by at most 9.3e-10 (the reference's own rounding on windows whose k-mers all share one value).
 * Linear mode on *E. coli*: 541,809 sites (one wraps the origin and is dropped); guides with a full margin of DNA give the same columns as when circular (largest difference 2.6e-11, floating point); the 33 flanks checked that have 50 to 249 nt of DNA all have the same 1,000 nt and 250 nt windows, as they must.
 
-Validated for SpCas9 in *E. coli* (and the one other bacterium the paper tests); the columns say nothing about eukaryotic guides.
+The table describes DNA, so it can be built for any genome (above: human and cat chromosomes). Whether the columns help predict a guide's activity has been tested only in the organisms below, and the project holds no cat, or other mammalian-guide, activity data; the guide rules differ between bacteria and eukaryotes (Appendix A5 of the paper), so the design tool's score is for *E. coli*.
+
+### Where family A has been tested
+
+Held-out Spearman rho of the columns that read only the 20-mer ("base") and of base plus family A (`python -m sgrna.compare.family_a_by_organism`, `results/post_freeze/family_a_by_organism.csv`, assembled from the stored results of the runs; nothing is re-fitted):
+
+| organism and screen | guides | folds | base | + family A | gain | folds with a positive gain |
+|---|---:|---|---:|---:|---:|---:|
+| *E. coli*, SpCas9 (whole-gene folds, XGBoost) | 33,567 | 15 | 0.546 | 0.707 | **+0.161** | 15 of 15 |
+| *E. coli*, eSpCas9 (five contiguous genome arcs, LightGBM) | 59,489 | 15 | 0.685 | 0.789 | **+0.104** | 15 of 15 |
+| *C. rodentium*, TevSpCas9 (10 kb bins, LightGBM) | 25,210 | 15 | 0.705 | 0.763 | **+0.059** | 15 of 15 |
+| human, Noshay et al. matrix located on hg38 (folds keeping identical 20-mers together, XGBoost) | 16,490 | 15 | 0.306 | 0.329 | **+0.023** | 15 of 15 |
+| *E. coli* SpCas9 to *C. rodentium* TevSpCas9, no refitting (sequence-disjoint) | 25,210 | 3 seeds | 0.626 | 0.698 | **+0.072** | 3 of 3 |
+| *C. rodentium* TevSpCas9 to *E. coli* SpCas9, no refitting | 33,567 | 3 seeds | 0.479 | 0.628 | **+0.149** | 3 of 3 |
+
+So yes, in every organism where it has been built and tested, and the sign never fails. The sizes are not comparable across rows (different enzymes, assays, models and fold designs), the human gain is small, its matrix has no gene identifier so its folds are not gene-grouped, and its family A is a teammate's hg38 build rather than this code. Not tested: mouse and zebrafish tables (a 77 nt window, no genome position to read a kb of flank from), the dCas9 screens (another measured quantity), any other bacterium, and cat.
 
 ## Which document to read for what
 

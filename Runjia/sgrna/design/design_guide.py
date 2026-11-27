@@ -52,20 +52,28 @@ def revcomp(s: str) -> str:
 
 
 # ---------------------------------------------------------------------------------------------------------------- genome
-def read_records(path) -> dict[str, str]:
-    """{name: upper-case sequence} for every record of a FASTA file (plain or .gz), in file order."""
+def read_records(path, only=None) -> dict[str, str]:
+    """{name: upper-case sequence} for every record of a FASTA file (plain or .gz), in file order.
+
+    `only` names the records to keep; the others are skipped as they are read, so one chromosome of a mammalian assembly costs one chromosome of memory.
+    """
     opener = gzip.open if str(path).endswith(".gz") else open
-    name, chunks, found = None, [], {}
+    want = None if only is None else set(only)
+    name, chunks, found, seen, keep = None, [], {}, [], False
     with opener(path, "rt") as fh:
         for line in fh:
             if line.startswith(">"):
-                if name is not None:
+                if name is not None and chunks:
                     found[name] = "".join(chunks).upper()
                 name, chunks = line[1:].split()[0], []
-            else:
+                seen.append(name)
+                keep = want is None or name in want
+            elif keep:
                 chunks.append(line.strip())
-    if name is not None:
+    if name is not None and chunks:
         found[name] = "".join(chunks).upper()
+    if want is not None and want - set(seen):
+        raise KeyError(f"{sorted(want - set(seen))} not in {path}; records: {', '.join(seen[:10])}{' ...' if len(seen) > 10 else ''}")
     if not found:
         raise ValueError(f"no sequence in {path}")
     return found
