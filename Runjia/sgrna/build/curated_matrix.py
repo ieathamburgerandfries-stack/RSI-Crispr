@@ -5,7 +5,7 @@ so the training set is no longer limited to the 13,880 rows Noshay et al. publis
 the same screen: 33,567 unique guides with read-count-filtered activity scores, **24,950 of them not in the published matrix**.
 
 `build()` writes `expanded_X.npy` (33,567 x 6,169, float32), `expanded_meta.json` (guide order, labels, column names, which guides
-are also in the published matrix) under `data/interim/`; `cohorts.curated_ablation._base()` and every experiment on the cohort read
+are also in the published matrix) under `data/interim/`; `harness.curated.load_base()` and every experiment on the cohort read
 them. The columns come from `base_fast.matrix_fast`, which equals `featurise.matrix` on all 33,567 guides (`controls/equiv_check.py`).
 
     python -m sgrna.build.curated_matrix --build      # about 1 second with the array featuriser, cached

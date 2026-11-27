@@ -32,14 +32,11 @@ from sgrna import config
 
 from ..common import OUT
 from .vs_crisprhal import member_specs, train_predict
+from ..harness.metrics import zscore as _z
 
 SEEDS = (41, 42, 43)
 ARMS = {"champion": ["champion"], "tuned XGBoost (d099x)": ["d099x"], "XGBoost average of 5": ["d099x", "d077x", "d021x", "d080x", "d000x"]}
 N_BOOT = 1000
-
-
-def _z(p):
-    return (p - p.mean()) / (p.std() + 1e-12)
 
 
 def _rho(y, p):

@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 
 from .. import config
-from ..cohorts.curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "selector_audit.csv"
 RANKS_OUT = config.RESULTS / "selector_audit_ranks.csv"
@@ -46,8 +46,8 @@ SHAP_ROWS = 3000          # TreeSHAP is O(rows x trees x depth); 3k is ample
 
 
 def _frame():
-    X, y, names, protos = _base()
-    A, anames = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, anames = load_block("a_flank", protos)
     return (np.hstack([X, A]).astype(np.float32), y,
             list(names) + list(anames), len(names))
 

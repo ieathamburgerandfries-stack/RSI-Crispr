@@ -19,11 +19,11 @@ from . import design_guide as D
 
 def main() -> int:
     from ..build.build_features import load_curated_index
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
 
     _, g = D.read_fasta(config.GENOME_FASTA)
-    X, y, names, protos = _base()
-    A, an = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, an = load_block("a_flank", protos)
     idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos)
     pick = np.sort(np.random.default_rng(0).choice(len(protos), 600, replace=False))
     sub = idx.iloc[pick]

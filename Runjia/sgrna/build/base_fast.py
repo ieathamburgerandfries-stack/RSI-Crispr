@@ -94,8 +94,8 @@ def matrix_fast(protospacers, v_mapping=None, tables=None, codes=None):
 
 
 def check(n=None):
-    from sgrna.cohorts.curated_ablation import _base
-    _, _, _, protos = _base()
+    from sgrna.harness.curated import load_base
+    _, _, _, protos = load_base()
     P = list(protos if n is None else protos[:n])
     vm, tb = featurise.load_v_mapping(), qct.load_tables()
     t = time.perf_counter(); ref, rn = featurise.matrix(P[:3000], v_mapping=vm, tables=tb, verbose=False); t_ref = time.perf_counter() - t

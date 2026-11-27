@@ -111,12 +111,12 @@ def _record(rows, part, arm, seed, fold, y, pred):
 def run(parts=("window", "resolution", "displacement"), seeds=(41,), threads: int = 6, verbose: bool = True) -> pd.DataFrame:
     from ..build import genome
     from ..build.build_features import load_curated_index
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
     from ..controls import sealed_holdout_gene as sg
     from ..controls.mappability_stratum import _groups
 
     sg.N_JOBS = threads
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos).reset_index()
     groups = _groups(protos)
     comp = flank_composition(idx, PARTITION_WINDOWS)
@@ -152,10 +152,10 @@ def run(parts=("window", "resolution", "displacement"), seeds=(41,), threads: in
             for kind in ("gc", "gcpur", "base4"):
                 do("resolution", f"{kind} at 50/250/500/1000", np.hstack([X] + [_cols(comp, W, kind) for W in FAMILY_A_WINDOWS]), None, seed)
         if "full" in parts and "displacement" not in parts:                  # the aligned full family on this seed: the same arm as shift 0 below
-            A, _ = _block("a_flank", protos)
+            A, _ = load_block("a_flank", protos)
             do("displacement", "family A shifted 0", np.hstack([X, A]), config.N_FEATURES, seed)
         if "displacement" in parts:
-            A, anames = _block("a_flank", protos)
+            A, anames = load_block("a_flank", protos)
             pos = idx["left"].to_numpy(float)
             order = np.argsort(pos)
             sp = pos[order]
@@ -209,12 +209,12 @@ def _asym_cols(comp, u: int, d: int) -> np.ndarray:
 
 def run_asymmetric(threads: int = 9, verbose: bool = True) -> None:
     from ..build.build_features import load_curated_index
-    from ..cohorts.curated_ablation import _base
+    from ..harness.curated import load_base
     from ..controls import sealed_holdout_gene as sg
     from ..controls.mappability_stratum import _groups
 
     sg.N_JOBS = threads
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos).reset_index()
     groups = _groups(protos)
     comp = flank_composition(idx, TUNE_GRID)

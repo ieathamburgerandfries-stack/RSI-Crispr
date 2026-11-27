@@ -32,13 +32,13 @@ SEED = 41
 
 
 def folds() -> None:
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
     from ..controls import sealed_holdout_gene as sg
     from ..controls.mappability_stratum import _groups
     from .vs_crisprhal import member_specs, train_predict
 
-    X, y, names, protos = _base()
-    A, _ = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, _ = load_block("a_flank", protos)
     X = np.hstack([X, A]).astype(np.float32)
     fold = sg._fold_ids(_groups(protos), 5, SEED)
     src = pd.read_csv(config.INTERIM / "crisprhal_widewindow_input.csv.gz")

@@ -105,10 +105,10 @@ def _from_shipped(thirty, y, protos):
 
 def build(features=None):
     from ..build.build_features import load_curated_index
-    from ..cohorts.curated_ablation import _base
+    from ..harness.curated import load_base
 
     features = features or FEATURES
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos)
     thirty = [(up + sp + pam + dn).upper() for up, sp, pam, dn in zip(idx.upstream.str[-4:], idx.protospacer, idx.pam, idx.downstream.str[:3])]
     if features == "shipped":
@@ -159,7 +159,7 @@ def released(seeds=(41, 42, 43)) -> pd.DataFrame:
 
     F, y, protos, ms = build()
     print(f"  149 features for {len(y):,} guides: {ms:.2f} ms per guide (one thread, two RNAfold calls included)", flush=True)
-    groups = _groups(protos)
+    groups = load_groups(protos)
     rows = []
     for seed in seeds:
         fold = sg._fold_ids(groups, 5, seed)
@@ -197,11 +197,11 @@ def search(n_init=10, n_iter=100, seed=2026) -> None:
     from sklearn.gaussian_process.kernels import ConstantKernel, Matern
 
     from ..tuning.tune_ecoli import Cohort
-    from ..cohorts.curated_ablation import _base, _groups
+    from ..harness.curated import load_base, load_groups
 
     co = Cohort()
     F, y, protos, _ = build()
-    g, ok = _groups("gene", protos)
+    g, ok = load_groups("gene", protos)
     assert (np.asarray(g[ok], dtype=object) == co.g).all()
     Fd, yd = F[ok][co.dev], y[ok][co.dev]
     print(f"  search on {len(yd):,} development guides, {len(SPACE)} hyperparameters, {n_init} + {n_iter} evaluations of {INNER_FOLDS}-fold cross-validation", flush=True)

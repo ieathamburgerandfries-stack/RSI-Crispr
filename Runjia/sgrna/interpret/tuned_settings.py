@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
 
-from sgrna.cohorts.curated_ablation import _base, _block
+from sgrna.harness.curated import load_base, load_block
 from sgrna.interpret.importance import block_of
 from sgrna.harness.run_ablation import _impute, make_selector
 
@@ -58,7 +58,7 @@ def depth_curve(co):
 def gain_groups(co):
     """Share of split gain by kind of column: the selector, the original model and the tuned model, all fitted on DEV."""
     import xgboost as xgb
-    X0, _, names, protos = _base(); _, an = _block("a_flank", protos)
+    X0, _, names, protos = load_base(); _, an = load_block("a_flank", protos)
     allnames = list(names) + list(an)
     groups = np.array([block_of(n) for n in allnames])
     sel_gain = None
@@ -90,7 +90,7 @@ def position_profile(co):
     import re
     import xgboost as xgb
     from sgrna.interpret.importance import _v_positions
-    _, _, names, protos = _base(); _, an = _block("a_flank", protos)
+    _, _, names, protos = load_base(); _, an = load_block("a_flank", protos)
     allnames = list(names) + list(an)
     vpos = _v_positions()
 

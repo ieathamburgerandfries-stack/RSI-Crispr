@@ -40,10 +40,10 @@ SEEDS = (41, 42, 43)
 
 
 def _data():
-    from sgrna.cohorts.curated_ablation import _base, _block, _groups
-    X, y, names, protos = _base()
-    A, an = _block("a_flank", protos)
-    g, ok = _groups("gene", protos)
+    from sgrna.harness.curated import load_base, load_block, load_groups
+    X, y, names, protos = load_base()
+    A, an = load_block("a_flank", protos)
+    g, ok = load_groups("gene", protos)
     protos = np.asarray(protos, dtype=object)
     codes = np.frombuffer("".join(protos[ok]).encode(), np.uint8).reshape(ok.sum(), 20)
     lut = {ord(b): i for i, b in enumerate(BASES)}

@@ -16,7 +16,7 @@ import pandas as pd
 
 from sgrna import config
 from sgrna.build import featurise, qct
-from sgrna.cohorts.curated_ablation import _base, _block
+from sgrna.harness.curated import load_base, load_block
 from sgrna.harness.run_ablation import _impute, make_selector
 
 from ..build import a_flank_fast as AF
@@ -26,7 +26,7 @@ from ..common import OUT
 
 def main():
     """Rebuild the equivalence record and write it."""
-    X, y, names, protos = _base(); A, An = _block("a_flank", protos)
+    X, y, names, protos = load_base(); A, An = load_block("a_flank", protos)
     tables, vm = qct.load_tables(), featurise.load_v_mapping()
     idx = pd.read_csv(config.INTERIM / "curated_guide_index.csv").set_index("sgRNAID").reindex(protos).reset_index()
     idx = idx.rename(columns={"index": "sgRNAID"}); idx["located"] = True

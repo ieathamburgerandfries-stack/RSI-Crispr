@@ -52,7 +52,7 @@ from scipy.stats import spearmanr
 from sklearn.model_selection import KFold
 
 from .. import config
-from ..cohorts.curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "sealed_holdout.csv"
 SEAL_FRACTION = 0.20
@@ -144,8 +144,8 @@ def run(match_train_size: bool = True, seal_seed: int = SEAL_SEED,
     same 80% removes it, so that the only remaining difference between the two
     estimates is the population.
     """
-    X, y, names, protos = _base()
-    A, anames = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, anames = load_block("a_flank", protos)
     XA = np.hstack([X, A])
     sealed = _seal(protos, seed=seal_seed, verbose=verbose)
     dev = ~sealed

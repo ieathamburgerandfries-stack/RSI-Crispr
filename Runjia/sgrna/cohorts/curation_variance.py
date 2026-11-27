@@ -46,9 +46,9 @@ PREDICTOR = "eng.flank.up500.gc"
 
 
 def _curated():
-    from .curated_ablation import _base
+    from ..harness.curated import load_base
     from ..io_utils import load_block
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     a = load_block("a_flank_curated")
     key = "protospacer" if "protospacer" in a.columns else a.columns[0]
     a = a.set_index(key)

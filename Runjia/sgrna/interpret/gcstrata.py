@@ -79,13 +79,13 @@ def _frame_curated() -> pd.DataFrame:
     to be re-measured, not just re-labelled -- a suppressor's effect depends on
     the correlations among all three variables, and two of the three moved.
     """
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
 
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     proto = pd.Series([str(q).upper() for q in protos])
     tgc = proto.map(lambda q: (q.count("G") + q.count("C")) / max(len(q), 1))
 
-    v, fn = _block("a_flank", protos)
+    v, fn = load_block("a_flank", protos)
     cols = [list(fn).index(c) for c in FLANK_GC if c in list(fn)]
     if not cols:
         raise KeyError(f"none of {FLANK_GC} on the curated cohort")

@@ -31,13 +31,13 @@ def slicer() -> None:
     import xgboost as xgb
     from sklearn.model_selection import KFold
 
-    from sgrna.cohorts.curated_ablation import _base, _block
+    from sgrna.harness.curated import load_base, load_block
     from sgrna.compare.vs_crisprhal import member_specs
     from sgrna.harness.run_ablation import _impute, make_selector
     from sgrna.tuning import tune_ecoli as T
 
-    X, y, names, protos = _base()
-    A, _ = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, _ = load_block("a_flank", protos)
     X = np.hstack([X, A]).astype(np.float32)
     tr, va = next(iter(KFold(5, shuffle=True, random_state=41).split(np.arange(len(y)))))
     Xtr, ytr = X[tr], y[tr]

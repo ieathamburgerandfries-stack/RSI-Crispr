@@ -175,8 +175,8 @@ def build_fast(index: pd.DataFrame, tables: dict | None = None) -> pd.DataFrame:
 
 
 def check(n=300, seed=0):
-    from sgrna.cohorts.curated_ablation import _base
-    _, _, _, protos = _base()
+    from sgrna.harness.curated import load_base
+    _, _, _, protos = load_base()
     idx = pd.read_csv(config.INTERIM / "curated_guide_index.csv").set_index(config.ID_COL)
     sub = idx.reindex(list(protos[:n])).reset_index(); sub["located"] = True
     tables = qct.load_tables()

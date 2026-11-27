@@ -21,7 +21,7 @@ from scipy.stats import spearmanr
 from sklearn.model_selection import KFold
 
 from sgrna import config
-from sgrna.cohorts.curated_ablation import _base, _block
+from sgrna.harness.curated import load_base, load_block
 from sgrna.harness.run_ablation import _impute, make_selector
 
 from ..tuning import tune_ecoli as T
@@ -31,7 +31,7 @@ SIZES = (4000, 8000, 13880, 20000, 26853)
 
 
 def run(seed=41):
-    X, y, _, protos = _base(); A, _ = _block("a_flank", protos); X = np.hstack([X, A])
+    X, y, _, protos = load_base(); A, _ = load_block("a_flank", protos); X = np.hstack([X, A])
     cfgs = json.loads((OUT / "tune_configs.json").read_text()); sel = T.selected()
     rows = []
     splits = list(KFold(5, shuffle=True, random_state=41).split(np.arange(len(y))))

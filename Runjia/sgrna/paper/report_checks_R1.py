@@ -1,4 +1,4 @@
-"""Report checks R1: numbers of PROGRESS_REPORT.md lines 1-120 (the Summary, 'How to read', 'What earns a place', Finding 1) that had
+"""Report checks R1: numbers of PROGRESS_REPORT.md in the Summary, 'How to read', 'What earns a place' and Finding 1 that had
 no line in the audit, recomputed from a stored file or from the repository's own code. Same idiom as `paper_numbers_C`:
 `chk(label, got, claimed, dec)` passes when |got - claimed| <= 0.5 * 10**(-dec); `got` is always computed, `claimed` is the value as
 the corrected report prints it. Every label starts with 'report R1: ' and names the cohort and protocol of the number.
@@ -286,19 +286,5 @@ def run(chk):
 
 # ---------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    bad, n = [], 0
-
-    def chk(label, got, claimed, dec):
-        """Same rule as verify_numbers: pass when |got - claimed| <= half a unit in the last quoted digit."""
-        global n
-        n += 1
-        ok = abs(got - claimed) <= 0.5 * 10 ** (-dec) + 1e-9
-        if not ok:
-            bad.append((label, got, claimed))
-        print(f"  {'ok ' if ok else 'BAD'} {label:120s} computed {got:+.6f}  report {claimed:+.{max(dec, 0)}f}")
-
-    run(chk)
-    print(f"\n{n} checks, {len(bad)} mismatches")
-    for lab, got, claimed in bad:
-        print(f"  BAD {lab}: computed {got:+.6f}, report {claimed}")
-    raise SystemExit(1 if bad else 0)
+    from .standalone import run_alone
+    run_alone(run, "report")

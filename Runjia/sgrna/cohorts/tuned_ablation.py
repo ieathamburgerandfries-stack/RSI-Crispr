@@ -40,7 +40,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 from sgrna import config
-from sgrna.cohorts.curated_ablation import _base, _block, _groups
+from sgrna.harness.curated import load_base, load_block, load_groups
 from sgrna.harness.run_ablation import _impute, grouped_folds, make_selector
 
 from ..tuning import tune_ecoli as T
@@ -84,15 +84,15 @@ class Cohort:
     """base | family A, and for the local-sequence design the local one-hot block and its shuffle after them, so each matrix is a prefix plus a slice."""
 
     def __init__(self, design: str):
-        X, y, _, protos = _base()
-        A, _ = _block("a_flank", protos)
+        X, y, _, protos = load_base()
+        A, _ = load_block("a_flank", protos)
         blocks = [X, A]
         self.n_loc = 0
         if design == "local_sequence":
             M, S, _ = local_block(list(protos))
             blocks += [M, S]
             self.n_loc = M.shape[1]
-        g, ok = _groups("gene", protos)
+        g, ok = load_groups("gene", protos)
         self.n_base, self.n_a = X.shape[1], A.shape[1]
         self.X = np.hstack(blocks)[ok]
         self.y = y[ok]

@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 
 from .. import config
-from ..cohorts.curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "no_information.csv"
 FLANK = ".flank."
@@ -39,8 +39,8 @@ def run(seeds=None, n_splits=None, n_features=300, verbose: bool = True):
 
     seeds = list(seeds or config.SEEDS)
     n_splits = n_splits or config.N_SPLITS
-    X, y, names, protos = _base()
-    v, fnames = _block("d_mechanics", protos)
+    X, y, names, protos = load_base()
+    v, fnames = load_block("d_mechanics", protos)
     is_flank = np.array([FLANK in f for f in fnames])
     if verbose:
         print(f"  d_mechanics: {len(fnames)} columns, {is_flank.sum()} from the "

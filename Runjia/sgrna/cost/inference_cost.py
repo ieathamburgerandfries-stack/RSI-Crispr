@@ -61,11 +61,11 @@ def run(n_score=(1, 100, 10_000), reps: int = 5, seed: int = 41,
         verbose: bool = True):
     import xgboost as xgb
 
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
     from ..harness.run_ablation import _impute, champion_params, make_selector
 
-    X, y, names, protos = _base()
-    A, _ = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, _ = load_block("a_flank", protos)
     X = np.hstack([X, A]).astype(np.float32)
 
     tr = np.arange(len(X))

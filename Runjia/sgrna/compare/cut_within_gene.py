@@ -15,17 +15,17 @@ from __future__ import annotations
 
 import numpy as np
 
-from sgrna.cohorts.curated_ablation import _base, _block, _groups
+from sgrna.harness.curated import load_base, load_block, load_groups
 from sgrna.compare.strand_within_gene import run
 
 from ..common import OUT
 
 
 def main() -> int:
-    X, y, names, protos = _base()
-    groups, ok = _groups("gene", protos)
+    X, y, names, protos = load_base()
+    groups, ok = load_groups("gene", protos)
     X, y, protos, groups = X[ok], y[ok], protos[ok], groups[ok]
-    v, fn = _block("a_flank", protos)
+    v, fn = load_block("a_flank", protos)
     arms = {"base": (X, names), "a_flank": (np.hstack([X, v]), names + fn)}
     print(f"  {X.shape[0]:,} guides in {len(np.unique(groups)):,} genes", flush=True)
     run("Cutting (curated, genic guides)", arms, y, groups, groups, "sfg10_cut",

@@ -83,11 +83,11 @@ def slicer(verbose: bool = True) -> dict:
     """Champion trained on the curated Cas9 cohort, predicting Cui's guides."""
     import xgboost as xgb
 
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
     from ..harness.run_ablation import _impute, champion_params, make_selector
 
-    X, y, names, protos = _base()
-    A, anames = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, anames = load_block("a_flank", protos)
     X = np.hstack([X, A])
     names = names + anames
 

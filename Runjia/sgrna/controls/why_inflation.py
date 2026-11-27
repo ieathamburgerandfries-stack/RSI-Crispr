@@ -43,7 +43,7 @@ import numpy as np
 import pandas as pd
 
 from .. import config
-from ..cohorts.curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "why_inflation.csv"
 N_SUB = 13_880
@@ -53,7 +53,7 @@ def run(families=("a_flank", "d_mechanics"), n_sub: int = N_SUB,
         sub_seeds=(0, 1, 2), n_features=300, verbose: bool = True):
     from ..harness.run_ablation import cross_validate
 
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     rows = []
     for sseed in sub_seeds:
         idx = np.random.default_rng(sseed).choice(len(y), n_sub, replace=False)
@@ -67,7 +67,7 @@ def run(families=("a_flank", "d_mechanics"), n_sub: int = N_SUB,
         if verbose:
             print(f"  subsample {sseed}: baseline rho {base:.4f}", flush=True)
         for fam in families:
-            v, fnames = _block(fam, ps)
+            v, fnames = load_block(fam, ps)
             Xa = np.hstack([Xs, v])
             res = cross_validate(Xa, ys, names + fnames,
                                  ["base"] * len(names) + [fam] * len(fnames),

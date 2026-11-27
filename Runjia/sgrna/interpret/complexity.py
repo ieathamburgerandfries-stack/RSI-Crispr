@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 
 from .. import config
-from ..cohorts.curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "complexity.json"
 HAL_PARAMS = {"WT-SpCas9": 790_533, "eSpCas9": 823_301, "layers": 37}
@@ -48,8 +48,8 @@ def run(seed: int = 41, verbose: bool = True):
 
     from ..harness.run_ablation import _impute, champion_params, make_selector
 
-    X, y, names, protos = _base()
-    v, fnames = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    v, fnames = load_block("a_flank", protos)
     X = np.hstack([X, v])
     names = list(names) + list(fnames)
     X, _ = _impute(X, X[:1])

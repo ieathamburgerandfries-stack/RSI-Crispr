@@ -26,15 +26,15 @@ PAPER = {"tuned": "five-fold CV holding whole genes out, 15 folds: rho 0.731 (sd
 def train(which: str, threads: int = 8, verbose: bool = True) -> Path:
     import xgboost as xgb
 
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
     from ..common import OUT
     from ..harness.run_ablation import _impute, make_selector
     from ..tuning import tune_ecoli as T
 
     cfgs = json.loads((OUT / "tune_configs.json").read_text())
     cfg = dict(cfgs[NAMES[which]], n_estimators=int(T.selected().loc[NAMES[which], "k"]))
-    X, y, names, protos = _base()
-    A, an = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, an = load_block("a_flank", protos)
     XA = np.hstack([X, A])
     allnames = list(names) + list(an)
     t0 = time.time()

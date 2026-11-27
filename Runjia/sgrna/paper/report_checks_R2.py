@@ -1,4 +1,4 @@
-"""Audit of PROGRESS_REPORT.md lines 121-307 (Finding 2 on the flank effect, Finding 3 on transfer and confound controls, Finding 4 on
+"""Audit of Findings 2 to 4 of PROGRESS_REPORT.md (Finding 2 on the flank effect, Finding 3 on transfer and confound controls, Finding 4 on
 the model being out of material): the headline numbers that `verify_numbers` did not recompute, each from the stored file that holds it.
 
     ./run_ext.sh sgrna.paper.report_checks_R2
@@ -320,19 +320,5 @@ def run(chk):
 
 # ---------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    bad, n = [], 0
-
-    def chk(label, got, claimed, dec):
-        """Same rule as verify_numbers: pass when |got - claimed| <= half a unit in the last quoted digit."""
-        global n
-        n += 1
-        ok = abs(got - claimed) <= 0.5 * 10 ** (-dec) + 1e-9
-        if not ok:
-            bad.append((label, got, claimed))
-        print(f"  {'ok ' if ok else 'BAD'} {label:110s} computed {got:+.5f}  report {claimed:+.{max(dec, 0)}f}")
-
-    run(chk)
-    print(f"\n{n} checks, {len(bad)} mismatches")
-    for lab, got, claimed in bad:
-        print(f"  BAD {lab}: computed {got:+.5f}, report {claimed}")
-    raise SystemExit(1 if bad else 0)
+    from .standalone import run_alone
+    run_alone(run, "report")

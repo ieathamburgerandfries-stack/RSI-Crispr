@@ -1,4 +1,4 @@
-"""Audit of PROGRESS_REPORT.md lines 1342-1554 (Appendix B2 why the imported families failed, B2a curation, B3 the family ablations on the
+"""Audit of the rest of the appendices of PROGRESS_REPORT.md (Appendix B2 why the imported families failed, B2a curation, B3 the family ablations on the
 curated cohort, B4 shape and 3D structure, B5 the dCas9 / CRISPRi boundary experiment, C0 reproducibility, Appendix C feature sets): the
 headline numbers that `verify_numbers` did not recompute, each from the stored file (or data file) that holds it.
 
@@ -141,8 +141,8 @@ def run(chk):
     chk(P + "B2a beta, inside-panel over shared", float(ins.slope_beta / sh_.slope_beta), 1.6, 1)
     chk(P + "B2a beta, outside over inside-panel", float(out_.slope_beta / ins.slope_beta), 2.0, 1)
     # the predictor is the GC fraction of the 500 nt UPSTREAM of the protospacer (eng.flank.comp.up500.gc); +0.069 is Noshay's label
-    from .hooks import _base
-    _, y, _, protos = _base()
+    from .hooks import load_base
+    _, y, _, protos = load_base()
     a = pd.read_csv(config.FEATURE_DIR / "a_flank_curated.csv", usecols=[config.ID_COL, "eng.flank.comp.up500.gc"]).set_index(config.ID_COL)
     a.index = a.index.astype(str)
     x = a.reindex(pd.Index([str(p) for p in protos]))["eng.flank.comp.up500.gc"].to_numpy(float)
@@ -427,19 +427,5 @@ def run(chk):
 
 # ---------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    bad, n = [], 0
-
-    def chk(label, got, claimed, dec):
-        """Same rule as verify_numbers: pass when |got - claimed| <= half a unit in the last quoted digit."""
-        global n
-        n += 1
-        ok = abs(got - claimed) <= 0.5 * 10 ** (-dec) + 1e-9
-        if not ok:
-            bad.append((label, got, claimed))
-        print(f"  {'ok ' if ok else 'BAD'} {label:120s} computed {got:+.5f}  report {claimed:+.{max(dec, 0)}f}")
-
-    run(chk)
-    print(f"\n{n} checks, {len(bad)} mismatches")
-    for lab, got, claimed in bad:
-        print(f"  BAD {lab}: computed {got:+.5f}, report {claimed}")
-    raise SystemExit(1 if bad else 0)
+    from .standalone import run_alone
+    run_alone(run, "report")

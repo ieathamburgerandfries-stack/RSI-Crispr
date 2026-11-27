@@ -37,6 +37,7 @@ from sgrna.harness.run_ablation import _impute
 
 from . import tune_ecoli as T
 from ..common import OUT
+from ..harness.metrics import zscore as _z
 
 THREADS = 6
 KG = {"lgb": (200, 400, 800, 1200, 1600, 2000, 3000), "cat": (200, 400, 800, 1200, 1600, 2000)}
@@ -205,10 +206,6 @@ def finalize(co, oof_seed=42, conf_seeds=(41, 42, 43)):
         print(f"  finalized {kind} {name} k={k}", flush=True)
         rows.append(dict(kind=kind, name=name, k=k, stage1_rho=s1))
     pd.DataFrame(rows).to_csv(OUT / "mix_finalists.csv", index=False)
-
-
-def _z(p):
-    return (p - p.mean()) / (p.std() + 1e-12)
 
 
 def blend(co, conf_seeds=(41, 42, 43), oof_seed=42, B=1000):

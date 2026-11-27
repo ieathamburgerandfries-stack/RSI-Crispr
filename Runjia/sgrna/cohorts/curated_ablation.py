@@ -24,6 +24,7 @@ import numpy as np
 import pandas as pd
 
 from .. import config
+from ..harness.curated import load_base, load_block, load_groups
 
 OUT = config.RESULTS / "ablation_curated.csv"
 GROUPED_OUT = {"gene": config.RESULTS / "ablation_curated_gene.csv",
@@ -33,58 +34,7 @@ FAMILIES = ("a_flank", "b_energy", "c_folding", "d_mechanics", "d_supercoiling",
             "i_shape", "j_periodicity")
 
 
-def _base():
-    """The curated cohort: 6,169 regenerated columns, their label, their order."""
-    meta = json.loads((config.INTERIM / "expanded_meta.json").read_text())
-    X = np.asarray(np.load(config.INTERIM / "expanded_X.npy", mmap_mode="r"),
-                   dtype=np.float32)
-    y = np.asarray(meta["y"], dtype=float)
-    return X, y, list(meta["feature_names"]), np.asarray(meta["protospacers"])
-
-
-def _block(fam: str, protos: np.ndarray):
-    """One family, aligned to the curated guides. Returns (values, names)."""
-    path = config.INTERIM / "features" / f"{fam}_curated.csv"
-    if not path.exists():
-        raise FileNotFoundError(f"{path.name} not built")
-    b = pd.read_csv(path).set_index(config.ID_COL).reindex(protos)
-    v = b.to_numpy(dtype=np.float32)
-    keep = ~np.all(np.isnan(v), axis=0)          # drop columns empty on this cohort
-    if keep.sum() == 0:
-        # b_energy built "successfully" with zero feature columns on this cohort,
-        # which save_block accepts. An empty block is a failed build, not a null
-        # result -- refuse it rather than reporting a delta of exactly zero.
-        raise FileNotFoundError(f"{path.name} has no populated feature columns")
-    return v[:, keep], [c for c, k in zip(b.columns, keep) if k]
-
-
 ORDER = ("baseline",) + FAMILIES
-
-
-def _groups(kind: str, protos: np.ndarray):
-    """Group label per curated guide, and the rows that have one.
-
-    Grouping by gene is the arm that matters on this cohort: gene identity
-    explains 29% of the curated label against 16% of the published one
-    (`cohort_groups.py`), so plain KFold has more to leak here, not less.
-    Guides that fall outside every annotated gene -- 3,364 of 33,567 -- have no
-    gene group, and they are dropped rather than given singleton groups, which
-    would leave each of them in its own fold and defeat the point. **Every arm
-    then runs on the same subset, baseline included**, so the deltas stay
-    internally comparable even though their levels are not comparable to the
-    random-row table.
-    """
-    from ..build.build_features import load_curated_index
-
-    idx = load_curated_index(verbose=False).set_index(config.ID_COL)
-    if kind == "gene":
-        g = idx["gene_name"].reindex(protos)
-    elif kind == "block100k":
-        g = (pd.to_numeric(idx["left"], errors="coerce") // 100_000).reindex(protos)
-    else:
-        raise ValueError(f"unknown grouping {kind!r}")
-    ok = g.notna().to_numpy()
-    return g.to_numpy(dtype=object), ok
 
 
 def _write(rows, out=None):
@@ -101,13 +51,13 @@ def run(families=FAMILIES, seeds=None, n_splits=None, n_features=300,
 
     seeds = list(seeds or config.SEEDS)
     n_splits = n_splits or config.N_SPLITS
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
 
     OUT_ = OUT if grouping is None else GROUPED_OUT[grouping]
     tag_prefix = "curabl" if grouping is None else f"curabl{grouping[:4]}"
     groups = None
     if grouping is not None:
-        groups, ok = _groups(grouping, protos)
+        groups, ok = load_groups(grouping, protos)
         X, y, protos, groups = X[ok], y[ok], protos[ok], groups[ok]
         if verbose:
             print(f"  grouping by {grouping}: {ok.sum():,} of {len(ok):,} guides "
@@ -145,7 +95,7 @@ def run(families=FAMILIES, seeds=None, n_splits=None, n_features=300,
 
     for fam in families:
         try:
-            v, fnames = _block(fam, protos)
+            v, fnames = load_block(fam, protos)
         except FileNotFoundError as exc:
             if verbose:
                 print(f"  {fam:>16}: skipped -- {exc}", flush=True)
@@ -248,8 +198,8 @@ def run_paper_folds(seeds=(41, 42, 43), threads: int = 9, verbose: bool = True) 
     from ..interpret import flank_scale as FS
     
     sg.N_JOBS = threads
-    X, y, names, protos = _base()
-    groups = _groups(protos)
+    X, y, names, protos = load_base()
+    groups = load_groups(protos)
     done = pd.read_csv(PF_RESULT) if PF_RESULT.exists() and PF_RESULT.stat().st_size else pd.DataFrame(columns=["arm", "seed", "fold", "rho", "n_cols"])
     rows = done.to_dict("records")
     have = {(r["arm"], r["seed"]) for r in rows}
@@ -263,13 +213,13 @@ def run_paper_folds(seeds=(41, 42, 43), threads: int = 9, verbose: bool = True) 
                 M = X
             elif arm in PF_SPLIT:
                 if "d_mechanics" not in blocks:
-                    blocks["d_mechanics"] = _block("d_mechanics", protos)
+                    blocks["d_mechanics"] = load_block("d_mechanics", protos)
                 v, fnames = blocks["d_mechanics"]
                 is_flank = np.array([PF_FLANK in f for f in fnames])
                 M = np.hstack([X, v[:, is_flank if PF_SPLIT[arm] else ~is_flank]])
             else:
                 if arm not in blocks:
-                    blocks[arm] = _block(arm, protos)
+                    blocks[arm] = load_block(arm, protos)
                 M = np.hstack([X, blocks[arm][0]])
             t0 = time.time()
             pred = FS._cv(M, y, groups, fold, config.N_FEATURES, seed)

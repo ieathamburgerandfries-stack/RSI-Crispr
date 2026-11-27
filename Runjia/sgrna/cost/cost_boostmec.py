@@ -90,9 +90,9 @@ def thirty_mers(n=None):
     """The 30-mers of the curated cohort (4 nt before the guide, guide, PAM, 3 nt after), in the cohort's order."""
     from .. import config
     from ..build.build_features import load_curated_index
-    from ..cohorts.curated_ablation import _base
+    from ..harness.curated import load_base
 
-    _, y, _, protos = _base()
+    _, y, _, protos = load_base()
     idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos)
     s = [(u[-4:] + p + m + d[:3]).upper() for u, p, m, d in zip(idx.upstream, idx.protospacer, idx.pam, idx.downstream)]
     return (s if n is None else s[:n]), np.asarray(y, float)

@@ -84,9 +84,9 @@ def featurise_side(n=300):
     """Warm, one-thread cost of the 6,517 columns per guide (tables preloaded, 5 guides first to warm caches)."""
     from sgrna import config
     from sgrna.build import featurise, qct
-    from sgrna.cohorts.curated_ablation import _base
+    from sgrna.harness.curated import load_base
     from sgrna.features import a_flank
-    _, _, _, protos = _base()
+    _, _, _, protos = load_base()
     idx = pd.read_csv(config.INTERIM / "curated_guide_index.csv").set_index("sgRNAID")
     tables, vm = qct.load_tables(), featurise.load_v_mapping()
     P = list(protos[:n]); sub = idx.reindex(P).reset_index().rename(columns={"index": "sgRNAID"}); sub["located"] = True

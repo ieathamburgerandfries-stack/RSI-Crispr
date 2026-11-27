@@ -25,16 +25,5 @@ def run(chk):
 
 
 if __name__ == "__main__":
-    import sys
-    n, bad = 0, []
-
-    def chk(label, got, claimed, dec):
-        global n
-        n += 1
-        ok = abs(got - claimed) <= 0.5 * 10 ** (-dec) + 1e-9
-        if not ok:
-            bad.append(label)
-        print(("  ok  " if ok else "  BAD ") + f"{label[:100]:<100} computed {got:+.{max(dec, 3)}f}  report {claimed:+.{max(dec, 0)}f}")
-    run(chk)
-    print(f"\n{n} checks, {len(bad)} mismatches")
-    sys.exit(1 if bad else 0)
+    from .standalone import run_alone
+    run_alone(run, "report")

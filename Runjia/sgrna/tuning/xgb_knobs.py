@@ -86,12 +86,12 @@ def _score(folds, params, seed=41):
 
 
 def run(with_flank: bool = True, seed: int = 41, verbose: bool = True):
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
     from ..harness.run_ablation import champion_params
 
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     if with_flank:
-        v, _ = _block("a_flank", protos)
+        v, _ = load_block("a_flank", protos)
         X = np.hstack([X, v])
     if verbose:
         print(f"  matrix {X.shape[0]:,} x {X.shape[1]:,}; selecting once per fold",
@@ -179,12 +179,12 @@ def _per_fold(folds, params, seed=41):
 
 def verify(seeds=(41, 42, 43), with_flank: bool = True, verbose: bool = True):
     """Paired per-fold deltas against the champion, over several partitions."""
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
     from ..harness.run_ablation import champion_params
 
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     if with_flank:
-        v, _ = _block("a_flank", protos)
+        v, _ = load_block("a_flank", protos)
         X = np.hstack([X, v])
 
     rows = []

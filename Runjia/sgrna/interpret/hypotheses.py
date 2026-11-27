@@ -59,11 +59,11 @@ for _i, _c in enumerate("ACGT"):
 
 def _data():
     """Genic guides only (so genes can be resampled): label, the seed base at positions 20 and 18, flank GC, flank sequences, gene."""
-    from sgrna.cohorts.curated_ablation import _groups
+    from sgrna.harness.curated import load_groups
     from sgrna.build.build_features import load_curated_index
     from sgrna import config
     X, y, protos, A, an = _cohort()
-    g, ok = _groups("gene", protos)
+    g, ok = load_groups("gene", protos)
     idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos)
     col = {n: A[:, i] for i, n in enumerate(an)}
     gc = {w: (col[f"eng.flank.comp.up{w}.gc"] + col[f"eng.flank.comp.dn{w}.gc"]) / 2 for w in (50, 250, 500, 1000)}
@@ -301,11 +301,11 @@ def followups(d, rng):
     rep = pd.DataFrame(rep)
     rep.to_csv(OUT / "hypotheses_followup_replication.csv", index=False)
     # (e) is the AT-rich penalty just low expression? expression of the guide's gene (family G), strata of equal size
-    from sgrna.cohorts.curated_ablation import _groups
+    from sgrna.harness.curated import load_groups
     from sgrna import config
     ex = pd.read_csv(config.INTERIM / "features" / "g_transcription_curated.csv", usecols=["sgRNAID", "eng.txn.expr.median_log_tpm"]).set_index("sgRNAID")
     X_, y_all, protos_all, _, _ = _cohort()
-    ok_ = _groups("gene", protos_all)[1]
+    ok_ = load_groups("gene", protos_all)[1]
     e = ex["eng.txn.expr.median_log_tpm"].reindex(protos_all[ok_]).to_numpy(float)
     have = np.isfinite(e)
     rows = []

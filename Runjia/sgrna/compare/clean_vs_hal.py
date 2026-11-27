@@ -20,7 +20,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 from sklearn.model_selection import KFold
 
-from sgrna.cohorts.curated_ablation import _base, _groups
+from sgrna.harness.curated import load_base, load_groups
 
 from ..tuning import tune_ecoli as T
 from . import vs_crisprhal as V
@@ -28,8 +28,8 @@ from ..common import OUT, stored
 
 
 def run(n_boot=2000, seed=0, seeds=(41, 42, 43)):
-    X, y, _, protos = _base()
-    g, ok = _groups("gene", protos)
+    X, y, _, protos = load_base()
+    g, ok = load_groups("gene", protos)
     co = T.Cohort()
     assert np.array_equal(y[ok], co.y), "cohort alignment failed"
     order = np.concatenate([va for _, va in KFold(5, shuffle=True, random_state=41).split(np.arange(len(y)))])

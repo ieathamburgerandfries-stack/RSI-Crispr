@@ -162,3 +162,12 @@ runtime, and loading them in one process stalled at 0% CPU on macOS, so the neur
 
 What was *not* deleted, against the review of the same day, after reading the reasons recorded above: `baseline_ecoli_sgRNA_model_swappable.py` (the report names it as where `N_FEATURES = 300` and the champion settings were inherited from),
 `results/RESULTS_archive_2026-10-10.md` (the report cites it, and the audit's i_shape +0.0356 is recorded only there) and `harness/notebook.py` (the front end of the working copy's `RSI09_pipeline.ipynb` and `RSI09_quickstart.ipynb`).
+
+## 27 November 2026 (evening): `results/post_freeze/` flattened into `results/`; the loaders and the audit's standalone driver have one home
+
+* `results/post_freeze/` no longer exists: its 179 entries (177 files and the subfolders `figures/` and `interp_hal_cache/`) moved to `results/` with `git mv`; no file name occurred in both folders. Paths in this file's earlier entries and in the
+  restore commands (`git checkout pre-cleanup-2026-11-22 -- Runjia/results/post_freeze/...`) name the old layout on purpose, because they restore from tags made before the move. `data/interim/post_freeze/` (caches in the project's data folder)
+  is untouched.
+* `cohorts/curated_ablation._base`, `_block` and `_groups`, which 53 modules and the audit imported by their underscore-private names, are `harness/curated.load_base`, `load_block` and `load_groups` (bodies unchanged); five copies of the
+  z-score are `harness/metrics.zscore`.
+* The fifteen copies of the audit's standalone `__main__` driver are `paper/standalone.run_alone`.

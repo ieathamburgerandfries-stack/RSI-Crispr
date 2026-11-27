@@ -37,7 +37,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 from .. import config
-from ..cohorts.curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 from .sealed_holdout import OUT as SEALED_CSV, _seal
 
 N_JOBS = 3
@@ -101,8 +101,8 @@ def run(max_draws: int | None = None, arms=("base_only", "frozen", "dev_tuned"),
     ref = pd.read_csv(SEALED_CSV)
     out_path = _out_path()
     done = pd.read_csv(out_path) if out_path.exists() and out_path.stat().st_size else pd.DataFrame()
-    X, y, names, protos = _base()
-    A, anames = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, anames = load_block("a_flank", protos)
     XA = np.hstack([X, A])
     idx = load_curated_index(verbose=False).set_index(config.ID_COL)
     gene = idx["gene_name"].reindex(protos)

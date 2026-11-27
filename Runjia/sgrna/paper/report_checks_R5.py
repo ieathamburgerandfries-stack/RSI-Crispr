@@ -1,4 +1,4 @@
-"""Checks R5: headline numbers of PROGRESS_REPORT.md lines 576-853 (Part 2 contributions, Part 3 limits, Part 4 freeze) that had no audit line.
+"""Checks R5: headline numbers of Parts 2 to 4 of PROGRESS_REPORT.md (Part 2 contributions, Part 3 limits, Part 4 freeze) that had no audit line.
 
 Same idiom as `paper_numbers_C.py`: `chk(label, got, claimed, dec)` passes when |got - claimed| <= 0.5 * 10**(-dec). `got` is computed from a stored
 file or from the stored cohort; `claimed` is the value as the (corrected) report writes it.
@@ -301,19 +301,5 @@ def run(chk):
 
 # ---------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    bad, n = [], 0
-
-    def chk(label, got, claimed, dec):
-        """Same rule as verify_numbers: pass when |got - claimed| <= half a unit in the last quoted digit."""
-        global n
-        n += 1
-        ok = abs(got - claimed) <= 0.5 * 10 ** (-dec) + 1e-9
-        if not ok:
-            bad.append((label, got, claimed))
-        print(f"  {'ok ' if ok else 'BAD'} {label:100s} computed {got:+.5f}  report {claimed:+.{max(dec, 0)}f}")
-
-    run(chk)
-    print(f"\n{n} checks, {len(bad)} mismatches")
-    for lab, got, claimed in bad:
-        print(f"  BAD {lab}: computed {got:+.5f}, report {claimed}")
-    raise SystemExit(1 if bad else 0)
+    from .standalone import run_alone
+    run_alone(run, "report")

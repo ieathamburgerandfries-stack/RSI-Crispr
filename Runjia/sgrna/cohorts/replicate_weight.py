@@ -49,7 +49,7 @@ import numpy as np
 import pandas as pd
 
 from .. import config
-from .curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 COUNTS = config.EXTERNAL / "crisprHAL" / "rawData" / "E_coli_WTSpCas9_counts.tsv"
 OUT = config.RESULTS / "replicate_weight.csv"
@@ -139,8 +139,8 @@ def run(seeds=(41, 42, 43), n_splits=None, arms=ARMS, verbose: bool = True):
     from ..harness.run_ablation import _impute, champion_params, make_selector
 
     n_splits = n_splits or config.N_SPLITS
-    X, y, names, protos = _base()
-    A, _ = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, _ = load_block("a_flank", protos)
     X = np.hstack([X, A]).astype(np.float32)
     noise = replicate_noise(protos)
     if verbose:
@@ -242,8 +242,8 @@ def raw_label(seeds=(41, 42, 43), n_splits=None,
     from ..harness.run_ablation import _impute, champion_params, make_selector
 
     n_splits = n_splits or config.N_SPLITS
-    X, y_released, names, protos = _base()
-    A, _ = _block("a_flank", protos)
+    X, y_released, names, protos = load_base()
+    A, _ = load_block("a_flank", protos)
     X = np.hstack([X, A]).astype(np.float32)
     noise = replicate_noise(protos)
     y = _raw_label(protos)

@@ -39,7 +39,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 from .. import config
-from .curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "data_ablation.csv"
 TEST = config.EXTERNAL / "crisprHAL" / "data" / "WT-SpCas9_testing_data.csv"
@@ -64,9 +64,9 @@ def _noshay_labels() -> pd.Series:
 
 
 def load(verbose: bool = True):
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     n_base = X.shape[1]                       # family A is appended after these
-    v, fnames = _block("a_flank", protos)
+    v, fnames = load_block("a_flank", protos)
     X = np.hstack([X, v])
     names = list(names) + list(fnames)
 

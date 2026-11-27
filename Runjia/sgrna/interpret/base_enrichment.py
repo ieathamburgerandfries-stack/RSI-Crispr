@@ -35,7 +35,7 @@ import numpy as np
 import pandas as pd
 
 from .. import config
-from ..cohorts.curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "base_enrichment.csv"
 SUMMARIES = ("b_energy", "c_folding", "d_mechanics")
@@ -46,7 +46,7 @@ def _summary_block(protos):
     """The 41 dense guide-only summary columns, `d_mechanics`'s flanks removed."""
     vals, names = [], []
     for fam in SUMMARIES:
-        v, fn = _block(fam, protos)
+        v, fn = load_block(fam, protos)
         keep = np.array([FLANK not in f for f in fn])
         vals.append(v[:, keep])
         names += [f for f, k in zip(fn, keep) if k]
@@ -58,9 +58,9 @@ def run(seeds=None, n_splits=None, n_features=300, verbose: bool = True):
 
     seeds = list(seeds or config.SEEDS)
     n_splits = n_splits or config.N_SPLITS
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     S, snames = _summary_block(protos)
-    A, anames = _block("a_flank", protos)
+    A, anames = load_block("a_flank", protos)
     if verbose:
         print(f"  summaries: {S.shape[1]} dense guide-only columns; "
               f"a_flank: {A.shape[1]}")

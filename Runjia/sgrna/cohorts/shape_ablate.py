@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 from sgrna import config
-from sgrna.cohorts.curated_ablation import _base, _block, _groups
+from sgrna.harness.curated import load_base, load_block, load_groups
 from sgrna.harness.run_ablation import cross_validate
 
 from ..features import shape_build
@@ -31,8 +31,8 @@ OUTCSV = OUT / "shape_ablation.csv"
 
 class Cohort:
     def __init__(self):
-        X, y, names, protos = _base()
-        groups, ok = _groups("gene", protos)
+        X, y, names, protos = load_base()
+        groups, ok = load_groups("gene", protos)
         self.X, self.y, self.protos, self.groups = X[ok], y[ok], protos[ok], groups[ok]
         self.names = names
         self.ok = ok
@@ -40,7 +40,7 @@ class Cohort:
 
     def A(self):
         if self._A is None:
-            v, fn = _block("a_flank", self.protos)
+            v, fn = load_block("a_flank", self.protos)
             self._A = (v, fn)
         return self._A
 

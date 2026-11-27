@@ -24,7 +24,7 @@ from scipy.stats import spearmanr
 from sklearn.model_selection import KFold
 
 from .. import config
-from .curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "curated_models.csv"
 MODELS = ("xgboost", "lightgbm", "random_forest", "extra_trees", "ridge",
@@ -35,8 +35,8 @@ def run(models=MODELS, seed: int = 41, n_splits: int = 5, verbose: bool = True):
     from ..harness.evaluate import _make, _standardise
     from ..harness.run_ablation import _impute, make_selector
 
-    X, y, names, protos = _base()
-    A, _ = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, _ = load_block("a_flank", protos)
     X = np.hstack([X, A])
     if verbose:
         print(f"  curated base + family A: {X.shape[0]:,} x {X.shape[1]:,}")

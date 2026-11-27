@@ -43,6 +43,7 @@ from sgrna.harness.run_ablation import _impute, make_selector
 
 from ..tuning import tune_ecoli as T
 from ..common import OUT
+from ..harness.metrics import zscore as _z
 
 SEEDS = (41, 42, 43)
 MERF_ITERS = 6
@@ -74,10 +75,6 @@ def parts(y, g, p, min_n=5):
     pdd = np.concatenate([p[r] - p[r].mean() for r in rows])
     return (float(spearmanr(y, p).statistic), float(spearmanr(ym, pm).statistic),
             float(spearmanr(yd, pdd).statistic), len(rows))
-
-
-def _z(v):
-    return (v - v.mean()) / (v.std() + 1e-12)
 
 
 # ------------------------------------------------------------------ Yu et al.: gene as a random effect

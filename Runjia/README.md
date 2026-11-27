@@ -129,7 +129,7 @@ Runjia/                 the documents above, run_audit.sh, run_ext.sh
 │   ├── config.py  io_utils.py  common.py   paths, constants, shared helpers; almost every module imports them
 │   ├── build/       sequence to columns: published-matrix decoder, guide index, genome and QCT tables, feature matrix, array featurisers
 │   ├── features/    the eleven families a_flank to j_periodicity, one module each, and the shape / 3D descriptors
-│   ├── harness/     fit-and-score machinery every result goes through: run_ablation, folds, evaluate, notebook, CNN baseline
+│   ├── harness/     fit-and-score machinery every result goes through: run_ablation, folds, evaluate, curated (the cohort loaders), metrics, notebook, CNN baseline
 │   ├── tuning/      hyperparameter search, its replication on a second gene split, model mixing, untuned knobs
 │   ├── cohorts/     ablations, ceilings and label variance on the curated and published cohorts
 │   ├── controls/    nulls and audits: shifted flank, no-information, sealed holdout, selector audit, fast-featuriser equality

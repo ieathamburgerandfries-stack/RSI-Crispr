@@ -45,7 +45,8 @@ import pandas as pd
 from sklearn.model_selection import KFold
 
 from .. import config
-from ..cohorts.curated_ablation import FAMILIES, _base, _block
+from ..harness.curated import load_base, load_block
+from ..cohorts.curated_ablation import FAMILIES
 
 RANDOM_OUT = config.RESULTS / "redescription_random.csv"
 TAXONOMY_OUT = config.RESULTS / "redescription_taxonomy.csv"
@@ -124,7 +125,7 @@ def random_tables(ks=(4, 16, 64, 256), table_seeds=(0, 1, 2),
     *draws* is what matters here -- one set of random tables is itself a sample,
     and a saturation curve read off a single draw would be unreadable.
     """
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     seqs = np.array([list(str(p)[:20].upper().ljust(20, "A")) for p in protos])
     code = np.searchsorted(BASES, seqs)                  # (n, 20) in 0..3
 
@@ -163,7 +164,7 @@ def random_tables(ks=(4, 16, 64, 256), table_seeds=(0, 1, 2),
 
 def column_taxonomy(hi=0.99, lo=0.50, verbose=True):
     """Split all 668 family columns by how well the guide alone predicts them."""
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     A = _onehot(protos, order=2)
     if verbose:
         print(f"  guide one-hot basis: {A.shape[1]} columns "
@@ -172,7 +173,7 @@ def column_taxonomy(hi=0.99, lo=0.50, verbose=True):
     blocks, labels = [], []
     for fam in FAMILIES:
         try:
-            v, fn = _block(fam, protos)
+            v, fn = load_block(fam, protos)
         except FileNotFoundError as exc:
             if verbose:
                 print(f"  {fam}: skipped ({exc})")
@@ -262,7 +263,7 @@ def _random_interaction(code: np.ndarray, order: int, rng,
 def random_nonlinear(orders=(1, 2, 3, 4, 6, 8), table_seeds=(0, 1, 2),
                      model_seeds=(41,), verbose=True):
     """Does non-linearity alone pay, or does the function have to mean something?"""
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     seqs20 = np.array([str(q)[:20].upper().ljust(20, "A") for q in protos])
     code = np.searchsorted(BASES, np.array([list(q) for q in seqs20]))
     A = _onehot(protos, order=2)          # the same design matrix as 0.316
@@ -289,7 +290,7 @@ def random_nonlinear(orders=(1, 2, 3, 4, 6, 8), table_seeds=(0, 1, 2),
 
     # The reference the controls have to be matched against, recomputed here so
     # it is measured on the same folds and the same design matrix as the rest.
-    vb, fnb = _block("b_energy", protos)
+    vb, fnb = load_block("b_energy", protos)
     add("real eng.dg.guide_selffold", -1, -1,
         vb[:, list(fnb).index("eng.dg.guide_selffold")])
 
@@ -355,7 +356,7 @@ def family_split(families=("a_flank", "b_energy", "c_folding", "d_mechanics",
     than one. A family whose halves behave alike was a fair bundle; one whose
     halves diverge was not.
     """
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     A = _onehot(protos, order=2)
     base_rho, base_sd = _cv(X, y)
     rows = [dict(family="(base)", part="base", n_cols=0, spearman=base_rho,
@@ -365,7 +366,7 @@ def family_split(families=("a_flank", "b_energy", "c_folding", "d_mechanics",
 
     for fam in families:
         try:
-            v, fn = _block(fam, protos)
+            v, fn = load_block(fam, protos)
         except FileNotFoundError as exc:
             if verbose:
                 print(f"  {fam}: skipped ({exc})")
@@ -414,8 +415,8 @@ PROVENANCE = {
 
 def provenance_split(family="d_mechanics", verbose=True):
     """Within one family's "outside" half, separate provenance from non-linearity."""
-    X, y, names, protos = _base()
-    v, fn = _block(family, protos)
+    X, y, names, protos = load_base()
+    v, fn = load_block(family, protos)
     fn = list(fn)
     rule = PROVENANCE[family]
 
@@ -543,7 +544,7 @@ def random_folds(table_seeds=(0, 1, 2), model_seeds=(41,), verbose=True):
     gain is composition-driven foldability survives in the control and only the
     position-specific structure is removed.
     """
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     seqs20 = np.array([str(p)[:20].upper().ljust(20, "A") for p in protos])
     chars = np.array([list(q) for q in seqs20])
     code = np.searchsorted(BASES, chars)
@@ -568,10 +569,10 @@ def random_folds(table_seeds=(0, 1, 2), model_seeds=(41,), verbose=True):
         pd.DataFrame(rows).to_csv(FOLDS_OUT, index=False)
 
     # The published columns, re-measured on these exact folds.
-    vb, fnb = _block("b_energy", protos)
+    vb, fnb = load_block("b_energy", protos)
     add("real eng.dg.guide_selffold", "real",
         vb[:, list(fnb).index("eng.dg.guide_selffold")])
-    v, _ = _block("c_folding", protos)
+    v, _ = load_block("c_folding", protos)
     add("real c_folding block", "real", v)
 
     # The same quantity recomputed here, so the control shares its code path.
@@ -627,12 +628,12 @@ def recoverability_trend(seeds=(41,), n_splits=5, with_fits: bool = True,
     """Does recoverability from the guide rank predictive power, and which kind?"""
     from scipy.stats import spearmanr
 
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     A = _onehot(protos, order=2)
     vals, cols, fams = [], [], []
     for fam in FAMILIES:
         try:
-            v, fn = _block(fam, protos)
+            v, fn = load_block(fam, protos)
         except FileNotFoundError:
             continue
         vals.append(v)
@@ -699,12 +700,12 @@ def per_column(hi: float = 0.99, seeds=(41,), n_splits=5, verbose: bool = True):
     """Individual increments for every column the guide predicts almost exactly."""
     from scipy.stats import spearmanr
 
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     A = _onehot(protos, order=2)
     vals, cols, fams = [], [], []
     for fam in FAMILIES:
         try:
-            v, fn = _block(fam, protos)
+            v, fn = load_block(fam, protos)
         except FileNotFoundError:
             continue
         vals.append(v); cols += list(fn); fams += [fam] * len(fn)

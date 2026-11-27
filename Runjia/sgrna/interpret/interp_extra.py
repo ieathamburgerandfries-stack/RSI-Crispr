@@ -51,11 +51,11 @@ def _fit(verbose=True):
     """The production recipe on four whole-gene folds of five (the paper's design, seed 41); fold 0 is held out."""
     import xgboost as xgb
 
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
     from ..harness.run_ablation import _impute, champion_params, make_selector
 
-    X, y, names, protos = _base()
-    A, an = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, an = load_block("a_flank", protos)
     X = np.hstack([X, A])
     names = list(names) + list(an)
     from ..controls.sealed_holdout_gene import _fold_ids

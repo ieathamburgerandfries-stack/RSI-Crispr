@@ -35,7 +35,7 @@ import numpy as np
 import pandas as pd
 
 from .. import config
-from .curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "curated_joint.csv"
 
@@ -59,7 +59,7 @@ def run(arms=None, seeds=None, n_splits=None, n_features=300,
     arms = arms or ARMS
     seeds = list(seeds or config.SEEDS)
     n_splits = n_splits or config.N_SPLITS
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
 
     singles = pd.read_csv(config.RESULTS / "ablation_curated.csv").set_index("family")
     base_rho = float(singles.loc["baseline", "spearman"])
@@ -74,7 +74,7 @@ def run(arms=None, seeds=None, n_splits=None, n_features=300,
             continue
         vals, nm, fam_of = [], [], []
         for f in fams:
-            v, fn = _block(f, protos)
+            v, fn = load_block(f, protos)
             vals.append(v)
             nm += fn
             fam_of += [f] * len(fn)

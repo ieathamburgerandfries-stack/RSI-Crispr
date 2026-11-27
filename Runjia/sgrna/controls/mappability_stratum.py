@@ -119,14 +119,14 @@ def _groups(protos):
 
 def oof(seeds=(41, 42, 43), threads: int = 6, verbose: bool = True) -> pd.DataFrame:
     """Out-of-fold predictions of the four arms, averaged over seeds (gene-grouped five-fold CV over all 33,567 guides)."""
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
     from . import sealed_holdout_gene as sg
 
     sg.N_JOBS = threads
     cache = config.INTERIM / "post_freeze" / "mappability"
     cache.mkdir(parents=True, exist_ok=True)
-    X, y, names, protos = _base()
-    A, _ = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, _ = load_block("a_flank", protos)
     f = features().set_index(config.ID_COL).reindex(protos)
     U = f[["u250", "u1000", "seed_dup", "copies"]].to_numpy(np.float32)
     groups = _groups(protos)
@@ -160,13 +160,13 @@ def oof(seeds=(41, 42, 43), threads: int = 6, verbose: bool = True) -> pd.DataFr
 
 def oof_depth(seeds=(41, 42, 43), threads: int = 6, verbose: bool = True) -> pd.DataFrame:
     """Two more arms: base + the control depth, and base + control depth + family A (same folds and seeds as `oof`)."""
-    from ..cohorts.curated_ablation import _base, _block
+    from ..harness.curated import load_base, load_block
     from . import sealed_holdout_gene as sg
 
     sg.N_JOBS = threads
     cache = config.INTERIM / "post_freeze" / "mappability"
-    X, y, names, protos = _base()
-    A, _ = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, _ = load_block("a_flank", protos)
     f = features().set_index(config.ID_COL).reindex(protos)
     D = f[["ctl_depth"]].to_numpy(np.float32)
     groups = _groups(protos)

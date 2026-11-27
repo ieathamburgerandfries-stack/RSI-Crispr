@@ -34,7 +34,7 @@ import numpy as np
 import pandas as pd
 
 from .. import config
-from .curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "curated_ladder.csv"
 SEEDS = (41, 42, 43)
@@ -52,10 +52,10 @@ def run(seeds=SEEDS, n_splits=None, verbose: bool = True):
     from ..harness.run_ablation import cross_validate
 
     n_splits = n_splits or config.N_SPLITS
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     mono = _unit_columns(names, ("monomer",))
     mono_di = _unit_columns(names, ("monomer", "dimer"))
-    A, anames = _block("a_flank", protos)
+    A, anames = load_block("a_flank", protos)
 
     mono_di_tri = _unit_columns(names, ("monomer", "dimer", "trimer"))
     all_kmers = _unit_columns(names, ("monomer", "dimer", "trimer", "tetramer"))

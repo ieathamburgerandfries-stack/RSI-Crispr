@@ -28,7 +28,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 
 from .. import config
-from ..cohorts.curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 from . import sealed_holdout_gene as sg
 from .sealed_holdout import OUT as SEALED_CSV, _seal
 
@@ -56,8 +56,8 @@ def run(max_draws: int | None = None, threads: int = 6, verbose: bool = True) ->
     out_path = _out_path()
     done = pd.read_csv(out_path) if out_path.exists() and out_path.stat().st_size else pd.DataFrame()
     ref = pd.read_csv(SEALED_CSV)
-    X, y, names, protos = _base()
-    A, anames = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    A, anames = load_block("a_flank", protos)
     XA = np.hstack([X, A])
     Xe, ye, gene_e, enames, _ = _esp_matrix()
     assert list(enames) == list(names) + list(anames), "eSpCas9 and curated columns differ"

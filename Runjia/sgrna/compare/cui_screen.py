@@ -221,13 +221,13 @@ def cas9_reference(seeds=(41, 42, 43), n_splits=None, verbose: bool = True):
     it is being compared to, measured the same way: family A alone, gene-grouped,
     same seeds and folds, on the cutting screen where it does work.
     """
-    from ..cohorts.curated_ablation import _base, _block, _groups
+    from ..harness.curated import load_base, load_block, load_groups
     from ..harness.run_ablation import cross_validate
 
     n_splits = n_splits or config.N_SPLITS
-    X, y, names, protos = _base()
-    groups, ok = _groups("gene", protos)
-    A, anames = _block("a_flank", protos)
+    X, y, names, protos = load_base()
+    groups, ok = load_groups("gene", protos)
+    A, anames = load_block("a_flank", protos)
     res = cross_validate(A[ok], y[ok], anames, ["a_flank"] * len(anames),
                          n_features=config.N_FEATURES, seeds=list(seeds),
                          n_splits=n_splits, verbose=False, groups=groups[ok],

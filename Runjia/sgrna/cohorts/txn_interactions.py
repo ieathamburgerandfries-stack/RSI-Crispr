@@ -31,7 +31,7 @@ import numpy as np
 import pandas as pd
 
 from .. import config
-from .curated_ablation import _base, _block
+from ..harness.curated import load_base, load_block
 
 OUT = config.RESULTS / "txn_interactions.csv"
 IX = ".ix."
@@ -42,8 +42,8 @@ def run(seeds=None, n_splits=None, n_features=300, verbose: bool = True):
 
     seeds = list(seeds or config.SEEDS)
     n_splits = n_splits or config.N_SPLITS
-    X, y, names, protos = _base()
-    v, fnames = _block("g_transcription", protos)
+    X, y, names, protos = load_base()
+    v, fnames = load_block("g_transcription", protos)
     is_ix = np.array([IX in f for f in fnames])
     if verbose:
         print(f"  g_transcription: {len(fnames)} columns, {is_ix.sum()} interactions, "

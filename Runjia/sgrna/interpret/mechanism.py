@@ -35,9 +35,9 @@ BASES = "ACGT"
 
 
 def _cohort():
-    from sgrna.cohorts.curated_ablation import _base, _block
-    X, y, names, protos = _base()
-    A, an = _block("a_flank", protos)
+    from sgrna.harness.curated import load_base, load_block
+    X, y, names, protos = load_base()
+    A, an = load_block("a_flank", protos)
     return X, y, np.asarray(protos, dtype=object), A, list(an)
 
 
@@ -118,8 +118,8 @@ def asymmetry(seeds=(41, 42, 43)):
     from sgrna.harness.run_ablation import _impute, grouped_folds, make_selector
     from ..tuning import tune_ecoli as T
     X0, y, protos, A, an = _cohort()
-    from sgrna.cohorts.curated_ablation import _groups
-    g, ok = _groups("gene", protos)
+    from sgrna.harness.curated import load_groups
+    g, ok = load_groups("gene", protos)
     g = np.asarray(g, dtype=object)
     comp = {s: [j for j, n in enumerate(an) if n.startswith(f"eng.flank.comp.{s}")] for s in ("up", "dn")}
     cfg = dict(json.loads((OUT / "tune_configs.json").read_text())["d099x"],
@@ -241,9 +241,9 @@ def pairs(seed=41, top=20):
     from sgrna.harness.run_ablation import _impute, make_selector
     from sgrna.interpret.importance import block_of
     from ..tuning import tune_ecoli as T
-    from sgrna.cohorts.curated_ablation import _base, _block
-    X0, y, names, protos = _base()
-    A, an = _block("a_flank", protos)
+    from sgrna.harness.curated import load_base, load_block
+    X0, y, names, protos = load_base()
+    A, an = load_block("a_flank", protos)
     allnames = list(names) + list(an)
     co = T.Cohort()
     cfg = dict(json.loads((OUT / "tune_configs.json").read_text())["d099x"], max_depth=2, n_estimators=4000)

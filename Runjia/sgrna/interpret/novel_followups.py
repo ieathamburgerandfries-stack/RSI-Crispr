@@ -90,11 +90,11 @@ def _comp_cols(names):
 
 
 def relative(seed: int = 41):
-    from sgrna.cohorts.curated_ablation import _base, _block
+    from sgrna.harness.curated import load_base, load_block
     from sgrna.compare import transfer
 
-    X_ec, y_ec, names, protos = _base()
-    A_ec, an = _block("a_flank", protos)
+    X_ec, y_ec, names, protos = load_base()
+    A_ec, an = load_block("a_flank", protos)
     X_ec = np.hstack([X_ec, A_ec]).astype(np.float32)
     all_names = list(names) + list(an)
 
@@ -150,8 +150,8 @@ def _gc(fasta):
 
 
 def _groups_home(protos):
-    from sgrna.cohorts.curated_ablation import _groups
-    g, ok = _groups("gene", protos)
+    from sgrna.harness.curated import load_groups
+    g, ok = load_groups("gene", protos)
     return np.asarray(g, dtype=object), ok
 
 
@@ -179,9 +179,9 @@ def _binned(index, nbins, flank=1000):
 
 
 def resolution(seeds=(41, 42, 43)):
-    from sgrna.cohorts.curated_ablation import _base, _block
-    X0, y, names, protos = _base()
-    A, an = _block("a_flank", protos)
+    from sgrna.harness.curated import load_base, load_block
+    X0, y, names, protos = load_base()
+    A, an = load_block("a_flank", protos)
     idx = pd.read_csv(config.INTERIM / "curated_guide_index.csv").set_index(config.ID_COL)
     idx = idx.reindex(list(protos)).reset_index()
     comp = [j for j, n in enumerate(an) if n.startswith("eng.flank.comp.")]

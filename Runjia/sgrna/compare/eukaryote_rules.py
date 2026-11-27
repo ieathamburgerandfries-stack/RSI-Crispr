@@ -90,9 +90,9 @@ def load_all():
 
 
 def ecoli():
-    from sgrna.cohorts.curated_ablation import _base
+    from sgrna.harness.curated import load_base
     from sgrna.build.build_features import load_curated_index
-    X, y, names, protos = _base()
+    X, y, names, protos = load_base()
     idx = load_curated_index(verbose=False).set_index(config.ID_COL).reindex(protos)
     ctx = (idx["upstream"].str[-30:] + "N" * 23 + idx["downstream"].str[:47]).to_numpy()       # same geometry as the other tables
     return dict(species="E. coli", library="curated", n=len(y), y=(y - y.mean()) / y.std(), protos=np.asarray(protos, dtype=object), ctx=ctx, X=X,

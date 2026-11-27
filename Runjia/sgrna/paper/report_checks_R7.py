@@ -1,5 +1,4 @@
-"""Report checks R7: numbers of PROGRESS_REPORT.md lines 1095-1341 (Appendix A, Controls and nulls; Appendix B, the methods and controls behind
-Findings 1-7, up to 'Why rho, and why R2') that had no line in the audit, or whose audit line matched a different quantity, recomputed from a
+"""Report checks R7: numbers of Appendix A and the first part of Appendix B of PROGRESS_REPORT.md (Controls and nulls; the methods and controls behind Findings 1-7, up to 'Why rho, and why R2') that had no line in the audit, or whose audit line matched a different quantity, recomputed from a
 stored file or from the repository's own code. Same idiom as `paper_numbers_C`: `chk(label, got, claimed, dec)` passes when
 |got - claimed| <= 0.5 * 10**(-dec); `got` is always computed, `claimed` is the value as the corrected report prints it. Every label starts
 with 'report R7: ' and names the cohort and protocol of the number.
@@ -426,10 +425,10 @@ def run(chk):
     chk(P + "family split: c_folding whole family (a different run)", float(fs[("c_folding", "whole family")]), 0.0147, 4)
     chk(P + "family split: d_mechanics not-cheap 10 columns", float(fs[("d_mechanics", "outside")]), 0.0970, 4)
     try:
-        from .hooks import _base, _block
-        X, y, names, protos = _base()
-        b, bn = _block("b_energy", protos)
-        c, cn = _block("c_folding", protos)
+        from .hooks import load_base, load_block
+        X, y, names, protos = load_base()
+        b, bn = load_block("b_energy", protos)
+        c, cn = load_block("c_folding", protos)
         u = b[:, bn.index("eng.dg.guide_selffold")].astype(float)
         v2 = c[:, cn.index("eng.fold.spacer_mfe")].astype(float)
         m = np.isfinite(u) & np.isfinite(v2)
@@ -489,10 +488,10 @@ def run(chk):
     # ------------------------------------------------------------------------------------------------ split 2
     print("report R7: Appendix B, the second gene split")
     try:
-        from .hooks import _base, _groups
+        from .hooks import load_base, load_groups
         from .hooks import tune_ecoli as T
-        X, y, _, protos = _base()
-        g, ok = _groups("gene", protos)
+        X, y, _, protos = load_base()
+        g, ok = load_groups("gene", protos)
         g = np.asarray(g[ok], dtype=object)
         genes = np.array(sorted(set(g)))
         c2 = set(np.random.default_rng(7).choice(genes, size=int(round(0.3 * len(genes))), replace=False))
@@ -506,19 +505,5 @@ def run(chk):
 
 # ---------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    bad, n = [], 0
-
-    def chk(label, got, claimed, dec):
-        """Same rule as verify_numbers: pass when |got - claimed| <= half a unit in the last quoted digit."""
-        global n
-        n += 1
-        ok = abs(got - claimed) <= 0.5 * 10 ** (-dec) + 1e-9
-        if not ok:
-            bad.append((label, got, claimed))
-        print(f"  {'ok ' if ok else 'BAD'} {label:120s} computed {got:+.6f}  report {claimed:+.{max(dec, 0)}f}")
-
-    run(chk)
-    print(f"\n{n} checks, {len(bad)} mismatches")
-    for lab, got, claimed in bad:
-        print(f"  BAD {lab}: computed {got:+.6f}, report {claimed}")
-    raise SystemExit(1 if bad else 0)
+    from .standalone import run_alone
+    run_alone(run, "report")

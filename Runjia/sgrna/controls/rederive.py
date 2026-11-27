@@ -125,9 +125,9 @@ def grouped_retention() -> pd.DataFrame:
 
 def selector_control() -> pd.DataFrame:
     """Is the 300-column budget costing anything on the curated cohort?"""
-    from ..cohorts.curated_ablation import _base, _block
-    X, y, names, protos = _base()
-    v, _ = _block("d_mechanics", protos)
+    from ..harness.curated import load_base, load_block
+    X, y, names, protos = load_base()
+    v, _ = load_block("d_mechanics", protos)
     Xm = np.hstack([X, v])
     rows = []
     for tag, M in (("base", X), ("base + mech", Xm)):

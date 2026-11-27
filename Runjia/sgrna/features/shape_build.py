@@ -2,7 +2,7 @@
 
     python -m sgrna.features.shape_build
 Output: data/interim/ext/shape/<source>_<control>_<block>.npy (+ .json names), rows in the order
-of `curated_ablation._base()`.
+of `harness.curated.load_base()`.
 
 Report section: Appendix B4.
 """
@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from sgrna import config
-from sgrna.cohorts.curated_ablation import _base
+from sgrna.harness.curated import load_base
 
 from . import geom
 from ..common import INTERIM
@@ -29,7 +29,7 @@ def path(source, control, block):
 
 
 def build(sources=("mc", "md", "xrc"), controls=(None,), force=False):
-    _, _, _, protos = _base()
+    _, _, _, protos = load_base()
     idx = pd.read_csv(config.INTERIM / "curated_guide_index.csv").set_index(config.ID_COL)
     idx = idx.reindex(protos).reset_index()
     assert idx.upstream.notna().all()

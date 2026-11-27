@@ -31,6 +31,7 @@ from sgrna.harness.run_ablation import _impute, make_selector
 from ..tuning import mix_ecoli as M
 from ..tuning import tune_ecoli as T
 from ..common import MAIN_RESULTS, OUT, stored
+from ..harness.metrics import zscore as _z
 
 SRC = MAIN_RESULTS                           # the main project's results folder (stored crisprHAL predictions)
 
@@ -65,10 +66,6 @@ def train_predict(specs, X_tr, y_tr, X_te, seed=41):
         p = list(M.fit_predict(kind, cfg, Xa, y_tr, Xb, seed, (k,) if kind in ("xgb", "lgb", "cat") else None).values())[0]
         preds[name] = p; secs[name] = time.time() - t0
     return preds, secs
-
-
-def _z(p):
-    return (p - p.mean()) / (p.std() + 1e-12)
 
 
 def _flat(ns):
@@ -129,8 +126,8 @@ def wt(families, specs):
 
 def folds(families, specs, seed=41):
     from sklearn.model_selection import KFold
-    from sgrna.cohorts.curated_ablation import _base, _block
-    X, y, _, protos = _base(); A, _ = _block("a_flank", protos); X = np.hstack([X, A])
+    from sgrna.harness.curated import load_base, load_block
+    X, y, _, protos = load_base(); A, _ = load_block("a_flank", protos); X = np.hstack([X, A])
     oof = {s[1]: np.zeros(len(y)) for s in specs}; secs_all = {s[1]: 0.0 for s in specs}
     for tr, va in KFold(5, shuffle=True, random_state=seed).split(np.arange(len(y))):
         p, secs = train_predict(specs, X[tr], y[tr], X[va], seed)
