@@ -431,18 +431,18 @@ Within a group the order is alphabetical.
 | `cui_essential_strand.csv` | 0.4 | cited | `cui_screen`, `report_checks_R8` | grouping, arm, spearman, spearman_sd |
 | `cui_essentiality_split.csv` | 1.2 | cited | `cui_screen`, `report_checks_R8` | subset, arm, n_rows, label_sd, spearman, spearman_sd |
 | `cui_strand_summary.csv` | 0.9 | cited | `cui_screen`, `report_checks_R8` | subset, coding_strand, n, mean_label, mean_up1000_purine, mean_up500_gc, gap_in_label_sd … |
-| `cut_within_gene.csv` | 2.0 | receipt | `cut_within_gene` | screen, arm, seed, overall, between_genes, within_genes |
+| `cut_within_gene.csv` | 2.0 | receipt | `strand` | screen, arm, seed, overall, between_genes, within_genes |
 | `grouped_retention.csv` | 0.8 | cited | `report_checks_R8` | family, random, gene, retained_pct, reach, excess_loss_pp |
-| `strand_families.csv` | 3.6 | cited | `strand_families`, `report_checks_R8` | grouping, arm, spearman, spearman_sd |
-| `strand_families_proxies.csv` | 0.7 | receipt | `strand_families` | family, n_cols, max_abs_rho_with_strand, n_proxy_cols, strongest |
-| `strand_families_recoverable.csv` | 0.6 | cited | `strand_recoverable` | family, n_cols, n_proxy, auc_all, auc_after_removal |
-| `strand_families_within.csv` | 3.5 | cited | `strand_families`, `report_checks_R8` | stratum, grouping, arm, n, spearman, spearman_sd |
-| `strand_flip.csv` | 0.5 | cited | `strand_strata` | arm, strand_selected_in, true, flipped, shuffled, constant, true_sd … |
-| `strand_strata_rousset.csv` | 0.9 | cited | `strand_strata` | screen, stratum, grouping, arm, n, spearman, spearman_sd … |
-| `strand_within_gene_cui.csv` | 5.0 | receipt | `strand_within_gene` | screen, arm, seed, overall, between_genes, within_genes |
-| `strand_within_gene_cui_joint.csv` | 2.8 | receipt | `strand_within_gene` | screen, arm, seed, overall, between_genes, within_genes |
+| `strand_families.csv` | 3.6 | cited | `strand`, `report_checks_R8` | grouping, arm, spearman, spearman_sd |
+| `strand_families_proxies.csv` | 0.7 | receipt | `strand` | family, n_cols, max_abs_rho_with_strand, n_proxy_cols, strongest |
+| `strand_families_recoverable.csv` | 0.6 | cited | `strand` | family, n_cols, n_proxy, auc_all, auc_after_removal |
+| `strand_families_within.csv` | 3.5 | cited | `strand`, `report_checks_R8` | stratum, grouping, arm, n, spearman, spearman_sd |
+| `strand_flip.csv` | 0.5 | cited | `strand` | arm, strand_selected_in, true, flipped, shuffled, constant, true_sd … |
+| `strand_strata_rousset.csv` | 0.9 | cited | `strand` | screen, stratum, grouping, arm, n, spearman, spearman_sd … |
+| `strand_within_gene_cui.csv` | 5.0 | receipt | `strand` | screen, arm, seed, overall, between_genes, within_genes |
+| `strand_within_gene_cui_joint.csv` | 2.8 | receipt | `strand` | screen, arm, seed, overall, between_genes, within_genes |
 | `strand_within_gene_cui_summary.csv` | 1.9 | cited | `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
-| `strand_within_gene_rousset.csv` | 1.7 | receipt | `strand_within_gene` | screen, arm, seed, overall, between_genes, within_genes |
+| `strand_within_gene_rousset.csv` | 1.7 | receipt | `strand` | screen, arm, seed, overall, between_genes, within_genes |
 | `strand_within_gene_rousset_summary.csv` | 0.7 | cited | `report_checks_R8` | screen, arm, n_seeds, overall, overall_sd, between_genes, between_genes_sd … |
 
 ### Appendix E — The paper's Results, Discussion and appendices, bullet by bullet

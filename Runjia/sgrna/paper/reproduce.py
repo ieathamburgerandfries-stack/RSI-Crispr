@@ -8,6 +8,10 @@ Each case in `CASES` is one command (a module and its arguments). It is run agai
 is printed rather than written names the file the output must equal (`stdout`). Only cases that finish in minutes from stored rows and caches belong here; a module that times something, or refits a model from
 scratch, cannot reproduce bytes and does not.
 
+Two options for modules that resume from fold checkpoints (`results/folds_<tag>.csv`, which live in the main project's `results/`, outside the repository): `project=True` runs the case against a scratch copy of the
+whole project root (data and external_data linked, `results/` copied), so a missing checkpoint could only ever refit into the copy; `rtol=1e-9` compares the listed files as numbers instead of bytes, for results that
+are re-summarised from stored folds and so agree to floating-point rounding (about 1e-14), not to the byte. Both are named in the case, never assumed.
+
     ./run_audit.sh --reproduce                  # every case
     ./run_audit.sh --reproduce --only tune      # the cases whose name contains `tune`
     ./run_audit.sh --reproduce --list
@@ -46,11 +50,48 @@ CASES = [
     dict(name="human-additivity-twin", cmd=["sgrna.compare.human_additivity_twin", "--summarise-only"], writes=["human_additivity_twin_summary.csv"]),
     dict(name="design-check", cmd=["sgrna.design.check_design"], writes=["design_check.csv"]),
     dict(name="design-benchmark", cmd=["sgrna.design.design_benchmark"], writes=["design_benchmark.csv"]),
+    dict(name="strand-families", cmd=["sgrna.compare.strand", "--parts", "families"], writes=["strand_families.csv", "strand_families_proxies.csv"], project=True, rtol=1e-9),
+    dict(name="strand-families-within", cmd=["sgrna.compare.strand", "--parts", "families-within"], writes=["strand_families_within.csv"], project=True, rtol=1e-9),
+    dict(name="strand-recoverable", cmd=["sgrna.compare.strand", "--parts", "recoverable"], writes=["strand_families_recoverable.csv"], project=True, rtol=1e-9),
+    dict(name="strand-flip", cmd=["sgrna.compare.strand", "--parts", "flip"], writes=["strand_flip.csv"], project=True),
 ]
 
 
 def _digest(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def _close_csv(a: Path, b: Path, rtol: float) -> bool:
+    """Two CSVs with the same shape, columns and text, whose numbers agree within `rtol` (relative) and whose missing cells coincide."""
+    import numpy as np
+    import pandas as pd
+
+    x, y = pd.read_csv(a), pd.read_csv(b)
+    if x.shape != y.shape or list(x.columns) != list(y.columns):
+        return False
+    for c in x.columns:
+        if x[c].dtype.kind in "fi" and y[c].dtype.kind in "fi":
+            u, v = x[c].to_numpy(float), y[c].to_numpy(float)
+            if (np.isnan(u) != np.isnan(v)).any():
+                return False
+            ok = ~np.isnan(u)
+            if (np.abs(u - v)[ok] > rtol * np.maximum(np.abs(v[ok]), 1e-300)).any():
+                return False
+        elif not (x[c].astype(str) == y[c].astype(str)).all():
+            return False
+    return True
+
+
+def _scratch_project(tmp: Path) -> Path:
+    """A project root the case may write into: data and external_data linked, results copied."""
+    from .. import config
+
+    root = tmp / "project"
+    root.mkdir()
+    for d in ("data", "external_data"):
+        (root / d).symlink_to(config.ROOT / d)
+    shutil.copytree(config.ROOT / "results", root / "results", copy_function=shutil.copy2)
+    return root
 
 
 def _tree(root: Path) -> dict[str, Path]:
@@ -64,6 +105,8 @@ def run_case(case: dict) -> tuple[bool, str]:
         shutil.copytree(RESULTS, scratch, copy_function=shutil.copy2)          # copy2 keeps mtimes, so "was it rewritten" is a comparison
         before = {k: p.stat().st_mtime_ns for k, p in _tree(scratch).items()}
         env = dict(os.environ, EXT_OUT=str(scratch))
+        if case.get("project"):
+            env["RSI09_ROOT"] = str(_scratch_project(Path(tmp)))
         t0 = time.perf_counter()
         proc = subprocess.run([sys.executable, "-m", *case["cmd"]], cwd=RUNJIA, env=env, capture_output=True, text=True)
         secs = time.perf_counter() - t0
@@ -77,10 +120,14 @@ def run_case(case: dict) -> tuple[bool, str]:
             if not f.exists() or f.stat().st_mtime_ns == before.get(rel):
                 problems.append(f"{rel} was not rewritten")
         changed = []
+        rtol = case.get("rtol")
         for rel, p in _tree(scratch).items():
             tracked = RESULTS / rel
-            if tracked.exists() and _digest(p) != _digest(tracked):
-                changed.append(rel)
+            if not tracked.exists() or _digest(p) == _digest(tracked):
+                continue
+            if rtol and rel in case.get("writes", []) and _close_csv(p, tracked, rtol):
+                continue
+            changed.append(rel)
         if changed:
             problems.append("differs from the tracked file: " + ", ".join(changed[:5]) + (" ..." if len(changed) > 5 else ""))
         return (not problems), (f"{secs:.0f} s" if not problems else "; ".join(problems))

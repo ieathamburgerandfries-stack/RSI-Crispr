@@ -171,3 +171,17 @@ What was *not* deleted, against the review of the same day, after reading the re
 * `cohorts/curated_ablation._base`, `_block` and `_groups`, which 53 modules and the audit imported by their underscore-private names, are `harness/curated.load_base`, `load_block` and `load_groups` (bodies unchanged); five copies of the
   z-score are `harness/metrics.zscore`.
 * The fifteen copies of the audit's standalone `__main__` driver are `paper/standalone.run_alone`.
+
+## 27 November 2026 (night): five strand modules merged into `compare/strand.py`
+
+`strand_families.py`, `strand_strata.py`, `strand_within_gene.py`, `cut_within_gene.py` and `strand_recoverable.py` asked one question in pieces (is family A's gain on the dCas9 screens the strand rule arriving through a lossy copy of
+"which strand the guide targets?") and shared the loading of Cui's essential-gene frame (seven copies) and the between/within-genes split (two). They are now `compare/strand.py --parts build|families|families-within|recoverable|rousset|flip|within-cui|within-joint|within-rousset|cutting`,
+with the frame loaded once and the split defined once. Every result file keeps its name; all are now written under `results/` (the old modules wrote most of them to the main project's `results/` and the tracked copies were made by hand).
+Restore the old modules with `git checkout pre-merge-2026-11-27 -- Runjia/sgrna/compare/strand_families.py` (and the other four).
+
+How it was checked: `families`, `families-within`, `recoverable` and `flip` reproduce their stored tables from the fold checkpoints (to 3e-14, 3e-14, exactly and exactly; `./run_audit.sh --reproduce`, four new cases that run against a scratch copy of the project
+root so the checkpoints cannot be touched); the within-gene routine gave identical files in the old and the new code on a real refit (Rousset coding strand, two seeds, 100 bootstrap draws), and the decomposition is identical on random data. The remaining
+parts (`rousset`, `within-*`, `cutting`) cannot be reproduced from checkpoints, see below, so they rest on that A/B test and on the unchanged logic.
+
+A hazard found and closed: `cross_validate(return_oof=True)` fills the out-of-fold predictions only for folds it computes in that call, so resuming from complete checkpoints gives NaN predictions, and the old modules then **overwrote their good result files with NaN rows**
+(a rerun of `strand_within_gene --cui` from the stored checkpoints did exactly that in a scratch copy). `strand.py` raises instead, naming the checkpoints to delete if a refit is wanted.
