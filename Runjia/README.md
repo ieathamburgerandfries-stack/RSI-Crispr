@@ -18,7 +18,15 @@ python -m sgrna.design.design_guide --genome genome.fasta --cut-site 1234567    
 python -m sgrna.design.design_guide --genome genome.fasta --cut-site 1234567 --window 15 --top 5 --out guides.csv
 ```
 
-Run it from this folder with `PYTHONPATH=.`; it needs only numpy, pandas, scipy and xgboost, no project data. The cut site is the 1-based coordinate of the base before the cut on the plus strand.
+From a fresh clone, with no project data (checked on a clean export of the tracked files; tested with xgboost 3.4, scikit-learn 1.9, numpy 2.5, pandas 3.0, scipy 1.18, the versions the models were saved with):
+
+```bash
+git clone https://github.com/ieathamburgerandfries-stack/RSI-Crispr && cd RSI-Crispr/Runjia
+pip install -r requirements-design.txt
+PYTHONPATH=. python -m sgrna.design.design_guide --genome genome.fasta --cut-site 1234567
+```
+
+You supply the genome FASTA; everything else (the models and the lookup tables) is in `models/`. The family A release (`family_A_v1.zip`) is data only and is not needed to design a guide. The cut site is the 1-based coordinate of the base before the cut on the plus strand.
 It lists every NGG guide on either strand that cuts within `--window` bp of the site, reads the 1,000 nt on each side of each (the model's input), scores them with the shipped model
 (`models/slicer_tuned.ubj`, 10 MB; `--model default` uses the 0.7 MB default one; `python -m sgrna.design.train_model` refits both) and prints the best 20-nt spacer with its PAM,
 coordinates, predicted score and the number of NGG sites its 20-mer has in the genome (guides with more than one are set aside, or flagged when none is left).

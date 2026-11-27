@@ -54,7 +54,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 
 <!-- generated:begin -->
 
-**175 modules, 38,440 lines** of Python in 12 folders (not counting the `__init__.py` markers).
+**175 modules, 38,442 lines** of Python in 12 folders (not counting the `__init__.py` markers).
 
 #### By the report section each module supports
 
@@ -62,7 +62,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 |---|---|---:|---:|---:|---|
 | Finding 1 | The published representation is a re-encoding of the guide, and holds about twenty variables | 5 | 770 | 27 | build, cohorts, compare, controls, paper |
 | Finding 2 | The DNA around the cut site predicts cutting — the one large effect, and it is local and compositional | 5 | 1,161 | 30 | compare, controls, harness, interpret, paper |
-| Finding 3 | The effect belongs to the DNA, and transfers | 6 | 2,131 | 81 | build, compare, controls, paper |
+| Finding 3 | The effect belongs to the DNA, and transfers | 6 | 2,131 | 83 | build, compare, controls, paper |
 | Finding 4 | The model is out of *material*, and the tuning gain is evidence for it | 3 | 922 | 13 | interpret, tuning |
 | Finding 5 | On a redundant matrix, per-column importance is unstable across fits, but SHAP at block level and edit tests are faithful; SLICER is interpretable, more faithful than crisprHAL 2, and ties or splits with it on stability, truth and compressibility depending on the reading used | 10 | 3,066 | 54 | interpret, paper |
 | Finding 6 | The label's ceiling is about 0.946 (0.942 to 0.946 by estimator), measured from crisprHAL's own replicates | 1 | 122 | 1 | cohorts |
@@ -82,7 +82,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Appendix E | The paper's Results, Discussion and appendices, bullet by bullet | 1 | 291 | 4 | compare |
 | tooling | the audit, the figures, the guards and this map | 5 | 2,126 | 0 | paper |
 | library | shared code the experiments are built on | 8 | 1,225 | 1 | (top), build |
-| — | no section of the report points at it | 18 | 2,491 | 32 | cohorts, compare, cost, design, interpret, paper |
+| — | no section of the report points at it | 18 | 2,493 | 34 | cohorts, compare, cost, design, interpret, paper |
 
 Read the table above as the price list for the report: each claim carries its code and its result files with it. A module is placed in the section that cites it (or the result files it writes) most often. The `—` row, if there is one, is completed work that no section of the report points at. Each such module is listed in `REMOVED.md` under "Considered for removal and kept", with what it found; they were kept by decision, not by oversight.
 
@@ -312,16 +312,16 @@ What each model costs to train and to run, measured rather than estimated.
 | `model_size` | 91 | SLICER's default model stores 6,338 leaf values against 790,533 parameters for crisprHAL 2, but the tuned SLICER model is larger on disk than crisprHAL 2's file. | Part 5 | `model_size.csv` |
 | `rds_read` | 106 | Minimal read-only parser for R's XDR serialisation (.rds), enough for plain data (lists, vectors, attributes). | — | — |
 
-### `sgrna/design/`  —  4 modules, 499 lines
+### `sgrna/design/`  —  4 modules, 501 lines
 
 The tool the project is for: give it a genome and a cut site and it returns the SpCas9 guide SLICER predicts will cut best there, with the shipped models, the check that it reads the same DNA and builds the same columns as the training matrices, and a benchmark of picking by score.
 
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
-| `check_design` | 60 | Check the design tool against the stored feature matrices: it reads the same DNA, builds the same 6,517 columns and scores the same. | — | — |
-| `design_benchmark` | 109 | Picking the guide SLICER ranks first beats a random pick: among curated guides within 250 bp its measured score sits at the 0.77 percentile, against 0.5 for chance. | — | `tune_configs.json` |
+| `check_design` | 60 | Check the design tool against the stored feature matrices: it reads the same DNA, builds the same 6,517 columns and scores the same. | — | `design_check.csv` |
+| `design_benchmark` | 109 | Picking the guide SLICER ranks first beats a random pick: among curated guides within 250 bp its measured score sits at the 0.77 percentile, against 0.5 for chance. | — | `design_benchmark.csv`, `tune_configs.json` |
 | `design_guide` | 260 | Pick the SpCas9 guide SLICER predicts will cut best at a site in a genome. | — | — |
-| `train_model` | 70 | Fit the shipped SLICER models (tuned and default) on all 33,567 curated guides and save them with everything needed to score a new guide. | — | `tune_configs.json` |
+| `train_model` | 72 | Fit the shipped SLICER models (tuned and default) on all 33,567 curated guides and save them with everything needed to score a new guide. | — | `tune_configs.json` |
 
 ### `sgrna/paper/`  —  21 modules, 7,390 lines
 
@@ -338,7 +338,7 @@ The tooling the paper rests on: the audit, the figures, the import and reference
 | `paper_numbers_A` | 431 | Audit of the numbers in the draft paper's claims [0]-[19], [35]-[45] (group A): data sets and methods, the flank effect, its mechanism and the appendix constraints. | Appendix A | `ablation_curated.csv`, `ablation_curated_gene.csv` +41 |
 | `paper_numbers_B` | 231 | Audit of the numbers in the draft paper's claims [20]-[28], [32]-[34] and [49] (group B): every number is recomputed from a stored result file and compared with the value the paper prints. | Finding 3 | `ablation_curated.csv`, `ceiling_parametric.csv` +25 |
 | `paper_numbers_C` | 326 | Audit of paper claims [29]-[31], [46]-[48], [50]-[55] (group C): every number is recomputed from a stored result file. | Part 5 | `ablation_curated.csv`, `ablation_label_curated.csv` +38 |
-| `paper_numbers_D` | 698 | Audit of the numbers added to the paper (point form) in the second pass of 23 Nov 2026: one protocol, the reach of the flank signal, controls, the transfer matrix, SLICER against crisprHAL 2 on more metrics … | Finding 3 | `ablation_curated.csv`, `ablation_paper_folds_summary.csv` +54 |
+| `paper_numbers_D` | 698 | Audit of the numbers added to the paper (point form) in the second pass of 23 Nov 2026: one protocol, the reach of the flank signal, controls, the transfer matrix, SLICER against crisprHAL 2 on more metrics … | Finding 3 | `ablation_curated.csv`, `ablation_paper_folds_summary.csv` +56 |
 | `report_checks_CIT` | 90 | Checks on the report's citation-related numbers (tag CIT): each `got` is computed from a stored file. | Part 5 | `noshay_replication.csv` |
 | `report_checks_R1` | 305 | Report checks R1: numbers of PROGRESS_REPORT.md lines 1-120 (the Summary, 'How to read', 'What earns a place', Finding 1) that had no line in the audit, recomputed from a stored file or from the repository's own code. | Finding 1 | `ablation_curated.csv`, `ablation_curated_gene.csv` +25 |
 | `report_checks_R2` | 339 | Audit of PROGRESS_REPORT.md lines 121-307 (Finding 2 on the flank effect, Finding 3 on transfer and confound controls, Finding 4 on the model being out of material): the headline numbers that `verify_numbers` did not recompute … | Finding 2 | `ablation_curated.csv`, `ablation_main.csv` +26 |

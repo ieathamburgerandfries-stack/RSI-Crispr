@@ -21,35 +21,22 @@ J        j_periodicity     GC skew + helical-repeat periodicity  genome only
 
 from __future__ import annotations
 
-from . import (
-    a_flank,
-    b_energy,
-    c_folding,
-    d_mechanics,
-    d_supercoiling,
-    e_nucleoid,
-    f_methylation,
-    g_transcription,
-    h_offtarget,
-    i_shape,
-    j_periodicity,
-)
+ALL = ("a_flank", "b_energy", "c_folding", "d_mechanics", "d_supercoiling", "e_nucleoid", "f_methylation", "g_transcription", "h_offtarget", "i_shape", "j_periodicity")
 
-REGISTRY = {
-    "a_flank": a_flank,
-    "b_energy": b_energy,
-    "c_folding": c_folding,
-    "d_mechanics": d_mechanics,
-    "d_supercoiling": d_supercoiling,
-    "e_nucleoid": e_nucleoid,
-    "f_methylation": f_methylation,
-    "g_transcription": g_transcription,
-    "h_offtarget": h_offtarget,
-    "i_shape": i_shape,
-    "j_periodicity": j_periodicity,
-}
 
-ALL = tuple(REGISTRY)
+def __getattr__(name: str):
+    """`REGISTRY` (family name -> module) is built on first use, so that `from sgrna.features import a_flank` does not import, and need the data of, all eleven families.
+
+    The guide-design tool only needs family A and has no project data folder; importing every family at package import made it fail on a fresh clone.
+    """
+    if name == "REGISTRY":
+        import importlib
+
+        registry = {n: importlib.import_module(f".{n}", __name__) for n in ALL}
+        globals()["REGISTRY"] = registry
+        return registry
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 # Families that need nothing but the reference genome, so they always work.
 SELF_CONTAINED = ("a_flank", "c_folding", "d_mechanics", "f_methylation", "h_offtarget",
