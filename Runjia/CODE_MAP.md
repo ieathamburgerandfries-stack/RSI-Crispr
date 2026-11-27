@@ -54,7 +54,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 
 <!-- generated:begin -->
 
-**176 modules, 38,695 lines** of Python in 12 folders (not counting the `__init__.py` markers).
+**174 modules, 38,619 lines** of Python in 12 folders (not counting the `__init__.py` markers).
 
 #### By the report section each module supports
 
@@ -70,7 +70,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Part 2 | Contributions | 6 | 724 | 7 | cohorts, compare, controls, interpret |
 | Part 3 | Where this stops | 1 | 179 | 2 | compare |
 | Part 4 | The freeze, and what remains | 5 | 791 | 5 | compare, controls |
-| Part 5 | Where this sits in the field | 37 | 6,313 | 106 | build, cohorts, compare, controls, cost, interpret, paper, tuning |
+| Part 5 | Where this sits in the field | 35 | 6,237 | 106 | build, cohorts, compare, controls, cost, interpret, paper, tuning |
 | Appendix A | Controls and nulls | 6 | 1,678 | 66 | controls, harness, paper |
 | Appendix B | The methods and controls behind the findings | 15 | 4,847 | 77 | cohorts, compare, controls, harness, interpret, paper, tuning |
 | Appendix B2 | Why the imported families failed, and why that is not a screen | 2 | 416 | 4 | controls, interpret |
@@ -291,7 +291,7 @@ Every comparison with something else (Part 5 of the report): crisprHAL 2, the in
 | `vs_crisprhal` | 185 | The tuned / mixed E. coli model against crisprHAL 2 again, under the three conditions of the original comparison. | Part 5 | `mix_finalists.csv`, `tune_configs.json` +3 |
 | `vs_crisprhal_wt_hal` | 37 | crisprHAL 2's shipped WT-SpCas9 weights on their own WT test file, saved for a paired comparison (TensorFlow environment). | Part 5 | — |
 
-### `sgrna/cost/`  —  10 modules, 2,060 lines
+### `sgrna/cost/`  —  8 modules, 1,984 lines
 
 What each model costs to train and to run, measured rather than estimated.
 
@@ -299,12 +299,10 @@ What each model costs to train and to run, measured rather than estimated.
 |---|---:|---|---|---|
 | `bench` | 319 | Peak memory and training cost, measured rather than estimated. | — | `memory_comparison.csv`, `memory_comparison_runs.csv` +1 |
 | `cost` | 372 | Measures CPU-seconds and floating-point operations to fit SLICER, a cut-down SLICER and crisprHAL 2; superseded by cost_repeats, as its crisprHAL 2 CPU-seconds were a hand-entered estimate. | Part 5 | `cost_cpu_seconds.csv`, `cost_flops.csv` +1 |
-| `cost_bench` | 131 | Times the model alone on one thread: 0.002 ms per guide for SLICER's default model against 1.32 ms for crisprHAL 2 at a batch of 100; its featurisation timing is superseded by cost_repeats. | Part 5 | `cost_crisprhal.csv`, `cost_featurise.csv` +3 |
 | `cost_boostmec` | 188 | BoostMEC scores a guide in 3.07 ms at a batch of 100 on one thread, 42.3 times SLICER's default model, using its released model and the same protocol as SLICER and crisprHAL 2. | Part 5 | `boostmec_oracle.csv`, `model_size.csv` |
 | `cost_boostmec_shipped` | 240 | BoostMEC as shipped: the authors' own pipeline, run unmodified in their Docker image, timed and compared with the Python version of `cost_boostmec.py`. | — | `boostmec_shipped_check.csv`, `boostmec_shipped_cohort.csv` +3 |
 | `cost_repeats` | 295 | Cost with its spread: every timing repeated, every repeat kept, so a ratio comes with a distribution and not a bare range. | — | `cost_repeats_featurisers.csv`, `cost_repeats_fit.csv` +2 |
-| `e2e_bench` | 177 | End-to-end scoring cost per guide, one thread: featurisation + column selection + imputation + model, against crisprHAL 2 with its input encoding. | Part 5 | `e2e_crisprhal.csv`, `e2e_slicer.csv` +3 |
-| `inference_cost` | 141 | Training cost is the wrong clock for a guide-design tool. | Part 5 | `inference_cost.csv` |
+| `latency` | 373 | Scoring latency of SLICER against crisprHAL 2, on one thread, in the three forms it has been measured: the model alone (0.002 ms per guide for SLICER's default model against 1.32 ms for crisprHAL 2 at a batch of 100) … | Part 5 | `cost_crisprhal.csv`, `cost_featurise.csv` +7 |
 | `model_size` | 91 | SLICER's default model stores 6,338 leaf values against 790,533 parameters for crisprHAL 2, but the tuned SLICER model is larger on disk than crisprHAL 2's file. | Part 5 | `model_size.csv` |
 | `rds_read` | 106 | Minimal read-only parser for R's XDR serialisation (.rds), enough for plain data (lists, vectors, attributes). | — | — |
 
@@ -355,7 +353,7 @@ The tooling the paper rests on: the audit, the figures, the import and reference
 #### Old paths, for documents written before the reorganisations
 
 <!-- docrefs:ignore:begin -->
-<details><summary>133 modules have moved; documents that cite the left-hand paths (for example `Jacky/EXPERIMENT_CATALOG.md`) can be updated from this table</summary>
+<details><summary>128 modules have moved; documents that cite the left-hand paths (for example `Jacky/EXPERIMENT_CATALOG.md`) can be updated from this table</summary>
 
 | was | is now |
 |---|---|
@@ -390,10 +388,8 @@ The tooling the paper rests on: the audit, the figures, the import and reference
 | `sgrna/ext/blend_with_hal.py` | `sgrna/compare/blend_with_hal.py` |
 | `sgrna/ext/clean_vs_hal.py` | `sgrna/compare/clean_vs_hal.py` |
 | `sgrna/ext/common.py` | `sgrna/common.py` |
-| `sgrna/ext/cost_bench.py` | `sgrna/cost/cost_bench.py` |
 | `sgrna/ext/data_efficiency.py` | `sgrna/compare/data_efficiency.py` |
 | `sgrna/ext/dnashape.py` | `sgrna/features/dnashape.py` |
-| `sgrna/ext/e2e_bench.py` | `sgrna/cost/e2e_bench.py` |
 | `sgrna/ext/equiv_check.py` | `sgrna/controls/equiv_check.py` |
 | `sgrna/ext/esp_replicate.py` | `sgrna/cohorts/esp_replicate.py` |
 | `sgrna/ext/geom.py` | `sgrna/features/geom.py` |
@@ -427,7 +423,6 @@ The tooling the paper rests on: the audit, the figures, the import and reference
 | `sgrna/human_baseline.py` | `sgrna/compare/human_baseline.py` |
 | `sgrna/importance.py` | `sgrna/interpret/importance.py` |
 | `sgrna/importance_models.py` | `sgrna/interpret/importance_models.py` |
-| `sgrna/inference_cost.py` | `sgrna/cost/inference_cost.py` |
 | `sgrna/interp_extra.py` | `sgrna/interpret/interp_extra.py` |
 | `sgrna/j_periodicity.py` | `sgrna/features/j_periodicity.py` |
 | `sgrna/kingdom_transfer.py` | `sgrna/compare/kingdom_transfer.py` |
@@ -443,10 +438,8 @@ The tooling the paper rests on: the audit, the figures, the import and reference
 | `sgrna/post_freeze/ceiling_table.py` | `sgrna/cohorts/ceiling_table.py` |
 | `sgrna/post_freeze/clean_vs_hal.py` | `sgrna/compare/clean_vs_hal.py` |
 | `sgrna/post_freeze/common.py` | `sgrna/common.py` |
-| `sgrna/post_freeze/cost_bench.py` | `sgrna/cost/cost_bench.py` |
 | `sgrna/post_freeze/data_efficiency.py` | `sgrna/compare/data_efficiency.py` |
 | `sgrna/post_freeze/dnashape.py` | `sgrna/features/dnashape.py` |
-| `sgrna/post_freeze/e2e_bench.py` | `sgrna/cost/e2e_bench.py` |
 | `sgrna/post_freeze/equiv_check.py` | `sgrna/controls/equiv_check.py` |
 | `sgrna/post_freeze/esp_replicate.py` | `sgrna/cohorts/esp_replicate.py` |
 | `sgrna/post_freeze/figures.py` | `sgrna/paper/figures.py` |

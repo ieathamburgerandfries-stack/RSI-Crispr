@@ -83,7 +83,7 @@ def inference():
     from sgrna.build import a_flank_fast as AF
     from sgrna.build import base_fast as BF
     from sgrna.build import featurise, qct
-    from sgrna.cost.e2e_bench import _make_models
+    from sgrna.cost.latency import _make_models
 
     idx = pd.read_csv(config.INTERIM / "curated_guide_index.csv")
     idx["located"] = idx["located"].astype(bool)
@@ -122,7 +122,7 @@ def featurisers():
     from sgrna.build import a_flank_fast as AF
     from sgrna.build import base_fast as BF
     from sgrna.build import featurise, qct
-    from sgrna.cost.e2e_bench import _make_models
+    from sgrna.cost.latency import _make_models
     from sgrna.features import a_flank as A
 
     idx = pd.read_csv(config.INTERIM / "curated_guide_index.csv")

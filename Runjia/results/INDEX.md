@@ -258,18 +258,18 @@ Within a group the order is alphabetical.
 | `clean_vs_hal.csv` | 1.0 | audited | `clean_vs_hal`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C` | vs, arm, n, n_genes, rho, crisprhal, diff … |
 | `complexity.json` | 1.6 | cited | `complexity`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R6` |  |
 | `cost_cpu_seconds.csv` | 0.4 | cited | `cost` | config, columns, rho, cpu_s, wall_s, peak_gb, reps … |
-| `cost_crisprhal.csv` | 0.4 | audited | `cost_bench`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
-| `cost_featurise.csv` | 0.2 | audited | `cost_bench` | part, n_guides, per_guide_ms |
+| `cost_crisprhal.csv` | 0.4 | audited | `latency`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
+| `cost_featurise.csv` | 0.2 | audited | `latency` | part, n_guides, per_guide_ms |
 | `cost_flops.csv` | 0.6 | cited | `cost` | model, forward_flops_per_guide, train_flops, note, vs_crisprHAL |
 | `cost_panel.csv` | 0.7 | cited | `cost`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R6`, `report_checks_R7` | model, train_flops, bytes_moved, flops_per_byte, cpu_seconds, wall_seconds, peak_gb … |
-| `cost_slicer.csv` | 0.9 | audited | `cost_bench`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
+| `cost_slicer.csv` | 0.9 | audited | `latency`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
 | `cui_final_exam.csv` | 0.4 | cited | `cui_final_exam`, `report_checks_R2`, `report_checks_R6` | arm, model, n_test, spearman, spearman_within_gene, seconds, ci_lo … |
 | `cui_screen.csv` | 0.5 | cited | `cui_screen`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | cv, arm, n_rows, n_cols, spearman, spearman_sd |
 | `data_ablation.csv` | 0.7 | cited | `data_ablation`, `report_checks_R6` | arm, training_data, n_train, n_cols, label, spearman, vs_crisprhal |
 | `data_efficiency.csv` | 3.5 | audited | `data_efficiency`, `paper_numbers_C`, `report_checks_R6` | arm, fold, n_train, trees, rho |
-| `e2e_crisprhal.csv` | 0.4 | audited | `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, batch, ms_per_call, ms_per_guide, encode_ms, model_ms |
-| `e2e_slicer.csv` | 0.7 | audited | `e2e_bench`, `paper_numbers_C` | model, batch, ms_per_call, ms_per_guide |
-| `e2e_slicer_locus.csv` | 0.7 | audited | `e2e_bench`, `paper_numbers_C`, `report_checks_R6` | model, width_nt, n_guides, ms_per_call, ms_per_guide |
+| `e2e_crisprhal.csv` | 0.4 | audited | `latency`, `paper_numbers_C`, `report_checks_R6` | model, batch, ms_per_call, ms_per_guide, encode_ms, model_ms |
+| `e2e_slicer.csv` | 0.7 | audited | `latency`, `paper_numbers_C` | model, batch, ms_per_call, ms_per_guide |
+| `e2e_slicer_locus.csv` | 0.7 | audited | `latency`, `paper_numbers_C`, `report_checks_R6` | model, width_nt, n_guides, ms_per_call, ms_per_guide |
 | `featuriser_equivalence.csv` | 0.5 | audited | `equiv_check`, `paper_numbers_D` | item, value |
 | `final_eval_espcas9.csv` | 0.6 | cited | `final_eval`, `report_checks_R6`, `report_checks_R7` | arm, model, n_train, n_test, spearman, kendall_tau, pearson … |
 | `flank_locus_bench.csv` | 0.7 | audited | `flank_locus`, `paper_numbers_D` | width_nt, n_guides, nt_per_guide, a_flank_fast_ms_per_guide, flank_locus_ms_per_guide, precompute_ms, precompute_ms_per_guide … |
@@ -278,7 +278,7 @@ Within a group the order is alphabetical.
 | `headtohead.csv` | 2.8 | cited | `crisprhal_wide_window_folds`, `headtohead`, `figures_paper`, `paper_numbers`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | arm, model, seed, fold, n_rows, n_cols, spearman … |
 | `heldout_compare.csv` | 0.4 | cited | `heldout_compare`, `paper_numbers_C`, `report_checks_R6` | pairing, n, slicer, crisprhal, difference, ci_lo, ci_hi … |
 | `inference_colab.csv` | 2.9 | cited | `report_checks_R6` | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
-| `inference_cost.csv` | 0.5 | cited | `inference_cost`, `report_checks_R6` | model, n_guides, n_columns, n_trees, latency_s, guides_per_s, fit_seconds … |
+| `inference_cost.csv` | 0.5 | cited | `latency`, `report_checks_R6` | model, n_guides, n_columns, n_trees, latency_s, guides_per_s, fit_seconds … |
 | `inference_onecore.csv` | 3.0 | cited | `paper_numbers_D`, `report_checks_R6` | model, device, n_guides, latency_ms, guides_per_s, source |
 | `inference_onecore_local.csv` | 0.9 | cited | `report_checks_R6` | model, device, n_guides, latency_ms, cpu_seconds_over_wall, best_batch_size, source |
 | `lit_binary.csv` | 1.8 | audited | `lit_followups` | arm, seed, rho, top_decile_precision, pick10_percentile |
@@ -291,7 +291,7 @@ Within a group the order is alphabetical.
 | `mix_configs_mlp.json` | 1.4 | receipt | `mix_ecoli` |  |
 | `mix_configs_ridge.json` | 0.0 | receipt | `mix_ecoli` |  |
 | `mix_confirm.csv` | 3.2 | audited | `mix_ecoli` | arm, rho, rho_lo, rho_hi, d_vs_champion, dc_lo, dc_hi … |
-| `mix_finalists.csv` | 0.4 | audited | `mix_ecoli`, `vs_crisprhal`, `cost_bench`, `e2e_bench` | kind, name, k, stage1_rho |
+| `mix_finalists.csv` | 0.4 | audited | `mix_ecoli`, `vs_crisprhal`, `latency` | kind, name, k, stage1_rho |
 | `mix_nnls_weights.csv` | 0.2 | audited | `mix_ecoli` | family, weight |
 | `mix_pred_corr.csv` | 0.2 | audited | `mix_ecoli` | , xgb, lgb, cat, et, mlp, ridge |
 | `mix_residual_corr.csv` | 0.2 | audited | `mix_ecoli`, `report_checks_R7` | , xgb, lgb, cat, et, mlp, ridge |
@@ -305,7 +305,7 @@ Within a group the order is alphabetical.
 | `their_split_slicer.csv` | 0.4 | cited | `report_checks_R6`, `report_checks_R7` | model, split, n_train, n, spearman, kendall_tau, pearson … |
 | `topend_confirm.csv` | 2.3 | audited | `topend`, `paper_numbers_C`, `report_checks_R6` | arm, seed, spearman, top10pct_prec, top1pct_prec, pick10_pctile, pick50_pctile … |
 | `topk_panel.csv` | 4.2 | audited | `topk_panel`, `paper_numbers_D` | split, arm, top1pct_precision, top5pct_precision, top10pct_precision, pick10_percentile, pick50_percentile … |
-| `tune_configs.json` | 69.0 | cited | `mix_ecoli`, `tune_ecoli`, `tuned_ablation`, `equiv_check`, `mechanism`, `novel_followups`, `tuned_settings`, `data_efficiency`, `lit_followups`, `topend`, `vs_crisprhal`, `cost_bench`, `e2e_bench`, `design_benchmark`, `train_model`, `paper_numbers_A`, `report_checks_R2` |  |
+| `tune_configs.json` | 69.0 | cited | `mix_ecoli`, `tune_ecoli`, `tuned_ablation`, `equiv_check`, `mechanism`, `novel_followups`, `tuned_settings`, `data_efficiency`, `lit_followups`, `topend`, `vs_crisprhal`, `latency`, `design_benchmark`, `train_model`, `paper_numbers_A`, `report_checks_R2` |  |
 | `tuning.csv` | 2.0 | cited | `tune`, `rederive`, `paper_numbers_D`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, seed, fold, trials, trials_allowed, rho_default, r2_default … |
 | `tuning_trace.csv` | 38.5 | receipt | `tune` | arm, seed, fold, trial, inner_rho, best_so_far, trials_since_improved |
 | `tuning_trials12.csv` | 2.0 | cited | `report_checks_R6` | arm, seed, fold, trials, rho_default, r2_default, rho_tuned … |
@@ -459,7 +459,7 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `README.md` | 2.0 | document | — |  |
-| `RESULTS.md` | 37.5 | document | — |  |
+| `RESULTS.md` | 37.6 | document | — |  |
 | `RESULTS_archive_2026-10-10.md` | 110.9 | document | — |  |
 
 ### figures

@@ -83,7 +83,7 @@ Each of these is an attack on the result, not a confirmation of it.
 - **A sealed organism.** The tuned settings were chosen on *E. coli* genes; trained on all of *E. coli* and scored zero-shot on the *C. rodentium* screen, which no choice ever saw, the tuned model still beats the frozen champion by +0.0172 (0.7160 against 0.6986).
 
 ### 5. The model against crisprHAL 2: accuracy, then cost *(Part 5, the head-to-head)*
-`sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/tuning/tune_ecoli.py`, `sgrna/compare/vs_crisprhal.py`; for the cost half, `sgrna/build/a_flank_fast.py`, `sgrna/build/base_fast.py`, `sgrna/build/flank_locus.py`, `sgrna/cost/e2e_bench.py`
+`sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/tuning/tune_ecoli.py`, `sgrna/compare/vs_crisprhal.py`; for the cost half, `sgrna/build/a_flank_fast.py`, `sgrna/build/base_fast.py`, `sgrna/build/flank_locus.py`, `sgrna/cost/latency.py`
 
 **Accuracy.** The final SLICER model, as shipped, leads crisprHAL 2, as released, by **+0.023 to +0.029 ρ** on both of crisprHAL 2's own splits. The comparison is run under four conditions, because the answer depends on which is held equal. On our folds, with both models tuned here, SLICER leads by +0.0172. On a different assay neither model was trained on (a boundary of the claim, not a like-for-like comparison), crisprHAL 2 leads by +0.026.
 The tuning is designed so that it cannot fool itself: genes are split once into DEV (70%) and CONFIRM (30%), a random search runs on DEV only, and the winners are scored on genes never used to choose anything,
