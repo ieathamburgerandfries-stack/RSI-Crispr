@@ -85,7 +85,7 @@ def run(chk):
     chk(P + "family-A gain, pool CV (random-row)", gp, 0.1647, 4)
     chk(P + "family-A gain, sealed genes", gs, 0.1560, 4)
     chk(P + "the drop in family A's gain equals the adaptive component (algebra)", gp - gs, m, 6)
-    # share of guides and genes sealed in each draw (the same routine as sealed_holdout.py, on the stored protospacers)
+    # share of guides and genes sealed in each draw (the same routine as sealed.py (part holdout), on the stored protospacers)
     from .hooks import _seal
     from .hooks import load_curated_index
     meta = json.loads((config.INTERIM / "expanded_meta.json").read_text())
@@ -110,7 +110,7 @@ def run(chk):
     chk(P + "dev-tuned arm: sealed gain differs from frozen's by less than 0.001 in component", abs(m2 - m), 0.0005, 3)
 
     # ----------------------------------------------------------------------------------------------- sealed genes, split by the pool-CV scheme
-    print("report R5: sealed genes, whole-gene pool CV (sealed_holdout_gene.py, 8 of the 15 sealings)")
+    print("report R5: sealed genes, whole-gene pool CV (sealed.py, part gene, 8 of the 15 sealings)")
     gd = pd.read_csv(OUT / "sealed_holdout_gene.csv")
     chk(P + "gene-grouped pool CV: rows (8 sealings x 3 arms)", float(len(gd)), 24, 0)
     w = gd.pivot(index="seal_seed", columns="arm", values=["cv_gene", "cv_random", "sealed"])

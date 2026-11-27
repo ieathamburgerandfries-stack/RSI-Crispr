@@ -38,7 +38,7 @@ SEED = 41
 
 
 def paper_groups(protos):
-    """The paper's fold groups: the gene a guide lies in, else its 100 kb block (as in `controls.sealed_holdout_gene`)."""
+    """The paper's fold groups: the gene a guide lies in, else its 100 kb block (as in `harness.folds`)."""
     from ..build.build_features import load_curated_index
 
     idx = load_curated_index(verbose=False).set_index(config.ID_COL)
@@ -58,7 +58,7 @@ def _fit(verbose=True):
     A, an = load_block("a_flank", protos)
     X = np.hstack([X, A])
     names = list(names) + list(an)
-    from ..controls.sealed_holdout_gene import _fold_ids
+    from ..harness.folds import fold_ids as _fold_ids
 
     fold = _fold_ids(paper_groups(protos), 5, SEED)
     tr, te = np.where(fold != 0)[0], np.where(fold == 0)[0]

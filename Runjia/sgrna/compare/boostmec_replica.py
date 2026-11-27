@@ -154,7 +154,7 @@ def _cv_trees(F, y, params, seed, parallel=True):
 
 # ------------------------------------------------------------------------------------------------------------------------ arm 1: the released hyperparameters
 def released(seeds=(41, 42, 43)) -> pd.DataFrame:
-    from ..controls import sealed_holdout_gene as sg
+    from ..harness import folds as sg
     from ..controls.mappability_stratum import _groups
 
     F, y, protos, ms = build()
@@ -162,7 +162,7 @@ def released(seeds=(41, 42, 43)) -> pd.DataFrame:
     groups = load_groups(protos)
     rows = []
     for seed in seeds:
-        fold = sg._fold_ids(groups, 5, seed)
+        fold = sg.fold_ids(groups, 5, seed)
         for k in range(5):
             va = fold == k
             t0 = time.time()

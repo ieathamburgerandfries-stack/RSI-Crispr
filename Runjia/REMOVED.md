@@ -197,3 +197,16 @@ Three behaviours were kept on purpose. The BLAS thread variables are set to 1 be
 that way, through `e2e_bench`'s import); the two `hal-*` parts run as a script under the TensorFlow interpreter and import only numpy, pandas and TensorFlow (`.venv-crisprhal/bin/python sgrna/cost/latency.py --parts hal-model hal-e2e --hal <project root>`); `cost_repeats` imports
 `_make_models` from the new module. Timings cannot be reproduced to the byte, so no `reproduce` case covers this module: a new `--quick` switch (one repeat, batches 1 and 100, narrower loci) runs each part's code path into a scratch folder, and the columns and row labels of each
 output were compared with the stored file. The TensorFlow parts were not run (they need the other interpreter); their code is the old code, moved.
+
+## 27 November 2026 (night, later): the sealed-holdout trio and the shape trio merged
+
+* `sgrna/controls/sealed_holdout.py`, `sgrna/controls/sealed_holdout_gene.py` and `sgrna/controls/sealed_crossscreen.py` are `controls/sealed.py --parts holdout|gene|crossscreen`: one question (how much of family A's cross-validated gain is the pipeline inflating its own
+  estimates, and does the gain survive genes and a screen no step saw) in the three steps in which it was asked. What nine other modules imported from `sealed_holdout_gene` as `sg` (`_fold_ids`, `_fit_predict`, and a module-level `N_JOBS` that five of them set) is now
+  `harness/folds.py` (`fold_ids`, `fit_predict`, `N_JOBS`), and the two near-identical copies of `_fit_predict` (they differed only in the thread count) are one. All three result files are written under `results/`; `sealed_holdout.csv`, which the old module wrote to the main project's `results/`
+  and the other two read from there, is now read from and written to the tracked folder.
+* `sgrna/cohorts/shape_analyze.py` and `sgrna/cohorts/ridge_check.py` are `cohorts/shape_ablate.py --paired` and `--ridge`: the summary of the ablation's folds, and the same arms with a ridge model.
+Restore any of them with `git checkout pre-merge-2026-11-27 -- <path>`.
+
+How it was checked: one stored sealing draw (20261016) was recomputed with the new code and compared with the historical rows in the repository, and all three parts reproduce them to ten digits (`holdout` base-only pool CV 0.5425550797 and sealed 0.5416284870; `gene` base-only gene-grouped CV 0.5390625549; `crossscreen`
+rho 0.5569566066 for base and 0.6724095205 with family A); the helpers give identical folds and identical predictions to both old copies on random data; `--paired` reproduces `shape_ablation_paired.csv` byte for byte (a `reproduce` case); the ridge part could not be re-run (the shape geometry cache it needs no longer exists), so it was checked only by comparing its code with the old
+`ridge_check.run` at AST level (identical apart from two imports moved inside the function and the new `--ridge-arms` filter; `EXTENSION_LOG.md` section 44). The full runs (15 sealings at about 7 minutes each; the twelve ridge arms) were not repeated.

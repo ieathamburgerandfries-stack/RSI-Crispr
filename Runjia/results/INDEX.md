@@ -242,9 +242,9 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `metric_panel.csv` | 0.9 | cited | `panel` | model, n, spearman, kendall_tau, pearson, r2, calibration_slope … |
-| `sealed_crossscreen.csv` | 2.0 | cited | `sealed_crossscreen`, `paper_numbers_D` | seal_seed, n_sealed_genes, n_esp_guides, rho_base, rho_A, gain_esp, wt_base … |
-| `sealed_holdout.csv` | 6.2 | cited | `sealed_holdout`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, n_cols, n_dev, n_sealed, cv_in_pool, sealed, gap … |
-| `sealed_holdout_gene.csv` | 4.1 | cited | `sealed_holdout_gene`, `paper_numbers`, `report_checks_R5` | arm, seal_seed, cv_gene, cv_random, sealed, gap_gene, gap_random … |
+| `sealed_crossscreen.csv` | 2.0 | cited | `sealed`, `paper_numbers_D` | seal_seed, n_sealed_genes, n_esp_guides, rho_base, rho_A, gain_esp, wt_base … |
+| `sealed_holdout.csv` | 6.2 | cited | `sealed`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, n_cols, n_dev, n_sealed, cv_in_pool, sealed, gap … |
+| `sealed_holdout_gene.csv` | 4.1 | cited | `sealed`, `paper_numbers`, `report_checks_R5` | arm, seal_seed, cv_gene, cv_random, sealed, gap_gene, gap_random … |
 | `sealed_organism.csv` | 0.4 | audited | `sealed_organism`, `paper_numbers_C`, `report_checks_R5` | arm, rho_seed_mean, rho_seed_sd, rho_of_seed_average, minus_champion, lo, hi |
 
 ### Part 5 — Where this sits in the field
@@ -299,9 +299,11 @@ Within a group the order is alphabetical.
 | `noshay_replication.csv` | 0.8 | cited | `noshay_replicate`, `report_checks_CIT`, `report_checks_R6` | model, fold, seed, n_train, n_test, n_features, n_trees … |
 | `panel_espcas9.csv` | 2.5 | audited | `panel_vs_hal`, `paper_numbers_B`, `paper_numbers_C` | split, arm, n, spearman, kendall_tau, pearson, r2 … |
 | `panel_wt.csv` | 2.4 | audited | `panel_vs_hal`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R6` | split, arm, n, spearman, kendall_tau, pearson, r2 … |
+| `ridge_check.csv` | 1.0 | audited | `shape_ablate`, `report_checks_R8` | arm, n_cols, alpha, rho, fold_rho |
 | `sample_complexity.csv` | 5.0 | audited | `common`, `data_efficiency`, `sample_complexity`, `paper_numbers_C`, `report_checks_R6` | model, seed, fold, n_train, n_test, spearman, r2 … |
 | `seed_stability.csv` | 0.5 | audited | `topk_panel`, `paper_numbers_C` | split, seed, rho, crisprhal |
-| `shape_ablation.csv` | 13.7 | audited | `shape_ablate`, `shape_analyze`, `report_checks_R8` | arm, n_cols, n_ext, spearman, spearman_sd, r2, n_selected_ext … |
+| `shape_ablation.csv` | 13.7 | audited | `shape_ablate`, `report_checks_R8` | arm, n_cols, n_ext, spearman, spearman_sd, r2, n_selected_ext … |
+| `shape_ablation_paired.csv` | 6.5 | cited | `shape_ablate` | arm, n_ext, rho, selected, d_vs_A, seeds_vs_A, ahead_vs_A … |
 | `their_split_slicer.csv` | 0.4 | cited | `report_checks_R6`, `report_checks_R7` | model, split, n_train, n, spearman, kendall_tau, pearson … |
 | `topend_confirm.csv` | 2.3 | audited | `topend`, `paper_numbers_C`, `report_checks_R6` | arm, seed, spearman, top10pct_prec, top1pct_prec, pick10_pctile, pick50_pctile … |
 | `topk_panel.csv` | 4.2 | audited | `topk_panel`, `paper_numbers_D` | split, arm, top1pct_precision, top5pct_precision, top10pct_precision, pick10_percentile, pick50_percentile … |
@@ -416,8 +418,6 @@ Within a group the order is alphabetical.
 | `human_shape_ablation.csv` | 3.5 | audited | `human_shape`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `human_shape_ablation_locus.csv` | 0.7 | audited | `human_shape` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `human_shape_ablation_twin.csv` | 0.7 | audited | `family_a_by_organism`, `human_shape`, `report_checks_R5`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
-| `ridge_check.csv` | 1.0 | audited | `ridge_check`, `report_checks_R8` | arm, n_cols, alpha, rho, fold_rho |
-| `shape_ablation_paired.csv` | 6.5 | receipt | `shape_analyze` | arm, n_ext, rho, selected, d_vs_A, seeds_vs_A, ahead_vs_A … |
 
 ### Appendix B5 — A boundary experiment, demoted: the dCas9 / CRISPRi screens
 

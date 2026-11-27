@@ -16,7 +16,7 @@ Three uniqueness measures per guide, all computed from the genome (NC_000913.2) 
                 (The Cas9-selected counts are not used: the label is the log-ratio of them to these, and as a feature they give rho 0.998 with it.)
 
 Out-of-fold predictions of base and base + family A come from gene-grouped five-fold CV (guides outside any gene grouped by 100 kb block,
-three seeds, models as in `sealed_holdout_gene.py`: base without column selection, base + family A through the 300-column selector). The
+three seeds, models as in `sealed.py --parts gene`: base without column selection, base + family A through the 300-column selector). The
 gain is then read inside each stratum on those predictions (the training set is the same for every stratum, so a smaller stratum is not a
 smaller training set), with an interval from resampling genes. A third arm adds the uniqueness measures to the base as columns: if the gain were
 carried by uniqueness, family A would add little on top of them.
@@ -120,7 +120,7 @@ def _groups(protos):
 def oof(seeds=(41, 42, 43), threads: int = 6, verbose: bool = True) -> pd.DataFrame:
     """Out-of-fold predictions of the four arms, averaged over seeds (gene-grouped five-fold CV over all 33,567 guides)."""
     from ..harness.curated import load_base, load_block
-    from . import sealed_holdout_gene as sg
+    from ..harness import folds as sg
 
     sg.N_JOBS = threads
     cache = config.INTERIM / "post_freeze" / "mappability"
@@ -138,14 +138,14 @@ def oof(seeds=(41, 42, 43), threads: int = 6, verbose: bool = True) -> pd.DataFr
         if path.exists():
             per_seed.append(dict(np.load(path)))
             continue
-        fold = sg._fold_ids(groups, 5, sd)
+        fold = sg.fold_ids(groups, 5, sd)
         pred = {a: np.empty(len(y)) for a in ARMS}
         for k in range(5):
             va = fold == k
             for a in ARMS:
                 M, nf = mats[a]
                 t0 = time.time()
-                pred[a][va] = sg._fit_predict(M[~va], y[~va], M[va], None, nf, sd)
+                pred[a][va] = sg.fit_predict(M[~va], y[~va], M[va], None, nf, sd)
                 if verbose:
                     print(f"  seed {sd} fold {k + 1} {a:9s} {time.time() - t0:5.1f}s", flush=True)
         np.savez(path, **pred)
@@ -161,7 +161,7 @@ def oof(seeds=(41, 42, 43), threads: int = 6, verbose: bool = True) -> pd.DataFr
 def oof_depth(seeds=(41, 42, 43), threads: int = 6, verbose: bool = True) -> pd.DataFrame:
     """Two more arms: base + the control depth, and base + control depth + family A (same folds and seeds as `oof`)."""
     from ..harness.curated import load_base, load_block
-    from . import sealed_holdout_gene as sg
+    from ..harness import folds as sg
 
     sg.N_JOBS = threads
     cache = config.INTERIM / "post_freeze" / "mappability"
@@ -177,13 +177,13 @@ def oof_depth(seeds=(41, 42, 43), threads: int = 6, verbose: bool = True) -> pd.
         if path.exists():
             per_seed.append(dict(np.load(path)))
             continue
-        fold = sg._fold_ids(groups, 5, sd)
+        fold = sg.fold_ids(groups, 5, sd)
         pred = {a: np.empty(len(y)) for a in mats}
         for k in range(5):
             va = fold == k
             for a, (M, nf) in mats.items():
                 t0 = time.time()
-                pred[a][va] = sg._fit_predict(M[~va], y[~va], M[va], None, nf, sd)
+                pred[a][va] = sg.fit_predict(M[~va], y[~va], M[va], None, nf, sd)
                 if verbose:
                     print(f"  seed {sd} fold {k + 1} {a:9s} {time.time() - t0:5.1f}s", flush=True)
         np.savez(path, **pred)

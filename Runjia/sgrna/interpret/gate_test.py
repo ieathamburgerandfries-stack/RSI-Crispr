@@ -23,7 +23,7 @@ RESULT = OUT / "gate_test.csv"
 
 def main() -> int:
     from ..build.build_features import load_curated_index
-    from ..controls import sealed_holdout_gene as sg
+    from ..harness import folds as sg
 
     o = pd.read_csv(OUT / "mappability_stratum_oof.csv")
     idx = load_curated_index(verbose=False).reset_index(drop=True)
@@ -37,7 +37,7 @@ def main() -> int:
     designs = {"additive": [s, fz, low], "with interaction": [s, fz, low, s * fz, s * low]}
     rows = []
     for seed in (41, 42, 43):
-        fold = sg._fold_ids(g, 5, seed)
+        fold = sg.fold_ids(g, 5, seed)
         for kind, cols in designs.items():
             D = np.column_stack([np.ones(len(y))] + cols)
             pred = np.empty(len(y))

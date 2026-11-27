@@ -32,7 +32,7 @@ def out_of_fold(threads: int = 8) -> dict[str, np.ndarray]:
     import xgboost as xgb
 
     from ..harness.curated import load_base, load_block
-    from ..controls.sealed_holdout_gene import _fold_ids
+    from ..harness.folds import fold_ids as _fold_ids
     from ..harness.run_ablation import _impute, make_selector
     from ..interpret.interp_extra import paper_groups
     from ..tuning import tune_ecoli as T

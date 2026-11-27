@@ -169,7 +169,7 @@ def shape_audit(verbose: bool = True) -> pd.DataFrame:
     return out
 
 # ------------------------------------------------------------------------------------------------ the paper's own folds
-# Design `paper_folds`: the family ablation on exactly the folds of the paper's other numbers (`controls/sealed_holdout_gene._fold_ids` over all 33,567 guides, every gene whole,
+# Design `paper_folds`: the family ablation on exactly the folds of the paper's other numbers (`harness/folds.fold_ids` over all 33,567 guides, every gene whole,
 # the 3,364 guides outside genes in 100 kb blocks, seeds 41 to 43, so 15 folds) with the default model, so a delta here sits beside the flank gain of +0.161 without a change of protocol.
 # Every arm sees the same five folds per seed. Arms: the 20-mer with the same 300-column selection every family arm gets (the like-for-like baseline); the 20-mer plus one family; and the two halves of
 # `d_mechanics` (its 22 columns that are functions of the protospacer, its 8 that read the flanking DNA: `.flank.` in the column name). `flank_scale.csv` already holds two arms on these folds and they are
@@ -193,7 +193,7 @@ PF_FLANK = ".flank."
 
 
 def run_paper_folds(seeds=(41, 42, 43), threads: int = 9, verbose: bool = True) -> None:
-    from ..controls import sealed_holdout_gene as sg
+    from ..harness import folds as sg
     from ..controls.mappability_stratum import _groups
     from ..interpret import flank_scale as FS
     
@@ -205,7 +205,7 @@ def run_paper_folds(seeds=(41, 42, 43), threads: int = 9, verbose: bool = True) 
     have = {(r["arm"], r["seed"]) for r in rows}
     blocks = {}
     for seed in seeds:
-        fold = sg._fold_ids(groups, 5, seed)
+        fold = sg.fold_ids(groups, 5, seed)
         for arm in (PF_BASE_SEL,) + PF_ORDER + tuple(PF_SPLIT):
             if (arm, seed) in have:
                 continue

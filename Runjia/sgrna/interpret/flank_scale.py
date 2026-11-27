@@ -93,12 +93,12 @@ def _cols(comp, W, kind):
 
 
 def _cv(M, y, groups, fold, n_features, seed):
-    from ..controls import sealed_holdout_gene as sg
+    from ..harness import folds as sg
 
     pred = np.empty(len(y))
     for k in range(5):
         va = fold == k
-        pred[va] = sg._fit_predict(M[~va], y[~va], M[va], None, n_features, seed)
+        pred[va] = sg.fit_predict(M[~va], y[~va], M[va], None, n_features, seed)
     return pred
 
 
@@ -112,7 +112,7 @@ def run(parts=("window", "resolution", "displacement"), seeds=(41,), threads: in
     from ..build import genome
     from ..build.build_features import load_curated_index
     from ..harness.curated import load_base, load_block
-    from ..controls import sealed_holdout_gene as sg
+    from ..harness import folds as sg
     from ..controls.mappability_stratum import _groups
 
     sg.N_JOBS = threads
@@ -130,7 +130,7 @@ def run(parts=("window", "resolution", "displacement"), seeds=(41,), threads: in
         if have(part, arm, seed):
             return
         t0 = time.time()
-        fold = sg._fold_ids(groups, 5, seed)
+        fold = sg.fold_ids(groups, 5, seed)
         pred = _cv(M, y, groups, fold, nf, seed)
         _record(rows, part, arm, seed, fold, y, pred)
         pd.DataFrame(rows).to_csv(RESULT, index=False)
@@ -210,7 +210,7 @@ def _asym_cols(comp, u: int, d: int) -> np.ndarray:
 def run_asymmetric(threads: int = 9, verbose: bool = True) -> None:
     from ..build.build_features import load_curated_index
     from ..harness.curated import load_base
-    from ..controls import sealed_holdout_gene as sg
+    from ..harness import folds as sg
     from ..controls.mappability_stratum import _groups
 
     sg.N_JOBS = threads
@@ -243,7 +243,7 @@ def run_asymmetric(threads: int = 9, verbose: bool = True) -> None:
             pd.DataFrame(rows).to_csv(TUNE_RESULT, index=False)
             return
         t0 = time.time()
-        fold = sg._fold_ids(groups, 5, seed)
+        fold = sg.fold_ids(groups, 5, seed)
         M = X if u is None else np.hstack([X, _asym_cols(comp, u, d)])
         pred = _cv(M, y, groups, fold, None, seed)
         for k in range(5):

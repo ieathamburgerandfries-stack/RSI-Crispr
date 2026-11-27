@@ -174,7 +174,7 @@ def run(chk):
     chk(P + "[7] share of the guides left to re-derive selection and settings, %", float(100 - share), 80, 0)
     chk(P + "[7] sealings (distinct seal_seed in sealed_holdout.csv)", float(sh.seal_seed.nunique()), 15, 0)
     from .hooks import SEAL_FRACTION
-    chk(P + "[7]   fraction of ROWS to seal (controls.sealed_holdout.SEAL_FRACTION; the code seals whole genes until it is reached)", SEAL_FRACTION * 100, 20, 0)
+    chk(P + "[7]   fraction of ROWS to seal (controls.sealed.SEAL_FRACTION; the code seals whole genes until it is reached)", SEAL_FRACTION * 100, 20, 0)
     from .hooks import _seal
     protos = ci.protospacer.to_numpy()
     gmap = load_curated_index(verbose=False).set_index("protospacer")["gene_name"].reindex(protos)

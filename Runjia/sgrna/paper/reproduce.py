@@ -50,6 +50,7 @@ CASES = [
     dict(name="human-additivity-twin", cmd=["sgrna.compare.human_additivity_twin", "--summarise-only"], writes=["human_additivity_twin_summary.csv"]),
     dict(name="design-check", cmd=["sgrna.design.check_design"], writes=["design_check.csv"]),
     dict(name="design-benchmark", cmd=["sgrna.design.design_benchmark"], writes=["design_benchmark.csv"]),
+    dict(name="shape-paired", cmd=["sgrna.cohorts.shape_ablate", "--paired"], writes=["shape_ablation_paired.csv"]),
     dict(name="strand-families", cmd=["sgrna.compare.strand", "--parts", "families"], writes=["strand_families.csv", "strand_families_proxies.csv"], project=True, rtol=1e-9),
     dict(name="strand-families-within", cmd=["sgrna.compare.strand", "--parts", "families-within"], writes=["strand_families_within.csv"], project=True, rtol=1e-9),
     dict(name="strand-recoverable", cmd=["sgrna.compare.strand", "--parts", "recoverable"], writes=["strand_families_recoverable.csv"], project=True, rtol=1e-9),

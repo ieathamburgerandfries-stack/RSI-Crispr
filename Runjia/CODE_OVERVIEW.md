@@ -68,7 +68,7 @@ grouped by gene (and in some runs by 100 kb block), so a position-based feature 
 written to disk as it finishes. Every claim in the report is a paired difference measured this way.
 
 ### 4. The controls: why +0.161 is not an artefact *(Finding 2; Appendix A)*
-`sgrna/controls/shiftnull.py`, `sgrna/controls/sealed_holdout.py`, `sgrna/controls/selector_audit.py`, `sgrna/controls/floors.py`,
+`sgrna/controls/shiftnull.py`, `sgrna/controls/sealed.py (part holdout)`, `sgrna/controls/selector_audit.py`, `sgrna/controls/floors.py`,
 `sgrna/interpret/gcstrata.py`, `sgrna/controls/fold_distance.py`, `sgrna/compare/sealed_organism.py`
 
 Each of these is an attack on the result, not a confirmation of it.

@@ -844,7 +844,7 @@ The cohort choice is adaptive and cannot be undone: every figure is computed on 
 cohort is a different, smaller, noisier draw rather than a held-out sample of the same thing.
 
 **The sealed-gene drop is +0.009 ρ, not zero.** Whole genes holding 20.0% of the guides (21.5–23.2% of the 4,013 genes; the
-3,364 intergenic guides stay in the pool) are sealed (`sealed_holdout.py`); column selection is re-derived inside the development
+3,364 intergenic guides stay in the pool) are sealed (`sealed.py --parts holdout`); column selection is re-derived inside the development
 pool for both arms with family A and an 8-draw hyperparameter search for the dev-tuned arm, cross-validation inside the pool is
 random-row 5-fold, and each arm is scored once on the sealed genes. A reference arm whose configuration was not chosen on these rows absorbs the population difference, and
 the difference of differences is the measured drop. Fifteen sealing draws, training sizes matched so the sealed fit sees
@@ -868,7 +868,7 @@ sealed genes (gap −0.0035, interval contains zero). The base-only arm, on whic
 algebra and not a second measurement: optimism cancels between arms only when both were chosen on the same rows, and these
 were not. *Splitting the drop.* Pool CV is random-row and the sealed score is on whole genes, so the drop could also contain
 what unseen genes cost a feature that reads the locus. The pool CV was therefore re-run with whole genes held out (guides
-outside any gene grouped by 100 kb block) for the first eight sealings (`sealed_holdout_gene.py`,
+outside any gene grouped by 100 kb block) for the first eight sealings (`sealed.py --parts gene`,
 `results/sealed_holdout_gene.csv`; eight of the fifteen for compute, and their random-row component, +0.0088,
 matches the 15-draw +0.0087):
 
@@ -922,7 +922,7 @@ carried seven arms (SLICER's original 0.6997 and six data-ablation arms). Both a
 untouched external set remains at the same loci.
 
 **The same seal, scored on a second screen.** Train on the WT-SpCas9 guides of the development genes of each of the 15 sealing draws and score the
-*eSpCas9* labels of every eSpCas9 guide that lies in a sealed gene (11,609 to 12,200 guides in 861 to 932 genes per draw; `sealed_crossscreen.py`,
+*eSpCas9* labels of every eSpCas9 guide that lies in a sealed gene (11,609 to 12,200 guides in 861 to 932 genes per draw; `sealed.py --parts crossscreen`,
 `results/sealed_crossscreen.csv`). The enzyme changes as well as the genes, and no step has fitted these labels, which answers the
 suggestion of holding one screen out: dropping a screen after it has been looked at cannot make it untouched, but sealing its guides by gene
 while training on the other screen's labels gives a test no earlier one was. The prediction was written into the module before the run: family A's gain

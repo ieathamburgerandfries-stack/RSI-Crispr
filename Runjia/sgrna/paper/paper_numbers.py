@@ -39,7 +39,7 @@ def run(chk):
     chk(P + "guides with more than one genomic copy (label_orientation.csv)", float(lo.n_multi_copy), 118, 0)
     chk(P + "   their median label", float(lo.median_label_multi_copy), 2.11, 2)
     chk(P + "   median label of single-copy guides", float(lo.median_label_single_copy), 0.27, 2)
-    # sealed-gene drop with whole genes held out inside the pool as well (first eight sealings; sealed_holdout_gene.py)
+    # sealed-gene drop with whole genes held out inside the pool as well (first eight sealings; sealed.py (part gene))
     sg = pd.read_csv(OUT / "sealed_holdout_gene.csv")
     pv = sg.pivot(index="seal_seed", columns="arm", values=["gap_gene", "gap_random"])
     rnd = pv["gap_random"]["frozen"] - pv["gap_random"]["base_only"]
