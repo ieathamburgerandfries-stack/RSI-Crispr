@@ -28,6 +28,8 @@ The second is the one that matters: it removes the same amount of *structure*,
 just not the structure the ranking pointed at.
 
     python -m sgrna.interpret.faithfulness --run
+
+Report section: Finding 5.
 """
 
 from __future__ import annotations

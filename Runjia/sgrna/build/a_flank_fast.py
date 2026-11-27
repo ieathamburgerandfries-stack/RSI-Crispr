@@ -10,6 +10,8 @@ Rows that do not fit the fast path -- fewer than 1,000 nt of flank on either sid
 or no `located` flag -- are handed to the original builder, so the output is the original's for every row. `check()` compares the two.
 
     python -m sgrna.build.a_flank_fast          # equality check and timing on 300 curated guides
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

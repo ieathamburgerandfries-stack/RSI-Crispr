@@ -5,6 +5,8 @@ stored family A block; then a model trained on the stored matrices predicts 3,00
 the fast ones; the largest absolute difference is recorded.
 
     python -m sgrna.controls.equiv_check
+
+Report section: Part 5.
 """
 import json
 import time

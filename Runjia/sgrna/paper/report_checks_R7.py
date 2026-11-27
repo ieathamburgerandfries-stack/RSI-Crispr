@@ -59,10 +59,10 @@ def run(chk):
                                                                             for e in pd.read_csv(RES / f"{f}.csv").get("experiment", pd.Series([], dtype=str)))), 1, 0)
 
     print("report R7: Appendix A, texture-preserving null, aligned-column correlation of eng.flank.comp.dn500.gc (published matrix)")
-    from ..build.build_matrix import CACHE_META, CACHE_X
+    from .hooks import CACHE_META, CACHE_X
     if CACHE_X.exists() and CACHE_META.exists():
-        from ..build.build_matrix import load_dataset
-        from ..controls.shiftnull import _shifted_block
+        from .hooks import load_dataset
+        from .hooks import _shifted_block
         from ..io_utils import load_block, load_guide_index
         _, _, _, ids, _ = load_dataset([], verbose=False)
         idx = load_guide_index()
@@ -107,7 +107,7 @@ def run(chk):
     chk(P + "between-gene share of label variance, curated, %", 100 * (1 - float(cg[("curated", "gene")])), 29, 0)
     chk(P + "within-gene share, published (their own annotation)", float(cg[("published", "gene (their annotation)")]), 0.844, 3)
     try:
-        from ..build.build_features import _b_numbers
+        from .hooks import _b_numbers
         pub = pd.read_csv(config.GUIDE_INDEX, low_memory=False)
         g = _b_numbers(pub)["gene_name"]
         chk(P + "published rows where the coordinate-based gene equals Noshay's annotation, %", 100 * float((g.fillna("X") == pub["gene_name"].fillna("X")).mean()), 97.7, 1)
@@ -426,7 +426,7 @@ def run(chk):
     chk(P + "family split: c_folding whole family (a different run)", float(fs[("c_folding", "whole family")]), 0.0147, 4)
     chk(P + "family split: d_mechanics not-cheap 10 columns", float(fs[("d_mechanics", "outside")]), 0.0970, 4)
     try:
-        from ..cohorts.curated_ablation import _base, _block
+        from .hooks import _base, _block
         X, y, names, protos = _base()
         b, bn = _block("b_energy", protos)
         c, cn = _block("c_folding", protos)
@@ -489,8 +489,8 @@ def run(chk):
     # ------------------------------------------------------------------------------------------------ split 2
     print("report R7: Appendix B, the second gene split")
     try:
-        from ..cohorts.curated_ablation import _base, _groups
-        from ..tuning import tune_ecoli as T
+        from .hooks import _base, _groups
+        from .hooks import tune_ecoli as T
         X, y, _, protos = _base()
         g, ok = _groups("gene", protos)
         g = np.asarray(g[ok], dtype=object)

@@ -26,6 +26,8 @@ crisprHAL 2's reported *E. coli* SpCas9 5-fold CV Spearman of 0.697
 
     python -m sgrna.compare.headtohead --index     # locate + flank, cached, resumable
     python -m sgrna.compare.headtohead --run       # the three arms
+
+Report section: Part 5.
 """
 
 from __future__ import annotations

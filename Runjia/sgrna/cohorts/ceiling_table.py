@@ -37,6 +37,8 @@ predictable from sequence -- but those are two different enzymes, so that is exp
 whether replicates are independent. Finding 6 avoids the question by using crisprHAL's released per-replicate counts.)
 
     ./run_ext.sh sgrna.cohorts.ceiling_table
+
+Report section: Finding 6.
 """
 from __future__ import annotations
 

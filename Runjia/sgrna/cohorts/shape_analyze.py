@@ -6,6 +6,8 @@ the number of the 15 folds in which the arm is ahead. No p-values are quoted: th
 so they are not independent draws and a standard error over 15 of them would overstate precision.
 
     python -m sgrna.cohorts.shape_analyze
+
+Report section: Appendix B4.
 """
 from __future__ import annotations
 

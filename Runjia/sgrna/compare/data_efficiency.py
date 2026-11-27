@@ -7,6 +7,8 @@ size-scaled variant that keeps the tuned settings but sets the tree count by a 1
 trees at a small n may overfit.
 
     python -m sgrna.compare.data_efficiency
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

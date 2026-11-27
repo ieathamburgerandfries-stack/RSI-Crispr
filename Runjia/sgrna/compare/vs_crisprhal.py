@@ -12,6 +12,8 @@ Arms: the frozen champion (reproduces the earlier figures), the tuned XGBoost (d
 mixed ensemble chosen on held-out genes in `mix_ecoli.py` (its members are read from `--members`).
 
     python -m sgrna.compare.vs_crisprhal --condition espcas9 --members d099x,d077x,...
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

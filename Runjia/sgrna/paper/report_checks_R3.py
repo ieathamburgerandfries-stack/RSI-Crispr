@@ -83,8 +83,8 @@ def _importance(chk, RES, MAIN):
         chk(P + "model-fold fits behind it", float(len(t)), 6, 0)
     else:
         print(f"  (skipped: {ft.name} is not installed; the report's full-matrix figure rests on it)")
-    from ..interpret.faithfulness import reduced_columns
-    from ..build.build_matrix import load_dataset
+    from .hooks import reduced_columns
+    from .hooks import load_dataset
     _, _, names, _, fam = load_dataset(["a_flank"], verbose=False)
     chk(P + "columns of the full matrix (published + family A)", float(len(names)), 6580, 0)
     chk(P + "columns of the reduced set (364 + 63 + 348)", float(len(reduced_columns(list(names), fam))), 775, 0)
@@ -102,7 +102,7 @@ def _importance(chk, RES, MAIN):
 
 def _interp_extra(chk, RES):
     print("R3 the three tests that need no refit (interp_extra.py)")
-    from ..interpret import interp_extra as ie
+    from .hooks import interp_extra as ie
     f = ie._fit(verbose=False)
     chk(P + "production recipe: held-out rho on the fifth whole-gene fold (the paper's design, seed 41, fold 0)", f["rho"], 0.722, 3)
     chk(P + "... guides fitted on", float(len(f["tr"])), 26853, 0)
@@ -150,7 +150,7 @@ def _interp_extra(chk, RES):
     chk(P + "flank edit, order shuffled", float(cf.loc["order shuffled, composition kept", "mean_change"]), 0.19, 2)
     chk(P + "flank edit, fall over rise (about twice)", float(cf.loc["GC -5 points, both flanks", "mean_change"] / -cf.loc["GC +5 points, both flanks", "mean_change"]), 2.0, 1)
     chk(P + "flank edits: guides", float(cf.guides.iloc[0]), 1500, 0)
-    from ..build.build_features import load_curated_index
+    from .hooks import load_curated_index
 
     ix = load_curated_index(verbose=False).drop_duplicates("protospacer")
     gc = lambda s: (s.count("G") + s.count("C")) / len(s) * 100
@@ -161,7 +161,7 @@ def _interp_extra(chk, RES):
 
 def _build_edit(f, ix_of_pick, edit, frac, kind_name, build_x):
     r2 = np.random.default_rng(zlib.crc32(kind_name.encode()))
-    from ..interpret.interp_extra import _edit
+    from .hooks import _edit
     e = ix_of_pick.copy()
     e["upstream"] = [_edit(s, edit, r2, frac, "up") for s in ix_of_pick["upstream"]]
     e["downstream"] = [_edit(s, edit, r2, frac, "down") for s in ix_of_pick["downstream"]]
@@ -183,10 +183,10 @@ def _group(c):
 def _shuffle(chk):
     """Which columns carry the response to a shuffle of the flank beyond the near 20 nt: the production recipe, then the shipped model."""
     print("R3 the shuffle edit, by column group")
-    from ..build.build_features import load_curated_index
-    from ..features import a_flank
-    from ..interpret import interp_extra as ie
-    from ..interpret import vs_crisprhal_interpret as V
+    from .hooks import load_curated_index
+    from .hooks import a_flank
+    from .hooks import interp_extra as ie
+    from .hooks import vs_crisprhal_interpret as V
 
     NAME, EDIT = "order shuffled, composition kept", "shuffle"
 

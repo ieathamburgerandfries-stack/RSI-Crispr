@@ -26,6 +26,8 @@ baseline reproduces the 0.7215 already on record.
 
     python -m sgrna.compare.lit_followups --test merf
     python -m sgrna.compare.lit_followups --test binary
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

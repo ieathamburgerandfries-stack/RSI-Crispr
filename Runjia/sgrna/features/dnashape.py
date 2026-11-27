@@ -23,6 +23,8 @@ indexes the MD block with a typo (Rise_md2 = dv[82], which is HelT_md1's slot); 
 intended order, which the values bear out, is used here. Names inside the xrc block were
 checked against the values and are less certain than the mc and md blocks: see the
 verification in `scripts` of the report (`verify_table`).
+
+Report section: Appendix B4.
 """
 from __future__ import annotations
 

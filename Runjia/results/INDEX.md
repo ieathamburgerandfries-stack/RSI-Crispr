@@ -106,7 +106,7 @@ Within a group the order is alphabetical.
 | `post_freeze/tune_split2_stage1.csv` | 57.9 | audited | `tune_ecoli` | draw, seed, fold, k, rho |
 | `post_freeze/tune_split2_stage2.csv` | 7.6 | receipt | `tune_ecoli` | draw, seed, fold, k, rho |
 | `post_freeze/tune_stage1.csv` | 270.9 | receipt | `tune_ecoli` | draw, seed, fold, k, rho |
-| `post_freeze/tune_stage2.csv` | 69.4 | receipt | `tune_ecoli`, `report_checks_R7` | draw, seed, fold, k, rho |
+| `post_freeze/tune_stage2.csv` | 69.4 | cited | `tune_ecoli`, `report_checks_R7` | draw, seed, fold, k, rho |
 | `representation.csv` | 0.9 | receipt | `representation`, `paper_numbers_B` | arm, n_columns, spearman, spearman_sd, r2, r2_sd, complete |
 | `representation_depth.csv` | 1.1 | cited | `representation`, `report_checks_R2` | arm, n_columns, max_depth, spearman, spearman_sd, r2, complete |
 | `representation_headroom.csv` | 1937.3 | audited | `representation`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R2` | arm, column, group, rho_with_residual |

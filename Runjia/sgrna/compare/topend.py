@@ -14,6 +14,8 @@ Metrics on the held-out genes: Spearman, top-decile precision, top-1% precision,
 10 / 50 / 100 highest-scoring guides -- the last three smooth the 10-guide pick percentile, which is very noisy.
 
     python -m sgrna.compare.topend
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

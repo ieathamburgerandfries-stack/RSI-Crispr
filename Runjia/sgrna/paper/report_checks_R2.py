@@ -38,8 +38,8 @@ def _main_file(name):
 
 def _shift_correlations():
     """Correlation of every family A column with the same column read `shift` bp away (the texture-preserving null's input)."""
-    from ..build.build_matrix import load_dataset
-    from ..controls.shiftnull import _shifted_block
+    from .hooks import load_dataset
+    from .hooks import _shifted_block
     from ..io_utils import load_block, load_guide_index
 
     _, _, _, ids, _ = load_dataset([], verbose=False)
@@ -78,9 +78,9 @@ def _esp_unseen_guides(seed: int = 41):
     guides, base and base + family A), split by whether the eSpCas9 guide is also in the SpCas9 screen. About a minute."""
     from scipy.stats import spearmanr
 
-    from ..compare.transfer import build
-    from ..harness import evaluate as ev
-    from ..harness.run_ablation import _impute, make_selector
+    from .hooks import build
+    from .hooks import evaluate as ev
+    from .hooks import _impute, make_selector
 
     Xs, ys, _ = build("WT-SpCas9", verbose=False)
     Xt, yt, _ = build("eSpCas9", verbose=False)

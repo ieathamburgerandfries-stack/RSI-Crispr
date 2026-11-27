@@ -13,6 +13,8 @@ windows predicts it out of fold (gene-grouped). Three predictors, because they a
 
 The dinucleotide figure (R2 0.963, quoted in the report's Appendix B4) was originally computed in a session whose
 code was not kept, so it had no producer and no audit check; this module is now that producer.
+
+Report section: Appendix B4.
 """
 from __future__ import annotations
 

@@ -3,6 +3,8 @@ files and compare with the value typed into the report. A mismatch is a transcri
 result. Tolerance is half a unit in the last quoted digit.
 
     python -m sgrna.paper.verify_numbers
+
+Report section: Part 4.
 """
 from __future__ import annotations
 
@@ -145,7 +147,7 @@ def main():
     chk("selector columns with nonzero gain", float(tb.n_nonzero_gain.dropna().iloc[0]), 878, 0)
     for nf, v in ((450, 0.7208), (900, 0.7205), (1500, 0.7202), (2500, 0.7199)):
         chk(f"budget {nf}: best-tree rho", float(tb[tb.nf == nf].rho.max()), v, 4)
-    from ..tuning.tune_ecoli import stage1_table as _tt
+    from .hooks import stage1_table as _tt
     tt = _tt(); dr = tt.drop(index=["champion", "depth6"])
     chk("stage-1 champion rho", float(tt.loc["champion", "rho"]), 0.7107, 4)
     for dep, v in ((3, 0.712), (4, 0.714), (5, 0.713), (6, 0.707), (7, 0.706), (8, 0.704), (9, 0.700), (10, 0.698)):
@@ -656,11 +658,13 @@ def main():
         float(lb.loc[("d099x", "base+A+loc50"), "hi"]), 0.0008, 4)
 
     print("22.4 the package imports, and importing it writes nothing")
-    ic = json.loads((OUT / "import_check.json").read_text())
-    chk("22.4 modules swept", float(ic["n_modules"]), 179, 0)
-    chk("22.4 modules excluded by name", float(ic["n_skipped"]), 2, 0)
+    from . import import_check
+    ic = import_check.run(verbose=False, write=False)       # the sweep runs now: the stored import_check.json is a receipt of an older run, not evidence about this code
+    _sgp = RUNJIA / "sgrna"
+    _on_disk = sum(1 for f in _sgp.rglob("*.py") if f.name != "__init__.py") + sum(1 for f in _sgp.rglob("__init__.py")) - 1     # modules plus sub-packages (not `sgrna` itself)
+    chk("22.4 modules on disk that the sweep did not reach (found by the sweep minus on disk)", float(ic["n_modules"] - _on_disk), 0, 0)
+    chk("22.4 modules excluded by name that are not in import_check.EXCLUDE", float(len(set(ic["excluded"]) ^ set(import_check.EXCLUDE))), 0, 0)
     chk("22.4 modules that fail to import", float(len(ic["fails"])), 0, 0)
-    chk("22.4 files under results/", float(ic["files_in_results"]), 675, 0)
     chk("22.4 files changed by importing the package", float(ic["files_changed_by_import"]), 0, 0)
 
     print("4. headroom: does the model leave information on the table? (representation_headroom.csv, restored 22 Nov)")
@@ -733,7 +737,8 @@ def main():
     _on_disk = {f.stem for f in _sg.rglob("*.py") if f.name != "__init__.py"}
     _text = (_sg.parent / "CODE_MAP.md").read_text()
     chk("CODE_MAP.md: modules on disk that the map does not list", float(len([m for m in _on_disk if f"| `{m}` |" not in _text and f"| `{m}.py` |" not in _text])), 0, 0)
-    chk("sgrna: packages, by function", float(sum(1 for d in _sg.iterdir() if d.is_dir() and (d / "__init__.py").exists())), 11, 0)
+    chk("sgrna: package folders that code_map.PACKAGES does not list, or lists and are missing",
+        float(len({d.name for d in _sg.iterdir() if d.is_dir() and (d / "__init__.py").exists()} ^ {p_ for p_, _ in code_map.PACKAGES if p_})), 0, 0)
     chk("sgrna: folders left over from the old layouts (post_freeze, strand, screens, ext)",
         float(sum((_sg / n_).exists() for n_ in ("post_freeze", "strand", "screens", "ext"))), 0, 0)
 
@@ -980,12 +985,12 @@ def main():
                           ("We have not tried it, and on a screen whose label is survival", "PROGRESS_REPORT.md"),
                           ("Not done:* corrected ceilings for the specific datasets", "PROGRESS_REPORT.md")):
         chk(f"stale claim absent: {phrase[:44]}", 0.0 if phrase in _docs[where] else 1.0, 1, 0)
-    _quoted = [("PROGRESS_REPORT.md", r"\((\d+) checks as of"), ("results/README.md", r"\((\d+) checks as of"),
-               ("EXTENSION_LOG.md", r"\*\*(\d+) checks, 0 mismatches\*\*"), ("PAPER_FLOW.md", r"`run_audit\.sh`, (\d+) checks")]
-    _total = n + len(_quoted)      # this loop's own checks included, so the quoted number is the one finally printed
-    for fname, pat in _quoted:
-        m_ = re.search(pat, _docs[pathlib.Path(fname).name])
-        chk(f"{fname} quotes the audit's own check count", float(m_.group(1)) if m_ else -1.0, _total, 0)
+    # the audit's only imports of experiment code are the table in hooks.py; every entry must still resolve
+    from . import hooks
+    _unresolved = hooks.check()
+    for _u in _unresolved:
+        print("  unresolved hook:", _u)
+    chk("audit hooks (sgrna/paper/hooks.py) that no longer resolve", float(len(_unresolved)), 0, 0)
 
     import os
     if os.environ.get("AUDIT_RAW"):

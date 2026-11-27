@@ -8,6 +8,8 @@ gene-grouped CV, ten seeds, rho of gene means (between) and rho of values with e
 gene's mean removed (within), genes with at least five guides.
 
     python -m sgrna.compare.cut_within_gene
+
+Report section: Appendix B5.
 """
 from __future__ import annotations
 

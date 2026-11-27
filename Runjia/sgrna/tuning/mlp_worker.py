@@ -4,6 +4,8 @@ PyTorch, XGBoost and LightGBM each ship an OpenMP runtime; loading them in one p
 This worker imports only numpy and torch: it reads arrays from an .npz, writes predictions to an .npy.
 
     python -m sgrna.tuning.mlp_worker in.npz cfg.json out.npy seed
+
+Report section: Part 5.
 """
 import json
 import sys

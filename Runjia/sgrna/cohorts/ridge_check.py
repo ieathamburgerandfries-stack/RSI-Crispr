@@ -1,6 +1,8 @@
 """It is a property of the pipeline: a ridge model on all columns gains +0.0097 rho from shape descriptors beyond family A, while boosted trees gain +0.0006 at best.  The same comparison with a ridge regression on all columns
 (no selector, no trees), gene-grouped 5-fold CV, one seed, alpha chosen on an inner split of the
 first training fold and then fixed.
+
+Report section: Appendix B4.
 """
 from __future__ import annotations
 

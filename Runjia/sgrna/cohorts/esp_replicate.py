@@ -6,6 +6,8 @@ shipped context is shorter than the window the geometry needs. CV is grouped by 
 cohort has no gene labels in its cache). Arms mirror `shape_ablate` stage 2/3.
 
     python -m sgrna.cohorts.esp_replicate
+
+Report section: Appendix B4.
 """
 from __future__ import annotations
 

@@ -31,6 +31,8 @@ make a claim -- "the seed region matters", "flank composition matters" -- not
 at the granularity of one indicator variable.
 
     python -m sgrna.interpret.importance --run
+
+Report section: Finding 5.
 """
 
 from __future__ import annotations

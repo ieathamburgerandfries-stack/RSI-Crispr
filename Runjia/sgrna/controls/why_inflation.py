@@ -31,6 +31,8 @@ Three seeds of subsample, because one draw of 13,880 from 33,567 is itself a
 sample.
 
     python -m sgrna.controls.why_inflation --families a_flank d_mechanics
+
+Report section: Appendix B2a.
 """
 
 from __future__ import annotations

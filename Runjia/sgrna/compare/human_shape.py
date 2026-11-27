@@ -11,6 +11,8 @@ comparable with the gene-grouped E. coli numbers.
     python -m sgrna.compare.human_shape --stage 1     # base, base+A, and shape on top of A
     python -m sgrna.compare.human_shape --stage 2     # shape without A, composition references
     python -m sgrna.compare.human_shape --stage 3     # shuffled-flank controls
+
+Report section: Part 2.
 """
 from __future__ import annotations
 

@@ -4,5 +4,11 @@
 #
 #   ./run_audit.sh              # all checks
 #   ./run_audit.sh | tail -5    # just the total
+#   ./run_audit.sh --reproduce  # do the modules still write the tracked result files, byte for byte? (see sgrna/paper/reproduce.py)
 set -euo pipefail
-exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/run_ext.sh" sgrna.paper.verify_numbers "$@"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ "${1:-}" = "--reproduce" ]; then       # the counterpart for the code: re-run the resumable modules, fail if a tracked result changes
+  shift
+  exec "$HERE/run_ext.sh" sgrna.paper.reproduce "$@"
+fi
+exec "$HERE/run_ext.sh" sgrna.paper.verify_numbers "$@"

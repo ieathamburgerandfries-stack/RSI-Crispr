@@ -26,6 +26,8 @@ share nothing still overlap a little by luck, and the matched-correlate
 statistic needs a null to be read against.
 
     python -m sgrna.interpret.attribution
+
+Report section: Finding 5.
 """
 
 from __future__ import annotations

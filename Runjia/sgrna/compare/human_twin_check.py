@@ -8,6 +8,8 @@ folds, so a model that can memorise sequences (deep trees, fast learning rate, n
 generalising. This script re-runs `human_baseline.py`'s two arms with folds that keep identical protospacers together.
 
     python -m sgrna.compare.human_twin_check
+
+Report section: Part 2.
 """
 from __future__ import annotations
 

@@ -25,6 +25,8 @@ but nobody in it has asked.
 
     python -m sgrna.interpret.novel_followups --test resolution
     python -m sgrna.interpret.novel_followups --test relative
+
+Report section: Finding 7.
 """
 from __future__ import annotations
 

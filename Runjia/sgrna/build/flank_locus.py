@@ -34,6 +34,8 @@ this is also the path a design tool takes: coordinates in, columns out, no per-g
 
     ./run_ext.sh sgrna.build.flank_locus            # equality against a_flank_fast, then timings
     ./run_ext.sh sgrna.build.flank_locus --bench    # timings only
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

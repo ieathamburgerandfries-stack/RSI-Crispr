@@ -19,6 +19,8 @@ neither should be able to reach the caller. `EXCLUDE` names the modules that are
 reason; anything else that fails is a defect.
 
     ./run_ext.sh sgrna.paper.import_check
+
+Report section: Part 4.
 """
 from __future__ import annotations
 
@@ -67,7 +69,8 @@ def _hash_tree(root: Path) -> dict[str, str]:
     return out
 
 
-def run(verbose: bool = True) -> dict:
+def run(verbose: bool = True, write: bool = True) -> dict:
+    """Import every module in a fresh interpreter and report what failed and which result files changed. `write=False` leaves the stored receipt (`import_check.json`) alone, which is how the audit calls it."""
     results = Path(config.RESULTS)
     before = _hash_tree(results)
     proc = subprocess.run([sys.executable, "-c", _SWEEP, json.dumps(sorted(EXCLUDE))],
@@ -80,7 +83,8 @@ def run(verbose: bool = True) -> dict:
     changed = sorted(set(before) ^ set(after)) + sorted(k for k in before.keys() & after.keys() if before[k] != after[k])
     info.update(files_in_results=len(before), files_changed_by_import=len(changed), changed=changed,
                 excluded={k: v for k, v in EXCLUDE.items()})
-    OUTJSON.write_text(json.dumps(info, indent=1))
+    if write:
+        OUTJSON.write_text(json.dumps(info, indent=1))
     if verbose:
         print(f"  {info['n_modules']} modules found, {info['n_skipped']} excluded by name, "
               f"{len(info['fails'])} failed to import")
@@ -90,7 +94,8 @@ def run(verbose: bool = True) -> dict:
               f"{info['files_changed_by_import']} changed by the sweep")
         for c in changed:
             print(f"    CHANGED {c}")
-        print(f"written -> {OUTJSON}")
+        if write:
+            print(f"written -> {OUTJSON}")
     return info
 
 

@@ -26,6 +26,8 @@ the row-wise arms reproduce the published numbers as a positive control for the 
   twin-grouped   folds grouped on the decoded protospacer, so a guide's twin is never across the split
 
     python -m sgrna.compare.human_additivity_twin
+
+Report section: Part 2.
 """
 from __future__ import annotations
 

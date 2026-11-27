@@ -7,6 +7,8 @@ random data first so their tree counts and depths are the real ones; timings do 
 
     python -m sgrna.cost.cost_bench --members d099x,...          # SLICER side
     .venv-crisprhal/bin/python sgrna/cost/cost_bench.py --hal ... # crisprHAL 2 side
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

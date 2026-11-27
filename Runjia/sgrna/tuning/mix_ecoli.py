@@ -19,6 +19,8 @@ predictions only; the CONFIRM genes are used once, at the end.
     python -m sgrna.tuning.mix_ecoli --search lgb --draws 40
     python -m sgrna.tuning.mix_ecoli --finalize
     python -m sgrna.tuning.mix_ecoli --blend
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

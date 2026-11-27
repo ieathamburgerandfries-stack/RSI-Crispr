@@ -10,6 +10,8 @@ The scan encodes each chromosome as 2-bit codes and tests every 20-mer against t
 genome takes minutes rather than a Python loop over 4e8 positions.
 
     python -m sgrna.compare.human_flank
+
+Report section: Part 2.
 """
 from __future__ import annotations
 

@@ -15,6 +15,8 @@ For every validation guide, the minimum Hamming distance to any training guide, 
                             control, which must show minimum distance 0 if the statistic works at all
 
     python -m sgrna.controls.fold_distance
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

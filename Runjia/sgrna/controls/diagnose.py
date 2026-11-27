@@ -28,6 +28,8 @@ three measurements test that instinct instead of trusting it.
                 therefore how high any sequence model could ever go.
 
     python -m sgrna.controls.diagnose --what all
+
+Report section: Finding 4.
 """
 
 from __future__ import annotations

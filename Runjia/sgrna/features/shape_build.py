@@ -3,6 +3,8 @@
     python -m sgrna.features.shape_build
 Output: data/interim/ext/shape/<source>_<control>_<block>.npy (+ .json names), rows in the order
 of `curated_ablation._base()`.
+
+Report section: Appendix B4.
 """
 from __future__ import annotations
 

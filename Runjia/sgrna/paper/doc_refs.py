@@ -27,6 +27,8 @@ What is exempt, and why
 
     ./run_ext.sh sgrna.paper.doc_refs            # list stale references, exit 1 if any
     ./run_ext.sh sgrna.paper.doc_refs --fix      # repair the ones whose target is unambiguous
+
+Report section: Part 4.
 """
 from __future__ import annotations
 

@@ -6,6 +6,8 @@ metrics are those of `final_eval._metrics` (Spearman, Kendall tau, Pearson, R^2,
 ten highest-scoring guides). Differences to crisprHAL 2 are paired bootstraps over guides.
 
     python -m sgrna.compare.panel_vs_hal --split espcas9 --mix "d099x,d077x,d021x,d080x,d000x;lgb011,lgb018;cat015,cat023"
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

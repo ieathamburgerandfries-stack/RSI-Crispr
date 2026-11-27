@@ -8,6 +8,8 @@ scored on CONFIRM genes (stored by `tune_ecoli --confirm`); crisprHAL 2 is its s
 conservative for SLICER). Differences are paired and bootstrapped over genes.
 
     python -m sgrna.compare.clean_vs_hal
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

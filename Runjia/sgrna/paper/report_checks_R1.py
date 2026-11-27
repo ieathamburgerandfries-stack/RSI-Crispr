@@ -48,8 +48,8 @@ def run(chk):
 
     # ------------------------------------------------------------------------------------------------------ regeneration
     print("report R1: Finding 1, regeneration of the published matrix from the 20-mer")
-    from ..build import featurise
-    from ..build.build_matrix import CACHE_META, CACHE_X
+    from .hooks import featurise
+    from .hooks import CACHE_META, CACHE_X
     from ..io_utils import load_guide_index
     if CACHE_X.exists() and CACHE_META.exists():                # never build the cache from here: this audit writes nothing
         X = np.load(CACHE_X, mmap_mode="r")

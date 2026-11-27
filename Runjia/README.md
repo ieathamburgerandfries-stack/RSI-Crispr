@@ -103,6 +103,7 @@ So yes, in every organism where it has been built and tested, and the sign never
 | [`EXTENSION_LOG.md`](EXTENSION_LOG.md) | the working record of the post-freeze experiments: what was tried, in what order, with what expectation |
 | [`PAPER_FLOW.md`](PAPER_FLOW.md) | the paper outline: what each section must establish and which result and figure goes where; a flow, not a draft |
 | `./run_audit.sh` | recomputes every post-freeze number the report quotes from the file that produced it; exits non-zero on any mismatch; also checks that every module imports and that importing writes nothing |
+| `./run_audit.sh --reproduce` | the code's counterpart of the audit: re-runs the resumable modules (12 commands, about a minute) against a scratch copy of `results/` and fails if a tracked result file changes by a byte, or a command that should rewrite a file does not (`sgrna/paper/reproduce.py`; the check that proves a merge or a rename moved no result) |
 | `./run_ext.sh <module> [args]` | runs any module of `sgrna` with the environment it needs (see "Running it") |
 
 ## Two cohorts, one anchor

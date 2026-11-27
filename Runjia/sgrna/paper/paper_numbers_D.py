@@ -26,7 +26,7 @@ def run(chk):
     chk(P + "[D1] raw guides in crisprHAL 2's counts file", float(len(raw)), 121340, 0)
     ctl = (raw.dCas1_NS + raw.dCas2_NS) / 2
     chk(P + "[D1] ... with a mean unselected count of at least 73 (the cutoff; 33,567 are curated, the rest do not locate)", float((ctl >= 73).sum()), 33871, 0)
-    from ..build import genome
+    from .hooks import genome
     chk(P + "[D1] NC_000913.2: genome length, bp", float(genome.genome_length()), 4639675, 0)
     gt = pd.read_csv(config.GENE_TABLE, sep="\t")
     chk(P + "[D1] genes in the reference gene table", float(len(gt)), 4499, 0)
@@ -525,7 +525,7 @@ def run(chk):
     from .. import config as _c
     dd = _c.EXTERNAL / "crisprHAL" / "data"
     claim("[D21] C. rodentium TevSpCas9 files: rows (training 20,195 and testing 5,049)", len(pd.read_csv(dd / "TevSpCas9_training_data.csv", header=None)) + len(pd.read_csv(dd / "TevSpCas9_testing_data.csv", header=None)), "25,244")
-    from ..compare import transfer as _tr
+    from .hooks import transfer as _tr
     _x, _y, _ = _tr.build("TevSpCas9", genome_fasta=_c.EXTERNAL / "C_rodentium" / "NC_013716.1.fasta")
     claim("[D21]   unique guides located in the genome", len(_y), "25,210")
     import re as _re

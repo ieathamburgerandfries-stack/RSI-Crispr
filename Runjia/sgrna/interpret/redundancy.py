@@ -5,6 +5,8 @@ For every column of a block, the out-of-fold R^2 of a ridge regression from fami
 with R^2 near 0 carries something A does not. Reported per block and per column kind.
 
     python -m sgrna.interpret.redundancy
+
+Report section: Appendix B4.
 """
 from __future__ import annotations
 

@@ -17,6 +17,8 @@ real effect with the seed-to-seed spread. Here every delta is **paired on
 (seed, fold)**, so the two arms always see identical data.
 
     python -m sgrna.controls.floors
+
+Report section: Appendix A.
 """
 
 from __future__ import annotations

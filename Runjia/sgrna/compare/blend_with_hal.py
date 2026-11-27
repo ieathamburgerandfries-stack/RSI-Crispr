@@ -5,6 +5,8 @@ raw test predictions saved by `panel_vs_hal.py`; z-scored average with weight 1/
 the two models' residuals. Paired bootstrap over guides against the better single model.
 
     python -m sgrna.compare.blend_with_hal
+
+Report section: Part 5.
 """
 import numpy as np
 import pandas as pd

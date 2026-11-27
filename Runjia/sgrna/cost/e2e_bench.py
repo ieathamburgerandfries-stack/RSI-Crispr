@@ -15,6 +15,8 @@ cost of re-scoring a sparse, already-extracted cohort, which is a different ques
     python -m sgrna.cost.e2e_bench --members d099x,...
     python -m sgrna.cost.e2e_bench --locus
     .venv-crisprhal/bin/python sgrna/cost/e2e_bench.py --hal <project root>
+
+Report section: Part 5.
 """
 import os
 

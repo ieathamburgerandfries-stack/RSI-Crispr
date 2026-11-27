@@ -11,6 +11,8 @@ regularisation knob. Read as statements about the data rather than about the lea
 All on the DEV / CONFIRM gene split of `tune_ecoli.py`; nothing here is tuned on CONFIRM.
 
     python -m sgrna.interpret.tuned_settings --test depth
+
+Report section: Finding 5.
 """
 from __future__ import annotations
 

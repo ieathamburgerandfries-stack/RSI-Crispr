@@ -6,6 +6,8 @@ index once, indicators are an integer comparison, and tensors are a dense-array 
 all-zero indicators and NaN tensors, as in the original.
 
     python -m sgrna.build.base_fast      # equality against `featurise.matrix` on all curated guides, and timing
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

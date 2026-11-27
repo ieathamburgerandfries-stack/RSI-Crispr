@@ -8,6 +8,8 @@ same gene-grouped folds per seed, so paired per-fold differences are valid. Feat
     python -m sgrna.cohorts.shape_ablate --stage 1     # blocks by source, on base
     python -m sgrna.cohorts.shape_ablate --stage 2     # same, on top of family A
     python -m sgrna.cohorts.shape_ablate --stage 3     # shuffled-flank controls
+
+Report section: Appendix B4.
 """
 from __future__ import annotations
 

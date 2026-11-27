@@ -8,6 +8,8 @@ between the markers and are never touched.
 
     ./run_ext.sh sgrna.paper.code_map            # rewrite the generated tables in CODE_MAP.md
     ./run_ext.sh sgrna.paper.code_map --check    # exit 1 if a module is missing from the map (the audit runs this)
+
+Report section: Part 4.
 """
 from __future__ import annotations
 
@@ -40,27 +42,21 @@ PACKAGES = [
 ]
 
 
-# Modules whose conclusion the report states without naming the module or its files. Applied only when the automatic lookup
-# finds nothing, so a name in the report always wins. Each was checked by searching the report for the conclusion itself.
-STATED_UNNAMED = {
-    "blend_with_hal": "Part 5", "clean_vs_hal": "Part 5", "e2e_bench": "Part 5", "topend": "Part 5",
-    "topk_panel": "Part 5", "data_efficiency": "Part 5", "equiv_check": "Part 5", "cost_bench": "Part 5",
-    "esp_replicate": "Appendix B4", "ridge_check": "Appendix B4", "shape_analyze": "Appendix B4", "geom_importance": "Appendix B4",
-    "redundancy": "Appendix B4", "shape_build": "Appendix B4", "shape_ablate": "Appendix B4",
-    "ceiling_table": "Finding 6", "fold_distance": "Part 5", "lit_followups": "Part 5",
-    "human_shape": "Part 2", "human_twin_check": "Part 2", "human_additivity_twin": "Part 2", "human_flank": "Part 2",
-    "tuned_settings": "Finding 5",
-    "mix_ecoli": "Part 5", "mlp_worker": "Part 5", "flank_locus": "Part 5", "a_flank_fast": "Part 5", "base_fast": "Part 5",
-    "cut_within_gene": "Appendix B5", "novel_followups": "Finding 7",
-    "import_check": "Part 4", "doc_refs": "Part 4", "code_map": "Part 4", "verify_numbers": "Part 4",
-    "why_inflation": "Appendix B2a", "floors": "Appendix A", "diagnose": "Finding 4", "headtohead": "Part 5", "panel_vs_hal": "Part 5",
-    "vs_crisprhal": "Part 5", "vs_crisprhal_wt_hal": "Part 5", "dnashape": "Appendix B4", "importance_models": "Finding 5",
-    "panel": "Part 5", "attribution": "Finding 5", "faithfulness": "Finding 5", "importance": "Finding 5",
-}
+# A module whose conclusion the report states without naming the module or its files carries its section in its own docstring, on a line of its own:
+#
+#     Report section: Part 5.
+#
+# so the tag moves with the file when it is renamed, merged or moved. It is read only when the automatic lookup finds nothing, so a name in the report always wins.
+_TAG = re.compile(r"^Report section: (.+?)\.?\s*$", re.M)
+
+
+def _tag(tree: ast.Module) -> str | None:
+    m = _TAG.search(ast.get_docstring(tree) or "")
+    return m.group(1) if m else None
 
 
 # Modules that read result files rather than write them, or that are not experiments at all.
-TOOLING = {"verify_numbers", "figures", "import_check", "doc_refs", "code_map"}
+TOOLING = {"verify_numbers", "figures", "import_check", "doc_refs", "code_map", "hooks", "reproduce"}
 LIBRARY_PACKAGES = {"", "build", "features", "harness"}      # used by the experiments; not claims in themselves
 
 
@@ -206,7 +202,7 @@ def rows() -> dict[str, list[dict]]:
             if f.stem in TOOLING:
                 where, res = "tooling", []
             elif where == "—":
-                where = STATED_UNNAMED.get(f.stem) or ("library" if pkg in LIBRARY_PACKAGES else "—")
+                where = _tag(tree) or ("library" if pkg in LIBRARY_PACKAGES else "—")
             items.append(dict(module=f.stem, lines=f.read_text().count("\n") + 1, doc=_doc(tree), results=res, where=where))
         out[pkg] = items
     return out

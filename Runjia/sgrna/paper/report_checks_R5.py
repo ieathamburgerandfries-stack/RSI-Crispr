@@ -86,8 +86,8 @@ def run(chk):
     chk(P + "family-A gain, sealed genes", gs, 0.1560, 4)
     chk(P + "the drop in family A's gain equals the adaptive component (algebra)", gp - gs, m, 6)
     # share of guides and genes sealed in each draw (the same routine as sealed_holdout.py, on the stored protospacers)
-    from ..controls.sealed_holdout import _seal
-    from ..build.build_features import load_curated_index
+    from .hooks import _seal
+    from .hooks import load_curated_index
     meta = json.loads((config.INTERIM / "expanded_meta.json").read_text())
     protos = np.asarray(meta["protospacers"])
     idx = load_curated_index(verbose=False).set_index(config.ID_COL)

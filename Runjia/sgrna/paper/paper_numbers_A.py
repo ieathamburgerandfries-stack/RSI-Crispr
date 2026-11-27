@@ -93,7 +93,7 @@ def run(chk):
     chk(P + "[2] eSpCas9 screen guides (training and testing files together)", float(len(es_tr) + len(es_te)), 59489, 0)
     chk(P + "[2] eSpCas9 train guides used (vs_crisprhal_espcas9.csv n_train)", float(ve.n_train), 47591, 0)
     chk(P + "[2] eSpCas9 test guides used (vs_crisprhal_espcas9.csv n_test)", float(ve.n_test), 11898, 0)
-    from ..compare.eukaryote_rules import MIN_BIG
+    from .hooks import MIN_BIG
     ori = pd.read_csv(OUT / "eukaryote_orientation.csv")
     big = ori[ori.n >= MIN_BIG]
     chk(P + "[2] inclusion threshold of the eukaryotic datasets, guides (eukaryote_rules.MIN_BIG)", float(MIN_BIG), 300, 0)
@@ -138,8 +138,8 @@ def run(chk):
     chk(P + "[4] tuned version: trees (tune_configs.json d099x n_estimators)", float(tc["d099x"]["n_estimators"]), 4000, 0)
     chk(P + "[4] tuned version: depth (tune_configs.json d099x max_depth)", float(tc["d099x"]["max_depth"]), 5, 0)
     # the 70% / 30% split of the 4,013 genes, rebuilt exactly as `tune_ecoli.Cohort` does (one fixed seed, 30% of genes confirm)
-    from ..build.build_features import load_curated_index
-    from ..tuning.tune_ecoli import SPLIT_SEED
+    from .hooks import load_curated_index
+    from .hooks import SPLIT_SEED
     g = load_curated_index(verbose=False)["gene_name"]
     genes = np.array(sorted(set(g[g.notna()])))
     conf = set(np.random.default_rng(SPLIT_SEED).choice(genes, size=int(round(0.3 * len(genes))), replace=False))
@@ -157,7 +157,7 @@ def run(chk):
 
     # ------------------------------------------------------------------------------------------------------------------------------
     # [6] cross-validation
-    from ..harness.cohort_groups import BLOCK
+    from .hooks import BLOCK
     blocks = (pd.to_numeric(ci["left"], errors="coerce") // BLOCK).nunique()
     chk(P + "[6] block width, kb (harness.cohort_groups.BLOCK)", BLOCK / 1000, 100, 0)
     chk(P + "[6] 100 kb blocks the curated guides fall in (recomputed) = cohort_groups.csv", float(blocks), float(cg.loc[("curated", "100kb_block"), "n_groups"]), 0)
@@ -173,9 +173,9 @@ def run(chk):
     chk(P + "[7] share of the GUIDES sealed, % (sealed_holdout.csv n_sealed / total; whole genes are sealed)", float(share), 20, 0)
     chk(P + "[7] share of the guides left to re-derive selection and settings, %", float(100 - share), 80, 0)
     chk(P + "[7] sealings (distinct seal_seed in sealed_holdout.csv)", float(sh.seal_seed.nunique()), 15, 0)
-    from ..controls.sealed_holdout import SEAL_FRACTION
+    from .hooks import SEAL_FRACTION
     chk(P + "[7]   fraction of ROWS to seal (controls.sealed_holdout.SEAL_FRACTION; the code seals whole genes until it is reached)", SEAL_FRACTION * 100, 20, 0)
-    from ..controls.sealed_holdout import _seal
+    from .hooks import _seal
     protos = ci.protospacer.to_numpy()
     gmap = load_curated_index(verbose=False).set_index("protospacer")["gene_name"].reindex(protos)
     gshare = [gmap[_seal(protos, seed=int(sd), verbose=False)].nunique() / gmap.nunique() * 100 for sd in sorted(sh.seal_seed.unique())]

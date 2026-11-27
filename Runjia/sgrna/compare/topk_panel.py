@@ -7,6 +7,8 @@ calibration slope of y on the prediction, and paired bootstrap differences to cr
 with five seeds (selection and trees), rho lead over crisprHAL 2 per seed.
 
     python -m sgrna.compare.topk_panel
+
+Report section: Part 5.
 """
 from __future__ import annotations
 

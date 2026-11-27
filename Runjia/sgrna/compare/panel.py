@@ -26,6 +26,8 @@ Metrics, and why each is here:
                       task is choosing among sites inside *your* target
 
     python -m sgrna.compare.panel --run
+
+Report section: Part 5.
 """
 
 from __future__ import annotations
