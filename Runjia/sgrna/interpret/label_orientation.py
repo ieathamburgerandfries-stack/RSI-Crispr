@@ -6,7 +6,7 @@ released data's, so it is checked rather than assumed. A guide whose 20-mer plus
 every one of them, so it should deplete more than a guide with one target: if a higher label means more cutting, multi-copy guides
 should score higher.
 
-Result (`results/post_freeze/label_orientation.csv`, curated 33,567 guides): the 118 guides with more than one genomic copy have a
+Result (`results/label_orientation.csv`, curated 33,567 guides): the 118 guides with more than one genomic copy have a
 median label of 2.11 against 0.27 for the 33,449 single-copy guides (Mann-Whitney p about 1e-5), so a higher label is more cutting.
 The test is weak in size (118 guides) but it is independent of every sequence rule the findings rely on, and it is in the direction
 the labels were assumed to run.

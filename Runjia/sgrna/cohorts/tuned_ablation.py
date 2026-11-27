@@ -2,7 +2,7 @@
 
 Two questions with one machinery: take the tuned configurations of `tuning.tune_ecoli` and ask what a block of columns adds, by running the same gene-grouped 5 folds x 3 seeds
 (the 30,203 guides that carry a gene label), a top-900 column ranking fitted inside each training fold, the arm's own selector budget, and a paired bootstrap over folds. The
-matrices differ only in which columns the selector may rank. Resumable row by row (`results/post_freeze/family_a_at_tuned.csv`, `local_sequence_bound.csv`).
+matrices differ only in which columns the selector may rank. Resumable row by row (`results/family_a_at_tuned.csv`, `local_sequence_bound.csv`).
 
     ./run_ext.sh sgrna.cohorts.tuned_ablation --design family_a                    # 4 configs x 2 matrices x 15 folds
     ./run_ext.sh sgrna.cohorts.tuned_ablation --design local_sequence --arms d099x # 2 arms x 3 matrices x 15 folds

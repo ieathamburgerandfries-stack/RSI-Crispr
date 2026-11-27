@@ -38,7 +38,7 @@ P = "paper C: "
 
 def run(chk):
     """Run every check of group C through `chk(label, got, claimed, dec)`."""
-    RES = OUT.parent                                   # the fork's results/ (the same files sit in the main project's results/)
+    RES = OUT                                   # the fork's results/ (the same files sit in the main project's results/)
     MAIN = config.RESULTS                              # the main project's results/, for files the fork does not track
     hal_dir = config.EXTERNAL / "crisprHAL" / "data"
     ci = lambda lo, hi: 1.0 if lo < 0 < hi else 0.0    # 1 when an interval contains zero

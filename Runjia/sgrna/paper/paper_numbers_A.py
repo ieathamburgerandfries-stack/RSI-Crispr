@@ -39,12 +39,12 @@ P = "paper A: "
 
 def _main_file(name):
     """A results file of the fork's own results/, else the main project's untracked copy (a file the fork does not track)."""
-    f = OUT.parent / name
+    f = OUT / name
     return f if f.exists() else config.RESULTS / name
 
 
 def run(chk):
-    R = OUT.parent                      # the fork's own results/ (OUT is results/post_freeze)
+    R = OUT                      # the fork's own results/ (OUT is results)
     RAW = config.RAW / "ecoli_feature_matrix.csv"
 
     # ------------------------------------------------------------------------------------------------------------------------------

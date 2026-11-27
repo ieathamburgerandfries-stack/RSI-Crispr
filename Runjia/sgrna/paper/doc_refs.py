@@ -39,7 +39,7 @@ from pathlib import Path
 
 from .. import common
 
-RUNJIA = Path(common.OUT).parent.parent            # the folder that holds sgrna/, colab/ and the documents
+RUNJIA = Path(common.OUT).parent            # the folder that holds sgrna/, colab/ and the documents
 PKG = RUNJIA / "sgrna"
 EXEMPT_FILES = ("REMOVED.md", "doc_refs.py")          # this file discusses references by example, so it is not scanned
 EXEMPT_GLOBS = ("results/RESULTS_archive_*.md",)

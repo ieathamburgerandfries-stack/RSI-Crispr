@@ -7,7 +7,7 @@ linux/amd64 only, so on this Apple M5 it runs under emulation, and the times bel
 The emulation is gauged separately: RNAfold, the one compiled program in the pipeline, is timed natively (ViennaRNA 2.7.2 Python binding) and inside the container on the same
 sequences.
 
-What is written, all under `results/post_freeze/`:
+What is written, all under `results/`:
 
   boostmec_shipped_timings.csv   one row per run of the whole pipeline: batch, rep, seconds (inside the container, from the moment the script starts to its exit)
   boostmec_shipped_stages.csv    the same pipeline with an observer that logs how long each of its four child programs ran (the script itself is not changed)
@@ -36,7 +36,7 @@ import pandas as pd
 HERE = Path(__file__).resolve()
 RUNJIA = HERE.parents[2]
 ROOT = HERE.parents[3]
-RESULTS = RUNJIA / "results" / "post_freeze"
+RESULTS = RUNJIA / "results"
 WORK = ROOT / "external_data" / "BoostMEC" / "work"          # inputs and outputs of the container runs: its own directory, apart from the clone
 IMAGE = "oazarate/boostmec:latest"
 BATCHES = (10, 100, 10_000)         # one guide cannot be scored: if a position-specific nucleotide column is T in every sequence, R's CSV reader makes it logical and `predict.R` stops in

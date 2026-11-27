@@ -21,7 +21,7 @@ settings are read from `sealed_holdout.csv`). The sealed scores are not recomput
 If the gene-grouped component is near zero, the whole +0.0087 is the cost of unseen genes to a locus-reading feature and none of it is
 adaptive overfitting of the automatable choices; if it is near +0.0087 the reverse.
 
-Stored result: `results/post_freeze/sealed_holdout_gene.csv` holds the first 8 of the 15 sealings (about 7 minutes per sealing at 3 threads
+Stored result: `results/sealed_holdout_gene.csv` holds the first 8 of the 15 sealings (about 7 minutes per sealing at 3 threads
 on a loaded machine; the run was stopped there). Their random-row component, +0.0088, matches the 15-draw +0.0087.
 
     OMP_NUM_THREADS=3 python -m sgrna.controls.sealed_holdout_gene [--max-draws N] [--arms base_only frozen dev_tuned]

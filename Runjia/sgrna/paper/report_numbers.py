@@ -5,7 +5,7 @@
 Each `report_checks_*` module recomputes the quoted numbers of one part of PROGRESS_REPORT.md from stored result files (or, where a
 result is derived in a few seconds from a stored file, from that file) and states which cohort and protocol the number belongs to.
 `verify_numbers` calls `run`, so `./run_audit.sh` covers them. R3 refits the flank-edit models and the ALDEx2 re-implementation (about two minutes together); R2's SpCas9 to eSpCas9 transfer refit
-(about a minute) is stored in results/post_freeze/transfer_esp_unseen_guides.csv and re-run, overwriting it, only when the environment
+(about a minute) is stored in results/transfer_esp_unseen_guides.csv and re-run, overwriting it, only when the environment
 variable RSI_AUDIT_HEAVY is set:
 
     RSI_AUDIT_HEAVY=1 ./run_ext.sh sgrna.paper.report_numbers

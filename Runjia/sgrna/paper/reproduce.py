@@ -30,22 +30,22 @@ from pathlib import Path
 
 from .. import common
 
-RUNJIA = Path(common.OUT).parent.parent            # the folder that holds sgrna/ and results/
+RUNJIA = Path(common.OUT).parent            # the folder that holds sgrna/ and results/
 RESULTS = RUNJIA / "results"
 
 CASES = [
-    dict(name="tune-analysis", cmd=["sgrna.tuning.tune_ecoli", "--analyze"], stdout="post_freeze/tune_stage1_effects.txt"),
-    dict(name="tune-confirm-split1", cmd=["sgrna.tuning.tune_ecoli", "--confirm"], writes=["post_freeze/tune_confirm.csv"]),
-    dict(name="tune-confirm-split2", cmd=["sgrna.tuning.tune_ecoli", "--split", "2", "--confirm"], writes=["post_freeze/tune_split2_confirm.csv"]),
-    dict(name="ablation-family-a-at-tuned", cmd=["sgrna.cohorts.tuned_ablation", "--design", "family_a", "--summarise-only"], writes=["post_freeze/family_a_at_tuned_summary.csv"]),
-    dict(name="ablation-local-sequence", cmd=["sgrna.cohorts.tuned_ablation", "--design", "local_sequence", "--summarise-only"], writes=["post_freeze/local_sequence_bound_summary.csv"]),
-    dict(name="family-a-by-organism", cmd=["sgrna.compare.family_a_by_organism"], writes=["post_freeze/family_a_by_organism.csv"]),
-    dict(name="ablation-paper-folds", cmd=["sgrna.cohorts.curated_ablation", "--paper-folds", "--summary-only"], writes=["post_freeze/ablation_paper_folds_summary.csv"]),
-    dict(name="flank-scale-asymmetric", cmd=["sgrna.interpret.flank_scale", "--parts", "asymmetric", "--summary-only"], writes=["post_freeze/flank_window_tune_summary.csv"]),
-    dict(name="flank-scale-windows", cmd=["sgrna.interpret.flank_scale", "--summary-only"], writes=["post_freeze/flank_scale_summary.csv"]),
-    dict(name="human-additivity-twin", cmd=["sgrna.compare.human_additivity_twin", "--summarise-only"], writes=["post_freeze/human_additivity_twin_summary.csv"]),
-    dict(name="design-check", cmd=["sgrna.design.check_design"], writes=["post_freeze/design_check.csv"]),
-    dict(name="design-benchmark", cmd=["sgrna.design.design_benchmark"], writes=["post_freeze/design_benchmark.csv"]),
+    dict(name="tune-analysis", cmd=["sgrna.tuning.tune_ecoli", "--analyze"], stdout="tune_stage1_effects.txt"),
+    dict(name="tune-confirm-split1", cmd=["sgrna.tuning.tune_ecoli", "--confirm"], writes=["tune_confirm.csv"]),
+    dict(name="tune-confirm-split2", cmd=["sgrna.tuning.tune_ecoli", "--split", "2", "--confirm"], writes=["tune_split2_confirm.csv"]),
+    dict(name="ablation-family-a-at-tuned", cmd=["sgrna.cohorts.tuned_ablation", "--design", "family_a", "--summarise-only"], writes=["family_a_at_tuned_summary.csv"]),
+    dict(name="ablation-local-sequence", cmd=["sgrna.cohorts.tuned_ablation", "--design", "local_sequence", "--summarise-only"], writes=["local_sequence_bound_summary.csv"]),
+    dict(name="family-a-by-organism", cmd=["sgrna.compare.family_a_by_organism"], writes=["family_a_by_organism.csv"]),
+    dict(name="ablation-paper-folds", cmd=["sgrna.cohorts.curated_ablation", "--paper-folds", "--summary-only"], writes=["ablation_paper_folds_summary.csv"]),
+    dict(name="flank-scale-asymmetric", cmd=["sgrna.interpret.flank_scale", "--parts", "asymmetric", "--summary-only"], writes=["flank_window_tune_summary.csv"]),
+    dict(name="flank-scale-windows", cmd=["sgrna.interpret.flank_scale", "--summary-only"], writes=["flank_scale_summary.csv"]),
+    dict(name="human-additivity-twin", cmd=["sgrna.compare.human_additivity_twin", "--summarise-only"], writes=["human_additivity_twin_summary.csv"]),
+    dict(name="design-check", cmd=["sgrna.design.check_design"], writes=["design_check.csv"]),
+    dict(name="design-benchmark", cmd=["sgrna.design.design_benchmark"], writes=["design_benchmark.csv"]),
 ]
 
 
@@ -63,7 +63,7 @@ def run_case(case: dict) -> tuple[bool, str]:
         scratch = Path(tmp) / "results"
         shutil.copytree(RESULTS, scratch, copy_function=shutil.copy2)          # copy2 keeps mtimes, so "was it rewritten" is a comparison
         before = {k: p.stat().st_mtime_ns for k, p in _tree(scratch).items()}
-        env = dict(os.environ, EXT_OUT=str(scratch / "post_freeze"))
+        env = dict(os.environ, EXT_OUT=str(scratch))
         t0 = time.perf_counter()
         proc = subprocess.run([sys.executable, "-m", *case["cmd"]], cwd=RUNJIA, env=env, capture_output=True, text=True)
         secs = time.perf_counter() - t0

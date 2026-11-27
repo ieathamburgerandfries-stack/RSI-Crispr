@@ -121,7 +121,7 @@ if __name__ == "__main__":
             ms = _time(lambda: model.predict(X, batch_size=min(b, 256), verbose=0), reps)
             rows.append(dict(model="crisprHAL 2 (shipped WT-SPCAS9, TensorFlow, one thread)", batch=b, latency_ms=ms, per_guide_ms=ms / b,
                              n_members=1, total_trees=0)); print(rows[-1], flush=True)
-        pd.DataFrame(rows).to_csv(os.path.join(root, "RSI-Crispr-fork", "Runjia", "results", "post_freeze", "cost_crisprhal.csv"), index=False)
+        pd.DataFrame(rows).to_csv(os.path.join(root, "RSI-Crispr-fork", "Runjia", "results", "cost_crisprhal.csv"), index=False)
     else:
         from ..common import OUT
         if a.members:

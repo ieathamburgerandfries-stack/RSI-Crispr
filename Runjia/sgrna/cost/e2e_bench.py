@@ -160,7 +160,7 @@ if __name__ == "__main__":
     ap.add_argument("--locus", action="store_true", help="the design path: every NGG site in a stretch of chromosome")
     a = ap.parse_args()
     if a.hal:
-        out = os.path.join(a.hal, "RSI-Crispr-fork", "Runjia", "results", "post_freeze", "e2e_crisprhal.csv")
+        out = os.path.join(a.hal, "RSI-Crispr-fork", "Runjia", "results", "e2e_crisprhal.csv")
         pd.DataFrame(hal_side(a.hal)).to_csv(out, index=False)
     else:
         import sys

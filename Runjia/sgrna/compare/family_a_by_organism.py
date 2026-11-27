@@ -13,7 +13,7 @@ and two zero-shot transfers between organisms (train on one screen, score the ot
 back (`transfer_model.csv`, LightGBM, 3 seeds). The sizes of the gains are not comparable across rows (different enzymes, assays, models and fold designs); the sign is. Mouse and
 zebrafish tables, and the dCas9 screens, are not here: the first have a 77 nt window and no genome position to read 1 kb of flank from, the second measure another quantity.
 
-Written to `results/post_freeze/family_a_by_organism.csv`.
+Written to `results/family_a_by_organism.csv`.
 
     ./run_ext.sh sgrna.compare.family_a_by_organism
 """
@@ -24,7 +24,7 @@ import pandas as pd
 
 from ..common import OUT
 
-RESULTS = OUT.parent
+RESULTS = OUT
 
 
 def _folds(df: pd.DataFrame, dataset: str, cv: str) -> tuple[pd.Series, pd.Series]:

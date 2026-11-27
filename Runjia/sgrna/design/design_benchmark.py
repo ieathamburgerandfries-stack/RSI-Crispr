@@ -3,7 +3,7 @@
 Every curated guide gets an out-of-fold prediction (the paper's five whole-gene folds, seed 41: the model never saw the guide's gene). The circular genome is cut into disjoint
 windows of 250, 500 and 1,000 bp; in each window that holds at least four curated guides, the guide with the highest prediction is the model's pick. Its quality is the
 measured score's percentile within the window (1 = the best guide of the window, 0 = the worst; a random pick averages 0.5), and whether it is the best one. Intervals
-resample 100 kb blocks of the genome. Written to `results/post_freeze/design_benchmark.csv`.
+resample 100 kb blocks of the genome. Written to `results/design_benchmark.csv`.
 
 The curated library holds about one guide per 138 bp, a subset of the NGG sites, so windows narrower than 250 bp rarely hold several guides to choose between.
 

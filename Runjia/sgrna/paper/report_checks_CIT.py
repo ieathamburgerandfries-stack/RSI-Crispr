@@ -26,7 +26,7 @@ P = "report CIT: "
 
 def run(chk):
     """Run every CIT check through `chk(label, got, claimed, dec)`."""
-    RES = OUT.parent
+    RES = OUT
     hal = config.EXTERNAL / "crisprHAL"
 
     # ------------------------------------------------ the published matrix (Noshay et al. 2023 supplementary tables)

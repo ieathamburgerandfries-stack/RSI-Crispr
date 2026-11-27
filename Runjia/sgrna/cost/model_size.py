@@ -21,7 +21,7 @@ import pandas as pd
 HERE = Path(__file__).resolve()
 RUNJIA = HERE.parents[2]
 ROOT = HERE.parents[3]
-OUTF = RUNJIA / "results" / "post_freeze" / "model_size.csv"
+OUTF = RUNJIA / "results" / "model_size.csv"
 
 
 def slicer() -> None:

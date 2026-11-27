@@ -29,7 +29,7 @@ P = "report R5: "
 
 
 def run(chk):
-    RES = OUT.parent                      # the fork's results/
+    RES = OUT                      # the fork's results/
     MAIN = config.RESULTS                 # the main project's results/
 
     def f(name):                          # the fork's copy when it has one, else the main project's

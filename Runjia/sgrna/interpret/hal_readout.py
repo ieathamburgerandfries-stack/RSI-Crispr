@@ -25,7 +25,7 @@ import pandas as pd
 root, step = sys.argv[1], sys.argv[2]
 tag = sys.argv[3] if len(sys.argv) > 3 else None
 HAL = os.path.join(root, "external_data", "crisprHAL")
-CACHE = os.environ.get("HAL_CACHE") or os.path.join(root, "RSI-Crispr-fork", "Runjia", "results", "post_freeze", "interp_hal_cache")
+CACHE = os.environ.get("HAL_CACHE") or os.path.join(root, "RSI-Crispr-fork", "Runjia", "results", "interp_hal_cache")
 os.makedirs(CACHE, exist_ok=True)
 sys.path.insert(0, HAL)
 os.chdir(HAL)

@@ -29,7 +29,7 @@ HERE = Path(__file__).resolve()
 RUNJIA = HERE.parents[2]
 ROOT = HERE.parents[3]
 WORK = ROOT / "data" / "interim" / "post_freeze" / "transfer_vs_crisprhal"
-RESULTS = RUNJIA / "results" / "post_freeze"
+RESULTS = RUNJIA / "results"
 HAL = ROOT / "external_data" / "crisprHAL"
 UP, DOWN = 189, 166
 

@@ -26,18 +26,18 @@ and checked by the audit; [`../CODE_OVERVIEW.md`](../CODE_OVERVIEW.md) is the sh
 | `cost/` | wall-clock, CPU, memory and inference benchmarks | 5 |
 | `paper/` | the audit, the figures, the import and reference guards, the code-map generator | 5 |
 
-Results are the one place the date shows: `results/` holds the numbers from before the freeze and `results/post_freeze/` those
+Results are the one place the date shows: `results/` holds the numbers from before the freeze and `results/` those
 from after it. `./run_ext.sh <module>` runs any module with the three environment variables it needs (below), and
 `./run_audit.sh` recomputes every post-freeze number the report quotes.
 
 **Use `../run_ext.sh`, which sets all of this for you** — `./run_ext.sh sgrna.paper.verify_numbers`. Three variables have to be
 right together, and getting one wrong fails with a `FileNotFoundError` that does not say which: `sgrna/config.py` finds the
 root by walking up from `src/sgrna/`, which guesses wrong from this fork's `Runjia/sgrna/` layout, so `RSI09_ROOT` must name
-the folder that actually holds `data/` and `external_data/`; `EXT_OUT` must name `<fork>/Runjia/results/post_freeze`; and
+the folder that actually holds `data/` and `external_data/`; `EXT_OUT` must name `<fork>/Runjia/results`; and
 `PYTHONPATH` must include `<fork>/Runjia`. The interpreter also lives outside both repositories (override with `PY=...`).
 Done by hand:
 
-    RSI09_ROOT=<project with data/> EXT_OUT=<fork>/Runjia/results/post_freeze PYTHONPATH=<fork>/Runjia python -m sgrna.<package>.<module>
+    RSI09_ROOT=<project with data/> EXT_OUT=<fork>/Runjia/results PYTHONPATH=<fork>/Runjia python -m sgrna.<package>.<module>
 
 **If you move a module,** use `git mv`, then run the three guards: `./run_ext.sh sgrna.paper.import_check` (every module still
 imports, and importing writes nothing), `./run_ext.sh sgrna.paper.doc_refs` (every document and docstring that names a module or

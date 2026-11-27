@@ -31,7 +31,7 @@ P = "report R6: "
 
 def run(chk):
     """Run every check through `chk(label, got, claimed, dec)`."""
-    RES = OUT.parent                                    # the fork's results/
+    RES = OUT                                    # the fork's results/
     MAIN = MAIN_RESULTS                                 # the main project's results/ (files the fork does not track)
     ext = config.EXTERNAL / "crisprHAL" / "data"
 

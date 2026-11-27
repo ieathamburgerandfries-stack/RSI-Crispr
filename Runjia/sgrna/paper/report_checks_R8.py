@@ -53,7 +53,7 @@ def _meta_genes(path):
 
 def run(chk):
     """Run every check through `chk(label, got, claimed, dec)`."""
-    R = OUT.parent                       # the fork's results/
+    R = OUT                       # the fork's results/
     MAIN = config.RESULTS                # the main project's results/, for files the fork does not track
     INT = config.INTERIM
 
@@ -223,7 +223,7 @@ def run(chk):
     chk(P + "B3/C control as a share of the ChIP track (percent)", 100 * float(ds.loc["z_control_only", "d_spearman"] / ds.loc["z_signal_only", "d_spearman"]), 78, 0)
 
     # ------------------------------------------------------------------ B4: shape and 3D structure, beyond verify_numbers
-    print("report R8: Appendix B4 (post_freeze/shape_ablation.csv, esp_replicate.csv, ridge_check.csv, human_shape_ablation*.csv)")
+    print("report R8: Appendix B4 (shape_ablation.csv, esp_replicate.csv, ridge_check.csv, human_shape_ablation*.csv)")
     sh = pd.read_csv(OUT / "shape_ablation.csv")
     F = lambda arm: _folds(sh, arm)
     chk(P + "B4 shape_ablation.csv folds per arm", float(len(F("base"))), 15, 0)

@@ -12,7 +12,7 @@ F. A stress genome: E. coli with 450 planted tracts (poly-A, poly-T, (AC)n, N ga
 D. Linear mode on E. coli: sites that would wrap round the origin are dropped, guides with a full margin of DNA give the same columns as when circular, and a guide with fewer
    than 250 nt upstream has the same 250 and 1,000 nt window (the windows are cut to the DNA there is).
 
-Written to `results/post_freeze/family_a_table_check.csv`. Runs for about five minutes (two whole genomes are written to a temporary folder and deleted).
+Written to `results/family_a_table_check.csv`. Runs for about five minutes (two whole genomes are written to a temporary folder and deleted).
 
     ./run_ext.sh sgrna.design.check_family_a_table
 """

@@ -17,7 +17,7 @@
 # Scoring cost of a tree ensemble depends on the number of trees and their depth and not on the values, and so does the cost of a fixed number of epochs of a network, so
 # random inputs are a fair stand-in for timing and say nothing about accuracy.
 #
-# AFTER IT RUNS: the cell downloads cost_gpu.csv (one row per repeat). Save it as results/post_freeze/cost_gpu.csv in the project; the cost figure and the audit read it.
+# AFTER IT RUNS: the cell downloads cost_gpu.csv (one row per repeat). Save it as results/cost_gpu.csv in the project; the cost figure and the audit read it.
 # This file replaces colab/inference_bench_t4.py, inference_bench_onecore.py, slicer_cpu_check.py and crisprhal_inference_bench.py (their medians stay in results/inference_*.csv).
 # ============================================================================
 import json, os, subprocess, sys, textwrap, time

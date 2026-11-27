@@ -37,7 +37,7 @@ published matrix: 6,232 columns, no sequences
               10. an audit re-computes every number the report quotes
 ```
 
-The pipeline is drawn as a figure in `results/post_freeze/figures/fig7_pipeline.png`.
+The pipeline is drawn as a figure in `results/figures/fig7_pipeline.png`.
 
 ## The ten blocks
 

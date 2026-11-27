@@ -35,9 +35,9 @@ def _boot_ci(v, n=20000, seed=0):
 
 def run(chk):
     """Run every check of this module through `chk(label, got, claimed, dec)`."""
-    RES = OUT.parent                                  # the fork's results/
+    RES = OUT                                  # the fork's results/
     MAIN = config.RESULTS                             # the main project's results/
-    PF = OUT                                          # results/post_freeze
+    PF = OUT                                          # results
     JACKY = config.ROOT / "RSI-Crispr" / "Jacky" / "orientation-controls" / "results"
 
     # ------------------------------------------------------------------------------------------------ nulls

@@ -372,7 +372,7 @@ def _ceiling(chk, RES):
 
 def run(chk):
     """Run every check of review R3 through `chk(label, got, claimed, dec)`."""
-    RES = OUT.parent                 # the fork's results/
+    RES = OUT                 # the fork's results/
     MAIN = config.RESULTS            # the main project's results/, which holds attribution_summary_shap.csv and faithfulness_shap_share.csv
     _importance(chk, RES, MAIN)
     _interp_extra(chk, RES)

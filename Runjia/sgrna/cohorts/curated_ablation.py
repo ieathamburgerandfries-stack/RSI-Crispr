@@ -223,7 +223,7 @@ def shape_audit(verbose: bool = True) -> pd.DataFrame:
 # the 3,364 guides outside genes in 100 kb blocks, seeds 41 to 43, so 15 folds) with the default model, so a delta here sits beside the flank gain of +0.161 without a change of protocol.
 # Every arm sees the same five folds per seed. Arms: the 20-mer with the same 300-column selection every family arm gets (the like-for-like baseline); the 20-mer plus one family; and the two halves of
 # `d_mechanics` (its 22 columns that are functions of the protospacer, its 8 that read the flanking DNA: `.flank.` in the column name). `flank_scale.csv` already holds two arms on these folds and they are
-# read, not rerun: the 20-mer with no selection (the paper's 0.547) and the 20-mer + family A. Each gain is reported against both baselines. Results: `post_freeze/ablation_paper_folds.csv` (per fold) and
+# read, not rerun: the 20-mer with no selection (the paper's 0.547) and the 20-mer + family A. Each gain is reported against both baselines. Results: `ablation_paper_folds.csv` (per fold) and
 # `ablation_paper_folds_summary.csv`; fold checkpoints are the rows of the csv, so a rerun resumes.
 #     python -m sgrna.cohorts.curated_ablation --paper-folds [--threads 9] [--seeds 41 42 43] [--summary-only]
 import time

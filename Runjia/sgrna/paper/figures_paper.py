@@ -22,7 +22,7 @@ from sgrna import config
 from ..common import OUT
 from .figures import BLUE, DIVERGING, DOUBLE, GRID, INK, INK2, ORANGE, SINGLE, _panel, _save, _style
 
-R = OUT.parent
+R = OUT
 LABEL = {"chari2015Train293T": "Chari 293T", "doench2014-Hs": "Doench 2014 Hs", "doench2014-Mm": "Doench 2014 Mm", "doench2016_hg19": "Doench 2016",
          "hart2016-Hct1161lib1Avg": "Hart HCT116", "hart2016-HelaLib1Avg": "Hart HeLa", "morenoMateos2015": "Moreno-Mateos zf",
          "wang2015_hg19": "Wang 2015", "xu2015TrainHl60": "Xu HL60", "xu2015TrainKbm7": "Xu KBM7", "xu2015TrainMEsc": "Xu mESC", "E. coli": "E. coli"}
@@ -43,7 +43,7 @@ def _sd_bars(ax, x, y, e, color, marker, label, **kw):
 # ------------------------------------------------------------------------------------------------ Figure 1: reach
 def _seed41_gains(prefix_part):
     """Gain over the 20-mer per arm of one part of `flank_scale.csv`, seed 41 only (the one seed every arm of Figure 1 has): mean and sd over the five folds."""
-    fr = pd.read_csv(R / "post_freeze" / "flank_scale.csv")
+    fr = pd.read_csv(R / "flank_scale.csv")
     fr = fr[fr.seed == 41]
     base = fr[fr.arm == "base"].set_index("fold").rho
     rows = []
@@ -55,7 +55,7 @@ def _seed41_gains(prefix_part):
 
 def _tune_symmetric_gains():
     """Gain over the 20-mer of the symmetric arms (same window on both sides) that the `asymmetric` part of `flank_scale.py` added to its first sweep; seed 41, five folds."""
-    f = R / "post_freeze" / "flank_window_tune.csv"
+    f = R / "flank_window_tune.csv"
     if not f.exists():
         return pd.DataFrame(columns=["arm", "gain", "gain_sd_over_folds", "W"])
     t = pd.read_csv(f)
@@ -110,8 +110,8 @@ def fig_reach():
 # ------------------------------------------------------------------------------------------------ Figure 2: the signal
 def fig_signal():
     _style()
-    dec = pd.read_csv(R / "post_freeze" / "signal_decile.csv")
-    sl = pd.read_csv(R / "post_freeze" / "signal_slope.csv")
+    dec = pd.read_csv(R / "signal_decile.csv")
+    sl = pd.read_csv(R / "signal_slope.csv")
     fig, ax = plt.subplots(1, 2, figsize=(DOUBLE * 0.72, 2.25))
     ax[0].errorbar(dec.decile, dec.mean_label, yerr=[dec.mean_label - dec.lo, dec.hi - dec.mean_label], color=BLUE, marker="o", ms=3.4, lw=0.9, capsize=1.6, elinewidth=0.6)
     ax[0].axhline(0, color=INK2, lw=0.5)
@@ -142,7 +142,7 @@ def fig_signal():
 def fig_signal_appendix():
     """Appendix Figure A1: which composition works (a), how finely the flank must be described (b)."""
     _style()
-    fr = pd.read_csv(R / "post_freeze" / "flank_scale.csv")
+    fr = pd.read_csv(R / "flank_scale.csv")
     fr = fr[fr.seed == 41]
     base = fr[fr.arm == "base"].set_index("fold").rho
 
@@ -166,7 +166,7 @@ def fig_signal_appendix():
     ax[0].set_ylabel("gain in ρ over the 20-mer alone")
     ax[0].legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 0.06), fontsize=5.6, handlelength=1.6)
     _clean(ax[0])
-    res = pd.read_csv(R / "post_freeze" / "novel_resolution.csv").set_index("arm")
+    res = pd.read_csv(R / "novel_resolution.csv").set_index("arm")
     pts = sorted((int(a.split()[2]), float(res.loc[a, "rho"]), float(res.loc[a, "sd"])) for a in res.index if "binned" in a)
     n, r, e = (np.array(z) for z in zip(*pts))
     ax[1].errorbar(n, r, yerr=e, color=BLUE, marker="o", ms=3, lw=0.9, capsize=1.6, elinewidth=0.6)
@@ -187,9 +187,9 @@ def fig_signal_appendix():
 
 def fig_transfer():
     _style()
-    t = pd.read_csv(R / "post_freeze" / "eukaryote_transfer.csv")
+    t = pd.read_csv(R / "eukaryote_transfer.csv")
     t = t[t.model.str.startswith("pipeline")]
-    t = pd.concat([t[["trained_on", "scored_on", "rho"]], pd.read_csv(R / "post_freeze" / "transfer_to_ecoli.csv")[["trained_on", "scored_on", "rho"]]], ignore_index=True)
+    t = pd.concat([t[["trained_on", "scored_on", "rho"]], pd.read_csv(R / "transfer_to_ecoli.csv")[["trained_on", "scored_on", "rho"]]], ignore_index=True)
     cols = list(LABEL)
     rows = ["E. coli"] + [k for k in LABEL if k != "E. coli"]
     M = np.full((len(rows), len(cols)), np.nan)
@@ -198,7 +198,7 @@ def fig_transfer():
             q = t[(t.trained_on == a) & (t.scored_on == b)]
             if len(q):
                 M[i, j] = q.rho.iloc[0]
-    k = pd.read_csv(R / "post_freeze" / "transfer_vs_crisprhal_kingdom.csv")
+    k = pd.read_csv(R / "transfer_vs_crisprhal_kingdom.csv")
     fig = plt.figure(figsize=(DOUBLE, 3.0))
     gs = fig.add_gridspec(1, 2, width_ratios=[1.55, 1], wspace=0.55)
     ax = fig.add_subplot(gs[0])
@@ -240,7 +240,7 @@ def fig_transfer():
 
 def fig_rule():
     _style()
-    c = pd.read_csv(R / "post_freeze" / "eukaryote_contrast_g_minus_t.csv")
+    c = pd.read_csv(R / "eukaryote_contrast_g_minus_t.csv")
     c = c[~c.underpowered.astype(bool)].copy()
     from .report_checks_R4 import _contrast_pos20
     rng = np.random.default_rng(41)
@@ -272,9 +272,9 @@ def _fold_scores():
     """rho per whole-gene fold (seed 41, the folds crisprHAL 2 was run on): crisprHAL 2 at its published batch, BoostMEC with its released hyperparameters, SLICER default and tuned."""
     hal = pd.read_csv(R / "crisprhal_gene_grouped_fcolab_b1024.csv")
     hal = hal[hal.model == "crisprHAL 2"].sort_values("fold").spearman.to_numpy()
-    bm = pd.read_csv(R / "post_freeze" / "boostmec_released.csv")
+    bm = pd.read_csv(R / "boostmec_released.csv")
     bm = bm[bm.seed == 41].sort_values("fold").rho.to_numpy()
-    sl = pd.read_csv(R / "post_freeze" / "gene_grouped_slicer.csv")
+    sl = pd.read_csv(R / "gene_grouped_slicer.csv")
     return {"crisprHAL 2": hal, "BoostMEC": bm, "SLICER default": sl[sl.model == "SLICER default"].sort_values("fold").spearman.to_numpy(),
             "SLICER tuned": sl[sl.model == "SLICER tuned"].sort_values("fold").spearman.to_numpy()}
 
@@ -359,7 +359,7 @@ PURPLE = "#8e5fb0"
 
 def _gpu_data():
     """crisprHAL 2 on the Colab T4 from `cost_gpu.csv` (one row per repeat, written by `colab/cost_gpu.py`): ms per guide by (placement, batch), and the fit seconds."""
-    d = pd.read_csv(R / "post_freeze" / "cost_gpu.csv")
+    d = pd.read_csv(R / "cost_gpu.csv")
     h = d[(d.model == "crisprHAL 2") & (d.unit == "ms/guide")]
     score = {("host" if pl.startswith("raw") else "card", int(b)): g.value.to_numpy() for (pl, b), g in h.groupby(["placement", "batch"])}
     return score, d[(d.model == "crisprHAL 2") & (d.what == "fit")].value.to_numpy(), "cost_gpu.csv"
@@ -384,10 +384,10 @@ def _bar(ax, x, v, color, w):
 
 def fig_cost():
     _style()
-    inf = pd.read_csv(R / "post_freeze" / "cost_repeats_inference.csv")
-    fit = pd.read_csv(R / "post_freeze" / "cost_repeats_fit.csv")
+    inf = pd.read_csv(R / "cost_repeats_inference.csv")
+    fit = pd.read_csv(R / "cost_repeats_fit.csv")
     gpu, gpu_fit, _ = _gpu_data()
-    cg = pd.read_csv(R / "post_freeze" / "cost_gpu.csv")
+    cg = pd.read_csv(R / "cost_gpu.csv")
     colab_trees = {int(b): g.value.to_numpy() for b, g in cg[(cg.model == "SLICER default shape") & (cg.device == "Colab CPU") & (cg.what == "forward")].groupby("batch")}
     fig, ax = plt.subplots(1, 3, figsize=(DOUBLE * 0.98, 2.8), gridspec_kw=dict(width_ratios=[1.5, 1.0, 1.15]))
     models = ["SLICER default", "SLICER tuned", "BoostMEC", "crisprHAL 2"]

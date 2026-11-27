@@ -36,7 +36,7 @@ import pandas as pd
 HERE = Path(__file__).resolve()
 RUNJIA = HERE.parents[2]
 ROOT = HERE.parents[3]
-RESULTS = RUNJIA / "results" / "post_freeze"
+RESULTS = RUNJIA / "results"
 INF = RESULTS / "cost_repeats_inference.csv"
 FIT = RESULTS / "cost_repeats_fit.csv"
 REPS = {1: 300, 100: 60, 10_000: 15}

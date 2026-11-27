@@ -20,7 +20,7 @@ P = "paper D: "
 
 
 def run(chk):
-    R = OUT.parent
+    R = OUT
     # ---------------------------------------------------------------------------------------------------- Methods: the data
     raw = pd.read_csv(config.EXTERNAL / "crisprHAL" / "rawData" / "E_coli_WTSpCas9_counts.tsv", sep="\t")
     chk(P + "[D1] raw guides in crisprHAL 2's counts file", float(len(raw)), 121340, 0)
@@ -297,7 +297,7 @@ def run(chk):
         claim(f"[D16b] top-5% precision of tuned SLICER, {sp}", tk.loc[(sp, "tuned XGBoost")].top5pct_precision, a_)
         claim(f"[D16b] top-5% precision of crisprHAL 2, {sp}", tk.loc[(sp, "crisprHAL 2")].top5pct_precision, h_)
     # sensitivity-n over every subset size (interp_extra.py; the four rows quoted individually are audited in report_checks_R3.py)
-    sn = pd.read_csv(OUT.parent / "interp_sensitivity_n.csv")
+    sn = pd.read_csv(OUT / "interp_sensitivity_n.csv")
     for a_, (lo_, hi_) in {"SHAP": ("+0.922", "+0.977"), "ridge surrogate": ("+0.127", "+0.316"), "SHAP, columns permuted": ("−0.023", "+0.047")}.items():
         v = sn[sn.attribution == a_].pearson
         claim(f"[D17] sensitivity-n, {a_}, lowest over all ten subset sizes", v.min(), lo_)
@@ -440,7 +440,7 @@ def run(chk):
     claim("[D18]   median seconds", gfv("crisprHAL 2", "T4").median(), "326")
     claim("[D18]   shortest, minutes", gfv("crisprHAL 2", "T4").min() / 60, "5.4")
     claim("[D18]   longest, minutes", gfv("crisprHAL 2", "T4").max() / 60, "5.6")
-    for ln in (OUT.parent / "inference_onecore.csv").read_text().splitlines()[1:]:         # device names hold commas, so parse from the right
+    for ln in (OUT / "inference_onecore.csv").read_text().splitlines()[1:]:         # device names hold commas, so parse from the right
         q = ln.split(",")
         if q[0].startswith("crisprHAL 2 WT-SpCas9 (shipped)") and "input on card" in ln and q[-4] == "10000":
             claim("[D18] an earlier Colab session: crisprHAL 2 on the card at 10,000 guides, ms per guide", float(q[-3]) / 10000, "0.0762")
@@ -462,7 +462,7 @@ def run(chk):
     claim("[D15] crisprHAL 2 on the T4 over SLICER default", gfv("crisprHAL 2", "T4").median() / wm("SLICER default"), "25")
     claim("[D15] computing the training features, SLICER default (26,853 guides, one thread, s)", 26853 * med[("SLICER default", 10000)] / 1000, "2.13")
     claim("[D15]   BoostMEC", 26853 * med[("BoostMEC", 10000)] / 1000, "83.5")
-    rr = pd.read_csv(OUT.parent / "crisprhal_rerun.csv")
+    rr = pd.read_csv(OUT / "crisprhal_rerun.csv")
     hf = rr[(rr.arm == "our_folds") & rr.model.str.startswith("crisprHAL2")].fit_seconds
     claim("[D15] earlier fits of crisprHAL 2 on this CPU (five folds, other sessions): median minutes", hf.median() / 60, "17.0")
     sz = pd.read_csv(OUT / "model_size.csv").set_index("model")
@@ -563,7 +563,7 @@ def run(chk):
     claim("[D22]   below its published batch by", pub.crisprhal_mean - b256.crisprhal_mean, "0.013")
     claim("[D22]   the default model's lead then", b256.lead_mean, "0.027")
     claim("[D22]   the tuned model's lead then", gg.loc[("SLICER tuned", "crisprHAL 2 (batch 256)")].lead_mean, "0.044")
-    rr2 = pd.read_csv(OUT.parent / "crisprhal_rerun.csv")
+    rr2 = pd.read_csv(OUT / "crisprhal_rerun.csv")
     claim("[D22] crisprHAL 2 at its published configuration on our five random-row folds (seed 41)", rr2[(rr2.arm == "our_folds") & (rr2.seed == 41) & rr2.model.str.startswith("crisprHAL2")].spearman.mean(), "0.697")
     fsd = pd.read_csv(OUT / "flank_scale.csv")
     fsd = fsd[fsd.seed == 41]
@@ -607,7 +607,7 @@ def run(chk):
     claim("[D24] gain of 200/250 on the two new fold assignments", wsm.loc[top, "gain_rep"], "0.106")
     # the family ablation on the paper's own folds (curated_ablation.py --paper-folds), against the same ablation on random rows (the team's shared harness, ablation_curated.csv)
     apf = pd.read_csv(OUT / "ablation_paper_folds_summary.csv").set_index("family")
-    arf = pd.read_csv(OUT.parent / "ablation_curated.csv").set_index("family")
+    arf = pd.read_csv(OUT / "ablation_curated.csv").set_index("family")
     claim("[D25] family ablation, paper folds: folds per family (3 seeds x 5)", apf.n_folds.min(), "15")
     claim("[D25]   20-mer with the same 300-column selection, mean rho over folds", apf.base_selected_rho.iloc[0], "0.5461")
     claim("[D25]   20-mer with no selection (the headline baseline)", apf.base_no_selection_rho.iloc[0], "0.5466")
@@ -624,9 +624,9 @@ def run(chk):
     for fam, txt in (("a_flank", "98"), ("b_energy", "97"), ("c_folding", "99"), ("f_methylation", "99"), ("d_mechanics", "98"), ("i_shape", "98"), ("d_supercoiling", "98"), ("e_nucleoid", "90"), ("g_transcription", "78"), ("j_periodicity", "75")):
         claim(f"[D25] share of the random-row gain kept on the paper's folds, %: {fam}", 100 * apf.loc[fam, "gain_same_selection"] / arf.loc[fam, "d_spearman"], txt)
     # search effort given to each model (tuning.csv, crisprhal_matched_folds.csv, crisprhal_tuning.csv, cost_gpu.csv): equal compute, not equal draws
-    tu = pd.read_csv(OUT.parent / "tuning.csv")
-    mf = pd.read_csv(OUT.parent / "crisprhal_matched_folds.csv")
-    lt = pd.read_csv(OUT.parent / "crisprhal_tuning.csv")
+    tu = pd.read_csv(OUT / "tuning.csv")
+    mf = pd.read_csv(OUT / "crisprhal_matched_folds.csv")
+    lt = pd.read_csv(OUT / "crisprhal_tuning.csv")
     cgp = pd.read_csv(OUT / "cost_gpu.csv")
     t4fit = float(cgp[(cgp.model == "crisprHAL 2") & (cgp.what == "fit")].value.median())
     srch = mf[mf.stage == "search"]

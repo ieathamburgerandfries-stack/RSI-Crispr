@@ -18,7 +18,7 @@ a fold and guides outside genes grouped by 100 kb block, the default model with 
 
     OMP_NUM_THREADS=6 python -m sgrna.interpret.flank_scale [--parts window partition resolution displacement] [--threads 6] [--seeds 41]
 
-Per-fold results: `results/post_freeze/flank_scale.csv` (arm, part, seed, fold, rho); the table of gains over the base, paired by fold, is written by `summary()`.
+Per-fold results: `results/flank_scale.csv` (arm, part, seed, fold, rho); the table of gains over the base, paired by fold, is written by `summary()`.
 """
 from __future__ import annotations
 

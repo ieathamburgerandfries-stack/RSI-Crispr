@@ -42,7 +42,7 @@ def _paired_seed_interval(RES, arm_file, full_file):
 
 def run(chk):
     """Run every check of this module through `chk(label, got, claimed, dec)`."""
-    RES = OUT.parent                              # the fork's results/
+    RES = OUT                              # the fork's results/
     MAIN = config.RESULTS                         # the main project's results/ (files the fork does not track)
     ROOT = pathlib.Path(config.__file__).parent   # sgrna/
 

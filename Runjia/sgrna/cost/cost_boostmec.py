@@ -37,7 +37,7 @@ import pandas as pd
 HERE = Path(__file__).resolve()
 RUNJIA = HERE.parents[2]
 ROOT = HERE.parents[3]
-RESULTS = RUNJIA / "results" / "post_freeze"
+RESULTS = RUNJIA / "results"
 REPO = ROOT / "external_data" / "BoostMEC" / "repo"
 MODEL_DIR = REPO / "model"
 COMMIT = "cdf190c532ad244c9d451ce22a1cf83a6203c8ef"

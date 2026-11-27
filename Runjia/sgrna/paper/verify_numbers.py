@@ -18,7 +18,7 @@ import pandas as pd
 from ..common import INTERIM, OUT
 from sgrna import config
 
-RUNJIA = pathlib.Path(OUT).parent.parent      # the fork's Runjia/, which holds the documents these checks read
+RUNJIA = pathlib.Path(OUT).parent      # the fork's Runjia/, which holds the documents these checks read
 
 bad, n = [], 0
 RAW = []          # (label, computed, claimed, decimals) in full precision, written to $AUDIT_RAW when that is set (the printed lines keep only five decimals)
@@ -119,7 +119,7 @@ def main():
                       ("twin base", ht["h_base"], 0.3063), ("twin baseline harness", hc["harness_default"], 0.3356),
                       ("twin baseline library-defaults", hc["jacky_400_1000"], 0.2515)):
         chk(lab, float(v), c, 4)
-    hb = pd.read_csv(OUT.parent / "human_baseline.csv").set_index("arm").spearman
+    hb = pd.read_csv(OUT / "human_baseline.csv").set_index("arm").spearman
     chk("random baseline harness", float(hb["harness_default"]), 0.4036, 4)
     chk("random baseline library-defaults", float(hb["jacky_400_1000"]), 0.5076, 4)
     dec = pd.read_csv(INTERIM / "human" / "decoded.csv", dtype={"sgRNAID": str})
@@ -286,7 +286,7 @@ def main():
         x = ss[ss.split == sp].lead
         chk(f"seed lead {sp} min", float(x.min()), mn, 4); chk(f"seed lead {sp} max", float(x.max()), mx, 4); chk(f"seed lead {sp} mean", float(x.mean()), mean, 4)
     de = pd.read_csv(OUT / "data_efficiency.csv")
-    hal_sc = pd.read_csv(OUT.parents[3] / "results" / "sample_complexity.csv"); hal_sc = hal_sc[(hal_sc.model == "crisprHAL 2") & (hal_sc.seed == 41)]
+    hal_sc = pd.read_csv(OUT.parents[2] / "results" / "sample_complexity.csv"); hal_sc = hal_sc[(hal_sc.model == "crisprHAL 2") & (hal_sc.seed == 41)]
     dm = de.pivot_table(index="n_train", columns="arm", values="rho")
     for nn, ch_, tu_, hh_ in ((4000, 0.6524, 0.6576, 0.5235), (8000, 0.6814, 0.6915, 0.6323), (13880, 0.6988, 0.7106, 0.6733), (20000, 0.7053, 0.7198, 0.6879), (26853, 0.7076, 0.7251, 0.6950)):
         chk(f"n={nn} champion", float(dm.loc[nn, "champion"]), ch_, 4); chk(f"n={nn} tuned", float(dm.loc[nn, "tuned d099x"]), tu_, 4)
@@ -668,7 +668,7 @@ def main():
     chk("22.4 files changed by importing the package", float(ic["files_changed_by_import"]), 0, 0)
 
     print("4. headroom: does the model leave information on the table? (representation_headroom.csv, restored 22 Nov)")
-    rh = pd.read_csv(OUT.parent / "representation_headroom.csv"); rh["a"] = rh.rho_with_residual.abs()
+    rh = pd.read_csv(OUT / "representation_headroom.csv"); rh["a"] = rh.rho_with_residual.abs()
     def _top(arm, grp):
         g = rh[(rh.arm == arm) & (rh.group == grp)].sort_values("a", ascending=False)
         return float(g.a.iloc[0]), g.column.iloc[0]
@@ -681,17 +681,17 @@ def main():
             chk(f"4. {arm}: the held-back column is family A (the positive control)", 1.0 if col.startswith("eng.flank.") else 0.0, 1, 0)
     chk("4. with family A given, nothing held back exceeds 0.10", float(_top("subset_427+a_flank", "dropped from the matrix")[0] < 0.10), 1, 0)
 
-    # The files below are read from the repository's own results/ (OUT.parent), not config.RESULTS: config.RESULTS is the
+    # The files below are read from the repository's own results/ (OUT), not config.RESULTS: config.RESULTS is the
     # main project's untracked folder, and a check that read that copy would pass without testing what a clone contains.
     print("the human ladder (folds_human_base_cv.csv, folds_human_base_a_cv.csv; cited by RESULTS.md as `human_ladder`)")
-    hb = pd.read_csv(OUT.parent / "folds_human_base_cv.csv").spearman.mean()
-    ha = pd.read_csv(OUT.parent / "folds_human_base_a_cv.csv").spearman.mean()
+    hb = pd.read_csv(OUT / "folds_human_base_cv.csv").spearman.mean()
+    ha = pd.read_csv(OUT / "folds_human_base_a_cv.csv").spearman.mean()
     chk("human ladder: base, random folds", float(hb), 0.382, 3)
     chk("human ladder: base + family A", float(ha), 0.434, 3)
     chk("human ladder: family A increment", float(ha - hb), 0.052, 3)
 
     print("5. importance across seven model families (importance_model_pairs.csv, restored 22 Nov)")
-    ip = pd.read_csv(OUT.parent / "importance_model_pairs.csv")
+    ip = pd.read_csv(OUT / "importance_model_pairs.csv")
     trees = {"catboost", "extra_trees", "lightgbm", "random_forest", "xgboost"}
     it = ip[ip.model_a.isin(trees) & ip.model_b.isin(trees)]
     chk("5. model pairs (all families)", float(len(ip[ip.method == "native"]) / ip.fold.nunique()), 21, 0)
@@ -709,7 +709,7 @@ def main():
 
     print("4. k-mer order without selection (kmer_order_paired.csv, restored 22 Nov)")
     from scipy import stats as _st
-    ko = pd.read_csv(OUT.parent / "kmer_order_paired.csv").pivot_table(index=["seed", "fold"], columns="arm", values="spearman")
+    ko = pd.read_csv(OUT / "kmer_order_paired.csv").pivot_table(index=["seed", "fold"], columns="arm", values="spearman")
     for lab, (x, y), mean_, up, pv in (("+ trimers", ("mono+di", "mono+di+tri"), 0.0035, 12, 0.025),
                                        ("+ tetramers on top", ("mono+di+tri", "mono+di+tri+tetra"), -0.0028, 4, 0.013),
                                        ("net", ("mono+di", "mono+di+tri+tetra"), 0.0007, 8, 0.62)):
@@ -719,7 +719,7 @@ def main():
         chk(f"4. {lab}: paired t p-value", float(_st.ttest_1samp(dd, 0).pvalue), pv, 3 if pv < 0.1 else 2)
 
     print("7. crisprHAL 2 re-run at seed 41 (crisprhal_rerun.csv, restored 22 Nov)")
-    cr_ = pd.read_csv(OUT.parent / "crisprhal_rerun.csv")
+    cr_ = pd.read_csv(OUT / "crisprhal_rerun.csv")
     of = cr_[cr_.arm == "our_folds"].sort_values("fold")
     for k_, v_ in enumerate((0.6855, 0.6988, 0.6978, 0.7022, 0.7012), start=1):
         chk(f"7. crisprHAL 2 published config, fold {k_}", float(of[of.fold == k_].spearman.iloc[0]), v_, 4)
@@ -730,7 +730,7 @@ def main():
     chk("documents and docstrings: references to modules, paths or Colab scripts that do not exist", float(len(stale_refs)), 0, 0)
     for rel, ln, kind, ref in stale_refs[:5]:
         print(f"      stale: {rel}:{ln} {kind} {ref}")
-    _sg = pathlib.Path(OUT).parent.parent / "sgrna"
+    _sg = pathlib.Path(OUT).parent / "sgrna"
     loose = sorted(f.name for f in _sg.glob("*.py") if f.name not in ("__init__.py", "config.py", "io_utils.py", "common.py"))
     chk("sgrna: modules sitting outside a package (besides config, io_utils, common)", float(len(loose)), 0, 0)
     from . import code_map

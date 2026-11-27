@@ -7,7 +7,7 @@ from each *claim* to the file and the command behind it.
 The folders are named for when a file was made, not for what it shows:
 
 * **`results/*.csv`**: the analysis frozen on 11 October 2026 (Findings 1–6, Appendices A–C). Not regenerated since.
-* **`results/post_freeze/`**: everything measured after the freeze (Finding 7, Appendix B4, the head-to-head in Part 5, the
+* **`results/`**: everything measured after the freeze (Finding 7, Appendix B4, the head-to-head in Part 5, the
   hyperparameter search, the re-comparison against crisprHAL 2, the mechanism work, the figures of the paper, `p_fig*` in `figures/`, listed in `figure_manifest_paper.csv`).
   `EXTENSION_LOG.md` sections 7–33 are the record.
 * **`results/rederived/`**: re-derivations of seven result files whose producing code had been lost, kept as the evidence that

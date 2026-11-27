@@ -32,7 +32,7 @@ def _sb(r, k=2):
 
 
 def run(chk):
-    R = OUT.parent                      # the fork's own results/ (not the main project's untracked copy); OUT is results/post_freeze
+    R = OUT                      # the fork's own results/ (not the main project's untracked copy); OUT is results
 
     # ------------------------------------------------------------------------------------------------------------------------------
     # [20] transfer without retraining

@@ -25,8 +25,8 @@ from .. import config
 from ..common import OUT
 
 SLICER = OUT / "gene_grouped_slicer.csv"
-HAL = OUT.parent / "crisprhal_gene_grouped_fcolab_b1024.csv"
-HAL256 = OUT.parent / "crisprhal_gene_grouped_fcolab_b256.csv"
+HAL = OUT / "crisprhal_gene_grouped_fcolab_b1024.csv"
+HAL256 = OUT / "crisprhal_gene_grouped_fcolab_b256.csv"
 RESULT = OUT / "gene_grouped_vs_crisprhal.csv"
 SEED = 41
 

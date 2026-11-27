@@ -46,7 +46,7 @@ def _contrast_pos20(name, rng, boot=300):
 
 def run(chk):
     """Run every check through `chk(label, got, claimed, dec)`."""
-    RES = OUT.parent
+    RES = OUT
 
     # ------------------------------------------------------------------ (d) the guide's own base preferences
     print("report R4 (d): per-base effects, the E. coli - human comparison, gain by position")

@@ -32,7 +32,7 @@ It lists every NGG guide on either strand that cuts within `--window` bp of the 
 coordinates, predicted score and the number of NGG sites its 20-mer has in the genome (guides with more than one are set aside, or flagged when none is left).
 `--linear` treats the sequence as linear, `--contig` picks a record of a multi-record FASTA, `.gz` is read directly.
 
-What it has been checked for (`python -m sgrna.design.check_design`, `results/post_freeze/design_check.csv`): given only the genome and the coordinates of 600 curated guides (294 on the minus strand),
+What it has been checked for (`python -m sgrna.design.check_design`, `results/design_check.csv`): given only the genome and the coordinates of 600 curated guides (294 on the minus strand),
 it reads the same protospacer, PAM and both flanks as the curated index in 600 of 600, builds the same 6,517 columns (largest difference 0.0) and the same predictions, and asking for each guide's cut site lists that guide at distance 0.
 What picking by score buys (`python -m sgrna.design.design_benchmark`, `design_benchmark.csv`; out-of-fold predictions on the paper's whole-gene folds, the genome cut into disjoint windows):
 in the 3,044 windows of 250 bp that hold at least four curated guides (5.07 on average) the tuned model's pick sits at the 0.771 percentile of the measured scores [0.760, 0.782] (a random pick: 0.5) and is the best guide of its window in 48.7% of them (chance 20.9%);
@@ -64,7 +64,7 @@ The columns describe the DNA around a target, they are not a score: to score a g
 
 For a mammalian genome run one chromosome at a time, linear, and write a stretch of it (a whole chromosome has millions of sites): `--genome hg38.fa.gz --contig chr21 --linear --start 20000000 --end 20050000`. The other records are skipped as the file is read, so a chromosome of hundreds of Mb needs a few GB of memory; the default is circular, so without `--linear` a long record's two ends would be joined (the tool says so for records over 20 Mb).
 
-Checks (`python -m sgrna.design.check_family_a_table`, `results/post_freeze/family_a_table_check.csv`):
+Checks (`python -m sgrna.design.check_family_a_table`, `results/family_a_table_check.csv`):
 * Given only the coordinates of the 33,567 curated guides, it rebuilds the stored table: protospacer, PAM and genome copy count equal in 33,567 of 33,567, the same missing-value pattern, and 3 of 11,681,316 cells differ, each by one float32 step (at most 1.2e-7; the two programs add the same numbers in a different order).
 * The *E. coli* genome has 541,810 NGG sites (270,137 on the plus strand, 271,673 on the minus, one per 8.6 nt), and every curated guide is among them; 3.2% share their 20-mer with another site. The whole table takes 59 s (0.11 ms per guide, featurising and writing) and is 246 MB as `.csv.gz`, 1.25 GB as plain CSV.
 * A second genome, *Citrobacter rodentium* (5,346,659 bp, 707,896 sites, 78 s): 400 sites (the first 40 and last 40, which cross the origin, and 320 at random) are featurised again one at a time from their flanking sequence by `a_flank_fast`, the code the release was made with, and agree in all 348 columns (0 cells differ); the copy counts equal the design tool's.
@@ -76,7 +76,7 @@ The table describes DNA, so it can be built for any genome (above: human and cat
 
 ### Where family A has been tested
 
-Held-out Spearman rho of the columns that read only the 20-mer ("base") and of base plus family A (`python -m sgrna.compare.family_a_by_organism`, `results/post_freeze/family_a_by_organism.csv`, assembled from the stored results of the runs; nothing is re-fitted):
+Held-out Spearman rho of the columns that read only the 20-mer ("base") and of base plus family A (`python -m sgrna.compare.family_a_by_organism`, `results/family_a_by_organism.csv`, assembled from the stored results of the runs; nothing is re-fitted):
 
 | organism and screen | guides | folds | base | + family A | gain | folds with a positive gain |
 |---|---:|---|---:|---:|---:|---:|
@@ -138,10 +138,10 @@ Runjia/                 the documents above, run_audit.sh, run_ext.sh
 │   ├── cost/        wall-clock, CPU, memory and inference benchmarks
 │   └── paper/       the audit (verify_numbers), figures, import and reference guards, the code-map generator
 ├── colab/           scripts that need a GPU or a fresh Colab instance: crisprHAL 2 re-tuning, wide window, sample complexity, inference timing
-└── results/         named for when a file was made, not what it shows (INDEX.md gives that); the code addresses files by name; .npy caches are gitignored
-    ├── *.csv        the analysis frozen on 11 October 2026 (Findings 1 to 6, Appendices A to C); not regenerated since
-    ├── post_freeze/ everything measured after the freeze; figures/ holds the seven publication figures (PDF and 600 dpi PNG)
-    └── rederived/   re-derivations of seven result files whose producing code was lost (sgrna/controls/rederive.py)
+└── results/         every tracked result file, in one flat folder, each named after the module that writes it (INDEX.md groups them by the claim they back); .npy caches are gitignored
+    ├── figures/            the seven publication figures (PDF and 600 dpi PNG)
+    ├── interp_hal_cache/   interpretability caches made in the TensorFlow environment
+    └── rederived/          re-derivations of seven result files whose producing code was lost (sgrna/controls/rederive.py)
 ```
 
 ## Running it
@@ -162,7 +162,7 @@ records where each came from), so a clone imports but does not run end to end. `
 ships with the code; `i_shape.py` reads it from `data/reference/`.
 
 **From a terminal, with `./run_ext.sh`.** Three variables must be right together, and a wrong one fails with a `FileNotFoundError` that does
-not say which: `RSI09_ROOT` (the project folder above; `config.py` guesses wrong from this fork's layout), `EXT_OUT` (`Runjia/results/post_freeze`)
+not say which: `RSI09_ROOT` (the project folder above; `config.py` guesses wrong from this fork's layout), `EXT_OUT` (`Runjia/results`)
 and `PYTHONPATH` (includes `Runjia`). `run_ext.sh` sets all three, taking the folder above the fork as the project and
 `<project>/.venv/bin/python` as interpreter unless `PY=...` is set:
 

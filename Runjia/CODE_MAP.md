@@ -9,7 +9,7 @@ hand-written. For a short tour of only the code the report's claims depend on, r
 
 Roughly 27,000 lines of Python in three layers, organised by what each module is *for* and not by when it was written
 (the exact totals are the first line of the generated section below). Results are the one place the date shows: `results/`
-holds numbers from before the 11 October freeze and `results/post_freeze/` those from after it.
+holds numbers from before the 11 October freeze and `results/` those from after it.
 
 | layer | where | what it is |
 |---|---|---|
@@ -37,7 +37,7 @@ Every experiment module has the same four parts, so any of them can be read the 
    the run and what the result means.
 2. **`run()`** does the experiment through the shared harness (`harness/run_ablation.py`, or `tuning/tune_ecoli.py`
    for the tuned model), with folds written to `results/` as they finish so a crash loses one fold, not a run.
-3. **One CSV** lands in `results/` (before the freeze) or `results/post_freeze/` (after it), named after the module.
+3. **One CSV** lands in `results/` (before the freeze) or `results/` (after it), named after the module.
 4. **A `__main__` guard**, so importing a module does nothing. `paper/import_check.py` asserts this for all of them.
 
 ## How to run something
@@ -54,7 +54,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 
 <!-- generated:begin -->
 
-**177 modules, 38,974 lines** of Python in 12 folders (not counting the `__init__.py` markers).
+**177 modules, 38,973 lines** of Python in 12 folders (not counting the `__init__.py` markers).
 
 #### By the report section each module supports
 
@@ -80,7 +80,7 @@ Every experiment module has the same four parts, so any of them can be read the 
 | Appendix B5 | A boundary experiment, demoted: the dCas9 / CRISPRi screens | 8 | 2,016 | 65 | compare, paper |
 | Appendix C0 | Reproducibility: versions, seeds and protocol | 1 | 199 | 0 | (top) |
 | Appendix E | The paper's Results, Discussion and appendices, bullet by bullet | 1 | 291 | 4 | compare |
-| tooling | the audit, the figures, the guards and this map | 7 | 2,330 | 0 | paper |
+| tooling | the audit, the figures, the guards and this map | 7 | 2,329 | 0 | paper |
 | library | shared code the experiments are built on | 8 | 1,191 | 1 | (top), build |
 | — | no section of the report points at it | 20 | 3,003 | 35 | cohorts, compare, cost, design, interpret, paper |
 
@@ -323,13 +323,13 @@ The tool the project is for: give it a genome and a cut site and it returns the 
 | `family_a_table` | 260 | Family A for any genome: a FASTA file in, the 348 flank columns of every NGG guide out. | — | — |
 | `train_model` | 72 | Fit the shipped SLICER models (tuned and default) on all 33,567 curated guides and save them with everything needed to score a new guide. | — | `tune_configs.json` |
 
-### `sgrna/paper/`  —  23 modules, 7,647 lines
+### `sgrna/paper/`  —  23 modules, 7,646 lines
 
 The tooling the paper rests on: the audit, the figures, the import and reference guards, and the code map.
 
 | module | lines | what it does | reported in | writes |
 |---|---:|---|---|---|
-| `code_map` | 422 | Generate the per-module tables of CODE_MAP.md from the code itself, so the map cannot drift from the files. | tooling | — |
+| `code_map` | 421 | Generate the per-module tables of CODE_MAP.md from the code itself, so the map cannot drift from the files. | tooling | — |
 | `doc_refs` | 167 | Every module, path and Colab script that a document or a docstring names still exists. | tooling | — |
 | `figures` | 427 | Publication figures, to ACS graphics specifications, generated from the result files. | tooling | — |
 | `figures_paper` | 459 | Figures for the point-form paper, every one drawn from stored result files (no schematics). | Finding 7 | `boostmec_released.csv`, `cost_gpu.csv` +16 |

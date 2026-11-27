@@ -2,7 +2,7 @@
 
 For 600 random curated guides, on either strand, the tool is given only the genome and the guide's coordinates. It must give back the protospacer, PAM and both 1,000 nt
 flanks of the curated guide index, the stored base and flank columns, and the same prediction from them; and asking for the cut site of each guide must list that guide at
-distance 0. Written to `results/post_freeze/design_check.csv`.
+distance 0. Written to `results/design_check.csv`.
 
     python -m sgrna.design.check_design
 """

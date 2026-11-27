@@ -1,7 +1,7 @@
 """Output folders for the experiment modules, and the resolver for the main project's results that this repository does not track.
 
-The experiment modules read the pipeline and write only under `results/post_freeze/` and
-`data/interim/post_freeze/` (the folder names record when the work was done; the code is organised by function).
+The experiment modules read the pipeline and write only under `results/` (this repository's tracked results, all in one folder) and
+`data/interim/post_freeze/` (caches in the project's data folder, which is not in the repository; the name records when that work was done).
 Run with:  RSI09_ROOT=<project root with data/>  PYTHONPATH=<fork>/Runjia
 """
 from __future__ import annotations
@@ -12,7 +12,7 @@ from pathlib import Path
 from sgrna import config
 
 # results of the extension work go into the fork, not the shared results folder
-OUT = Path(os.environ.get("EXT_OUT", config.RESULTS / "post_freeze"))
+OUT = Path(os.environ.get("EXT_OUT", config.RESULTS))
 OUT.mkdir(parents=True, exist_ok=True)
 INTERIM = config.INTERIM / "post_freeze"
 INTERIM.mkdir(parents=True, exist_ok=True)
