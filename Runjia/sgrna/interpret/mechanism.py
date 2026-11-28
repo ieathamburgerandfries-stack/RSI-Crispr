@@ -257,7 +257,7 @@ def human_bases():
     rows decode to 13,138 distinct 20-mers, and a repeated guide is a repeat measurement, not a second
     observation), labels averaged within a guide.
     """
-    from ..compare.human_flank import decode
+    from ..compare.human_shape import decode
     dec = decode()
     y = pd.to_numeric(dec.y, errors="coerce").to_numpy(float)
     ok = np.isfinite(y) & dec.decoded_ok.to_numpy(bool)

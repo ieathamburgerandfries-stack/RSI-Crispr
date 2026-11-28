@@ -10,7 +10,7 @@ scratch, cannot reproduce bytes and does not.
 
 Two options for modules that resume from fold checkpoints (`results/folds_<tag>.csv`, which live in the main project's `results/`, outside the repository): `project=True` runs the case against a scratch copy of the
 whole project root (data and external_data linked, `results/` copied), so a missing checkpoint could only ever refit into the copy; `rtol=1e-9` compares the listed files as numbers instead of bytes, for results that
-are re-summarised from stored folds and so agree to floating-point rounding (about 1e-14), not to the byte. Both are named in the case, never assumed.
+are re-summarised from stored folds and so agree to floating-point rounding (about 1e-14), not to the byte. `fresh=[...]` deletes the named files from the scratch copy first, for a module that resumes from its own result file and would otherwise do nothing. All three are named in the case, never assumed.
 
     ./run_audit.sh --reproduce                  # every case
     ./run_audit.sh --reproduce --only tune      # the cases whose name contains `tune`
@@ -78,6 +78,7 @@ CASES = [
     dict(name="importance-attribution", cmd=["sgrna.interpret.importance", "--parts", "attribution"], writes=["attribution_shap.csv", "attribution_summary_shap.csv"]),
     dict(name="representation-portability", cmd=["sgrna.interpret.representation", "--portability", "--audit", "--run"], writes=["portability.csv", "portability_audit.csv"], project=True, rtol=1e-9),
     dict(name="representation-handnamed", cmd=["sgrna.interpret.representation", "--handnamed"], writes=["handnamed_split.csv"], project=True),
+    dict(name="human-shape-twin", cmd=["sgrna.compare.human_shape", "--stage", "7", "--twin"], writes=["human_shape_ablation_twin.csv"], project=True, rtol=1e-9, fresh=["human_shape_ablation_twin.csv"]),
     dict(name="strand-flip", cmd=["sgrna.compare.strand", "--parts", "flip"], writes=["strand_flip.csv"], project=True),
 ]
 
@@ -132,6 +133,9 @@ def run_case(case: dict) -> tuple[bool, str]:
         env = dict(os.environ, EXT_OUT=str(scratch))
         if case.get("project"):
             env["RSI09_ROOT"] = str(_scratch_project(Path(tmp)))
+        for rel in case.get("fresh", []):              # a module that resumes from its own result file (skips the arms it holds) must start without it
+            for base in (scratch, Path(env.get("RSI09_ROOT", tmp)) / "results"):
+                (base / rel).unlink(missing_ok=True)
         t0 = time.perf_counter()
         proc = subprocess.run([sys.executable, "-m", *case["cmd"]], cwd=RUNJIA, env=env, capture_output=True, text=True)
         secs = time.perf_counter() - t0

@@ -1,36 +1,194 @@
 """On the human matrix the shape and 3D-path columns add +0.0183 to family A, where E. coli gives −0.0007, a difference that is not explained.
 
 Cohort: the guides of the Noshay et al. 2023 human matrix that locate to a single NGG-flanked copy on hg38
-(`human_flank.py`). Representation, selector, model and folds are those of the E. coli runs: the regenerated base
+(`--locate`, below). Representation, selector, model and folds are those of the E. coli runs: the regenerated base
 (everything computable from the 20-mer), family A (`a_flank`, built from the 1,000 nt either side of the cut), top-300
 selection inside folds, the frozen XGBoost champion, 5 folds x 3 seeds. The human matrix has no gene identifier, so
 folds are random over guides (as in the project's human ladder), which is the more permissive design; the comparison
 between arms is paired on identical folds, so it is not affected by that choice, but absolute rho values are not
 comparable with the gene-grouped E. coli numbers.
 
+    python -m sgrna.compare.human_shape --locate        # the guides with their flanks (cached); see `locate` below
     python -m sgrna.compare.human_shape --stage 1     # base, base+A, and shape on top of A
     python -m sgrna.compare.human_shape --stage 2     # shape without A, composition references
     python -m sgrna.compare.human_shape --stage 3     # shuffled-flank controls
+
+--locate
+--------
+The project's human matrix (Noshay et al. 2023, Supplementary Table 3, 17,422 guides) describes only the 20-nt
+protospacer. The protospacer is decoded from the monomer electron-count columns (C 42, T 48, A 50, G 56), then located
+on hg38 as an NGG-flanked 20-mer with exactly one NGG-flanked copy in the primary assembly (chr1-22, X, Y, M);
+non-NGG copies are ignored, as in the E. coli curation. 1,000 nt are cut on each side in the guide's orientation, giving
+the same table layout as `curated_guide_index.csv` (upstream / protospacer / pam / downstream).
+
+The scan encodes each chromosome as 2-bit codes and tests every 20-mer against the wanted set with numpy, so the whole
+genome takes minutes rather than a Python loop over 4e8 positions.
 
 Report section: Part 2.
 """
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
+import time
 
 import numpy as np
 import pandas as pd
 
 from sgrna import config
-from sgrna.build import featurise
+from sgrna.build import featurise, genome
 from sgrna.features import a_flank
 from sgrna.harness.run_ablation import cross_validate
 
 from ..features import geom
-from ..common import INTERIM, OUT
-from .human_flank import DIR as HDIR, locate
+from ..common import EXTERNAL, INTERIM, OUT
 
+
+# ======================================================================================================  human guides with their flanks (--locate)
+HG38 = EXTERNAL / "hg38" / "hg38.fa.gz"
+HDIR = INTERIM / "human"
+HDIR.mkdir(parents=True, exist_ok=True)
+FLANK = 1000
+ELECTRONS_TO_BASE = {42.0: "C", 48.0: "T", 50.0: "A", 56.0: "G"}
+PRIMARY = {f"chr{i}" for i in range(1, 23)} | {"chrX", "chrY", "chrM"}
+LUT = np.full(256, 4, np.uint8)
+for _i, _c in enumerate("ACGT"):
+    LUT[ord(_c)] = _i
+    LUT[ord(_c.lower())] = _i
+REV = {"A": "T", "C": "G", "G": "C", "T": "A", "N": "N"}
+
+
+def revcomp(s: str) -> str:
+    return "".join(REV.get(c, "N") for c in reversed(s))
+
+
+def decode() -> pd.DataFrame:
+    path = HDIR / "decoded.csv"
+    if path.exists():
+        return pd.read_csv(path)
+    cols = [config.ID_COL, config.TARGET_COL] + [f"p{i}monomer.No.electronsraw" for i in range(1, 21)]
+    df = pd.read_csv(config.RAW / "human_feature_matrix.csv", header=config.BASE_MATRIX_HEADER_ROW, usecols=cols,
+                     low_memory=False)
+    mat = df[[f"p{i}monomer.No.electronsraw" for i in range(1, 21)]].to_numpy(float)
+    seqs = ["".join(ELECTRONS_TO_BASE.get(v, "N") for v in row) for row in mat]
+    out = pd.DataFrame({config.ID_COL: df[config.ID_COL].astype(str),
+                        "y": pd.to_numeric(df[config.TARGET_COL], errors="coerce"), "protospacer": seqs})
+    out["decoded_ok"] = ~out.protospacer.str.contains("N")
+    out.to_csv(path, index=False)
+    return out
+
+
+def _fasta(path):
+    name, chunks = None, []
+    with gzip.open(path, "rt") as fh:
+        for line in fh:
+            if line.startswith(">"):
+                if name is not None:
+                    yield name, "".join(chunks)
+                name, chunks = line[1:].split()[0], []
+            else:
+                chunks.append(line.strip())
+        if name is not None:
+            yield name, "".join(chunks)
+
+
+def _codes(arr: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """20-mer codes (2 bits per base, first base most significant) for every start, and a validity mask."""
+    n = len(arr) - 19
+    code = np.zeros(n, np.uint64)
+    bad = np.zeros(n, bool)
+    for k in range(20):
+        a = arr[k:k + n]
+        bad |= a > 3
+        code = (code << np.uint64(2)) | (a & 3).astype(np.uint64)
+    return code, ~bad
+
+
+def encode20(s: str) -> int:
+    v = 0
+    for ch in s:
+        v = (v << 2) | "ACGT".index(ch)
+    return v
+
+
+def slice_linear(seq: str, a: int, b: int) -> str:
+    """1-based inclusive slice of the chromosome, padded with N outside it."""
+    length, n = b - a + 1, len(seq)
+    left = max(0, min(length, 1 - a))
+    right = max(0, min(length - left, b - n))
+    mid = length - left - right
+    start = max(a, 1)
+    return "N" * left + seq[start - 1:start - 1 + mid].upper() + "N" * right
+
+
+def context(seq: str, strand: str, left: int, right: int) -> dict:
+    """Upstream / protospacer / PAM / downstream in the guide's orientation (1-based, inclusive)."""
+    if strand == "+":
+        return dict(upstream=slice_linear(seq, left - FLANK, left - 1), protospacer=slice_linear(seq, left, right),
+                    pam=slice_linear(seq, right + 1, right + 3),
+                    downstream=slice_linear(seq, right + 4, right + 3 + FLANK))
+    return dict(upstream=revcomp(slice_linear(seq, right + 1, right + FLANK)),
+                protospacer=revcomp(slice_linear(seq, left, right)),
+                pam=revcomp(slice_linear(seq, left - 3, left - 1)),
+                downstream=revcomp(slice_linear(seq, left - 3 - FLANK, left - 4)))
+
+
+CHUNK = 20_000_000
+
+
+def locate(force=False) -> pd.DataFrame:
+    path = HDIR / "located.csv"
+    if path.exists() and not force:
+        return pd.read_csv(path)
+    dec = decode()
+    ok = dec[dec.decoded_ok]
+    wanted = set(ok.protospacer)
+    fwd = {encode20(p): p for p in wanted}
+    rcm = {encode20(revcomp(p)): p for p in wanted}
+    fkeys, rkeys = np.array(sorted(fwd), np.uint64), np.array(sorted(rcm), np.uint64)
+    hits: dict[str, list[dict]] = {}
+    t0 = time.time()
+    for chrom, seq in _fasta(HG38):
+        if chrom not in PRIMARY:
+            continue
+        arr = LUT[np.frombuffer(seq.encode("ascii"), np.uint8)]
+        found = []                                            # (protospacer, strand, 0-based start)
+        for c0 in range(0, len(arr) - 19, CHUNK):
+            sub = arr[c0:c0 + CHUNK + 19]
+            code, valid = _codes(sub)
+            for strand, keys, table in (("+", fkeys, fwd), ("-", rkeys, rcm)):
+                for j in np.nonzero(valid & np.isin(code, keys))[0]:
+                    g = c0 + int(j)
+                    if strand == "+":
+                        if g + 22 < len(arr) and arr[g + 21] == 2 and arr[g + 22] == 2:    # PAM N G G
+                            found.append((table[int(code[j])], "+", g))
+                    elif g >= 3 and arr[g - 3] == 1 and arr[g - 2] == 1:                    # C C N before it
+                        found.append((table[int(code[j])], "-", g))
+        for proto, strand, g in found:
+            left, right = g + 1, g + 20
+            hits.setdefault(proto, []).append(dict(chrom=chrom, strand=strand, left=left, right=right,
+                                                   **context(seq, strand, left, right)))
+        print(f"  {chrom:6s} {len(seq):>11,} bp  {len(found):5d} NGG hits  {time.time() - t0:5.0f}s", flush=True)
+        del seq, arr
+    rows, n_multi, n_none = [], 0, 0
+    for _, r in ok.iterrows():
+        hs = hits.get(r.protospacer, [])
+        if not hs:
+            n_none += 1
+        elif len(hs) > 1:
+            n_multi += 1
+        else:
+            rows.append(dict(sgRNAID=r[config.ID_COL], y=r.y, **hs[0]))
+    out = pd.DataFrame(rows)
+    assert (out.protospacer.str.len() == 20).all() and out.pam.str[1:].eq("GG").all()
+    out.to_csv(path, index=False)
+    (HDIR / "locate_audit.json").write_text(json.dumps(dict(n_guides=len(dec), n_decoded=int(len(ok)),
+                                                           n_unique=len(out), n_multi=n_multi, n_none=n_none)))
+    return out
+
+
+# ======================================================================================================  the shape ablation on the human matrix (--stage)
 SEEDS = (41, 42, 43)
 OUTCSV = OUT / "human_shape_ablation.csv"
 OUTCSV_G = OUT / "human_shape_ablation_locus.csv"
@@ -132,11 +290,19 @@ def append(row, path=OUTCSV):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", type=int, required=True)
+    ap.add_argument("--stage", type=int)
+    ap.add_argument("--locate", action="store_true", help="decode and locate the human guides on hg38 and cut their flanks (cached)")
     ap.add_argument("--grouped", action="store_true", help="locus-grouped folds instead of random folds")
     ap.add_argument("--twin", action="store_true", help="folds that keep identical protospacers together")
     ap.add_argument("--nfeat", type=int, default=None, help="selector budget (default: the project's 300)")
     a = ap.parse_args(argv)
+    if a.locate:
+        out = locate()
+        print(len(out), "located;", (HDIR / "locate_audit.json").read_text())
+        if not a.stage:
+            return
+    if not a.stage:
+        ap.error("give --stage N or --locate")
     co = HumanCohort()
     path = OUTCSV_G if a.grouped else OUTCSV
     if a.twin:

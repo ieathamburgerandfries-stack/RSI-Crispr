@@ -61,7 +61,7 @@ from .. import config
 from ..common import OUT
 from ..harness import folds as fh
 from ..harness.run_ablation import _impute, grouped_folds
-from .human_flank import decode
+from .human_shape import decode
 
 MATRIX = config.DATA / "raw" / "human_feature_matrix.csv"
 TARGET = "cut.score"

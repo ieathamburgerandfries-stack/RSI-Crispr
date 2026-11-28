@@ -74,7 +74,7 @@ def main():
     rows.append(one(protos, gene, "curated / random rows"))
     print("  " + str(rows[-1]), flush=True)
 
-    from ..compare.human_flank import decode
+    from ..compare.human_shape import decode
     dec = decode()
     ok = np.isfinite(pd.to_numeric(dec.y, errors="coerce").to_numpy(float))
     hp = dec.protospacer[ok].astype(str).tolist()

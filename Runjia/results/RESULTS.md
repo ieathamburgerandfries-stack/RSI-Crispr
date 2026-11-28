@@ -133,8 +133,8 @@ All under five-fold cross-validation with whole genes held out, three seeds, the
 | Not flank shape: shape is a reparameterisation of composition | +0.0009 on top of A (curated; +0.0010 on the published matrix) | [P] | `curated_joint.csv`, `ablation_shape_joint.csv`, `cross_redundancy_*.csv` | `python -m sgrna.harness.run_ablation --families i_shape --tag shape_joint` |
 | **`d_supercoiling`'s read-density signal is mostly gene dosage**: four columns from distance-to-*oriC* alone, no sequencing data, match the ChIP track — which is why the untagged control is interchangeable with it | `z_dosage` +0.0112 vs `z_signal_only` +0.0111 vs `z_sc_enrichment` +0.0053, published cohort, 100 kb blocks | [P] | `dissection_supercoiling.csv` | `python -m sgrna.build.make_diagnostic_blocks` |
 | Not supercoiling: the no-antibody control predicts as well | control ≈ ChIP | [P] | `dissection_supercoiling.csv` | `python -m sgrna.controls.rederive --only dissection_supercoiling` |
-| Not essentiality (Guo confirmed); expression is not null | +0.00004 vs +0.0213 | [C] | `txn_interactions.csv` | `python -m sgrna.cohorts.txn_interactions` |
-| The family's own interaction rationale fails | +0.0004 over parents | [C] | `txn_interactions.csv` | `python -m sgrna.cohorts.txn_interactions` |
+| Not essentiality (Guo confirmed); expression is not null | +0.00004 vs +0.0213 | [C] | `txn_interactions.csv` | `python -m sgrna.cohorts.curated_ablation --interactions` |
+| The family's own interaction rationale fails | +0.0004 over parents | [C] | `txn_interactions.csv` | `python -m sgrna.cohorts.curated_ablation --interactions` |
 | The label's ceiling, from crisprHAL's own replicate counts | 0.946 [0.944, 0.947] | [C] | `curated_ceiling.json` | `python -m sgrna.cohorts.ceiling --parts measured` |
 
 ## Against the state of the art

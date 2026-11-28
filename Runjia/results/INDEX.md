@@ -216,7 +216,7 @@ Within a group the order is alphabetical.
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `ablation_curated.csv` | 0.9 | cited | `notebook`, `run_ablation`, `curated_ablation`, `txn_interactions`, `family_a_controls`, `rederive`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R1`, `report_checks_R2`, `report_checks_R4`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | family, n_cols, spearman, spearman_sd, d_spearman |
+| `ablation_curated.csv` | 0.9 | cited | `notebook`, `run_ablation`, `curated_ablation`, `family_a_controls`, `rederive`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R1`, `report_checks_R2`, `report_checks_R4`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | family, n_cols, spearman, spearman_sd, d_spearman |
 | `curation_check.csv` | 1.1 | cited | `curation`, `paper_numbers_D` | stratum, n, kept, spearman_flank_gc, label_sd, lowest_decile_deficit_sd, share_in_lowest_decile … |
 | `label_orientation.csv` | 0.2 | cited | `curation`, `paper_numbers` | n_guides, n_multi_copy, n_single_copy, median_label_multi_copy, median_label_single_copy, auc_multi_higher, mannwhitney_p |
 | `portability.csv` | 0.3 | cited | `representation`, `paper_numbers_A`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd, r2 |
@@ -269,6 +269,7 @@ Within a group the order is alphabetical.
 | `e2e_crisprhal.csv` | 0.4 | audited | `latency`, `paper_numbers_C`, `report_checks_R6` | model, batch, ms_per_call, ms_per_guide, encode_ms, model_ms |
 | `e2e_slicer.csv` | 0.7 | audited | `latency`, `paper_numbers_C` | model, batch, ms_per_call, ms_per_guide |
 | `e2e_slicer_locus.csv` | 0.7 | audited | `latency`, `paper_numbers_C`, `report_checks_R6` | model, width_nt, n_guides, ms_per_call, ms_per_guide |
+| `esp_replicate.csv` | 1.2 | audited | `shape_ablate`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd, fold_rho |
 | `featuriser_equivalence.csv` | 0.5 | audited | `equiv_check`, `paper_numbers_D` | item, value |
 | `final_eval_espcas9.csv` | 0.6 | cited | `final_eval`, `report_checks_R6`, `report_checks_R7` | arm, model, n_train, n_test, spearman, kendall_tau, pearson … |
 | `flank_locus_bench.csv` | 0.7 | audited | `flank_locus`, `paper_numbers_D` | width_nt, n_guides, nt_per_guide, a_flank_fast_ms_per_guide, flank_locus_ms_per_guide, precompute_ms, precompute_ms_per_guide … |
@@ -406,13 +407,12 @@ Within a group the order is alphabetical.
 | `ablation_shape_joint.csv` | 0.5 | cited | `notebook`, `run_ablation`, `paper_numbers_A`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
 | `base_enrichment_published.csv` | 0.3 | cited | `representation`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd |
 | `curated_joint.csv` | 1.0 | cited | `curated_ablation`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R8` | arm, n_families, n_cols, spearman, spearman_sd, d_spearman, sum_of_singles … |
-| `txn_interactions.csv` | 0.5 | cited | `curated_ablation`, `txn_interactions`, `paper_numbers_A`, `report_checks_R5`, `report_checks_R7` | arm, n_family_cols, spearman, spearman_sd, d_spearman |
+| `txn_interactions.csv` | 0.5 | cited | `curated_ablation`, `paper_numbers_A`, `report_checks_R5`, `report_checks_R7` | arm, n_family_cols, spearman, spearman_sd, d_spearman |
 
 ### Appendix B4 — The flank's shape and 3D structure add nothing that its composition does not already hold
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `esp_replicate.csv` | 1.2 | audited | `esp_replicate`, `shape_ablate`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd, fold_rho |
 | `human_shape_ablation.csv` | 3.5 | audited | `human_shape`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `human_shape_ablation_locus.csv` | 0.7 | audited | `human_shape` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `human_shape_ablation_twin.csv` | 0.7 | audited | `family_a_by_organism`, `human_shape`, `report_checks_R5`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |

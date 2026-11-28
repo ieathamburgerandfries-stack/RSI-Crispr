@@ -252,3 +252,4 @@ How it was checked: each condition was run from nothing (its result file deleted
 Restore any of them with `git checkout pre-merge-2026-11-27 -- <path>`.
 
 (The same night, later:) `sgrna/cohorts/txn_interactions.py` is `cohorts/curated_ablation.py --interactions` and `sgrna/cohorts/esp_replicate.py` is `cohorts/shape_ablate.py --esp-replicate`.
+(And last:) `sgrna/compare/human_flank.py`, the builder of the human guides with their genomic flanks, is `compare/human_shape.py --locate` (`decode` and `locate` are now imported from there by `human_baseline.py`, `controls/fold_distance.py` and `interpret/mechanism.py`); the old `human_shape` twin stage reproduces its stored file to 3e-14 from the merged module, the same as before.
