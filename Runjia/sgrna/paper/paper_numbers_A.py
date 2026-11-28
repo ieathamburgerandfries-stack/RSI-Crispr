@@ -277,7 +277,7 @@ def run(chk):
     chk(P + "[35] upstream and downstream GC partials differ by at most", float(max(abs(gc[("up", w)] - gc[("dn", w)]) for w in (50, 250, 500, 1000))), 0.026, 3)
 
     # ------------------------------------------------------------------------------------------------------------------------------
-    # [17], [43] the step at the AT-rich end (curated genic guides, 250 nt each side averaged; hypotheses.py)
+    # [17], [43] the step at the AT-rich end (curated genic guides, 250 nt each side averaged; mechanism.py, tests h1 to h3)
     hg = pd.read_csv(OUT / "hypotheses_followup_hinge.csv").set_index("quantile")
     cc = pd.read_csv(OUT / "hypotheses_followup_concentration.csv").iloc[0]
     sc = pd.read_csv(OUT / "hypotheses_audit_scale.csv").set_index("window_nt")
@@ -286,9 +286,9 @@ def run(chk):
     chk(P + "[17] ... in SD at 250 nt (hypotheses_audit_scale.csv)", float(-sc.loc[250, "deficit_in_sd"]), 0.95, 2)
     chk(P + "[17]   guides behind it (30,203 genic; the 33,567-guide figure is 3.29, report robustness table)", float(hg.loc[0.10, "n_below"] + hg.loc[0.10, "n_above"]), 30203, 0)
     chk(P + "[43] lowest decile lower than the rest, label units", float(-cc.deficit), 3.10, 2)
-    src = (pathlib_root() / "interpret" / "hypotheses.py").read_text()
+    src = (pathlib_root() / "interpret" / "mechanism.py").read_text()
     m = re.search(r"ROUGHLY LINEAR \(probability about ([\d.]+)\)", src)
-    chk(P + "[43] pre-registered probability of a roughly linear response (hypotheses.py docstring)", float(m.group(1)), 0.6, 1)
+    chk(P + "[43] pre-registered probability of a roughly linear response (mechanism.py docstring)", float(m.group(1)), 0.6, 1)
 
     # [18] the slope is steepest beside a favourable seed base (curated genic guides, gene bootstrap)
     h1s = pd.read_csv(OUT / "hypotheses_h1_strata.csv").set_index(["position", "base"])

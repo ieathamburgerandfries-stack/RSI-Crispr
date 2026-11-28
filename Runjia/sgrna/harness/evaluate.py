@@ -550,7 +550,7 @@ def interpretability(families=("a_flank",), models=("xgboost",), seed: int = 41,
     gain / impurity decrease / |coefficient| -- what these numbers were
     originally computed with. `"shap"` is mean |SHAP value|, which is what the
     docs now report: it agrees across model families where gain does not
-    (`importance_models.py`), so every metric here that depends on a ranking --
+    (`importance.py`, part `models`), so every metric here that depends on a ranking --
     stability, rank agreement, concentration -- is a different number under it.
     """
     from sklearn.model_selection import KFold

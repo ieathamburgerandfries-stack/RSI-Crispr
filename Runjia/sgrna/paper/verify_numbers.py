@@ -742,7 +742,7 @@ def main():
     chk("sgrna: folders left over from the old layouts (post_freeze, strand, screens, ext)",
         float(sum((_sg / n_).exists() for n_ in ("post_freeze", "strand", "screens", "ext"))), 0, 0)
 
-    print("Finding 7, the response curve and the hypotheses (hypotheses.py)")
+    print("Finding 7, the response curve and the hypotheses (mechanism.py)")
     h1s = pd.read_csv(OUT / "hypotheses_h1_strata.csv").set_index(["position", "base"])
     for (pos_, b_), (rho_, ols_) in {(20, "A"): (0.219, 21.2), (20, "T"): (0.184, 19.6), (20, "C"): (0.169, 16.4), (20, "G"): (0.118, 12.5),
                                     (18, "A"): (0.214, 20.3), (18, "T"): (0.202, 19.8), (18, "C"): (0.137, 14.7), (18, "G"): (0.115, 13.1)}.items():

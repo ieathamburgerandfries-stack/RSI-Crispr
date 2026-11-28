@@ -69,7 +69,7 @@ written to disk as it finishes. Every claim in the report is a paired difference
 
 ### 4. The controls: why +0.161 is not an artefact *(Finding 2; Appendix A)*
 `sgrna/controls/shiftnull.py`, `sgrna/controls/sealed.py (part holdout)`, `sgrna/controls/selector_audit.py`, `sgrna/controls/floors.py`,
-`sgrna/interpret/gcstrata.py`, `sgrna/controls/fold_distance.py`, `sgrna/compare/sealed_organism.py`
+`sgrna/interpret/flank_signal.py`, `sgrna/controls/fold_distance.py`, `sgrna/controls/sealed.py`
 
 Each of these is an attack on the result, not a confirmation of it.
 - **Circular-shift null.** Re-assign each guide the flanks of a position offset around the chromosome. Composition, smoothness and every column's distribution are preserved
@@ -95,7 +95,7 @@ becomes a subtraction, and the one column that is not a sum (the longest homopol
 0.093 ms, and 0.036 ms when designing across a locus, which is 15 to 25 times faster than crisprHAL 2 on one CPU thread for the default model, and faster again when designing across a locus (on a Colab T4, crisprHAL 2 costs 3.9 times SLICER's laptop path from raw contexts, on two machines: `EXTENSION_LOG.md` section 33).
 
 ### 6. Can the model be explained? Redundancy, importance and headroom *(Findings 4 and 5)*
-`sgrna/interpret/importance.py`, `sgrna/interpret/importance_models.py`, `sgrna/interpret/faithfulness.py`, `sgrna/interpret/representation.py`, `sgrna/interpret/compact_model.py`, `sgrna/interpret/vs_crisprhal_interpret.py`, `sgrna/interpret/hal_readout.py`
+`sgrna/interpret/importance.py`, `sgrna/interpret/representation.py`, `sgrna/interpret/compact_model.py`, `sgrna/interpret/vs_crisprhal_interpret.py`, `sgrna/interpret/hal_readout.py`
 
 Because 99% of the columns restate the same 20-mer, which column a model credits is close to arbitrary. Across model families the library-default importance agrees between models at only **0.050** per column;
 SHAP agrees at 0.496 (0.800 per block), so the project reports SHAP, at block level only. `representation.py` shows that the 412 portable columns reproduce the full 6,232 (a difference of
@@ -111,7 +111,7 @@ root and the averaging step; corrected, its own numbers give 0.91 to 0.93, so mo
 for any replicate agreement.
 
 ### 8. What the signal is made of *(Finding 7, after the freeze)*
-`sgrna/interpret/mechanism.py`, `sgrna/interpret/novel_followups.py`, `sgrna/interpret/hypotheses.py`
+`sgrna/interpret/mechanism.py`
 
 Because model importance is unreliable here (block 6), nothing in this block reads importance off the model. The code uses partial correlations computed from sequence and label directly, a resolution ablation,
 and a depth-2 model whose splits are the pairs. **Results:** the effect is GC, not purine; it is side-symmetric (the two sides agree to within 0.026); it has a single length scale of 250 to 500 nt with no structure

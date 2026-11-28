@@ -25,29 +25,39 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `ablation_nfeat1200.csv` | 0.5 | cited | `notebook`, `run_ablation`, `report_checks_R1` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
+| `base_enrichment.csv` | 0.3 | cited | `representation`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd |
 | `curated_ladder.csv` | 0.7 | cited | `curated_ablation`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R7` | arm, n_cols, spearman, spearman_sd, vs_base_full |
 | `d_mechanics_reconstructibility.csv` | 0.3 | cited | `report_checks_R1`, `report_checks_R7` | oof_r2_from_mono_di |
-| `handnamed_split.csv` | 0.3 | cited | `handnamed_split`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd |
+| `handnamed_split.csv` | 0.3 | cited | `representation`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd |
 | `no_information.csv` | 0.3 | cited | `no_information`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R7` | arm, n_family_cols, spearman, spearman_sd, d_spearman |
 | `portability_364.csv` | 0.1 | cited | `report_checks_R1` | arm, n_columns, spearman, spearman_sd |
-| `portability_audit.csv` | 2.7 | cited | `handnamed_split`, `portability`, `paper_numbers_A`, `report_checks_R1` | column, kind, r2_from_20mer, portable |
+| `portability_audit.csv` | 2.7 | cited | `representation`, `paper_numbers_A`, `report_checks_R1` | column, kind, r2_from_20mer, portable |
+| `representation.csv` | 0.9 | receipt | `representation`, `paper_numbers_B` | arm, n_columns, spearman, spearman_sd, r2, r2_sd, complete |
+| `representation_residual.csv` | 0.3 | receipt | `representation` | arm, n_columns, spearman, spearman_sd, r2, complete |
 | `selector_control.csv` | 0.2 | cited | `report_checks_R1`, `report_checks_R7`, `report_checks_R8` | arm, n_cols, selected, spearman, sd |
 
 ### Finding 2 — The DNA around the cut site predicts cutting — the one large effect, and it is local and compositional
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
+| `asymmetry_expression.csv` | 1.3 | receipt | `flank_signal` | band, group, n_guides, median_log_tpm, arm, spearman, r2 |
+| `asymmetry_strand_audit.csv` | 0.2 | cited | `flank_signal` | source, orientation, guides |
 | `crisprhal_wide_window_fcolab.csv` | 1.1 | cited | — | model, arm, input_nt, batch, fold, spearman, r2 … |
 | `crisprhal_wide_window_fcolab2.csv` | 0.6 | cited | — | model, arm, input_nt, batch, fold, spearman, r2 … |
 | `crisprhal_wide_window_folds.csv` | 2.3 | cited | `crisprhal_wide_window_folds`, `figures_paper`, `paper_numbers` | model, arm, input_nt, batch, fold, spearman, fit_minutes … |
 | `crisprhal_wide_window_summary.csv` | 0.8 | cited | `crisprhal_wide_window_folds`, `paper_numbers` | arm, input_nt, n_folds, crisprhal_mean, crisprhal_sd, slicer_mean, slicer_sd … |
-| `gc_strata_ablation.csv` | 0.7 | cited | `gcstrata`, `paper_numbers_A`, `report_checks_R2` | stratum, arm, n, gc_lo, gc_hi, spearman, spearman_sd |
-| `gc_strata_corr.csv` | 0.5 | cited | `gcstrata`, `paper_numbers_B`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
-| `gc_strata_corr_curated.csv` | 0.6 | cited | `gcstrata`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
+| `gate_test.csv` | 1.7 | cited | `flank_signal`, `paper_numbers_D` | model, seed, fold, rho, r2 |
+| `gc_strata_ablation.csv` | 0.7 | cited | `flank_signal`, `paper_numbers_A`, `report_checks_R2` | stratum, arm, n, gc_lo, gc_hi, spearman, spearman_sd |
+| `gc_strata_corr.csv` | 0.5 | cited | `flank_signal`, `paper_numbers_B`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
+| `gc_strata_corr_curated.csv` | 0.6 | cited | `flank_signal`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | stratum, n, gc_lo, gc_hi, rho_target, rho_flank, rho_flank_partial_overall … |
 | `model_inversion.csv` | 0.1 | cited | `report_checks_R2` | kind, seq, predicted, gc |
 | `seqnet.csv` | 0.7 | cited | `seqnet`, `report_checks_R2` | model, flank, seed, fold, r2, spearman, seconds |
 | `seqnet_matched.csv` | 1.3 | cited | `seqnet`, `report_checks_R2` | model, flank, seed, fold, r2, spearman, seconds |
 | `shift_null.csv` | 0.5 | audited | `family_a_controls`, `paper_numbers_A`, `report_checks_R2`, `report_checks_R7` | shift_bp, n_flank_cols, spearman, spearman_sd, r2 |
+| `signal_corr.csv` | 6.2 | cited | `flank_signal`, `paper_numbers_D` | window_nt, side, statistic, marginal, partial_given_target_gc |
+| `signal_decile.csv` | 0.9 | cited | `flank_signal`, `figures_paper`, `paper_numbers_D` | decile, n, flank_gc, mean_label, lo, hi, gap_vs_rest |
+| `signal_slope.csv` | 2.1 | cited | `flank_signal`, `figures_paper`, `paper_numbers_D` | base, n, spearman, lo, hi, quintile, flank_gc … |
+| `signal_target_gc.csv` | 0.7 | cited | `flank_signal`, `paper_numbers_D` | quintile, target_gc_mean, n, rho_base, rho_with_flank, gain, gain_lo … |
 | `why_inflation.csv` | 0.5 | cited | `family_a_controls`, `paper_numbers_C`, `report_checks_R8` | sub_seed, n_rows, family, spearman, d_spearman |
 | `window_robustness.csv` | 0.2 | cited | `family_a_controls`, `report_checks_R7` | arm, n_cols, spearman, spearman_sd, d_spearman, d_published_windows, difference |
 
@@ -68,16 +78,13 @@ Within a group the order is alphabetical.
 | `design_check.csv` | 0.5 | cited | `check_design`, `paper_numbers_D` | item, value |
 | `family_a_by_organism.csv` | 1.2 | cited | `family_a_by_organism`, `paper_numbers_D` | organism, screen, guides, protocol, model, unit, n … |
 | `family_a_table_check.csv` | 3.9 | cited | `check_family_a_table`, `paper_numbers_D` | item, value |
-| `gate_test.csv` | 1.7 | cited | `gate_test`, `paper_numbers_D` | model, seed, fold, rho, r2 |
 | `human_twin_check.csv` | 0.2 | audited | `human_baseline`, `report_checks_R2` | arm, folds, spearman, spearman_sd, n_fits |
 | `hybrid.csv` | 4.8 | receipt | `transfer` | source, target, arm, fold, cv, seed, spearman … |
 | `mappability_depth.csv` | 1.1 | cited | `mappability_stratum`, `paper_numbers_D` | stratum, n, depth_min, depth_max, rho_base, rho_base+A, rho_base+D … |
 | `mappability_stratum.csv` | 2.2 | cited | `mappability_stratum`, `paper_numbers_D` | stratum, n, genes, rho_base, rho_base+U, rho_base+A, rho_base+U+A … |
 | `mappability_stratum_guides.csv` | 1796.8 | receipt | `mappability_stratum` | sgRNAID, u250, u1000, seed_dup, copies, ctl_depth |
-| `mappability_stratum_oof.csv` | 3459.1 | receipt | `mappability_stratum`, `gate_test`, `signal_profile` | sgRNAID, y, group, base, base+U, base+A, base+U+A … |
+| `mappability_stratum_oof.csv` | 3459.1 | receipt | `mappability_stratum`, `flank_signal` | sgRNAID, y, group, base, base+U, base+A, base+U+A … |
 | `reference_genome_versions.csv` | 0.3 | cited | `paper_numbers_D` | accession_version, length_bp, status, replaced_by, record_updated, looked_up, source |
-| `signal_corr.csv` | 6.2 | cited | `signal_profile`, `paper_numbers_D` | window_nt, side, statistic, marginal, partial_given_target_gc |
-| `signal_target_gc.csv` | 0.7 | cited | `signal_profile`, `paper_numbers_D` | quintile, target_gc_mean, n, rho_base, rho_with_flank, gain, gain_lo … |
 | `transfer.csv` | 17.5 | audited | `family_a_by_organism`, `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | dataset, arm, model, seed, fold, n_rows, n_cols … |
 | `transfer_esp_unseen_guides.csv` | 0.2 | cited | `transfer`, `report_checks_R2` | arm, scope, spearman |
 | `transfer_model.csv` | 4.8 | cited | `family_a_by_organism`, `transfer`, `paper_numbers_B`, `paper_numbers_C`, `report_checks_R2` | source, target, arm, model, seed, n_train, n_test … |
@@ -93,10 +100,8 @@ Within a group the order is alphabetical.
 | `kmer_order_paired.csv` | 1.8 | audited | `report_checks_R1`, `report_checks_R7` | seed, fold, arm, n_columns, spearman |
 | `local_sequence_bound.csv` | 5.4 | audited | `tuned_ablation` | matrix, arm, seed, fold, n_train, n_test, n_sel … |
 | `local_sequence_bound_summary.csv` | 0.7 | audited | `tuned_ablation` | arm, matrix, base_rho, rho, delta, lo, hi … |
-| `representation.csv` | 0.9 | receipt | `representation`, `paper_numbers_B` | arm, n_columns, spearman, spearman_sd, r2, r2_sd, complete |
 | `representation_depth.csv` | 1.1 | cited | `representation`, `report_checks_R2` | arm, n_columns, max_depth, spearman, spearman_sd, r2, complete |
 | `representation_headroom.csv` | 1937.3 | audited | `representation`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R2` | arm, column, group, rho_with_residual |
-| `representation_residual.csv` | 0.3 | receipt | `representation` | arm, n_columns, spearman, spearman_sd, r2, complete |
 | `tune_budget_check.csv` | 0.5 | audited | `tune_ecoli` | nf, k, rho, n_nonzero_gain |
 | `tune_confirm.csv` | 1.3 | audited | `tune_ecoli`, `report_checks_R3` | arm, rho, rho_lo, rho_hi, d_vs_champion, d_lo, d_hi … |
 | `tune_external.csv` | 1.5 | audited | `tune_ecoli`, `report_checks_R7` | arm, seed, fold, rho |
@@ -113,27 +118,27 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `additivity_reduced.csv` | 0.5 | cited | `report_checks_R3`, `report_checks_R7` | arm, n_columns, ridge, lightgbm, xgboost, boosting_minus_ridge |
-| `attribution.csv` | 3.9 | receipt | `attribution` | picked_by, column, kind, closest_in_other_set, abs_corr |
-| `attribution_shap.csv` | 1.1 | receipt | `attribution` | picked_by, column, kind, closest_in_other_set, abs_corr |
-| `attribution_summary.csv` | 0.3 | cited | `attribution`, `report_checks_R3` | kind, xgboost_share, lightgbm_share, difference |
-| `attribution_summary_shap.csv` | 0.3 | cited | `attribution`, `report_checks_R3` | kind, xgboost_share, lightgbm_share, difference |
+| `attribution.csv` | 3.9 | receipt | `importance` | picked_by, column, kind, closest_in_other_set, abs_corr |
+| `attribution_shap.csv` | 1.1 | receipt | `importance` | picked_by, column, kind, closest_in_other_set, abs_corr |
+| `attribution_summary.csv` | 0.3 | cited | `importance`, `report_checks_R3` | kind, xgboost_share, lightgbm_share, difference |
+| `attribution_summary_shap.csv` | 0.3 | cited | `importance`, `report_checks_R3` | kind, xgboost_share, lightgbm_share, difference |
 | `compact_model_accuracy.csv` | 0.5 | audited | `compact_model`, `paper_numbers_B`, `paper_numbers_D` | , rho_mean_over_seeds, rho_sd_over_seeds, share_of_full |
 | `compact_model_accuracy_folds.csv` | 1.6 | receipt | `compact_model` | seed, fold, full recipe (base + family A, top 300), guide only (80), guide + four kilobase numbers (84), compact (104) … |
 | `compact_model_flank_shap_by_decile.csv` | 0.4 | audited | `compact_model`, `paper_numbers_D` | decile, flank_gc, flank_shap, flank_shap_in_sd |
 | `compact_model_shap_columns.csv` | 2.3 | audited | `compact_model`, `paper_numbers_B`, `paper_numbers_D`, `report_checks_R3` | column, mean_abs_shap |
 | `compact_model_shap_vs_model_free.csv` | 3.9 | audited | `compact_model`, `paper_numbers_D` | position, base, n, shap_effect_sd, effect_sd |
 | `compact_model_stability.csv` | 0.3 | audited | `compact_model`, `paper_numbers_B`, `paper_numbers_D` | representation, method, level, agreement, sd_over_splits |
-| `faithfulness_clusters.csv` | 1.3 | receipt | `faithfulness` | fold, model, rank, n_columns, seed_column, shap_share |
-| `faithfulness_clusters_reduced.csv` | 1.2 | receipt | `faithfulness` | fold, model, rank, n_columns, seed_column, shap_share |
-| `faithfulness_groups.csv` | 9.3 | cited | `faithfulness`, `report_checks_R3` | fold, model, arm, things_removed, n_columns_removed, spearman, delta |
-| `faithfulness_groups_reduced.csv` | 10.1 | cited | `faithfulness`, `report_checks_R3` | fold, model, arm, things_removed, n_columns_removed, spearman, delta |
+| `faithfulness_clusters.csv` | 1.3 | receipt | `importance` | fold, model, rank, n_columns, seed_column, shap_share |
+| `faithfulness_clusters_reduced.csv` | 1.2 | receipt | `importance` | fold, model, rank, n_columns, seed_column, shap_share |
+| `faithfulness_groups.csv` | 9.3 | cited | `importance`, `report_checks_R3` | fold, model, arm, things_removed, n_columns_removed, spearman, delta |
+| `faithfulness_groups_reduced.csv` | 10.1 | cited | `importance`, `report_checks_R3` | fold, model, arm, things_removed, n_columns_removed, spearman, delta |
 | `faithfulness_shap_share.csv` | 0.6 | cited | `report_checks_R3` | representation, n_columns, top_n, pct_of_columns, pct_of_shap |
 | `faithfulness_top20_full.csv` | 0.6 | cited | `report_checks_R3` | fold, model, base, top20, delta, share20 |
-| `importance_agreement.csv` | 0.4 | receipt | `importance` | fold, level, selected_overlap, selected_kuncheva, gain_vs_gain_rho, xgb_gain_vs_perm_rho, lgb_gain_vs_perm_rho |
-| `importance_blocks.csv` | 4.7 | receipt | `importance` | fold, model, block, n_cols, gain_share, perm_share |
-| `importance_model_blocks.csv` | 58.1 | cited | `importance_models`, `report_checks_R3` | fold, model, method, block, n_cols, share |
-| `importance_model_methods.csv` | 3.4 | receipt | `importance_models` | fold, model, method_a, method_b, rho_column, rho_block |
-| `importance_model_pairs.csv` | 20.0 | audited | `importance_models`, `report_checks_R3` | fold, method, model_a, model_b, rho_a, rho_b, rho_column … |
+| `importance_agreement.csv` | 0.4 | cited | `importance` | fold, level, selected_overlap, selected_kuncheva, gain_vs_gain_rho, xgb_gain_vs_perm_rho, lgb_gain_vs_perm_rho |
+| `importance_blocks.csv` | 4.7 | cited | `importance` | fold, model, block, n_cols, gain_share, perm_share |
+| `importance_model_blocks.csv` | 58.1 | cited | `importance`, `report_checks_R3` | fold, model, method, block, n_cols, share |
+| `importance_model_methods.csv` | 3.4 | receipt | `importance` | fold, model, method_a, method_b, rho_column, rho_block |
+| `importance_model_pairs.csv` | 20.0 | audited | `importance`, `report_checks_R3` | fold, method, model_a, model_b, rho_a, rho_b, rho_column … |
 | `interp_compare_cross_model.csv` | 0.3 | audited | `vs_crisprhal_interpret`, `paper_numbers_B` | a, b, spearman |
 | `interp_compare_faithfulness.csv` | 2.7 | audited | `vs_crisprhal_interpret`, `paper_numbers_B`, `report_checks_R1`, `report_checks_R3` | n, attribution, pearson, se, subsets, rows, model … |
 | `interp_compare_faithfulness_diff.csv` | 1.1 | audited | `vs_crisprhal_interpret`, `report_checks_R3` | n, model, pearson, crisprhal, diff, lo, hi |
@@ -180,32 +185,30 @@ Within a group the order is alphabetical.
 | `flank_scale_summary.csv` | 6.2 | cited | `flank_scale`, `paper_numbers_D` | part, arm, base_rho, n_folds, rho, gain, gain_sd_over_folds … |
 | `flank_window_tune.csv` | 11.5 | cited | `flank_scale`, `figures_paper`, `paper_numbers_D` | part, arm, up, down, seed, fold, rho |
 | `flank_window_tune_summary.csv` | 4.5 | cited | `flank_scale`, `paper_numbers_D` | arm, part, up, down, n_folds_41, gain_41, gain_sd_41 … |
-| `hypotheses_audit_gate.csv` | 0.4 | audited | `hypotheses` | base_at_20, n, label_sd, share_in_lowest_quartile, rho_all, rho_above_global_q25, n_above |
-| `hypotheses_audit_scale.csv` | 0.6 | audited | `hypotheses`, `paper_numbers_A` | window_nt, flank_gc_at_decile_edge, deficit, deficit_in_sd, rho_below, rho_above, rho_full |
-| `hypotheses_followup_absolute.csv` | 0.2 | audited | `hypotheses` | dataset, absolute_threshold_gc, n_below, share_below, deficit, lo, hi |
-| `hypotheses_followup_concentration.csv` | 0.2 | audited | `hypotheses`, `paper_numbers_A` | deficit, lo, hi, flank_gc_at_decile_edge, n_lowest_decile, genes_in_lowest_decile, top10_genes_share … |
-| `hypotheses_followup_curve20.csv` | 2.0 | receipt | `hypotheses` | window, bin, flank_gc, mean_label, n |
-| `hypotheses_followup_expression.csv` | 0.3 | audited | `hypotheses`, `report_checks_R4` | stratum, n, n_lowest_decile, share_lowest_decile, mean_expression, deficit |
-| `hypotheses_followup_expression_partial.csv` | 0.2 | audited | `hypotheses`, `paper_numbers_A` | rho_gc_expression, rho_expression_label, gc_label_marginal, gc_label_given_expression, mean_expression_lowest_decile, mean_expression_rest |
-| `hypotheses_followup_hinge.csv` | 0.6 | audited | `hypotheses`, `paper_numbers_A`, `paper_numbers_C` | quantile, threshold_gc, n_below, rho_below, n_above, rho_above, rho_full |
-| `hypotheses_followup_replication.csv` | 0.7 | audited | `hypotheses`, `paper_numbers_C` | dataset, n, mean_flank_gc, flank_gc_at_decile_edge, deficit, lo, hi … |
-| `hypotheses_followup_top_genes.csv` | 0.1 | receipt | `hypotheses`, `report_checks_R4` | , guides_in_lowest_decile |
-| `hypotheses_followup_within.csv` | 0.2 | audited | `hypotheses`, `paper_numbers_C` | excluded_lowest_share, n, rho_within_genes |
-| `hypotheses_h1_contrasts.csv` | 0.3 | audited | `hypotheses`, `paper_numbers_A`, `report_checks_R4` | position, steepest, shallowest, difference, lo, hi |
-| `hypotheses_h1_strata.csv` | 0.9 | audited | `hypotheses`, `paper_numbers_A` | position, base, n, mean_label, rho, ols_slope, lo … |
-| `hypotheses_h2_curve.csv` | 1.2 | audited | `hypotheses`, `paper_numbers_C` | bin, kind, flank_gc, mean_label, n |
-| `hypotheses_h2_thirds.csv` | 0.5 | audited | `hypotheses` | kind, slope_low_third, lo_low, hi_low, slope_high_third, lo_high, hi_high … |
-| `hypotheses_h3_pam_density.csv` | 0.3 | audited | `hypotheses`, `paper_numbers_A` | marginal_gc, marginal_pam, pam_given_gc, gc_given_pam, null_mean, null_sd, null_p2_5 … |
-| `hypotheses_h3_trimer_classes.csv` | 0.9 | receipt | `hypotheses` | class, partial_given_gc |
+| `hypotheses_audit_gate.csv` | 0.4 | audited | `mechanism` | base_at_20, n, label_sd, share_in_lowest_quartile, rho_all, rho_above_global_q25, n_above |
+| `hypotheses_audit_scale.csv` | 0.6 | audited | `mechanism`, `paper_numbers_A` | window_nt, flank_gc_at_decile_edge, deficit, deficit_in_sd, rho_below, rho_above, rho_full |
+| `hypotheses_followup_absolute.csv` | 0.2 | audited | `mechanism` | dataset, absolute_threshold_gc, n_below, share_below, deficit, lo, hi |
+| `hypotheses_followup_concentration.csv` | 0.2 | audited | `mechanism`, `paper_numbers_A` | deficit, lo, hi, flank_gc_at_decile_edge, n_lowest_decile, genes_in_lowest_decile, top10_genes_share … |
+| `hypotheses_followup_curve20.csv` | 2.0 | receipt | `mechanism` | window, bin, flank_gc, mean_label, n |
+| `hypotheses_followup_expression.csv` | 0.3 | audited | `mechanism`, `report_checks_R4` | stratum, n, n_lowest_decile, share_lowest_decile, mean_expression, deficit |
+| `hypotheses_followup_expression_partial.csv` | 0.2 | audited | `mechanism`, `paper_numbers_A` | rho_gc_expression, rho_expression_label, gc_label_marginal, gc_label_given_expression, mean_expression_lowest_decile, mean_expression_rest |
+| `hypotheses_followup_hinge.csv` | 0.6 | audited | `mechanism`, `paper_numbers_A`, `paper_numbers_C` | quantile, threshold_gc, n_below, rho_below, n_above, rho_above, rho_full |
+| `hypotheses_followup_replication.csv` | 0.7 | audited | `mechanism`, `paper_numbers_C` | dataset, n, mean_flank_gc, flank_gc_at_decile_edge, deficit, lo, hi … |
+| `hypotheses_followup_top_genes.csv` | 0.1 | receipt | `mechanism`, `report_checks_R4` | , guides_in_lowest_decile |
+| `hypotheses_followup_within.csv` | 0.2 | audited | `mechanism`, `paper_numbers_C` | excluded_lowest_share, n, rho_within_genes |
+| `hypotheses_h1_contrasts.csv` | 0.3 | audited | `mechanism`, `paper_numbers_A`, `report_checks_R4` | position, steepest, shallowest, difference, lo, hi |
+| `hypotheses_h1_strata.csv` | 0.9 | audited | `mechanism`, `paper_numbers_A` | position, base, n, mean_label, rho, ols_slope, lo … |
+| `hypotheses_h2_curve.csv` | 1.2 | audited | `mechanism`, `paper_numbers_C` | bin, kind, flank_gc, mean_label, n |
+| `hypotheses_h2_thirds.csv` | 0.5 | audited | `mechanism` | kind, slope_low_third, lo_low, hi_low, slope_high_third, lo_high, hi_high … |
+| `hypotheses_h3_pam_density.csv` | 0.3 | audited | `mechanism`, `paper_numbers_A` | marginal_gc, marginal_pam, pam_given_gc, gc_given_pam, null_mean, null_sd, null_p2_5 … |
+| `hypotheses_h3_trimer_classes.csv` | 0.9 | receipt | `mechanism` | class, partial_given_gc |
 | `mechanism_distance_profile.csv` | 1.0 | audited | `mechanism`, `paper_numbers_A` | side, window_nt, statistic, n, marginal, partial_given_target_gc |
 | `mechanism_pairs_blocks.csv` | 6.5 | audited | `mechanism`, `paper_numbers_A` | block_pair, gain_share |
 | `mechanism_pairs_columns.csv` | 1.5 | audited | `mechanism` | col_pair, gain_share |
 | `mechanism_position_base_compare.csv` | 4.9 | audited | `mechanism`, `paper_numbers_A`, `paper_numbers_B`, `report_checks_R4` | position, base, ecoli, human, ecoli_clear, human_clear, inverts |
 | `mechanism_position_base_human.csv` | 6.1 | receipt | `mechanism` | position, base, n, effect_sd, lo, hi, clear_of_zero |
-| `novel_relative_composition.csv` | 0.2 | audited | `novel_followups` | columns, crod_rho, home_cv_rho, n_crod, n_home |
-| `novel_resolution.csv` | 0.7 | audited | `novel_followups`, `figures_paper`, `paper_numbers_A`, `report_checks_R4` | arm, n_cols, rho, sd, n_fits |
-| `signal_decile.csv` | 0.9 | cited | `signal_profile`, `figures_paper`, `paper_numbers_D` | decile, n, flank_gc, mean_label, lo, hi, gap_vs_rest |
-| `signal_slope.csv` | 2.1 | cited | `signal_profile`, `figures_paper`, `paper_numbers_D` | base, n, spearman, lo, hi, quintile, flank_gc … |
+| `novel_relative_composition.csv` | 0.2 | audited | `mechanism` | columns, crod_rho, home_cv_rho, n_crod, n_home |
+| `novel_resolution.csv` | 0.7 | audited | `mechanism`, `figures_paper`, `paper_numbers_A`, `report_checks_R4` | arm, n_cols, rho, sd, n_fits |
 | `transfer_diagonal.csv` | 1.0 | cited | `eukaryote_rules`, `transfer`, `paper_numbers_D` | dataset, species, n, own_cv_rho, published_median, published_best, published_tools |
 | `transfer_to_ecoli.csv` | 0.7 | cited | `eukaryote_rules`, `transfer`, `figures_paper`, `paper_numbers_D` | trained_on, scored_on, rho, within, species_trained |
 
@@ -214,17 +217,16 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `ablation_curated.csv` | 0.9 | cited | `notebook`, `run_ablation`, `curated_ablation`, `txn_interactions`, `family_a_controls`, `rederive`, `paper_numbers_A`, `paper_numbers_B`, `paper_numbers_C`, `paper_numbers_D`, `report_checks_R1`, `report_checks_R2`, `report_checks_R4`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7`, `report_checks_R8` | family, n_cols, spearman, spearman_sd, d_spearman |
-| `label_orientation.csv` | 0.2 | cited | `label_orientation`, `paper_numbers` | n_guides, n_multi_copy, n_single_copy, median_label_multi_copy, median_label_single_copy, auc_multi_higher, mannwhitney_p |
-| `portability.csv` | 0.3 | cited | `portability`, `paper_numbers_A`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd, r2 |
+| `curation_check.csv` | 1.1 | cited | `curation`, `paper_numbers_D` | stratum, n, kept, spearman_flank_gc, label_sd, lowest_decile_deficit_sd, share_in_lowest_decile … |
+| `label_orientation.csv` | 0.2 | cited | `curation`, `paper_numbers` | n_guides, n_multi_copy, n_single_copy, median_label_multi_copy, median_label_single_copy, auc_multi_higher, mannwhitney_p |
+| `portability.csv` | 0.3 | cited | `representation`, `paper_numbers_A`, `report_checks_R1` | arm, n_columns, spearman, spearman_sd, r2 |
 | `recoverability_trend_columns.csv` | 49.7 | cited | `report_checks_R5` | column, family, abs_rho, oof_r2_from_guide, decile |
-| `txn_interactions.csv` | 0.5 | cited | `txn_interactions`, `paper_numbers_A`, `report_checks_R5`, `report_checks_R7` | arm, n_family_cols, spearman, spearman_sd, d_spearman |
 
 ### Part 3 — Where this stops
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `kingdom_transfer.csv` | 0.4 | cited | `kingdom_transfer`, `report_checks_R2` | direction, settings, n_shared, n_train, n_test, spearman, spearman_sd … |
-| `kingdom_transfer_boot.csv` | 0.5 | audited | `kingdom_transfer`, `paper_numbers_B`, `report_checks_R2` | direction, settings, n_test, spearman, ci_lo, ci_hi, n_boot … |
+| `kingdom_transfer_boot.csv` | 0.5 | audited | `human_baseline`, `paper_numbers_B`, `report_checks_R2` | direction, settings, n_test, spearman, ci_lo, ci_hi, n_boot … |
 
 ### Part 4 — The freeze, and what remains
 
@@ -250,7 +252,7 @@ Within a group the order is alphabetical.
 | `boostmec_oracle.csv` | 0.2 | receipt | `cost_boostmec`, `paper_numbers_D` | sequence, table, paper_prediction, reproduced_prediction, difference |
 | `ceiling_parametric.csv` | 7.0 | audited | `ceiling`, `paper_numbers_B` | replicate_agreement_r, k_replicates, reliability_of_label, ceiling, field_ceiling_quoted_as_r, understated_by, share_of_ceiling_at_rho_0p70 … |
 | `clean_vs_hal.csv` | 1.0 | audited | `vs_crisprhal`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C` | vs, arm, n, n_genes, rho, crisprhal, diff … |
-| `complexity.json` | 1.6 | cited | `complexity`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R6` |  |
+| `complexity.json` | 1.6 | cited | `model_size`, `paper_numbers`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R6` |  |
 | `cost_cpu_seconds.csv` | 0.4 | cited | `cost` | config, columns, rho, cpu_s, wall_s, peak_gb, reps … |
 | `cost_crisprhal.csv` | 0.4 | audited | `latency`, `paper_numbers_C` | model, batch, latency_ms, per_guide_ms, n_members, total_trees |
 | `cost_featurise.csv` | 0.2 | audited | `latency` | part, n_guides, per_guide_ms |
@@ -274,6 +276,7 @@ Within a group the order is alphabetical.
 | `folds_ladder_base_full+a_flank.csv` | 1.6 | cited | `run_ablation`, `shape_ablate`, `floors`, `human_shape`, `paper_numbers_C`, `report_checks_R6`, `report_checks_R8` | experiment, seed, fold, r2, spearman, pearson, mse … |
 | `gene_grouped_slicer.csv` | 0.4 | receipt | `vs_crisprhal`, `figures_paper` | model, fold, n_test, spearman |
 | `gene_grouped_vs_crisprhal.csv` | 0.7 | cited | `vs_crisprhal`, `paper_numbers_D` | model, against, mean, sd, crisprhal_mean, crisprhal_sd, lead_mean … |
+| `geom_importance.csv` | 1.2 | audited | `shape_ablate` | column, importance, r2_from_composition, r2_from_dinucleotide_gb, r2_from_dinucleotide_ridge |
 | `headtohead.csv` | 2.8 | cited | `crisprhal_wide_window_folds`, `headtohead`, `figures_paper`, `paper_numbers`, `paper_numbers_C`, `report_checks_R2`, `report_checks_R6`, `report_checks_R8` | arm, model, seed, fold, n_rows, n_cols, spearman … |
 | `heldout_compare.csv` | 0.4 | cited | `vs_crisprhal`, `paper_numbers_C`, `report_checks_R6` | pairing, n, slicer, crisprhal, difference, ci_lo, ci_hi … |
 | `inference_colab.csv` | 2.9 | cited | `report_checks_R6` | model, device, n_guides, latency_ms, guides_per_s, cold_start_s, source |
@@ -300,9 +303,10 @@ Within a group the order is alphabetical.
 | `sample_complexity.csv` | 5.0 | audited | `common`, `sample_complexity`, `paper_numbers_C`, `report_checks_R6` | model, seed, fold, n_train, n_test, spearman, r2 … |
 | `shape_ablation.csv` | 13.7 | audited | `shape_ablate`, `report_checks_R8` | arm, n_cols, n_ext, spearman, spearman_sd, r2, n_selected_ext … |
 | `shape_ablation_paired.csv` | 6.5 | cited | `shape_ablate` | arm, n_ext, rho, selected, d_vs_A, seeds_vs_A, ahead_vs_A … |
+| `shape_redundancy_from_A.csv` | 62.8 | receipt | `shape_ablate` | source, block, col, r2_from_A |
 | `their_split_slicer.csv` | 0.4 | cited | `report_checks_R6`, `report_checks_R7` | model, split, n_train, n, spearman, kendall_tau, pearson … |
 | `topend_confirm.csv` | 2.3 | audited | `topend`, `paper_numbers_C`, `report_checks_R6` | arm, seed, spearman, top10pct_prec, top1pct_prec, pick10_pctile, pick50_pctile … |
-| `tune_configs.json` | 69.0 | cited | `mix_ecoli`, `tune_ecoli`, `tuned_ablation`, `equiv_check`, `mechanism`, `novel_followups`, `tuned_settings`, `lit_followups`, `sample_complexity`, `topend`, `vs_crisprhal`, `latency`, `design_benchmark`, `train_model`, `paper_numbers_A`, `report_checks_R2` |  |
+| `tune_configs.json` | 69.0 | cited | `mix_ecoli`, `tune_ecoli`, `tuned_ablation`, `equiv_check`, `mechanism`, `tuned_settings`, `lit_followups`, `sample_complexity`, `topend`, `vs_crisprhal`, `latency`, `design_benchmark`, `train_model`, `paper_numbers_A`, `report_checks_R2` |  |
 | `tuning.csv` | 2.0 | cited | `tune`, `rederive`, `paper_numbers_D`, `report_checks_R5`, `report_checks_R6`, `report_checks_R7` | arm, seed, fold, trials, trials_allowed, rho_default, r2_default … |
 | `tuning_trace.csv` | 38.5 | receipt | `tune` | arm, seed, fold, trial, inner_rho, best_so_far, trials_since_improved |
 | `tuning_trials12.csv` | 2.0 | cited | `report_checks_R6` | arm, seed, fold, trials, rho_default, r2_default, rho_tuned … |
@@ -359,6 +363,7 @@ Within a group the order is alphabetical.
 | `human_baseline.csv` | 0.2 | audited | `human_baseline`, `paper_numbers_B`, `report_checks_R2` | arm, n_features, spearman, spearman_sd, n_fits |
 | `human_baseline_knobs.csv` | 0.4 | cited | `human_baseline` | arm, n_features, changed, spearman, spearman_sd, n_fits |
 | `interpretability.csv` | 1.3 | receipt | `evaluate`, `report_checks_R3` | model, importance, stability_kuncheva, importance_rank_agreement, method_agreement, faithfulness, direction_consistency … |
+| `kingdom_transfer.csv` | 0.4 | cited | `human_baseline`, `report_checks_R2` | direction, settings, n_shared, n_train, n_test, spearman, spearman_sd … |
 | `model_comparison.csv` | 30.7 | cited | `evaluate`, `report_checks_R1`, `report_checks_R7` | model, seed, fold, r2, spearman, pearson, top_decile_precision … |
 | `recoverability_percolumn.csv` | 2.0 | cited | `redescription`, `report_checks_R7` | column, family, oof_r2, abs_rho, spearman, d_spearman |
 | `recoverability_trend.csv` | 0.9 | cited | `redescription`, `report_checks_R7` | band, lo, hi, n_cols, mean_r2, mean_abs_rho, max_abs_rho … |
@@ -386,13 +391,11 @@ Within a group the order is alphabetical.
 | `ceiling.json` | 0.3 | cited | `diagnose`, `report_checks_R7` |  |
 | `headroom.csv` | 606.0 | audited | `diagnose` | column, family, used, rho_with_residual, rho_with_label, abs_resid |
 | `redundancy.csv` | 38.4 | cited | `diagnose`, `report_checks_R8` | family, column, r2_from_protospacer |
-| `shape_redundancy_from_A.csv` | 62.8 | receipt | `redundancy` | source, block, col, r2_from_A |
 
 ### Appendix B2a — Curation: what it is, and why family A doubled between cohorts
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `curation_check.csv` | 1.1 | cited | `curation`, `paper_numbers_D` | stratum, n, kept, spearman_flank_gc, label_sd, lowest_decile_deficit_sd, share_in_lowest_decile … |
 | `curation_variance.csv` | 0.4 | cited | `curation`, `paper_numbers_A`, `paper_numbers_C`, `report_checks_R5`, `report_checks_R8` | rows, n, sd_x, sd_y, slope_beta, pearson, spearman … |
 
 ### Appendix B3 — The family ablations on the curated cohort, and what they measure
@@ -401,16 +404,15 @@ Within a group the order is alphabetical.
 |---|---:|---|---|---|
 | `ablation_curated_shape.csv` | 0.5 | cited | `notebook`, `run_ablation`, `curated_ablation`, `report_checks_R8` | family, n_cols, continuous, continuous_frac, d_spearman |
 | `ablation_shape_joint.csv` | 0.5 | cited | `notebook`, `run_ablation`, `paper_numbers_A`, `report_checks_R8` | experiment, n_columns, r2, r2_sd, spearman, spearman_sd, pearson … |
-| `base_enrichment.csv` | 0.3 | cited | `base_enrichment`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd |
-| `base_enrichment_published.csv` | 0.3 | cited | `base_enrichment`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd |
+| `base_enrichment_published.csv` | 0.3 | cited | `representation`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd |
 | `curated_joint.csv` | 1.0 | cited | `curated_ablation`, `paper_numbers_A`, `report_checks_R1`, `report_checks_R2`, `report_checks_R5`, `report_checks_R8` | arm, n_families, n_cols, spearman, spearman_sd, d_spearman, sum_of_singles … |
+| `txn_interactions.csv` | 0.5 | cited | `curated_ablation`, `txn_interactions`, `paper_numbers_A`, `report_checks_R5`, `report_checks_R7` | arm, n_family_cols, spearman, spearman_sd, d_spearman |
 
 ### Appendix B4 — The flank's shape and 3D structure add nothing that its composition does not already hold
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `esp_replicate.csv` | 1.2 | audited | `esp_replicate`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd, fold_rho |
-| `geom_importance.csv` | 1.2 | audited | `geom_importance` | column, importance, r2_from_composition, r2_from_dinucleotide_gb, r2_from_dinucleotide_ridge |
+| `esp_replicate.csv` | 1.2 | audited | `esp_replicate`, `shape_ablate`, `report_checks_R8` | arm, n_cols, spearman, spearman_sd, fold_rho |
 | `human_shape_ablation.csv` | 3.5 | audited | `human_shape`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `human_shape_ablation_locus.csv` | 0.7 | audited | `human_shape` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
 | `human_shape_ablation_twin.csv` | 0.7 | audited | `family_a_by_organism`, `human_shape`, `report_checks_R5`, `report_checks_R8` | arm, n, n_cols, n_ext, spearman, spearman_sd, r2 … |
@@ -455,7 +457,7 @@ Within a group the order is alphabetical.
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
 | `README.md` | 2.0 | document | — |  |
-| `RESULTS.md` | 37.8 | document | — |  |
+| `RESULTS.md` | 38.0 | document | — |  |
 | `RESULTS_archive_2026-10-10.md` | 110.9 | document | — |  |
 
 ### figures
@@ -498,8 +500,6 @@ Within a group the order is alphabetical.
 
 | file | KB | role | written by | columns |
 |---|---:|---|---|---|
-| `asymmetry_expression.csv` | 1.3 | receipt | `asymmetry` | band, group, n_guides, median_log_tpm, arm, spearman, r2 |
-| `asymmetry_strand_audit.csv` | 0.2 | cited | `asymmetry` | source, orientation, guides |
 | `boostmec_shipped_image.txt` | 0.4 | receipt | — |  |
 | `cost_repeats_machine.json` | 1.7 | cited | `cost_repeats` |  |
 | `crisprhal_wide_window_f2.csv` | 0.3 | receipt | — | model, arm, input_nt, batch, fold, spearman, r2 … |

@@ -240,3 +240,15 @@ Restore any of them with `git checkout pre-merge-2026-11-27 -- <path>`.
 
 How it was checked: each condition was run from nothing (its result file deleted) in a scratch copy of the project and compared with the tracked file; `heldout_compare.csv`, `clean_vs_hal.csv`, `gene_grouped_vs_crisprhal.csv` and `gene_grouped_slicer.csv` (both default and tuned models refitted on five whole-gene folds) are byte-identical. `gene-folds` also rewrites the Colab input file
 `data/interim/crisprhal_widewindow_input_genefolds.csv.gz` (its content is identical to the stored one; the gzip header's timestamp is new). Three new `reproduce` cases (`vs-crisprhal-paired`, `vs-crisprhal-confirm`, `vs-crisprhal-gene-assemble`).
+
+## 28 November 2026 (night): sixteen more modules merged, `interpret/` from 24 modules to 12
+
+* `sgrna/interpret/gate_test.py`, `sgrna/interpret/signal_profile.py`, `sgrna/interpret/gcstrata.py` and `sgrna/interpret/asymmetry.py` are `interpret/flank_signal.py --parts profile gate gc-corr gc-ablation asym-audit asym-run`: four alternatives to "the flank effect is local DNA composition" (the guide's own score, target GC, transcription) read from the same signal.
+* `sgrna/interpret/hypotheses.py` and `sgrna/interpret/novel_followups.py` are `interpret/mechanism.py --test h1 h2 h3 followups audit` and `resolution relative`, beside the five tests it already had: what the flank effect physically is, in one module. `paper_numbers_A` reads the prediction record from `mechanism.py`'s docstring.
+* `sgrna/interpret/importance_models.py`, `sgrna/interpret/attribution.py` and `sgrna/interpret/faithfulness.py` are `interpret/importance.py --parts agreement models attribution faithfulness` (Finding 5 in the order it was argued). `compact_model.py` imports its helpers from there, and the `reduced_columns` hook points there.
+* `sgrna/interpret/base_enrichment.py`, `sgrna/compare/portability.py` and `sgrna/compare/handnamed_split.py` are `interpret/representation.py --base-enrichment [--published]`, `--portability [--audit] [--run]` and `--handnamed`: the reduced-representation ladder and its follow-ups. `report_checks_R1` reads the `portability` function from there.
+* `sgrna/interpret/redundancy.py` and `sgrna/interpret/geom_importance.py` are `cohorts/shape_ablate.py --redundancy` and `--geom-importance` (they were built on that module's `Cohort`).
+* `sgrna/interpret/label_orientation.py` is `cohorts/curation.py --parts label`; `sgrna/interpret/complexity.py` is `cost/model_size.py complexity` (the same leaf counts, measured on a model fitted on the whole cohort); `sgrna/compare/kingdom_transfer.py` is `compare/human_baseline.py --parts kingdom kingdom-bootstrap`, which it was a follow-up of.
+Restore any of them with `git checkout pre-merge-2026-11-27 -- <path>`.
+
+(The same night, later:) `sgrna/cohorts/txn_interactions.py` is `cohorts/curated_ablation.py --interactions` and `sgrna/cohorts/esp_replicate.py` is `cohorts/shape_ablate.py --esp-replicate`.

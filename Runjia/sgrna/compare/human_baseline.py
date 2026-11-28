@@ -1,13 +1,15 @@
 """The human boosting baseline (rho 0.5076 against the harness's 0.4036) is a memorisation artefact: with repeat measurements of a guide kept in one fold it falls to 0.2515, and the "human signal is less additive" claim built on it goes with it.
 
 The question was whether a teammate's human baseline (`Jacky/human-boundary/HUMAN_BASELINE_SETTINGS.md`: 400 selected columns, 1,000 estimators, every other XGBoost knob at library defaults) reproduces on the
-human iRF matrix (Noshay et al. 2023, Supplementary Table 3; 17,421 guides; `data/raw/human_feature_matrix.csv`), and what it would mean. Five parts answer it in order, each writing one file under `results/`:
+human iRF matrix (Noshay et al. 2023, Supplementary Table 3; 17,421 guides; `data/raw/human_feature_matrix.csv`), and what it would mean. Seven parts answer it in order, each writing one file under `results/`:
 
     arms           the three arms on random row folds                 human_baseline.csv         harness_default 300 columns and the champion; jacky_400_1000; jacky_cols_only (400 columns, champion)
     knobs          which of the three differences does the work       human_baseline_knobs.csv   one knob at a time on the 400 columns: trees, depth + learning rate, no subsampling
     additivity     ridge against boosting on the same columns         human_additivity.csv       the E. coli figure is 95.6%
     twin           the same two arms with twin-grouped folds          human_twin_check.csv       ONE FOLD DESIGN CHANGED; this is where 0.5076 becomes 0.2515
     twin-additivity  knobs and ridge under both fold designs          human_additivity_twin*.csv the claim re-tested, with the row-wise arms as a positive control
+    kingdom        E. coli -> human and back on the columns the matrices share, at the champion and at the human-fitted settings   kingdom_transfer.csv
+    kingdom-bootstrap  the same with the test rows resampled: does either direction exclude zero?                                   kingdom_transfer_boot.csv
 
 Why the fold design matters. The matrix decodes to 13,138 distinct 20-mers: 4,216 sequences appear more than once (4,149 twice, 67 three times), as separate rows at the same genomic position, so 8,499 rows (49%) have a
 twin, and twin labels agree at Spearman 0.80. With `KFold(shuffle=True)` on rows a test guide's twin is usually in the training folds, so a model that can memorise sequences (deep trees, fast learning rate, no
@@ -18,6 +20,27 @@ positive control for the harness.
 
     python -m sgrna.compare.human_baseline --parts arms knobs additivity twin
     python -m sgrna.compare.human_baseline --parts twin-additivity [--summarise-only]
+    python -m sgrna.compare.human_baseline --parts kingdom kingdom-bootstrap
+
+The last two re-run Part 3's cross-kingdom boundary claim (transfer between E. coli and human is negative in both directions) with the human side fitted properly:
+
+Part 3's boundary claim is that transfer between *E. coli* and human is negative
+in both directions: rho -0.048 going to human and -0.017 coming back
+(`results/human_transfer.csv`). That file was written by a script that is not in
+`src/`, and both directions used the champion hyperparameters -- which
+the `arms` part has since shown to be mis-specified on the human matrix by
+0.10 rho, because the human signal is far less additive than *E. coli*'s
+(ridge/boosting 63.7% against 95.6%).
+
+That matters for exactly one direction. **human -> E. coli** trains on human, so
+an undertuned human model makes the reported -0.017 pessimistic, and the report
+should not rest a boundary claim on a model it knows is the wrong shape for its
+training data. **E. coli -> human** trains on *E. coli*, where the champion is
+appropriate, so it is a control here rather than a question.
+
+So: both directions, at both settings, on the columns the two matrices share by
+name -- no change of representation, which is what makes the comparison a
+statement about kingdoms rather than about feature engineering.
 
 `arms`, `knobs` and `additivity` rewrite their file from scratch; `twin-additivity` resumes from `human_additivity_twin.csv` (one row per arm and fold) and then writes the summary and the claim (ridge over
 boosting, and the depth effect with its bootstrap interval) under each scheme.
@@ -240,7 +263,84 @@ def _summarise(f_out, B=4000, seed=0):
     return g, claim
 
 
-PARTS = ("arms", "knobs", "additivity", "twin", "twin-additivity")
+# ======================================================================================================  kingdom, kingdom-bootstrap
+KINGDOM_OUT = OUT / "kingdom_transfer.csv"
+KINGDOM_BOOT_OUT = OUT / "kingdom_transfer_boot.csv"
+SETTINGS = {"champion": {}, "human_fitted": CHANGES["boosting_defaults"]}      # the settings `jacky_400_1000` found, which reach 0.5076 within human against the champion's 0.4074
+
+
+def _kingdom_matrix(path, skiprows):
+    d = pd.read_csv(path, skiprows=skiprows, low_memory=False)
+    y = pd.to_numeric(d[config.TARGET_COL], errors="coerce")
+    drop = [c for c in (config.ID_COL, "sgRNAID", config.TARGET_COL) if c in d]
+    X = d.drop(columns=drop).apply(pd.to_numeric, errors="coerce")
+    ok = np.isfinite(y.to_numpy(float))
+    return X.loc[ok], y.to_numpy(float)[ok]
+
+
+def kingdom_load(verbose: bool = True):
+    """E. coli's published matrix and the human matrix restricted to the columns they share by name: (X_ecoli, y_ecoli, X_human, y_human, names)."""
+    Xe, ye = _kingdom_matrix(config.BASE_MATRIX, config.BASE_MATRIX_HEADER_ROW)
+    Xh, yh = _kingdom_matrix(MATRIX, 1)
+    shared = [c for c in Xe.columns if c in set(Xh.columns)]
+    if verbose:
+        print(f"  E. coli {len(ye):,} x {Xe.shape[1]:,}  |  human {len(yh):,} x {Xh.shape[1]:,}  |  shared by name {len(shared):,}")
+    return Xe[shared].to_numpy(np.float32), ye, Xh[shared].to_numpy(np.float32), yh, shared
+
+
+def _transfer_predict(X_tr0, y_tr, X_te0, seed, change):
+    """Train on one matrix, score the other: impute, rank the columns on the training rows, keep the champion's budget, fit with `change` on top of the champion's settings."""
+    X_tr, X_te = _impute(X_tr0, X_te0)
+    top = fh.rank_columns(X_tr, y_tr, seed, n_jobs=None)[:config.N_FEATURES]
+    return fh.boost(X_tr[:, top], y_tr, X_te[:, top], seed, change, n_jobs=None)
+
+
+def kingdom(seeds=SEEDS, verbose: bool = True):
+    Xe, ye, Xh, yh, shared = kingdom_load(verbose=verbose)
+    directions = {"ecoli -> human": (Xe, ye, Xh, yh), "human -> ecoli": (Xh, yh, Xe, ye)}
+    rows = []
+    for name, (X_tr0, y_tr, X_te0, y_te) in directions.items():
+        for setting, change in SETTINGS.items():
+            rhos = [_rho(y_te, _transfer_predict(X_tr0, y_tr, X_te0, seed, change)) for seed in seeds]
+            rows.append(dict(direction=name, settings=setting, n_shared=len(shared), n_train=len(y_tr), n_test=len(y_te), spearman=float(np.mean(rhos)),
+                             spearman_sd=float(np.std(rhos, ddof=1)), n_fits=len(rhos)))
+            if verbose:
+                print(f"  {name:>15} / {setting:>12}: rho {rows[-1]['spearman']:+.4f} ± {rows[-1]['spearman_sd']:.4f}", flush=True)
+            pd.DataFrame(rows).to_csv(KINGDOM_OUT, index=False)
+    if verbose:
+        print("  the figures in the report are -0.048 and -0.017, both at champion")
+        print(f"written -> {KINGDOM_OUT}")
+    return pd.DataFrame(rows)
+
+
+def kingdom_bootstrap(seeds=SEEDS, n_boot=2000, verbose: bool = True, settings=("champion", "human_fitted")):
+    """Does either direction actually exclude zero? Three seeds of one train/test split say nothing about how much of the measured rho is the particular test set, and with rho this close to zero that
+    is the whole question (-0.006 on 13,880 rows and -0.037 on 17,421 are not the same claim, though both are negative). So resample the test rows."""
+    Xe, ye, Xh, yh, shared = kingdom_load(verbose=verbose)
+    directions = {"ecoli -> human": (Xe, ye, Xh, yh), "human -> ecoli": (Xh, yh, Xe, ye)}
+    rows = []
+    for name, (X_tr0, y_tr, X_te0, y_te) in directions.items():
+        for setting in settings:
+            yhat = np.mean([_transfer_predict(X_tr0, y_tr, X_te0, seed, SETTINGS[setting]) for seed in seeds], axis=0)
+            rng = np.random.default_rng(41)
+            n = len(y_te)
+            draws = np.empty(n_boot)
+            for b in range(n_boot):
+                i = rng.integers(0, n, n)
+                draws[b] = spearmanr(y_te[i], yhat[i]).statistic
+            lo, hi = np.percentile(draws, [2.5, 97.5])
+            rows.append(dict(direction=name, settings=setting, n_test=n, spearman=float(spearmanr(y_te, yhat).statistic), ci_lo=float(lo), ci_hi=float(hi), n_boot=n_boot,
+                             excludes_zero=bool(lo < 0 and hi < 0)))
+            if verbose:
+                r = rows[-1]
+                print(f"  {name:>15}: rho {r['spearman']:+.4f} [{r['ci_lo']:+.4f}, {r['ci_hi']:+.4f}]  {'excludes zero' if r['excludes_zero'] else 'INCLUDES ZERO'}", flush=True)
+            pd.DataFrame(rows).to_csv(KINGDOM_BOOT_OUT, index=False)
+    if verbose:
+        print(f"written -> {KINGDOM_BOOT_OUT}")
+    return pd.DataFrame(rows)
+
+
+PARTS = ("arms", "knobs", "additivity", "twin", "twin-additivity", "kingdom", "kingdom-bootstrap")
 
 
 def main(argv=None) -> int:
@@ -259,6 +359,10 @@ def main(argv=None) -> int:
             additivity()
         elif part == "twin":
             twin()
+        elif part == "kingdom":
+            kingdom()
+        elif part == "kingdom-bootstrap":
+            kingdom_bootstrap()
         else:
             twin_additivity(tuple(a.seeds), summarise_only=a.summarise_only)
     return 0

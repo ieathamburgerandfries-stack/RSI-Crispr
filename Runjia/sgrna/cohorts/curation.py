@@ -3,9 +3,10 @@
 crisprHAL 2's curated cohort (33,567 guides) replaced Noshay's published 13,880-row matrix, every family's gain roughly tripled, and the base went 0.5278 to 0.5445. Two questions a sceptic asks of that, each its own part:
 
   check      does curation itself create the flank effect? The discarded guides with the most reads still show it (flank GC correlation 0.159, against 0.175 to 0.188 in kept guides)    -> curation_check.csv
+  label      which way does the curated label run? Guides with several genomic copies score higher, so higher means more cutting                                                                   -> label_orientation.csv
   variance   why did the gains rise: a wider spread of the predictor, or a steeper relationship? The genome-wide guides added in the larger cohort show a steeper one                        -> curation_variance.csv
 
-    python -m sgrna.cohorts.curation --parts check variance
+    python -m sgrna.cohorts.curation --parts check variance label
 
 ------------------------------------------------------------------------------------------------------------------------------
 check
@@ -23,6 +24,20 @@ any score. This module asks two things a sceptic would ask of that:
 Strata of the mean control count: 1-9, 10-29, 30-72 (discarded) and 73-108, 109-168, 169+ (kept, the thirds used in the depth control). Per stratum: the Spearman
 correlation of the plain label with flank GC (the mean of the GC fraction of the 250 nt upstream and 250 nt downstream, on the guide's strand) and the
 deficit of the lowest decile of flank GC against the rest in SD units of the stratum's label. Guides are those with exactly one NGG site in the genome.
+
+------------------------------------------------------------------------------------------------------------------------------
+label
+------------------------------------------------------------------------------------------------------------------------------
+Every claim about the direction of an effect (G at position 20 lowers activity in E. coli, flank GC raises it) depends on which way the
+curated label runs. The label is an ALDEx2 log-ratio of Cas9 against dead-nuclease read counts, and the sign convention is the
+released data's, so it is checked rather than assumed. A guide whose 20-mer plus PAM occurs at several places in the genome is cut at
+every one of them, so it should deplete more than a guide with one target: if a higher label means more cutting, multi-copy guides
+should score higher.
+
+Result (`results/label_orientation.csv`, curated 33,567 guides): the 118 guides with more than one genomic copy have a
+median label of 2.11 against 0.27 for the 33,449 single-copy guides (Mann-Whitney p about 1e-5), so a higher label is more cutting.
+The test is weak in size (118 guides) but it is independent of every sequence rule the findings rely on, and it is in the direction
+the labels were assumed to run.
 
 ------------------------------------------------------------------------------------------------------------------------------
 variance
@@ -61,13 +76,14 @@ import argparse
 
 import numpy as np
 import pandas as pd
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import mannwhitneyu, pearsonr, spearmanr
 
 from .. import config
 from ..common import OUT
 
 CHECK_OUT = OUT / "curation_check.csv"
 VARIANCE_OUT = OUT / "curation_variance.csv"
+LABEL_OUT = OUT / "label_orientation.csv"
 
 
 # ======================================================================================================  check
@@ -124,6 +140,19 @@ def check() -> int:
     print("P(kept) by decile of flank GC:", [round(x, 3) for x in incl])
     print(out.drop(columns=["inclusion_by_decile_min", "inclusion_by_decile_max", "raw_guides", "single_site_guides", "kept_guides"]).round(3).to_string(index=False))
     return 0
+
+
+# ======================================================================================================  label
+def label() -> pd.DataFrame:
+    g = pd.read_csv(config.INTERIM / "curated_guide_index.csv")
+    multi = g.n_genome_copies > 1
+    u = mannwhitneyu(g.score[multi], g.score[~multi], alternative="two-sided")
+    out = pd.DataFrame([dict(n_guides=len(g), n_multi_copy=int(multi.sum()), n_single_copy=int((~multi).sum()),
+                             median_label_multi_copy=float(g.score[multi].median()), median_label_single_copy=float(g.score[~multi].median()),
+                             auc_multi_higher=float(u.statistic / (multi.sum() * (~multi).sum())), mannwhitney_p=float(u.pvalue))])
+    out.to_csv(LABEL_OUT, index=False)
+    print(out.T.to_string(header=False))
+    return out
 
 
 # ======================================================================================================  variance
@@ -235,10 +264,12 @@ def variance(verbose: bool = True):
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--parts", nargs="+", choices=("check", "variance"), required=True)
+    ap.add_argument("--parts", nargs="+", choices=("check", "variance", "label"), required=True)
     a = ap.parse_args(argv)
     if "check" in a.parts:
         check()
+    if "label" in a.parts:
+        label()
     if "variance" in a.parts:
         variance()
     return 0

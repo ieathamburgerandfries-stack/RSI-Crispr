@@ -112,7 +112,7 @@ def accuracy(d):
 
 
 def _models_xgb(seed):
-    from .importance_models import _models
+    from .importance import _models
     return _models(seed)["xgboost"]
 
 
@@ -131,7 +131,7 @@ def _blocks(d):
 
 def stability(d):
     from sklearn.model_selection import GroupKFold
-    from .importance_models import IS_TREE, _models, _native, _shap
+    from .importance import IS_TREE, _models, _native, _shap
     X = np.hstack([d["onehot"], d["comp"]]); y = d["y"]; names = d["onehot_names"] + d["comp_names"]
     blocks = _blocks(d); ub = list(pd.unique(blocks))
     tree = sorted(IS_TREE)
