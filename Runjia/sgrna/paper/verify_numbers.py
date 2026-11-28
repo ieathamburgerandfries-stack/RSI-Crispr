@@ -666,6 +666,9 @@ def main():
     chk("22.4 modules excluded by name that are not in import_check.EXCLUDE", float(len(set(ic["excluded"]) ^ set(import_check.EXCLUDE))), 0, 0)
     chk("22.4 modules that fail to import", float(len(ic["fails"])), 0, 0)
     chk("22.4 files changed by importing the package", float(ic["files_changed_by_import"]), 0, 0)
+    chk("22.4 names read in a function or module that are bound nowhere (static scan)", float(len(ic["static"]["undefined"])), 0, 0)
+    chk("22.4 calls of a function of the package whose arguments do not fit its signature (static scan)", float(len(ic["static"]["bad_calls"])), 0, 0)
+    chk("22.4 functions or classes defined twice in one module (static scan)", float(len(ic["static"]["duplicates"])), 0, 0)
 
     print("4. headroom: does the model leave information on the table? (representation_headroom.csv, restored 22 Nov)")
     rh = pd.read_csv(OUT / "representation_headroom.csv"); rh["a"] = rh.rho_with_residual.abs()

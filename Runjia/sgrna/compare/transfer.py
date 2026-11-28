@@ -79,7 +79,7 @@ def load_dataset(name: str, genome_fasta=None, verbose: bool = True) -> pd.DataF
     # NGG occupies off+20 .. off+22, so the two Gs are at off+21 and off+22.
     # Checking off+20..off+21 instead silently shifts every guide by one base
     # and still scores 1.000, so this is written out explicitly: the criterion
-    # must return 189 for WT-SpCas9, which `crisprhal_rerun` independently
+    # must return 189 for WT-SpCas9, which `crisprhal_runs --run rerun` independently
     # hard-codes.
     best_off, best_frac = None, -1.0
     for off in range(0, length - PROTO_LEN - PAM_LEN):

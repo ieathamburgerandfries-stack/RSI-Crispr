@@ -6,7 +6,7 @@ machine, one host thread, and the raw timings are written out (`cost_repeats_inf
 repeat pair and summarised by their median and 95% range. Fit times are repeated the same way (`cost_repeats_fit.csv`): SLICER's default model (300 columns
 selected from 6,517 by a 300-tree XGBoost, then 400 trees) and the tuned model (4,000 trees, depth 5) on one training fold, process CPU-seconds and wall seconds,
 each repeated; crisprHAL 2's published configuration is fitted three times on the same training fold (`hal_fit`, about 17 minutes of wall-clock each). The T4 fits of
-the width experiment (`crisprhal_wide_window_folds.csv`) are stored results, not repeated here; BoostMEC is timed by `cost_boostmec.py` into the same two files.
+the width experiment (`crisprhal_wide_window_folds.csv`) are stored results, not repeated here; BoostMEC is timed by `compare/boostmec.py` (parts `inference` and `fit`) into the same two files.
 
 Quiet means that nothing of ours runs at the same time (the commands are chained one after another by `cost_chain.sh`) and that the machine's one-minute load
 average is written next to every configuration (`load1_start`, `load1_end`; browsers and chat programs were open, nothing else). Each row carries the session it
@@ -36,7 +36,7 @@ import pandas as pd
 HERE = Path(__file__).resolve()
 RUNJIA = HERE.parents[2]
 ROOT = HERE.parents[3]
-RESULTS = RUNJIA / "results"
+RESULTS = Path(os.environ.get("EXT_OUT") or RUNJIA / "results")          # EXT_OUT as in model_size.py, so a scratch run never touches the tracked files
 INF = RESULTS / "cost_repeats_inference.csv"
 FIT = RESULTS / "cost_repeats_fit.csv"
 REPS = {1: 300, 100: 60, 10_000: 15}

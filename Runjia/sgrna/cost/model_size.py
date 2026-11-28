@@ -5,7 +5,7 @@ Three parts (a positional argument; no argument runs `slicer`): `slicer` and `ha
 SLICER's deployed model is the boosted trees alone (the 300-tree selector that picks the columns is not needed at prediction time, only the list of selected
 columns). Both are refitted here on one training fold of the curated cohort exactly as `vs_crisprhal.train_predict` fits them, and the booster is counted:
 trees, total nodes, leaves (the numbers a model has to remember: one value per leaf, a split per inner node) and the size of the saved file (XGBoost's binary UBJ format, and its JSON form). crisprHAL 2 is
-counted from its released Keras file (parameters) and the file on disk; each file is also gzipped (level 9), so that LightGBM's text format (BoostMEC, `cost_boostmec.py size`),
+counted from its released Keras file (parameters) and the file on disk; each file is also gzipped (level 9), so that LightGBM's text format (BoostMEC, `boostmec.py size`),
 XGBoost's binary one and Keras' zip can be compared on the bytes that carry information.
 
     OMP_NUM_THREADS=2 ./run_ext.sh sgrna.cost.model_size                    # SLICER, main environment

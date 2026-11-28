@@ -183,11 +183,13 @@ def run(chk):
 
     # ------------------------------------------------------------------------------------------------------------------------------
     # [8] head-to-head: paired 95% bootstrap over guides (read from the code that produces every interval of the comparison)
-    for mod in ("vs_crisprhal", "final_eval"):
-        src = (pathlib_root() / "compare" / f"{mod}.py").read_text()
+    import ast as _ast
+    _vs = (pathlib_root() / "compare" / "vs_crisprhal.py").read_text()
+    _fn = {n.name: _ast.get_source_segment(_vs, n) for n in _ast.parse(_vs).body if isinstance(n, _ast.FunctionDef)}
+    for mod, src in (("vs_crisprhal `paired_boot`", _fn["paired_boot"]), ("vs_crisprhal `final_compare`", _fn["final_compare"])):
         m = re.search(r"np\.percentile\(\w+, \[([\d.]+), ([\d.]+)\]\)", src)
-        chk(P + f"[8] bootstrap interval level, % ({mod}.py percentiles)", float(m.group(2)) - float(m.group(1)), 95, 0)
-        chk(P + f"[8]   {mod}.py resamples guides (rng.integers over the rows)", float("rng.integers(0, " in src), 1, 0)
+        chk(P + f"[8] bootstrap interval level, % ({mod} percentiles)", float(m.group(2)) - float(m.group(1)), 95, 0)
+        chk(P + f"[8]   {mod} resamples guides (rng.integers over the rows)", float("rng.integers(0, " in src), 1, 0)
 
     # ------------------------------------------------------------------------------------------------------------------------------
     # [9] the 80 position x base cells

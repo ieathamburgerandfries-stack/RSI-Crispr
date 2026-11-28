@@ -6,7 +6,6 @@ groups, run with `--test` (several allowed; `all` runs every one):
   where the signal sits (Finding 5 and 7)
     bases        position x base effect on activity, straight from the protospacers and the label                          mechanism_position_base.csv
     distance     signed partial association of each flank window's composition with activity, holding target GC fixed       mechanism_distance_profile.csv
-    asymmetry    upstream-only against downstream-only composition, as fitted arms                                          mechanism_asymmetry.csv
     human        the same position x base estimator on the human matrix                                                     mechanism_position_base_human.csv, mechanism_position_base_compare.csv
     pairs        which column pairs carry the pairwise interaction, by gain of depth-2 paths                                mechanism_pairs_columns.csv, mechanism_pairs_blocks.csv
   what it might physically be: three predictions written before the run
@@ -22,7 +21,7 @@ groups, run with `--test` (several allowed; `all` runs every one):
     python -m sgrna.interpret.mechanism --test all
 
 ------------------------------------------------------------------------------------------------------------------------------
-bases, distance, asymmetry, human, pairs
+bases, distance, human, pairs
 ------------------------------------------------------------------------------------------------------------------------------
 Finding 5 says that on a matrix where 99% of columns regenerate from the 20-mer, column-level
 importance is a statement about the selector. So the readings here avoid model importance wherever a
@@ -34,9 +33,6 @@ direct one exists:
   distance   signed partial association of each flank window's composition with activity, holding
              target GC fixed, as a function of distance and side. A marginal statistic, so again no
              model.
-  asymmetry  upstream-only against downstream-only composition, as fitted arms. If the effect is
-             one-sided it points at a directional process (replication, transcription, resection)
-             rather than at a bulk property.
   pairs      which column PAIRS carry the pairwise interaction. Section 14 found 37% of what trees
              add over a linear model is pairwise; a depth-2 model's root-to-leaf paths ARE pairs, so
              enumerating them by gain names the interactions without SHAP's additivity assumptions.
@@ -204,46 +200,6 @@ def distance():
             print(f"  {stat} {side}: " + "  ".join(f"{int(r.window_nt)}nt {r.partial_given_target_gc:+.3f}"
                                                    for r in t.itertuples()))
     return out
-
-
-# ------------------------------------------------------------------ upstream vs downstream
-def asymmetry(seeds=(41, 42, 43)):
-    import json
-    from sgrna.harness.run_ablation import _impute, grouped_folds, make_selector
-    from ..tuning import tune_ecoli as T
-    X0, y, protos, A, an = _cohort()
-    from sgrna.harness.curated import load_groups
-    g, ok = load_groups("gene", protos)
-    g = np.asarray(g, dtype=object)
-    comp = {s: [j for j, n in enumerate(an) if n.startswith(f"eng.flank.comp.{s}")] for s in ("up", "dn")}
-    cfg = dict(json.loads((OUT / "tune_configs.json").read_text())["d099x"],
-               n_estimators=int(T.selected().loc["d099x", "k"]))
-    arms = {"base only": X0,
-            "base + upstream composition": np.hstack([X0, A[:, comp["up"]]]),
-            "base + downstream composition": np.hstack([X0, A[:, comp["dn"]]]),
-            "base + both sides": np.hstack([X0, A[:, comp["up"] + comp["dn"]]])}
-    rows = []
-    for label, Xa in arms.items():
-        Xa = Xa.astype(np.float32)
-        per = []
-        for seed in seeds:
-            for tr, va in grouped_folds(g[ok], 5, seed):
-                i = np.where(ok)[0]
-                a0, _ = _impute(Xa[i[tr]], Xa[i[va]][:1])
-                sel = make_selector(seed); sel.fit(a0, y[i[tr]])
-                top = np.argsort(sel.feature_importances_)[::-1][: int(cfg["nf"])]
-                a, b = _impute(Xa[i[tr]][:, top], Xa[i[va]][:, top])
-                p = T.fit_predict(cfg, a, y[i[tr]], b, seed)[cfg["n_estimators"]]
-                per.append(float(spearmanr(y[i[va]], p).statistic))
-        rows.append(dict(arm=label, n_cols=Xa.shape[1] - X0.shape[1], rho=float(np.mean(per)),
-                         sd=float(np.std(per, ddof=1))))
-        print(f"  {label:32s} rho {rows[-1]['rho']:.4f} +- {rows[-1]['sd']:.4f}", flush=True)
-        pd.DataFrame(rows).to_csv(OUT / "mechanism_asymmetry.csv", index=False)
-    return pd.DataFrame(rows)
-
-
-
-
 
 
 # ------------------------------------------------------------------ the same estimator on human
@@ -860,7 +816,7 @@ def resolution(seeds=(41, 42, 43)):
     return pd.DataFrame(rows)
 
 
-LOCAL = ("distance", "bases", "asymmetry", "human", "pairs")
+LOCAL = ("distance", "bases", "human", "pairs")
 HYPOTHESES = ("h1", "h2", "h3", "followups", "audit")
 NOVEL = ("resolution", "relative")
 
@@ -870,9 +826,9 @@ def main(argv=None):
     ap.add_argument("--test", nargs="+", default=["all"], choices=["all", *LOCAL, *HYPOTHESES, *NOVEL])
     a = ap.parse_args(argv)
     want = lambda name: "all" in a.test or name in a.test
-    titles = {"distance": "signed flank-distance profile", "bases": "position x base preferences, straight from sequence", "asymmetry": "upstream against downstream composition",
+    titles = {"distance": "signed flank-distance profile", "bases": "position x base preferences, straight from sequence",
               "human": "the same estimator on the human matrix", "pairs": "which column pairs carry the interaction"}
-    fns = {"distance": distance, "bases": bases, "asymmetry": asymmetry, "human": human_bases, "pairs": pairs}
+    fns = {"distance": distance, "bases": bases, "human": human_bases, "pairs": pairs}
     for name in LOCAL:
         if want(name):
             print(f"\n=== {titles[name]} ===", flush=True)

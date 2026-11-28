@@ -29,7 +29,7 @@
 #
 # AFTER IT RUNS: the cell downloads crisprhal_wide_window_fcolab.csv (if the session runs out of compute units first, paste the printed
 # lines back). Save it as results/crisprhal_wide_window_fcolab3.csv in the project (the files fcolab.csv and fcolab2.csv hold the
-# values already transcribed) and run   python -m sgrna.compare.crisprhal_wide_window_folds assemble   (the assemble step reads every
+# values already transcribed) and run   python -m sgrna.compare.crisprhal_runs --run width --assemble   (the assemble step reads every
 # results/crisprhal_wide_window_f*.csv; the harness check is printed, not saved).
 # ============================================================================
 import os, subprocess, sys, time

@@ -291,7 +291,7 @@ def run_paper_folds(seeds=(41, 42, 43), threads: int = 9, verbose: bool = True) 
     
     sg.N_JOBS = threads
     X, y, names, protos = load_base()
-    groups = load_groups(protos)
+    groups = _groups(protos)
     done = pd.read_csv(PF_RESULT) if PF_RESULT.exists() and PF_RESULT.stat().st_size else pd.DataFrame(columns=["arm", "seed", "fold", "rho", "n_cols"])
     rows = done.to_dict("records")
     have = {(r["arm"], r["seed"]) for r in rows}

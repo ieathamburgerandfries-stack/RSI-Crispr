@@ -80,6 +80,16 @@ CASES = [
     dict(name="representation-handnamed", cmd=["sgrna.interpret.representation", "--handnamed"], writes=["handnamed_split.csv"], project=True),
     dict(name="human-shape-twin", cmd=["sgrna.compare.human_shape", "--stage", "7", "--twin"], writes=["human_shape_ablation_twin.csv"], project=True, rtol=1e-9, fresh=["human_shape_ablation_twin.csv"]),
     dict(name="strand-flip", cmd=["sgrna.compare.strand", "--parts", "flip"], writes=["strand_flip.csv"], project=True),
+    dict(name="vs-crisprhal-final-compare", cmd=["sgrna.compare.vs_crisprhal", "--condition", "final-compare"], writes=["final_eval_espcas9.csv"], project=True),
+    dict(name="vs-crisprhal-transfer-report", cmd=["sgrna.compare.vs_crisprhal", "--condition", "transfer-report"], writes=["transfer_vs_crisprhal_nuclease.csv", "transfer_vs_crisprhal_kingdom.csv"]),
+    dict(name="cui-final-exam-compare", cmd=["sgrna.compare.cui_screen", "--final-exam", "compare"], writes=["cui_final_exam.csv"], project=True),
+    dict(name="crisprhal-width-assemble", cmd=["sgrna.compare.crisprhal_runs", "--run", "width", "--assemble"], writes=["crisprhal_wide_window_folds.csv", "crisprhal_wide_window_summary.csv"]),
+    dict(name="diagnose-floors", cmd=["sgrna.controls.diagnose", "--what", "floors"], writes=["permutation_floors.csv"], project=True, rtol=1e-9),
+    dict(name="diagnose-no-information", cmd=["sgrna.controls.diagnose", "--what", "no-information"], writes=["no_information.csv"], project=True),
+    dict(name="boostmec-oracle", cmd=["sgrna.compare.boostmec", "oracle"], writes=["boostmec_oracle.csv"]),
+    dict(name="boostmec-size", cmd=["sgrna.compare.boostmec", "size"], writes=["model_size.csv"]),
+    dict(name="boostmec-compare", cmd=["sgrna.compare.boostmec", "compare"], writes=["boostmec_vs_slicer_confirm.csv"]),
+    dict(name="diagnose-redundancy-ceiling", cmd=["sgrna.controls.diagnose", "--what", "redundancy", "ceiling"], writes=["redundancy.csv", "ceiling.json"]),
 ]
 
 

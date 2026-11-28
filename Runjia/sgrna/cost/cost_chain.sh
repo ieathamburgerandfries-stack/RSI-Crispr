@@ -18,15 +18,15 @@ step "SLICER inference, one thread"
 step "crisprHAL 2 inference, one thread"
 PY="$HAL" TF_CPP_MIN_LOG_LEVEL=3 ./run_ext.sh sgrna.cost.cost_repeats hal
 step "BoostMEC inference, one thread (released model)"
-./run_ext.sh sgrna.cost.cost_boostmec inference
+./run_ext.sh sgrna.compare.boostmec inference
 step "SLICER fits"
 ./run_ext.sh sgrna.cost.cost_repeats fit
 step "BoostMEC fits"
-./run_ext.sh sgrna.cost.cost_boostmec fit
+./run_ext.sh sgrna.compare.boostmec fit
 step "crisprHAL 2 fits on this CPU (3 x about 17 min)"
 PY="$HAL" TF_CPP_MIN_LOG_LEVEL=3 ./run_ext.sh sgrna.cost.cost_repeats hal_fit
 step "not timings: model sizes"
 OMP_NUM_THREADS=2 ./run_ext.sh sgrna.cost.model_size
 PY="$HAL" TF_CPP_MIN_LOG_LEVEL=3 ./run_ext.sh sgrna.cost.model_size hal
-./run_ext.sh sgrna.cost.cost_boostmec size
+./run_ext.sh sgrna.compare.boostmec size
 step "done"

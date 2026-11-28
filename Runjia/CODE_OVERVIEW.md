@@ -68,7 +68,7 @@ grouped by gene (and in some runs by 100 kb block), so a position-based feature 
 written to disk as it finishes. Every claim in the report is a paired difference measured this way.
 
 ### 4. The controls: why +0.161 is not an artefact *(Finding 2; Appendix A)*
-`sgrna/controls/shiftnull.py`, `sgrna/controls/sealed.py (part holdout)`, `sgrna/controls/selector_audit.py`, `sgrna/controls/floors.py`,
+`sgrna/controls/shiftnull.py`, `sgrna/controls/sealed.py (part holdout)`, `sgrna/controls/selector_audit.py`, `sgrna/controls/diagnose.py (part floors)`,
 `sgrna/interpret/flank_signal.py`, `sgrna/controls/fold_distance.py`, `sgrna/controls/sealed.py`
 
 Each of these is an attack on the result, not a confirmation of it.
@@ -76,14 +76,14 @@ Each of these is an attack on the result, not a confirmation of it.
   exactly; only the correspondence to the guide is broken. A single offset would be ambiguous, because chromosome-scale GC structure could survive a short one, so the code sweeps
   the offset and reads off how fast the gain decays: a 1 kb shift retains 8% and shifts of 10 kb or more retain none. The effect is local to about a kilobase.
 - **Sealed-gene hold-out.** Re-derive every mechanisable choice on a development pool only, then score once on genes no step ever saw. The sealed-gene drop in family A's gain is **+0.0087**, small and not shown to be adaptive overfitting (whole-gene folds inside the pool remove only +0.0007 of it).
-- **Permutation floor.** Shuffled flank rows (the harness's `--permute` arm, summarised by `floors.py`) score 0.5264 against a 0.5272 baseline, so the floor is zero.
+- **Permutation floor.** Shuffled flank rows (the harness's `--permute` arm, summarised by `diagnose.py --what floors`) score 0.5264 against a 0.5272 baseline, so the floor is zero.
 - **Target-GC strata.** Conditioning on the target's own GC raises the effect (+0.044 to +0.082 on the published matrix), so it is not target GC in disguise.
 - **Sequence distance.** The minimum Hamming distance between any validation and training guide is 3, with no identical guide across any split. The same statistic recovers a known
   duplicate-guide leak in the human matrix at 39.1%, which is the positive control.
 - **A sealed organism.** The tuned settings were chosen on *E. coli* genes; trained on all of *E. coli* and scored zero-shot on the *C. rodentium* screen, which no choice ever saw, the tuned model still beats the frozen champion by +0.0172 (0.7160 against 0.6986).
 
 ### 5. The model against crisprHAL 2: accuracy, then cost *(Part 5, the head-to-head)*
-`sgrna/compare/headtohead.py`, `sgrna/compare/final_eval.py`, `sgrna/tuning/tune_ecoli.py`, `sgrna/compare/vs_crisprhal.py`; for the cost half, `sgrna/build/a_flank_fast.py`, `sgrna/build/base_fast.py`, `sgrna/build/flank_locus.py`, `sgrna/cost/latency.py`
+`sgrna/compare/headtohead.py`, `sgrna/tuning/tune_ecoli.py`, `sgrna/compare/vs_crisprhal.py (conditions final-slicer, hal-espcas9, final-compare)`; for the cost half, `sgrna/build/a_flank_fast.py`, `sgrna/build/base_fast.py`, `sgrna/build/flank_locus.py`, `sgrna/cost/latency.py`
 
 **Accuracy.** The final SLICER model, as shipped, leads crisprHAL 2, as released, by **+0.023 to +0.029 ρ** on both of crisprHAL 2's own splits. The comparison is run under four conditions, because the answer depends on which is held equal. On our folds, with both models tuned here, SLICER leads by +0.0172. On a different assay neither model was trained on (a boundary of the claim, not a like-for-like comparison), crisprHAL 2 leads by +0.026.
 The tuning is designed so that it cannot fool itself: genes are split once into DEV (70%) and CONFIRM (30%), a random search runs on DEV only, and the winners are scored on genes never used to choose anything,

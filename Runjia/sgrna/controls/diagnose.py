@@ -3,7 +3,7 @@
 The pattern that prompts this module: eight feature families were added, each
 motivated by a real mechanism and a real dataset, and six of them moved
 Spearman by less than 0.01. The instinct is that something is broken. These
-three measurements test that instinct instead of trusting it.
+five measurements test that instinct instead of trusting it.
 
   redundancy()  For each new column, how much of it is already recoverable
                 from the 20 nt protospacer? The published matrix was shown to
@@ -27,9 +27,45 @@ three measurements test that instinct instead of trusting it.
                 much of a cut score is guide-intrinsic and repeatable, and
                 therefore how high any sequence model could ever go.
 
-    python -m sgrna.controls.diagnose --what all
+  floors()      What does a family score when its rows are shuffled? A
+                permutation control keeps the same columns and the same count
+                and removes the relationship to the label, so what it scores
+                is that family's noise floor, and a gain inside the floor is
+                not a gain. The floor depends on how many columns a family
+                contributes and how easily they survive selection, so a
+                348-column family and a 13-column family have different
+                floors; until 2026-10-03 the project quoted the single floor
+                measured on `a_flank` as if it applied to all of them. Every
+                delta is **paired on (seed, fold)**, so the two arms always
+                see identical data: `ablation_*.csv` stores the mean over
+                whatever folds each experiment happens to have, and a family
+                run on three seeds was being differenced against a baseline
+                run on five. Reads `folds_main.csv`; fits nothing.
 
-Report section: Finding 4.
+  no_information()  Decompose `d_mechanics`'s +0.099 into representation and
+                new DNA. Nearest-neighbour duplex thermodynamics is a sum of
+                dinucleotide parameters, so it is a deterministic function of
+                a 20-mer the base already encodes losslessly, yet the family
+                buys +0.099 rho. **Eight of its thirty columns are not
+                functions of the 20-mer**: `eng.mech.flank.{up,dn}{25,100}.
+                {dG37,dG_per_bp}` are duplex thermodynamics of the flanking
+                DNA, which the base does not contain -- found by a
+                reconstruction probe, where those eight came back at
+                out-of-fold R² ~ 0 from the 364 mono- and dinucleotide
+                indicator columns while nine of the guide-only columns came
+                back at exactly 1.0000. So the headline arm mixes the claim
+                with family A's mechanism, and the clean number is the
+                guide-only one. Three arms over the same base: `guide_only`
+                (22 columns, every one a function of the protospacer),
+                `flank_only` (8, DNA outside it) and `full` (all 30).
+
+    python -m sgrna.controls.diagnose --what all
+    python -m sgrna.controls.diagnose --what floors no-information
+
+`--what` takes one or more of redundancy headroom ceiling floors
+no-information, or `all`.
+
+Report section: Finding 1, Finding 4, Appendix A.
 """
 
 from __future__ import annotations
@@ -39,15 +75,18 @@ import json
 
 import numpy as np
 import pandas as pd
-from scipy.stats import spearmanr
+from scipy.stats import spearmanr, ttest_rel
 
 from .. import config
+from ..common import OUT
 from ..build.build_matrix import load_dataset
 from ..harness.run_ablation import _impute, _safe_spearman, champion_params, make_selector
 
-RESULTS_REDUNDANCY = config.RESULTS / "redundancy.csv"
-RESULTS_HEADROOM = config.RESULTS / "headroom.csv"
-RESULTS_CEILING = config.RESULTS / "ceiling.json"
+RESULTS_REDUNDANCY = OUT / "redundancy.csv"
+RESULTS_HEADROOM = OUT / "headroom.csv"
+RESULTS_CEILING = OUT / "ceiling.json"
+RESULTS_FLOORS = OUT / "permutation_floors.csv"
+RESULTS_NO_INFORMATION = OUT / "no_information.csv"
 
 BASES = "ACGT"
 
@@ -135,7 +174,8 @@ def _oof_r2_batch(basis: np.ndarray, targets: np.ndarray, n_splits: int = 5,
 
 def redundancy(families=("a_flank", "b_energy", "c_folding", "d_mechanics",
                          "d_supercoiling", "e_nucleoid", "f_methylation",
-                         "g_transcription", "h_offtarget"),
+                         "g_transcription", "h_offtarget", "i_shape",
+                         "j_periodicity"),
                k_max: int = 2, verbose: bool = True) -> pd.DataFrame:
     """How much of each new feature is already implied by the 20-mer?
 
@@ -170,7 +210,7 @@ def redundancy(families=("a_flank", "b_energy", "c_folding", "d_mechanics",
                   f"share above 0.9: {np.mean(np.array(got) > 0.9):.0%}")
 
     df = pd.DataFrame(rows)
-    config.RESULTS.mkdir(parents=True, exist_ok=True)
+    OUT.mkdir(parents=True, exist_ok=True)
     df.to_csv(RESULTS_REDUNDANCY, index=False)
     return df
 
@@ -258,7 +298,7 @@ def headroom(families=("a_flank",), extra=("b_energy", "c_folding",
     df = pd.DataFrame(rows)
     df["abs_resid"] = df["rho_with_residual"].abs()
     df = df.sort_values("abs_resid", ascending=False)
-    config.RESULTS.mkdir(parents=True, exist_ok=True)
+    OUT.mkdir(parents=True, exist_ok=True)
     df.to_csv(RESULTS_HEADROOM, index=False)
 
     if verbose:
@@ -334,7 +374,7 @@ def ceiling(verbose: bool = True) -> dict:
     out["genes_with_5plus_guides"] = int(sub["gene_name"].nunique())
     out["within_gene_variance_share"] = within / total if total else np.nan
 
-    config.RESULTS.mkdir(parents=True, exist_ok=True)
+    OUT.mkdir(parents=True, exist_ok=True)
     RESULTS_CEILING.write_text(json.dumps(out, indent=2))
     if verbose:
         for k, v in out.items():
@@ -343,26 +383,164 @@ def ceiling(verbose: bool = True) -> dict:
 
 
 # --------------------------------------------------------------------------
+# 4. Permutation floors
+# --------------------------------------------------------------------------
+
+FOLDS_MAIN = "folds_main.csv"
+
+
+def floors(verbose: bool = True) -> pd.DataFrame:
+    """Per-family permutation floors, paired fold by fold.
+
+    For each family: the gain over the baseline (Spearman and R^2, paired on seed and fold), the gain of the same
+    family with its rows shuffled, their ratio, and a verdict (ratio below 1.5 is "indistinguishable from noise",
+    below 5 "marginal", else "clear of the floor"). Reads the fold table of the main ablation.
+    """
+    folds = pd.read_csv(config.RESULTS / FOLDS_MAIN)
+    base = folds[folds["experiment"] == "baseline"]
+
+    def paired(name: str):
+        arm = folds[folds["experiment"] == name]
+        if arm.empty:
+            return None
+        m = arm.merge(base, on=["seed", "fold"], suffixes=("", "_base"))
+        if m.empty:
+            return None
+        d_r2 = m["r2"] - m["r2_base"]
+        d_rho = m["spearman"] - m["spearman_base"]
+        t = ttest_rel(m["spearman"], m["spearman_base"]) if len(m) > 1 else None
+        return dict(n_folds=len(m), d_r2=d_r2.mean(), d_rho=d_rho.mean(),
+                    d_rho_sd=d_rho.std(),
+                    folds_positive=int((d_rho > 0).sum()),
+                    p=float(t.pvalue) if t is not None else np.nan)
+
+    families = sorted({e for e in folds["experiment"].unique()
+                       if "(permuted)" not in e and e != "baseline"})
+    rows = []
+    for fam in families:
+        real = paired(fam)
+        floor = paired(f"{fam} (permuted)")
+        if real is None:
+            continue
+        row = dict(family=fam, real_folds=real["n_folds"],
+                   real_d_r2=real["d_r2"], real_d_rho=real["d_rho"],
+                   real_p=real["p"])
+        if floor is None:
+            row.update(floor_folds=0, floor_d_r2=np.nan, floor_d_rho=np.nan,
+                       ratio=np.nan, verdict="no control run")
+        else:
+            ratio = (real["d_rho"] / abs(floor["d_rho"])
+                     if floor["d_rho"] != 0 else np.inf)
+            row.update(floor_folds=floor["n_folds"], floor_d_r2=floor["d_r2"],
+                       floor_d_rho=floor["d_rho"], ratio=ratio,
+                       verdict=("indistinguishable from noise" if ratio < 1.5
+                                else "marginal" if ratio < 5
+                                else "clear of the floor"))
+        rows.append(row)
+
+    df = pd.DataFrame(rows).sort_values("real_d_rho", ascending=False)
+    df.to_csv(RESULTS_FLOORS, index=False)
+    if verbose:
+        cols = ["family", "real_d_rho", "floor_d_rho", "ratio", "verdict"]
+        print(df[cols].to_string(index=False, float_format=lambda v: f"{v:+.4f}"))
+    return df
+
+
+# --------------------------------------------------------------------------
+# 5. No information
+# --------------------------------------------------------------------------
+
+FLANK = ".flank."
+
+
+def no_information(seeds=None, n_splits=None, n_features=300, verbose: bool = True):
+    """The three arms of the `d_mechanics` decomposition over the curated base: guide_only, flank_only, full."""
+    from ..harness.curated import load_base, load_block
+    from ..harness.run_ablation import cross_validate
+
+    seeds = list(seeds or config.SEEDS)
+    n_splits = n_splits or config.N_SPLITS
+    X, y, names, protos = load_base()
+    v, fnames = load_block("d_mechanics", protos)
+    is_flank = np.array([FLANK in f for f in fnames])
+    if verbose:
+        print(f"  d_mechanics: {len(fnames)} columns, {is_flank.sum()} from the "
+              f"flanks, {(~is_flank).sum()} from the protospacer")
+
+    arms = {
+        "guide_only": ~is_flank,
+        "flank_only": is_flank,
+        "full": np.ones(len(fnames), dtype=bool),
+    }
+
+    # The baseline is the one already measured for the curated ablation table
+    # -- same rows, same protocol, same tag, so `cross_validate` resumes from
+    # its fold checkpoint instead of refitting it.
+    res = cross_validate(X, y, names, ["base"] * len(names), n_features=n_features,
+                         seeds=seeds, n_splits=n_splits, verbose=False,
+                         tag="curabl_baseline", experiment="baseline")
+    base_rho = res["summary"]["spearman"]["mean"]
+    rows = [dict(arm="baseline", n_family_cols=0, spearman=base_rho,
+                 spearman_sd=res["summary"]["spearman"]["sd"], d_spearman=0.0)]
+    if verbose:
+        print(f"  {'baseline':>12}: rho {base_rho:.4f}", flush=True)
+    pd.DataFrame(rows).to_csv(RESULTS_NO_INFORMATION, index=False)
+
+    for arm, mask in arms.items():
+        sub = [f for f, m in zip(fnames, mask) if m]
+        Xa = np.hstack([X, v[:, mask]])
+        res = cross_validate(Xa, y, names + sub,
+                             ["base"] * len(names) + ["d_mechanics"] * len(sub),
+                             n_features=n_features, seeds=seeds, n_splits=n_splits,
+                             verbose=False, tag=f"noinfo_{arm}", experiment=arm)
+        rho = res["summary"]["spearman"]["mean"]
+        rows.append(dict(arm=arm, n_family_cols=int(mask.sum()), spearman=rho,
+                         spearman_sd=res["summary"]["spearman"]["sd"],
+                         d_spearman=rho - base_rho))
+        if verbose:
+            print(f"  {arm:>12}: rho {rho:.4f}   delta {rho - base_rho:+.4f}  "
+                  f"({int(mask.sum())} cols)", flush=True)
+        pd.DataFrame(rows).to_csv(RESULTS_NO_INFORMATION, index=False)
+
+    out = pd.DataFrame(rows)
+    if verbose:
+        print()
+        print(out.round(4).to_string(index=False))
+        print(f"written -> {RESULTS_NO_INFORMATION}")
+    return out
+
+
+# --------------------------------------------------------------------------
+
+
+PARTS = ("ceiling", "redundancy", "headroom", "floors", "no-information")
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--what", default="all",
-                    choices=["all", "redundancy", "headroom", "ceiling"])
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--what", nargs="+", default=["all"], choices=["all", *PARTS],
+                    help="the parts to run (default: all five)")
     ap.add_argument("--families", nargs="*", default=["a_flank"])
     ap.add_argument("--k-max", type=int, default=2)
     args = ap.parse_args(argv)
+    run = lambda part: "all" in args.what or part in args.what      # noqa: E731
 
-    if args.what in ("all", "ceiling"):
+    if run("ceiling"):
         print("\n== ceiling ==")
         ceiling()
-    if args.what in ("all", "redundancy"):
+    if run("redundancy"):
         print("\n== redundancy ==")
         redundancy(k_max=args.k_max)
         print(redundancy_summary().to_string(index=False))
-    if args.what in ("all", "headroom"):
+    if run("headroom"):
         print("\n== headroom ==")
         headroom(families=tuple(args.families))
+    if run("floors"):
+        print("\n== permutation floors ==")
+        floors()
+    if run("no-information"):
+        print("\n== d_mechanics decomposition ==")
+        no_information()
     return 0
 
 

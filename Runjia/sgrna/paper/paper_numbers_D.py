@@ -235,7 +235,7 @@ def run(chk):
     chk(P + "[D14]   E. coli", float(c[c.group == "E. coli"].g_minus_ac_pos20.iloc[0]), -0.333, 3)
     chk(P + "[D14]   E. coli, as printed in the appendix (two decimals)", float(c[c.group == "E. coli"].g_minus_ac_pos20.iloc[0]), -0.33, 2)
 
-    # ---------------------------------------------------------------------------------------------------- the cost (cost_repeats.py, cost_boostmec.py, cost_boostmec_shipped.py, model_size.py, colab/cost_gpu.py)
+    # ---------------------------------------------------------------------------------------------------- the cost (cost_repeats.py, compare/boostmec.py, model_size.py, colab/cost_gpu.py)
     # One quiet laptop session and one Colab T4 session; every claimed value below is typed as the Doc prints it (three significant figures), and its number of decimals is read from it.
     def dec(txt):
         return len(txt.replace(",", "").split(".")[1]) if "." in txt else 0
@@ -474,7 +474,7 @@ def run(chk):
         claim("[D15]   megabytes compressed (gzip, level 9)", sz.loc[m, "bytes_gzip"] / 1e6, gz_)
     claim("[D15] crisprHAL 2: parameters", sz.loc["crisprHAL 2", "parameters"], "790,533")
     claim("[D15]   megabytes (the released .keras file)", sz.loc["crisprHAL 2", "bytes_file"] / 1e6, "9.6")
-    # BoostMEC as shipped (cost_boostmec_shipped.py): the authors' image, unmodified
+    # BoostMEC as shipped (compare/boostmec.py, parts check to cohort): the authors' image, unmodified
     sh = pd.read_csv(OUT / "boostmec_shipped_timings.csv")
     for b, (n_, s_, ms_) in {10: (5, "3.74", None), 100: (5, "4.17", "41.7"), 10000: (3, "53.5", "5.35")}.items():
         q = sh[(sh.batch == b) & sh.seconds.notna()]
@@ -696,7 +696,7 @@ def run(chk):
     claim("[D27] Colab session, forward pass at 10,000 guides: coefficient of variation of the repeats on the card, %", 100 * hf.std(ddof=1) / hf.mean(), "2.7")
     claim("[D27]   of the trees on the VM's CPU, %", 100 * tf.std(ddof=1) / tf.mean(), "30")
     claim("[D27] native importance, agreement between tree families per column, 104-column model", cmstab.loc[("native", "column"), "agreement"], "0.70")
-    # BoostMEC retrained on the cohort as its authors trained it (boostmec_replica.py), on the features of their own pipeline; released hyperparameters, same folds and seeds as the flank-scale arms
+    # BoostMEC retrained on the cohort as its authors trained it (compare/boostmec.py, parts released to compare), on the features of their own pipeline; released hyperparameters, same folds and seeds as the flank-scale arms
     bm = pd.read_csv(OUT / "boostmec_released.csv").set_index(["seed", "fold"])
     base_ = fr[fr.arm == "base"].set_index(["seed", "fold"]).rho
     al_ = fr[fr.arm == "family A shifted 0"].set_index(["seed", "fold"]).rho

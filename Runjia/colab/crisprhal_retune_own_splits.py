@@ -16,7 +16,7 @@
 #   stage 2  the TOP_K draws plus draw 0 are re-scored on two FRESH inner partitions at their chosen epoch count, which is what
 #            stops the winner being simply the luckiest draw.
 #   stage 3  the winner and the published configuration are each retrained on the FULL training file with SEEDS seeds, and
-#            scored ONCE on the test file (deduplicated by protospacer exactly as final_eval.py / vs_crisprhal_wt_hal.py do),
+#            scored ONCE on the test file (deduplicated by protospacer exactly as `vs_crisprhal.py` (conditions hal-espcas9 and hal-wt) does),
 #            beside their shipped weights. Per-seed rho and the seed-averaged ensemble are both reported, because our own
 #            comparison arm is an average of five.
 #
@@ -102,7 +102,7 @@ DEFAULTS = dict(learning_rate=0.0005, drop_rate=0.3, CNN_filters=128, window_siz
                 RNN_size=128, RNN_dense1=128, RNN_dense2=64, CNN_RNN_drop=0.3)     # models.__init__'s own defaults (their published configuration)
 NAMES = list(DEFAULTS)
 
-# %% ---- data: exactly their files, deduplicated for scoring exactly as in final_eval.py -------------------------------------
+# %% ---- data: exactly their files, deduplicated for scoring exactly as in `vs_crisprhal.py` (hal-espcas9) -------------------------------------
 def read(path):
     d = pd.read_csv(path, header=None, names=["context", "score"]).dropna(subset=["context"])
     d["context"] = d["context"].str.upper()

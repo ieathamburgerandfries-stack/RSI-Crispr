@@ -130,7 +130,7 @@ def crisprhal(sizes=SIZES, seeds=(41,), folds=(1, 2, 3, 4, 5), verbose: bool = T
     """crisprHAL 2's curve: their architecture, their defaults, our split."""
     import tensorflow as tf
 
-    from sgrna.compare.crisprhal_rerun import MODEL, META_PATH, _load_hal, _read
+    from sgrna.compare.crisprhal_runs import MODEL, META_PATH, _load_hal, _read
 
     models, default_epochs, proc = _load_hal()
     meta = json.loads(META_PATH.read_text())
